@@ -1,0 +1,331 @@
+<% layout("/layouts/boilerplate", {
+    title: 'Login - Zoopito',
+    description: 'Login to your Zoopito account to access livestock management dashboard, farmer data, and veterinary services.',
+    pageStyles: `
+        .login-gradient {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
+        }
+        
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+        
+        .google-btn {
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .google-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .forgot-link {
+            position: relative;
+        }
+        
+        .forgot-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #38BDF8;
+            transition: width 0.3s ease;
+        }
+        
+        .forgot-link:hover::after {
+            width: 100%;
+        }
+        
+        .password-toggle {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .password-toggle:hover {
+            color: #38BDF8;
+        }
+    `
+}) -%>
+
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 login-gradient">
+    <div class="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-10 border border-gray-200 dark:border-gray-700">
+        <!-- Logo & Header -->
+        <div class="text-center">
+            <div class="flex justify-center mb-6">
+                <img src="/images/logo.png" alt="Zoopito" class="h-16 zoopito-logo">
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Welcome Back
+            </h2>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">
+                Sign in to access your livestock management dashboard
+            </p>
+        </div>
+
+        <!-- Login Form -->
+        <form class="mt-8 space-y-6" action="/login" method="POST" id="loginForm">
+            <input type="hidden" name="_csrf" >
+            
+            <div class="space-y-5">
+                <!-- Email Field -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-envelope mr-2 text-gray-500"></i>
+                        Email Address
+                    </label>
+                    <div class="relative">
+                        <input id="email" name="email" type="email" autocomplete="email" required
+                               class="input-focus w-full px-4 py-3 border border-gray-300 dark:border-gray-600 
+                                      rounded-lg bg-gray-50 dark:bg-gray-700 
+                                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                      transition duration-200"
+                               placeholder="you@example.com">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Enter the email associated with your account
+                    </p>
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-lock mr-2 text-gray-500"></i>
+                            Password
+                        </label>
+                        <a href="/forgot-password" class="forgot-link text-sm font-medium text-blue-600 dark:text-blue-400">
+                            Forgot password?
+                        </a>
+                    </div>
+                    <div class="relative">
+                        <input id="password" name="password" type="password" autocomplete="current-password" required
+                               class="input-focus w-full px-4 py-3 border border-gray-300 dark:border-gray-600 
+                                      rounded-lg bg-gray-50 dark:bg-gray-700 
+                                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                      transition duration-200"
+                               placeholder="••••••••">
+                        <button type="button" id="togglePassword" 
+                                class="password-toggle absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i id="passwordIcon" class="fas fa-eye text-gray-400"></i>
+                        </button>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Minimum 8 characters with letters and numbers
+                    </p>
+                </div>
+
+                <!-- Remember Me -->
+                <div class="flex items-center">
+                    <input id="remember" name="remember" type="checkbox" 
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+                           checked>
+                    <label for="remember" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                        Remember this device
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit"
+                        id="loginButton"
+                        class="group relative w-full flex justify-center py-3.5 px-4 border border-transparent 
+                               text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-500 to-green-500 
+                               hover:from-blue-600 hover:to-green-600 focus:outline-none focus:ring-2 
+                               focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 
+                               disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span id="buttonText" class="flex items-center gap-2">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </span>
+                    <span id="loadingSpinner" class="hidden">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Divider -->
+        <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300 dark:border-gray-700"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                    Or continue with
+                </span>
+            </div>
+        </div>
+
+        <!-- Google Sign In -->
+        <div>
+            <a href="/auth/google"
+               class="google-btn w-full flex items-center justify-center gap-3 py-3.5 px-4 
+                      rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 
+                      font-medium hover:bg-gray-50 dark:hover:bg-gray-600">
+                <img src="https://www.google.com/favicon.ico" alt="Google" class="w-5 h-5">
+                Sign in with Google
+            </a>
+        </div>
+
+        <!-- Sign Up Link -->
+        <div class="text-center pt-6 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-gray-600 dark:text-gray-400">
+                Don't have an account?
+                <a href="/signup" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 ml-1">
+                    Sign up now
+                </a>
+            </p>
+        </div>
+
+        <!-- Role Info -->
+        <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                <div>
+                    <p class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">
+                        Multiple Role Access
+                    </p>
+                    <p class="text-xs text-blue-700 dark:text-blue-400">
+                        Login with different roles: Admin, Sales Executive, Paravet/Veterinarian
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>  
+
+<script>
+    // Toggle password visibility
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const passwordIcon = document.getElementById('passwordIcon');
+    
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle icon
+        if (type === 'text') {
+            passwordIcon.classList.remove('fa-eye');
+            passwordIcon.classList.add('fa-eye-slash');
+            passwordIcon.classList.add('text-blue-500');
+        } else {
+            passwordIcon.classList.remove('fa-eye-slash');
+            passwordIcon.classList.add('fa-eye');
+            passwordIcon.classList.remove('text-blue-500');
+        }
+    });
+    
+    // Form validation and submission
+    const loginForm = document.getElementById('loginForm');
+    const loginButton = document.getElementById('loginButton');
+    const buttonText = document.getElementById('buttonText');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        
+        // Basic validation
+        if (!email || !password) {
+            showError('Please fill in all fields');
+            return;
+        }
+        
+        if (!isValidEmail(email)) {
+            showError('Please enter a valid email address');
+            return;
+        }
+        
+        // Show loading state
+        buttonText.classList.add('hidden');
+        loadingSpinner.classList.remove('hidden');
+        loginButton.disabled = true;
+        
+        // Simulate API call (replace with actual fetch)
+        setTimeout(() => {
+            // Submit the form if validation passes
+            loginForm.submit();
+        }, 1500);
+    });
+    
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+    
+    function showError(message) {
+        // Create error alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 mb-4';
+        alertDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                <p class="text-sm text-red-700 dark:text-red-300">${message}</p>
+            </div>
+        `;
+        
+        // Insert after form
+        loginForm.parentNode.insertBefore(alertDiv, loginForm);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+    
+    // Auto-focus email field on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const emailField = document.getElementById('email');
+        if (emailField) {
+            emailField.focus();
+        }
+        
+        // Check for URL parameters for pre-filled email
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailParam = urlParams.get('email');
+        if (emailParam && emailField) {
+            emailField.value = emailParam;
+        }
+    });
+    
+    // Enter key submission
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !loginButton.disabled) {
+            loginForm.dispatchEvent(new Event('submit'));
+        }
+    });
+</script>
+
+<style>
+    /* Additional styles for better UX */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px white inset !important;
+        box-shadow: 0 0 0 30px white inset !important;
+        -webkit-text-fill-color: #1f2937 !important;
+    }
+    
+    .dark input:-webkit-autofill,
+    .dark input:-webkit-autofill:hover,
+    .dark input:-webkit-autofill:focus,
+    .dark input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px #1f2937 inset !important;
+        box-shadow: 0 0 0 30px #1f2937 inset !important;
+        -webkit-text-fill-color: #f3f4f6 !important;
+    }
+</style>

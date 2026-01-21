@@ -1,0 +1,162 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="container mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-6 text-blue-700">Register New Animal</h1>
+
+  <form action="/admin/animals" method="POST" enctype="multipart/form-data" class="space-y-6 bg-white p-6 rounded-lg shadow-md">
+
+    <!-- Farmer -->
+    <div>
+      <label for="farmer" class="block text-sm font-medium text-gray-700">Farmer</label>
+      <select name="farmer" id="farmer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        <% farmers.forEach(farmer => { %>
+          <option value="<%= farmer._id %>"> <%= farmer.uniqueFarmerId %>: <%= farmer.name %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <!-- Registered By -->
+    <div>
+      <label for="registeredBy" class="block text-sm font-medium text-gray-700">Registered By</label>
+      <select name="registeredBy" id="registeredBy" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        <% sales.forEach(sale => { %>
+          <option value="<%= sale.user._id %>"><%= sale.user.name %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <!-- Animal Type -->
+    <div>
+      <label for="animalType" class="block text-sm font-medium text-gray-700">Animal Type</label>
+      <select name="animalType" id="animalType" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        <option value="">Select Animal Type</option>
+        <option value="Cow">Cow</option>
+        <option value="Buffalo">Buffalo</option>
+        <option value="Goat">Goat</option>
+        <option value="Sheep">Sheep</option>
+        <option value="Dog">Dog</option>
+        <option value="Cat">Cat</option>
+        <option value="Poultry">Poultry</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <!-- Breed -->
+    <div>
+      <label for="breed" class="block text-sm font-medium text-gray-700">Breed</label>
+      <input type="text" name="breed" id="breed" placeholder="Breed" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+    </div>
+
+    <!-- Age -->
+    <div class="flex space-x-4">
+      <div class="flex-1">
+        <label for="ageValue" class="block text-sm font-medium text-gray-700">Age</label>
+        <input type="number" name="age[value]" id="ageValue" placeholder="Value" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+      </div>
+      <div class="flex-1">
+        <label for="ageUnit" class="block text-sm font-medium text-gray-700">Unit</label>
+        <select name="age[unit]" id="ageUnit" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+          <option value="Days">Days</option>
+          <option value="Months">Months</option>
+          <option value="Years">Years</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Gender -->
+    <div>
+      <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
+      <select name="gender" id="gender" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Unknown">Unknown</option>
+      </select>
+    </div>
+
+    <!-- Name -->
+    <div>
+      <label for="name" class="block text-sm font-medium text-gray-700">Animal Name</label>
+      <input type="text" name="name" id="name" placeholder="Animal Name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+    </div>
+
+    <!-- Tag Number -->
+    <div>
+      <label for="tagNumber" class="block text-sm font-medium text-gray-700">Tag Number</label>
+      <input type="text" name="tagNumber" id="tagNumber" placeholder="Tag Number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+    </div>
+
+    <!-- Photos -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label for="frontPhoto" class="block text-sm font-medium text-gray-700">Front Photo</label>
+        <input type="file" name="front" id="frontPhoto" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+      </div>
+      <div>
+        <label for="leftPhoto" class="block text-sm font-medium text-gray-700">Left Photo</label>
+        <input type="file" name="left" id="leftPhoto" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+      </div>
+      <div>
+        <label for="rightPhoto" class="block text-sm font-medium text-gray-700">Right Photo</label>
+        <input type="file" name="right" id="rightPhoto" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+      </div>
+      <div>
+        <label for="backPhoto" class="block text-sm font-medium text-gray-700">Back Photo</label>
+        <input type="file" name="back" id="backPhoto" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+      </div>
+    </div>
+
+    <!-- Lactation Status -->
+    <div class="border-t pt-4 mt-4">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Lactation Status</h2>
+      <div class="flex items-center space-x-4 mb-2">
+        <input type="checkbox" name="lactationStatus[isLactating]" id="isLactating" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
+        <label for="isLactating" class="text-sm text-gray-700">Is Lactating</label>
+      </div>
+      <div class="mb-2">
+        <label for="lastCalvingDate" class="block text-sm font-medium text-gray-700">Last Calving Date</label>
+        <input type="date" name="lactationStatus[lastCalvingDate]" id="lastCalvingDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+      </div>
+      <div class="flex space-x-4">
+        <div class="flex-1">
+          <label for="dailyYield" class="block text-sm font-medium text-gray-700">Daily Yield</label>
+          <input type="number" name="lactationStatus[dailyYield]" id="dailyYield" placeholder="Amount" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        </div>
+        <div class="flex-1">
+          <label for="yieldUnit" class="block text-sm font-medium text-gray-700">Yield Unit</label>
+          <input type="text" name="lactationStatus[yieldUnit]" id="yieldUnit" placeholder="Liters / Kg" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        </div>
+      </div>
+    </div>
+
+    <!-- Health Status -->
+    <div>
+      <label for="healthStatus" class="block text-sm font-medium text-gray-700">Health Status</label>
+      <select name="healthStatus" id="healthStatus" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        <option value="Healthy">Healthy</option>
+        <option value="Sick">Sick</option>
+        <option value="Under Treatment">Under Treatment</option>
+        <option value="Recovered">Recovered</option>
+      </select>
+    </div>
+
+    <!-- Is Active -->
+    <div class="flex items-center space-x-2">
+      <input type="checkbox" name="isActive" id="isActive" checked class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
+      <label for="isActive" class="text-sm text-gray-700">Is Active</label>
+    </div>
+
+    <!-- Unique Animal ID -->
+    <!-- <div>
+      <label for="uniqueAnimalId" class="block text-sm font-medium text-gray-700">Unique Animal ID</label>
+      <input type="text" name="uniqueAnimalId" id="uniqueAnimalId" placeholder="Auto or Manual ID" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+    </div> -->
+
+    <!-- Submit Button -->
+    <div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition">
+        Register Animal
+      </button>
+    </div>
+
+  </form>
+</div>

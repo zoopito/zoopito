@@ -1,0 +1,132 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="w-full">
+
+  <!-- Welcome Section -->
+  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm px-6 py-5 mb-6">
+    <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+      Welcome, <%= currUser.name %> 👋 
+	<span class="hidden lg:inline-block px-3 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
+		ADMIN
+    </span>
+    </h1>
+    <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm">
+      Zoopito Admin Dashboard – Livestock & Pet Data Management Platform
+    </p>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-sm">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Total Farmers</p>
+      <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1"><%= farmersCount %></h3>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-sm">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Total Animals</p>
+      <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1"><%= animalsCount %></h3>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-sm">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Sales Team Members</p>
+      <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1"><%= salesTeamsCount %></h3>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-sm">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Paravets</p>
+      <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1"><%= paravetsCount %></h3>
+    </div>
+
+  </div>
+
+  <!-- Management Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <!-- Sales Team -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+        Manage Sales Team
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+        Add field executives, assign areas, track farmer onboarding performance.
+      </p>
+      <a href="/admin/sales-team"
+         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
+        View Sales Team →
+      </a>
+    </div>
+
+    <!-- Farmers -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+        Manage Farmers
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+        View registered farmers, village-wise data, GPS locations & profiles.
+      </p>
+      <a href="/admin/farmers"
+         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
+        View Farmers →
+      </a>
+    </div>
+
+    <!-- Animals -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+        Manage Animals
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+        Explore animal details, species-wise data, photos & health records.
+      </p>
+      <a href="/admin/animals"
+         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
+        Explore Animals →
+      </a>
+    </div>
+
+    <!-- Vaccination -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+        Vaccination & Services
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+        Track animal-wise vaccination, service dates, and next due reminders.
+      </p>
+      <a href="/admin/vaccinations"
+         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
+        Check Vaccinations →
+      </a>
+    </div>
+
+    <!-- Paravets -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+        Manage Paravets
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+        Assign villages, monitor services, and manage healthcare coverage.
+      </p>
+      <a href="/admin/paravets"
+         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
+        View Paravets →
+      </a>
+    </div>
+
+    <!-- Data Export -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+        Data Export & Reports
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+        Export farmer & animal data for Government, NGO & insurance reporting.
+      </p>
+      <a href="/admin/reports"
+         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
+        Export Data →
+      </a>
+    </div>
+
+  </div>
+
+</div>

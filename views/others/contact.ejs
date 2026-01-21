@@ -1,0 +1,1248 @@
+<% layout("/layouts/boilerplate", {
+    title: 'Contact Us - Zoopito',
+    description: 'Get in touch with Zoopito for livestock management solutions, support, partnerships, and inquiries.',
+    pageStyles: `
+        .contact-gradient {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(34, 197, 94, 0.08) 100%);
+        }
+        
+        .contact-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: #38BDF8;
+        }
+        
+        .map-container {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .faq-item {
+            border-bottom: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item:hover {
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.05), transparent);
+        }
+        
+        .department-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 0.25rem;
+        }
+        
+        .chat-bubble {
+            max-width: 280px;
+            border-radius: 18px;
+            padding: 1rem;
+            position: relative;
+            animation: fadeInUp 0.5s ease;
+        }
+        
+        .chat-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+        }
+        
+        .chat-bubble.user {
+            background: linear-gradient(135deg, #38BDF8, #0ea5e9);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .chat-bubble.user::after {
+            border-top: 10px solid #0ea5e9;
+            right: 10px;
+        }
+        
+        .chat-bubble.support {
+            background: linear-gradient(135deg, #22C55E, #16a34a);
+            color: white;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .chat-bubble.support::after {
+            border-top: 10px solid #16a34a;
+            left: 10px;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+        
+        .support-agent {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .support-agent::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.7s;
+        }
+        
+        .support-agent:hover::before {
+            left: 100%;
+        }
+    `
+}) -%>
+
+<!-- Hero Section -->
+<section class="relative overflow-hidden contact-gradient py-16 md:py-24">
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-200 dark:bg-blue-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-green-200 dark:bg-green-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+    </div>
+    
+    <div class="relative container mx-auto px-4 md:px-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-semibold mb-6">
+                <i class="fas fa-headset"></i>
+                We're Here to Help
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+                Get in Touch with 
+                <span class="bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
+                    Zoopito
+                </span>
+            </h1>
+            
+            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+                Whether you're a farmer needing support, a veterinarian looking to partner, 
+                or an organization interested in our livestock management solutions - we're here to help.
+            </p>
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#contact-form" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Send Message
+                </a>
+                <a href="#support" class="px-6 py-3 border-2 border-blue-500 text-blue-600 dark:text-blue-400 font-semibold rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300">
+                    <i class="fas fa-life-ring mr-2"></i>
+                    Get Support
+                </a>
+                <a href="tel:+911800XXX" class="px-6 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300">
+                    <i class="fas fa-phone mr-2 text-green-500"></i>
+                    Call Now
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Contact Bar -->
+<div class="sticky top-16 bg-white dark:bg-gray-900 shadow-sm z-40 border-b border-gray-200 dark:border-gray-800">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-phone text-green-600 dark:text-green-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Emergency Support</p>
+                        <p class="font-semibold text-gray-900 dark:text-white">+91 1800-XXX-XXXX</p>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center gap-2">
+                    <div class="w-1 h-1 bg-gray-300 rounded-full"></div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-whatsapp text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">WhatsApp Support</p>
+                            <p class="font-semibold text-gray-900 dark:text-white">+91 XXXXX XXXXX</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Available:</span>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="font-medium text-gray-900 dark:text-white">Mon-Sat, 9AM-6PM IST</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mx-auto px-4 md:px-8 py-12">
+    <div class="grid lg:grid-cols-3 gap-12">
+        
+        <!-- Left Column: Contact Form & Info -->
+        <div class="lg:col-span-2 space-y-12">
+            
+            <!-- Contact Form -->
+            <section id="contact-form" class="scroll-mt-24">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8 border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-envelope text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Send Us a Message</h2>
+                            <p class="text-gray-600 dark:text-gray-400">We typically respond within 2 business hours</p>
+                        </div>
+                    </div>
+                    
+                    <form id="contactForm" class="space-y-6">
+                        <input type="hidden" name="_csrf" >
+                        
+                        <!-- Inquiry Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                <i class="fas fa-question-circle mr-2 text-blue-500"></i>
+                                What can we help you with? *
+                            </label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <label class="relative flex cursor-pointer">
+                                    <input type="radio" name="inquiryType" value="support" class="peer sr-only" checked required>
+                                    <div class="flex flex-col items-center justify-center p-4 border-2 border-gray-200 dark:border-gray-700 
+                                               rounded-xl peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 
+                                               hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                        <i class="fas fa-life-ring text-blue-500 text-xl mb-2"></i>
+                                        <span class="text-sm font-medium">Support</span>
+                                    </div>
+                                </label>
+                                
+                                <label class="relative flex cursor-pointer">
+                                    <input type="radio" name="inquiryType" value="partnership" class="peer sr-only" required>
+                                    <div class="flex flex-col items-center justify-center p-4 border-2 border-gray-200 dark:border-gray-700 
+                                               rounded-xl peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20 
+                                               hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                        <i class="fas fa-handshake text-green-500 text-xl mb-2"></i>
+                                        <span class="text-sm font-medium">Partnership</span>
+                                    </div>
+                                </label>
+                                
+                                <label class="relative flex cursor-pointer">
+                                    <input type="radio" name="inquiryType" value="sales" class="peer sr-only" required>
+                                    <div class="flex flex-col items-center justify-center p-4 border-2 border-gray-200 dark:border-gray-700 
+                                               rounded-xl peer-checked:border-purple-500 peer-checked:bg-purple-50 dark:peer-checked:bg-purple-900/20 
+                                               hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                        <i class="fas fa-chart-line text-purple-500 text-xl mb-2"></i>
+                                        <span class="text-sm font-medium">Sales</span>
+                                    </div>
+                                </label>
+                                
+                                <label class="relative flex cursor-pointer">
+                                    <input type="radio" name="inquiryType" value="other" class="peer sr-only" required>
+                                    <div class="flex flex-col items-center justify-center p-4 border-2 border-gray-200 dark:border-gray-700 
+                                               rounded-xl peer-checked:border-orange-500 peer-checked:bg-orange-50 dark:peer-checked:bg-orange-900/20 
+                                               hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                        <i class="fas fa-comments text-orange-500 text-xl mb-2"></i>
+                                        <span class="text-sm font-medium">Other</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Personal Information -->
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-user mr-2 text-gray-400"></i>
+                                    Full Name *
+                                </label>
+                                <input type="text" id="name" name="name" required
+                                       class="form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                              bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                              placeholder-gray-400"
+                                       placeholder="Enter your full name">
+                            </div>
+                            
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                                    Email Address *
+                                </label>
+                                <input type="email" id="email" name="email" required
+                                       class="form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                              bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                              placeholder-gray-400"
+                                       placeholder="you@example.com">
+                            </div>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-phone mr-2 text-gray-400"></i>
+                                    Phone Number *
+                                </label>
+                                <input type="tel" id="phone" name="phone" required
+                                       class="form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                              bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                              placeholder-gray-400"
+                                       placeholder="+91 98765 43210">
+                            </div>
+                            
+                            <div>
+                                <label for="organization" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-building mr-2 text-gray-400"></i>
+                                    Organization
+                                </label>
+                                <input type="text" id="organization" name="organization"
+                                       class="form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                              bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                              placeholder-gray-400"
+                                       placeholder="Your company or farm name">
+                            </div>
+                        </div>
+                        
+                        <!-- Subject & Message -->
+                        <div>
+                            <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-tag mr-2 text-gray-400"></i>
+                                Subject *
+                            </label>
+                            <input type="text" id="subject" name="subject" required
+                                   class="form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                          bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                          placeholder-gray-400"
+                                   placeholder="Brief summary of your inquiry">
+                        </div>
+                        
+                        <div>
+                            <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-comment-dots mr-2 text-gray-400"></i>
+                                Message *
+                            </label>
+                            <textarea id="message" name="message" rows="6" required
+                                      class="form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                             bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                             placeholder-gray-400 resize-none"
+                                      placeholder="Please describe your inquiry in detail..."></textarea>
+                            <div class="flex justify-between items-center mt-2">
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    Include relevant details like farmer ID, animal details, or issue specifics
+                                </p>
+                                <span id="charCount" class="text-xs text-gray-500">0/2000 characters</span>
+                            </div>
+                        </div>
+                        
+                        <!-- File Attachment -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-paperclip mr-2 text-gray-400"></i>
+                                Attachments (Optional)
+                            </label>
+                            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-3"></i>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                        Drop files here or click to upload
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                                        Supported: Images, PDF, DOC (Max 10MB each)
+                                    </p>
+                                    <input type="file" id="attachments" name="attachments" 
+                                           class="hidden" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                                    <label for="attachments" 
+                                           class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 
+                                                  rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                        Choose Files
+                                    </label>
+                                </div>
+                                <div id="fileList" class="mt-4 space-y-2 hidden"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="pt-4">
+                            <button type="submit" 
+                                    id="submitBtn"
+                                    class="w-full px-6 py-3.5 bg-gradient-to-r from-blue-500 to-green-500 text-white 
+                                           font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all 
+                                           duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span id="submitText" class="flex items-center justify-center gap-2">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Send Message
+                                </span>
+                                <span id="submitSpinner" class="hidden">
+                                    <i class="fas fa-spinner fa-spin ml-2"></i>
+                                </span>
+                            </button>
+                            <p class="text-center text-xs text-gray-500 dark:text-gray-400 mt-3">
+                                By submitting, you agree to our 
+                                <a href="/privacy" class="text-blue-600 dark:text-blue-400 hover:underline">Privacy Policy</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- Live Chat Demo -->
+            <section id="support" class="scroll-mt-24">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8 border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-comments text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Live Support Chat</h2>
+                                <p class="text-gray-600 dark:text-gray-400">Get instant help from our support team</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                            <span class="text-sm font-medium text-green-600 dark:text-green-400">Online Now</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Interface -->
+                    <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 h-96 overflow-y-auto mb-4">
+                        <div class="space-y-4">
+                            <!-- Support Message -->
+                            <div class="chat-bubble support">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-headset text-xs"></i>
+                                    </div>
+                                    <span class="text-xs font-medium">Zoopito Support</span>
+                                    <span class="text-xs opacity-75 ml-auto">10:30 AM</span>
+                                </div>
+                                <p class="text-sm">Hello! I'm Priya from Zoopito Support. How can I help you today?</p>
+                            </div>
+                            
+                            <!-- User Message -->
+                            <div class="chat-bubble user">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user text-xs"></i>
+                                    </div>
+                                    <span class="text-xs font-medium">You</span>
+                                    <span class="text-xs opacity-75 ml-auto">10:32 AM</span>
+                                </div>
+                                <p class="text-sm">I'm having trouble uploading animal photos in the mobile app.</p>
+                            </div>
+                            
+                            <!-- Support Response -->
+                            <div class="chat-bubble support">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-headset text-xs"></i>
+                                    </div>
+                                    <span class="text-xs font-medium">Zoopito Support</span>
+                                    <span class="text-xs opacity-75 ml-auto">10:33 AM</span>
+                                </div>
+                                <p class="text-sm mb-2">I can help with that! First, please check:</p>
+                                <ul class="text-sm space-y-1 pl-4">
+                                    <li>• App storage permissions are enabled</li>
+                                    <li>• You have stable internet connection</li>
+                                    <li>• Photo size is under 5MB</li>
+                                </ul>
+                                <p class="text-sm mt-2">Are you seeing any specific error message?</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="flex gap-3">
+                        <input type="text" 
+                               placeholder="Type your message here..." 
+                               class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl 
+                                      bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               disabled>
+                        <button class="px-5 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white 
+                                      rounded-xl hover:shadow-lg transition-all duration-200"
+                                onclick="startLiveChat()">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    
+                    <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Live chat available Monday to Saturday, 9 AM to 6 PM IST
+                    </p>
+                </div>
+            </section>
+            
+            <!-- FAQ Section -->
+            <section class="scroll-mt-24">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8 border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-question-circle text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Frequently Asked Questions</h2>
+                            <p class="text-gray-600 dark:text-gray-400">Quick answers to common questions</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- FAQ 1 -->
+                        <div class="faq-item">
+                            <button onclick="toggleFAQ(1)" 
+                                    class="w-full flex items-center justify-between py-4 text-left">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-mobile-alt text-blue-600 dark:text-blue-400"></i>
+                                    </div>
+                                    <span class="font-medium text-gray-900 dark:text-white">
+                                        Does the Zoopito app work offline in rural areas?
+                                    </span>
+                                </div>
+                                <i id="faqIcon1" class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                            </button>
+                            <div id="faqAnswer1" class="hidden pb-4 pl-11 pr-4">
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Yes! Zoopito is designed for rural connectivity challenges. The mobile app works offline 
+                                    for data collection. Photos and farmer information are stored locally and automatically 
+                                    sync when internet connection is available. This ensures field executives can work 
+                                    seamlessly in remote villages.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- FAQ 2 -->
+                        <div class="faq-item">
+                            <button onclick="toggleFAQ(2)" 
+                                    class="w-full flex items-center justify-between py-4 text-left">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-rupee-sign text-green-600 dark:text-green-400"></i>
+                                    </div>
+                                    <span class="font-medium text-gray-900 dark:text-white">
+                                        Is Zoopito free for farmers?
+                                    </span>
+                                </div>
+                                <i id="faqIcon2" class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                            </button>
+                            <div id="faqAnswer2" class="hidden pb-4 pl-11 pr-4">
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Absolutely! Farmers can register and use basic features for free forever. This includes 
+                                    animal registration, vaccination tracking, and basic health records. Premium features 
+                                    like advanced analytics and government scheme notifications may have associated costs, 
+                                    but basic livestock management remains completely free for farmers.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- FAQ 3 -->
+                        <div class="faq-item">
+                            <button onclick="toggleFAQ(3)" 
+                                    class="w-full flex items-center justify-between py-4 text-left">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-shield-alt text-purple-600 dark:text-purple-400"></i>
+                                    </div>
+                                    <span class="font-medium text-gray-900 dark:text-white">
+                                        How is my data protected and used?
+                                    </span>
+                                </div>
+                                <i id="faqIcon3" class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                            </button>
+                            <div id="faqAnswer3" class="hidden pb-4 pl-11 pr-4">
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Your data security is our top priority. All data is encrypted with 256-bit SSL encryption. 
+                                    Farmer data is never sold individually. We only use aggregated, anonymized data for:
+                                </p>
+                                <ul class="mt-2 space-y-1 text-gray-600 dark:text-gray-400 pl-5">
+                                    <li>• Government reports and policy making</li>
+                                    <li>• Disease outbreak prediction and prevention</li>
+                                    <li>• Improving our AI models for animal health</li>
+                                    <li>• Research studies with academic partners</li>
+                                </ul>
+                                <p class="mt-2 text-gray-600 dark:text-gray-400">
+                                    Read our comprehensive <a href="/privacy" class="text-blue-600 dark:text-blue-400 hover:underline">Privacy Policy</a> for details.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- FAQ 4 -->
+                        <div class="faq-item">
+                            <button onclick="toggleFAQ(4)" 
+                                    class="w-full flex items-center justify-between py-4 text-left">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-truck-medical text-orange-600 dark:text-orange-400"></i>
+                                    </div>
+                                    <span class="font-medium text-gray-900 dark:text-white">
+                                        How quickly can I get veterinary support through Zoopito?
+                                    </span>
+                                </div>
+                                <i id="faqIcon4" class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                            </button>
+                            <div id="faqAnswer4" class="hidden pb-4 pl-11 pr-4">
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Response times vary by location:
+                                </p>
+                                <ul class="mt-2 space-y-2 text-gray-600 dark:text-gray-400">
+                                    <li class="flex items-center gap-2">
+                                        <i class="fas fa-bolt text-green-500"></i>
+                                        <span><strong>Urban areas:</strong> Within 2-4 hours for emergency cases</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i class="fas fa-clock text-blue-500"></i>
+                                        <span><strong>Semi-urban areas:</strong> Same day or next day</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i class="fas fa-map-marker-alt text-orange-500"></i>
+                                        <span><strong>Remote villages:</strong> Within 48 hours, depending on accessibility</span>
+                                    </li>
+                                </ul>
+                                <p class="mt-2 text-gray-600 dark:text-gray-400">
+                                    For immediate emergencies, call our 24/7 helpline: <strong>+91 1800-XXX-XXXX</strong>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
+                        <a href="/faq" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 font-medium hover:underline">
+                            <i class="fas fa-book-open"></i>
+                            View Complete FAQ Section
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Right Column: Contact Information -->
+        <div class="space-y-8">
+            
+            <!-- Contact Cards -->
+            <div class="space-y-6">
+                <div class="contact-card bg-white dark:bg-gray-800 rounded-2xl p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-headset text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900 dark:text-white">Support Center</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Technical & platform support</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-phone text-blue-500"></i>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Toll-free number</p>
+                                <p class="font-medium">+91 1800-XXX-XXXX</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-whatsapp text-green-500"></i>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">WhatsApp Support</p>
+                                <p class="font-medium">+91 XXXXX XXXXX</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-envelope text-purple-500"></i>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                                <p class="font-medium">support@zoopito.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-clock mr-1"></i>
+                            Available: Mon-Sat, 9AM-6PM IST
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="contact-card bg-white dark:bg-gray-800 rounded-2xl p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-handshake text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900 dark:text-white">Partnerships</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Government & NGO collaborations</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-user-tie text-blue-500"></i>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Contact Person</p>
+                                <p class="font-medium">Mr. Anil Patel</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-phone text-green-500"></i>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Direct Line</p>
+                                <p class="font-medium">+91 20 XXXX XXXX</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-envelope text-purple-500"></i>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                                <p class="font-medium">partnerships@zoopito.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-card bg-white dark:bg-gray-800 rounded-2xl p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-bullhorn text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900 dark:text-white">Sales & Marketing</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Business inquiries</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-user-tie text-blue-500"></i>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Sales Head</p>
+                                <p class="font-medium">Ms. Priya Sharma</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-envelope text-purple-500"></i>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                                <p class="font-medium">sales@zoopito.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="scheduleDemo()" 
+                            class="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 
+                                   text-white font-medium rounded-lg hover:shadow-lg transition-all duration-200">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        Schedule a Demo
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Office Locations -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <i class="fas fa-map-marker-alt text-red-500"></i>
+                    Our Offices
+                </h3>
+                
+                <div class="space-y-4">
+                    <!-- Pune Office -->
+                    <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
+                        <div class="flex items-start gap-3 mb-3">
+                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-building text-blue-600 dark:text-blue-400"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">Headquarters</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Pune, Maharashtra</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                            Zoopito Technologies Pvt. Ltd.<br>
+                            123 Tech Park, Hinjewadi Phase 3<br>
+                            Pune, Maharashtra 411057<br>
+                            India
+                        </p>
+                        <div class="mt-3">
+                            <a href="https://maps.google.com/?q=Zoopito+Pune" target="_blank" 
+                               class="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                                <i class="fas fa-directions"></i>
+                                Get Directions
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Field Offices -->
+                    <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
+                        <div class="flex items-start gap-3 mb-3">
+                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-tractor text-green-600 dark:text-green-400"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">Field Offices</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Across India</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-map-pin text-red-400 text-xs"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Nagpur, Maharashtra</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-map-pin text-red-400 text-xs"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Jaipur, Rajasthan</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-map-pin text-red-400 text-xs"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Hyderabad, Telangana</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-map-pin text-red-400 text-xs"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Guwahati, Assam</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Map -->
+                <div class="mt-6 map-container">
+                    <div class="bg-gray-200 dark:bg-gray-700 h-48 rounded-lg flex items-center justify-center">
+                        <div class="text-center">
+                            <i class="fas fa-map text-gray-400 text-4xl mb-3"></i>
+                            <p class="text-gray-500 dark:text-gray-400">Interactive Map</p>
+                            <p class="text-sm text-gray-400 dark:text-gray-500">(Would show actual map in production)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Support Team -->
+            <div class="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-6 text-white">
+                <h3 class="font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fas fa-users"></i>
+                    Meet Our Support Team
+                </h3>
+                <p class="text-white/90 mb-6">
+                    Our dedicated team is ready to assist you with any questions about livestock management.
+                </p>
+                
+                <div class="space-y-4">
+                    <div class="support-agent bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user-md text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-white">Dr. Rajesh Kumar</h4>
+                                <p class="text-white/80 text-sm">Veterinary Support Lead</p>
+                                <p class="text-white/70 text-xs">15+ years experience</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="support-agent bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-headset text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-white">Priya Sharma</h4>
+                                <p class="text-white/80 text-sm">Technical Support Manager</p>
+                                <p class="text-white/70 text-xs">Speaks Hindi, Marathi, English</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-6 border-t border-white/20">
+                    <p class="text-white/80 text-sm">
+                        <i class="fas fa-language mr-2"></i>
+                        Support available in: Hindi, Marathi, Tamil, Telugu, English
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Response Time -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="font-bold text-gray-900 dark:text-white mb-4">Expected Response Times</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-bolt text-green-600 dark:text-green-400"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">Emergency Support</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Animal health emergencies</p>
+                            </div>
+                        </div>
+                        <span class="font-bold text-green-600 dark:text-green-400">Within 1 hour</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-headset text-blue-600 dark:text-blue-400"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">Technical Support</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">App & platform issues</p>
+                            </div>
+                        </div>
+                        <span class="font-bold text-blue-600 dark:text-blue-400">Within 4 hours</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-envelope text-purple-600 dark:text-purple-400"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">Email Inquiries</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">General questions</p>
+                            </div>
+                        </div>
+                        <span class="font-bold text-purple-600 dark:text-purple-400">Within 24 hours</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-handshake text-orange-600 dark:text-orange-400"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">Partnership Inquiries</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Business collaborations</p>
+                            </div>
+                        </div>
+                        <span class="font-bold text-orange-600 dark:text-orange-400">Within 48 hours</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Social Media -->
+<section class="py-12 bg-gray-50 dark:bg-gray-900/50">
+    <div class="container mx-auto px-4 text-center">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Connect With Us
+        </h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+            Follow us on social media for livestock management tips, success stories, and platform updates.
+        </p>
+        
+        <div class="flex justify-center gap-4">
+            <a href="#" class="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#" class="w-12 h-12 bg-pink-600 hover:bg-pink-700 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="w-12 h-12 bg-blue-400 hover:bg-blue-500 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+            <a href="#" class="w-12 h-12 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200">
+                <i class="fab fa-youtube"></i>
+            </a>
+            <a href="https://github.com" class="w-12 h-12 bg-gray-800 hover:bg-gray-900 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200">
+                <i class="fab fa-github"></i>
+            </a>
+        </div>
+        
+        <p class="mt-8 text-gray-500 dark:text-gray-400 text-sm">
+            <i class="fas fa-hashtag mr-2"></i>
+            Follow our hashtags: #Zoopito #LivestockManagement #DigitalFarming #AnimalHealth
+        </p>
+    </div>
+</section>
+
+<script>
+    // Character counter for message
+    document.getElementById('message').addEventListener('input', function() {
+        const charCount = this.value.length;
+        document.getElementById('charCount').textContent = `${charCount}/2000 characters`;
+        
+        if (charCount > 2000) {
+            this.value = this.value.substring(0, 2000);
+            document.getElementById('charCount').textContent = '2000/2000 characters (max)';
+            document.getElementById('charCount').classList.add('text-red-500');
+        } else {
+            document.getElementById('charCount').classList.remove('text-red-500');
+        }
+    });
+    
+    // File upload handling
+    document.getElementById('attachments').addEventListener('change', function(e) {
+        const files = e.target.files;
+        const fileList = document.getElementById('fileList');
+        
+        if (files.length > 0) {
+            fileList.innerHTML = '';
+            fileList.classList.remove('hidden');
+            
+            Array.from(files).forEach((file, index) => {
+                if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                    alert(`File "${file.name}" exceeds 10MB limit. Please choose a smaller file.`);
+                    return;
+                }
+                
+                const fileItem = document.createElement('div');
+                fileItem.className = 'flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-700 rounded-lg';
+                fileItem.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-file text-gray-500"></i>
+                        <span class="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[200px]">${file.name}</span>
+                        <span class="text-xs text-gray-500">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                    </div>
+                    <button type="button" onclick="removeFile(${index})" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        } else {
+            fileList.classList.add('hidden');
+        }
+    });
+    
+    function removeFile(index) {
+        const input = document.getElementById('attachments');
+        const files = Array.from(input.files);
+        files.splice(index, 1);
+        
+        // Create new DataTransfer to update files
+        const dataTransfer = new DataTransfer();
+        files.forEach(file => dataTransfer.items.add(file));
+        input.files = dataTransfer.files;
+        
+        // Trigger change event to update UI
+        input.dispatchEvent(new Event('change'));
+    }
+    
+    // Form submission
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Basic validation
+        const requiredFields = ['name', 'email', 'phone', 'subject', 'message'];
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            const element = document.getElementById(field);
+            if (!element.value.trim()) {
+                element.classList.add('border-red-500');
+                isValid = false;
+            } else {
+                element.classList.remove('border-red-500');
+            }
+        });
+        
+        // Validate email
+        const email = document.getElementById('email').value;
+        if (email && !isValidEmail(email)) {
+            document.getElementById('email').classList.add('border-red-500');
+            alert('Please enter a valid email address');
+            isValid = false;
+        }
+        
+        // Validate phone
+        const phone = document.getElementById('phone').value;
+        if (phone && !isValidPhone(phone)) {
+            document.getElementById('phone').classList.add('border-red-500');
+            alert('Please enter a valid phone number');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            alert('Please fill in all required fields correctly.');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
+        const submitSpinner = document.getElementById('submitSpinner');
+        
+        submitBtn.disabled = true;
+        submitText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+        
+        // Collect form data
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        
+        // Simulate API call
+        setTimeout(() => {
+            // In production, this would be:
+            // fetch('/api/contact', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(data)
+            // })
+            
+            // Show success message
+            alert('Thank you for contacting Zoopito! We\'ll get back to you within 24 hours.');
+            
+            // Reset form
+            this.reset();
+            document.getElementById('fileList').innerHTML = '';
+            document.getElementById('fileList').classList.add('hidden');
+            document.getElementById('charCount').textContent = '0/2000 characters';
+            
+            // Reset button state
+            submitBtn.disabled = false;
+            submitText.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Send Message';
+            
+        }, 2000);
+    });
+    
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+    
+    function isValidPhone(phone) {
+        // Basic phone validation for demonstration
+        const re = /^[\d\s\+\-\(\)]{10,15}$/;
+        return re.test(phone.replace(/\s/g, ''));
+    }
+    
+    // FAQ Toggle
+    function toggleFAQ(index) {
+        const answer = document.getElementById(`faqAnswer${index}`);
+        const icon = document.getElementById(`faqIcon${index}`);
+        
+        if (answer.classList.contains('hidden')) {
+            answer.classList.remove('hidden');
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        } else {
+            answer.classList.add('hidden');
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+    
+    // Live Chat Demo
+    function startLiveChat() {
+        alert('In a production environment, this would open a live chat interface with our support team.');
+        // This would typically integrate with a service like Intercom, Zendesk, or custom chat
+    }
+    
+    // Schedule Demo
+    function scheduleDemo() {
+        const demoUrl = 'https://calendly.com/zoopito-demo/30min';
+        window.open(demoUrl, '_blank');
+    }
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href !== '#') {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    const offset = 80;
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+    
+    // Auto-focus on form when scrolled to
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // You could auto-focus on first field when form comes into view
+                // document.getElementById('name')?.focus();
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        observer.observe(contactForm);
+    }
+</script>
+
+<style>
+    /* Custom styles for contact page */
+    .contact-card:hover .fa-headset,
+    .contact-card:hover .fa-handshake,
+    .contact-card:hover .fa-bullhorn {
+        animation: bounce 0.5s ease;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    
+    /* Chat scrollbar */
+    .chat-interface::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .chat-interface::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .chat-interface::-webkit-scrollbar-thumb {
+        background: linear-gradient(to bottom, #38BDF8, #22C55E);
+        border-radius: 3px;
+    }
+    
+    /* File upload drag effect */
+    .file-upload-area.drag-over {
+        border-color: #38BDF8;
+        background: rgba(56, 189, 248, 0.05);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .quick-contact-bar {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .department-badges {
+            justify-content: center;
+        }
+    }
+</style>

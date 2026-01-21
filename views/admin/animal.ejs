@@ -1,0 +1,138 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-3 md:space-y-0">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Animals Management</h1>
+      <p class="text-sm text-gray-500 mt-1">Manage all registered animals and their farmers</p>
+    </div>
+
+    <a href="/admin/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Add New Animal
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white shadow rounded-lg p-4">
+      <p class="text-xs text-gray-500">Total Animals</p>
+      <p class="text-xl font-bold text-gray-800 mt-1"><%= totalAnimals %></p>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white shadow rounded-lg ">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50 sticky top-0 z-10">
+        <tr>
+          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unique ID</th>
+          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Animal</th>
+          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Farmer</th>
+          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Gender</th>
+          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+          <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% if (animals.length === 0) { %>
+          <tr>
+            <td colspan="8" class="text-center py-10 text-gray-400">
+              No animals registered yet
+            </td>
+          </tr>
+        <% } %>
+
+        <% animals.forEach((animal, index) => { %>
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-2 text-sm text-gray-700"><%= (currentPage - 1) * limit + index + 1 %></td>
+            <td class="px-4 py-2 text-sm font-semibold text-blue-600"><%= animal.uniqueAnimalId %></td>
+            <td class="px-4 py-2 text-sm text-gray-700"><%= animal.name || "Unnamed" %></td>
+            <td class="px-4 py-2 text-sm text-gray-700">
+              <%= animal.farmer?.name || "N/A" %><br />
+              <span class="text-xs text-gray-400"><%= animal.farmer?.mobile || "" %></span>
+            </td>
+            <td class="px-4 py-2">
+              <span class="inline-block px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">
+                <%= animal.animalType %>
+              </span>
+            </td>
+            <td class="px-4 py-2 text-sm text-gray-700"><%= animal.gender || "Unknown" %></td>
+            <td class="px-4 py-2">
+              <% if (animal.isActive) { %>
+                <span class="inline-block px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">Active</span>
+              <% } else { %>
+                <span class="inline-block px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">Inactive</span>
+              <% } %>
+            </td>
+            <td class="px-4 py-2 text-right relative">
+              <div class="relative inline-block text-left">
+                <button type="button" onclick="toggleDropdown('<%= animal._id %>')" class="inline-flex justify-center w-full text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="menu-button-<%= animal._id %>">
+                  Actions
+                  <svg class="-mr-1 ml-1 h-4 w-4 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <ul id="dropdown-<%= animal._id %>" class="absolute right-0 mt-2 w-36 bg-white shadow-lg rounded-md py-1 text-sm hidden z-50">
+                  <li>
+                    <a href="/admin/animals/<%= animal._id %>" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">View</a>
+                  </li>
+                  <li>
+                    <a href="/admin/animals/<%= animal._id %>/edit" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Edit</a>
+                  </li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <% if (totalPages > 1) { %>
+    <div class="mt-6 flex justify-center flex-wrap gap-1">
+      <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 <%= currentPage === 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' %>">Previous</a>
+
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <a href="?page=<%= i %>" class="px-3 py-1 rounded-md text-sm <%= currentPage === i ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' %>"><%= i %></a>
+      <% } %>
+
+      <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 <%= currentPage === totalPages ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' %>">Next</a>
+    </div>
+  <% } %>
+</div>
+
+<script>
+  function toggleDropdown(id) {
+    const dropdown = document.getElementById('dropdown-' + id);
+    const buttonIcon = document.querySelector('#menu-button-' + id + ' svg');
+
+    dropdown.classList.toggle('hidden');
+    buttonIcon.classList.toggle('rotate-180');
+
+    // Close other dropdowns
+    document.querySelectorAll('ul[id^="dropdown-"]').forEach(el => {
+      if (el.id !== 'dropdown-' + id) {
+        el.classList.add('hidden');
+        const otherIcon = document.querySelector('#menu-button-' + el.id.split('-')[1] + ' svg');
+        if (otherIcon) otherIcon.classList.remove('rotate-180');
+      }
+    });
+  }
+
+  window.addEventListener('click', function(e) {
+    if (!e.target.closest('[id^="menu-button-"]')) {
+      document.querySelectorAll('ul[id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('button[id^="menu-button-"] svg').forEach(icon => icon.classList.remove('rotate-180'));
+    }
+  });
+</script>

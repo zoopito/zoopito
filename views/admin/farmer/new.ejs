@@ -1,0 +1,254 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="max-w-5xl mx-auto">
+
+  <!-- Header -->
+  <div class="text-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
+      Add New Farmer
+    </h1>
+    <p class="text-sm text-gray-500">
+      Fill the details carefully to register a farmer
+    </p>
+  </div>
+
+  <!-- Form Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+
+    <form
+      action="/admin/farmers"
+      method="POST"
+      enctype="multipart/form-data"
+      class="space-y-6"
+    >
+
+      <!-- Basic Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div>
+          <label class="block text-sm font-medium mb-1">
+            Farmer Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="farmer[name]"
+            required
+            class="w-full rounded-md border px-3 py-2 text-sm focus:ring focus:ring-blue-200"
+            placeholder="Enter farmer full name"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">
+            Mobile Number <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="tel"
+            name="farmer[mobileNumber]"
+            required
+            maxlength="10"
+            class="w-full rounded-md border px-3 py-2 text-sm focus:ring focus:ring-blue-200"
+            placeholder="10 digit mobile number"
+          />
+        </div>
+
+      </div>
+
+      <!-- Address -->
+      <div>
+        <h2 class="text-lg font-semibold mb-2">Address Details</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <input
+            type="text"
+            name="farmer[address][village]"
+            placeholder="Village"
+            class="rounded-md border px-3 py-2 text-sm"
+          />
+
+          <input
+            type="text"
+            name="farmer[address][taluka]"
+            placeholder="Taluka"
+            class="rounded-md border px-3 py-2 text-sm"
+          />
+
+          <input
+            type="text"
+            name="farmer[address][district]"
+            placeholder="District"
+            class="rounded-md border px-3 py-2 text-sm"
+          />
+
+          <input
+            type="text"
+            name="farmer[address][state]"
+            placeholder="State"
+            class="rounded-md border px-3 py-2 text-sm"
+          />
+
+          <input
+            type="text"
+            name="farmer[address][pincode]"
+            placeholder="Pincode"
+            class="rounded-md border px-3 py-2 text-sm"
+          />
+
+        </div>
+      </div>
+
+     <!-- Location -->
+<div>
+  <h2 class="text-lg font-semibold mb-2">GPS Location (Optional)</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <input
+      type="number"
+      step="any"
+      name="farmer[location][coordinates][]"
+      id="longitude"
+      placeholder="Longitude"
+      class="rounded-md border px-3 py-2 text-sm"
+    />
+
+    <input
+      type="number"
+      step="any"
+      name="farmer[location][coordinates][]"
+      id="latitude"
+      placeholder="Latitude"
+      class="rounded-md border px-3 py-2 text-sm"
+    />
+  </div>
+
+  <button
+    type="button"
+    onclick="getLocation()"
+    class="mt-2 px-4 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700"
+  >
+    Use Current Location
+  </button>
+
+  <p class="text-xs text-gray-500 mt-1">
+    Location permission will be requested by your browser
+  </p>
+</div>
+
+
+      <!-- Farmer Photo -->
+<div>
+  <label class="block text-sm font-medium mb-1">
+    Farmer Photo
+  </label>
+
+  <input
+    type="file"
+    name="image"
+    accept="image/*"
+    capture="environment"
+    class="block w-full text-sm text-gray-600
+           file:mr-4 file:py-2 file:px-4
+           file:rounded-md file:border-0
+           file:text-sm file:font-semibold
+           file:bg-blue-50 file:text-blue-700
+           hover:file:bg-blue-100"
+  />
+
+  <p class="text-xs text-gray-500 mt-1">
+    You can upload a photo or take one using your camera
+  </p>
+</div>
+
+
+      <!-- Status & Animals -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div>
+          <label class="block text-sm font-medium mb-1">
+            Total Animals
+          </label>
+          <input
+            type="number"
+            name="farmer[totalAnimals]"
+            min="0"
+            class="w-full rounded-md border px-3 py-2 text-sm"
+            placeholder="0"
+          />
+        </div>
+
+        <div class="flex items-center gap-2 mt-6">
+          <input
+            type="checkbox"
+            name="farmer[isActive]"
+            checked
+            class="h-4 w-4"
+          />
+          <label class="text-sm">
+            Active Farmer
+          </label>
+        </div>
+
+      </div>
+
+      <!-- Actions -->
+      <div class="flex flex-col md:flex-row justify-center gap-3 pt-4">
+
+        <button
+          type="submit"
+          class="px-6 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition"
+        >
+          Save Farmer
+        </button>
+
+        <a
+          href="/admin/farmers"
+          class="px-6 py-2 rounded-md border text-center hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          Cancel
+        </a>
+
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+<script>
+  function getLocation() {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by this browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        document.getElementById("longitude").value =
+          position.coords.longitude;
+        document.getElementById("latitude").value =
+          position.coords.latitude;
+      },
+      (error) => {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            alert("Location permission denied");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            alert("Location information unavailable");
+            break;
+          case error.TIMEOUT:
+            alert("Location request timed out");
+            break;
+          default:
+            alert("Unable to retrieve location");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  }
+</script>

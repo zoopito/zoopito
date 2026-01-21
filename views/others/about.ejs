@@ -1,0 +1,631 @@
+<% layout("/layouts/boilerplate", {
+    title: 'About Us - Zoopito',
+    description: 'Learn about Zoopito - Revolutionizing livestock management through data intelligence, empowering farmers, veterinarians, and government agencies across India.',
+    pageStyles: `
+        .mission-gradient {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%);
+        }
+        
+        .team-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .team-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: #38BDF8;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(34, 197, 94, 0.1));
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: scale(1.05);
+            border-color: #38BDF8;
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.2);
+        }
+        
+        .timeline-dot {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #38BDF8;
+            background: white;
+        }
+        
+        .timeline-line {
+            width: 2px;
+            background: linear-gradient(to bottom, #38BDF8, #22C55E);
+        }
+        
+        .value-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .value-card:hover {
+            border-left-color: #38BDF8;
+            transform: translateX(5px);
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.05), transparent);
+        }
+    `
+}) -%>
+
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800 py-16 md:py-24">
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-200 dark:bg-blue-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-green-200 dark:bg-green-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+    </div>
+    
+    <div class="relative container mx-auto px-4 md:px-8">
+        <div class="text-center max-w-4xl mx-auto">
+            <h1 class="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+                Transforming Livestock Management with 
+                <span class="bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
+                    Data Intelligence
+                </span>
+            </h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                Zoopito is on a mission to revolutionize how farmers, veterinarians, and government agencies 
+                collect, manage, and analyze livestock data across India.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#mission" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+                    Our Mission
+                </a>
+                <a href="#team" class="px-6 py-3 border-2 border-blue-500 text-blue-600 dark:text-blue-400 font-semibold rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300">
+                    Meet Our Team
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-12 bg-white dark:bg-gray-900">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="stat-card p-6 rounded-2xl text-center" data-aos="fade-up">
+                <p class="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">50,000+</p>
+                <p class="text-gray-600 dark:text-gray-400 font-medium">Animals Tracked</p>
+            </div>
+            <div class="stat-card p-6 rounded-2xl text-center" data-aos="fade-up" data-aos-delay="100">
+                <p class="text-3xl md:text-4xl font-bold text-green-600 dark:text-green-400 mb-2">10,000+</p>
+                <p class="text-gray-600 dark:text-gray-400 font-medium">Farmers Registered</p>
+            </div>
+            <div class="stat-card p-6 rounded-2xl text-center" data-aos="fade-up" data-aos-delay="200">
+                <p class="text-3xl md:text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">500+</p>
+                <p class="text-gray-600 dark:text-gray-400 font-medium">Villages Covered</p>
+            </div>
+            <div class="stat-card p-6 rounded-2xl text-center" data-aos="fade-up" data-aos-delay="300">
+                <p class="text-3xl md:text-4xl font-bold text-orange-600 dark:text-orange-400 mb-2">200+</p>
+                <p class="text-gray-600 dark:text-gray-400 font-medium">Veterinarians</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Story -->
+<section class="py-20 bg-gray-50 dark:bg-gray-900/50">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    Our Story
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-green-500 mx-auto rounded-full"></div>
+            </div>
+            
+            <div class="prose prose-lg dark:prose-invert max-w-none" data-aos="fade-up">
+                <p class="text-gray-600 dark:text-gray-300 mb-6 text-lg leading-relaxed">
+                    Founded in 2023, Zoopito emerged from a simple observation: 
+                    <span class="font-semibold text-blue-600 dark:text-blue-400">livestock management in rural India was fragmented, paper-based, and inefficient.</span>
+                </p>
+                
+                <p class="text-gray-600 dark:text-gray-300 mb-6 text-lg leading-relaxed">
+                    Our founders, with backgrounds in veterinary science, technology, and rural development, 
+                    witnessed firsthand the challenges faced by farmers and veterinarians. From manual record-keeping 
+                    to delayed veterinary services, the lack of organized data was impacting animal health, farmer 
+                    livelihoods, and food security.
+                </p>
+                
+                <p class="text-gray-600 dark:text-gray-300 mb-6 text-lg leading-relaxed">
+                    We started with a pilot project in Maharashtra, working closely with 100 farmers and local 
+                    paravets. The positive impact was immediate - better vaccination coverage, timely healthcare, 
+                    and valuable data insights. This validation led to the development of our comprehensive platform.
+                </p>
+                
+                <div class="bg-gradient-to-r from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-800 border-l-4 border-blue-500 p-6 rounded-r-lg my-8">
+                    <p class="text-gray-700 dark:text-gray-300 text-lg italic">
+                        "Our vision is to create a connected ecosystem where every animal's health is tracked, 
+                        every farmer is empowered with insights, and every veterinary service is data-driven."
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400 mt-4 font-medium">
+                        — Zoopito Founding Team
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mission & Vision -->
+<section id="mission" class="py-20 mission-gradient">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="grid md:grid-cols-2 gap-12">
+            <!-- Mission -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl" data-aos="fade-right">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="fas fa-bullseye text-white text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-6">
+                    To democratize livestock data management by providing affordable, accessible technology 
+                    solutions that empower every stakeholder in the animal healthcare ecosystem.
+                </p>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                        Make data collection simple and efficient
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                        Bridge the gap between farmers and veterinarians
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                        Enable data-driven decisions for better outcomes
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Vision -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl" data-aos="fade-left">
+                <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="fas fa-eye text-white text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Vision</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-6">
+                    To become India's leading livestock intelligence platform, creating a future where 
+                    animal health data drives agricultural growth, food security, and rural development.
+                </p>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-star text-yellow-500 mr-3"></i>
+                        Connect 1 million farmers by 2025
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-star text-yellow-500 mr-3"></i>
+                        Achieve 90% vaccination coverage in covered areas
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-star text-yellow-500 mr-3"></i>
+                        Enable AI-driven disease prediction by 2024
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Values -->
+<section class="py-20 bg-white dark:bg-gray-900">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Our Core Values
+            </h2>
+            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                The principles that guide everything we do at Zoopito
+            </p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="value-card bg-gray-50 dark:bg-gray-800 p-6 rounded-xl" data-aos="fade-up">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-users text-blue-600 dark:text-blue-400 text-xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Farmer First</h4>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Every decision starts with the farmer's needs. We build solutions that are affordable, 
+                    accessible, and easy to use in rural contexts.
+                </p>
+            </div>
+            
+            <div class="value-card bg-gray-50 dark:bg-gray-800 p-6 rounded-xl" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-database text-green-600 dark:text-green-400 text-xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Data Integrity</h4>
+                <p class="text-gray-600 dark:text-gray-400">
+                    We believe in clean, accurate, and structured data. Our platform is built on strong 
+                    data foundations that enable reliable insights.
+                </p>
+            </div>
+            
+            <div class="value-card bg-gray-50 dark:bg-gray-800 p-6 rounded-xl" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-handshake text-purple-600 dark:text-purple-400 text-xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Collaborative Impact</h4>
+                <p class="text-gray-600 dark:text-gray-400">
+                    We work together with government agencies, NGOs, veterinarians, and farmers to create 
+                    sustainable impact at scale.
+                </p>
+            </div>
+            
+            <div class="value-card bg-gray-50 dark:bg-gray-800 p-6 rounded-xl" data-aos="fade-up" data-aos-delay="300">
+                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-rocket text-orange-600 dark:text-orange-400 text-xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Innovation</h4>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Constantly evolving to leverage technology like AI, mobile-first solutions, and offline 
+                    capabilities to solve complex challenges.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Journey Timeline -->
+<section class="py-20 bg-gray-50 dark:bg-gray-900/50">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Our Journey
+            </h2>
+            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                Milestones in our mission to transform livestock management
+            </p>
+        </div>
+        
+        <div class="max-w-4xl mx-auto">
+            <div class="relative">
+                <!-- Vertical Line -->
+                <div class="timeline-line absolute left-1/2 transform -translate-x-1/2 h-full"></div>
+                
+                <!-- Timeline Items -->
+                <div class="space-y-12">
+                    <!-- 2023 Q1 -->
+                    <div class="flex items-center" data-aos="fade-up">
+                        <div class="w-1/2 pr-12 text-right">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
+                                <span class="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-semibold rounded-full mb-2">Q1 2023</span>
+                                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Platform Conception</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Initial research and development. Pilot launch in Maharashtra with 100 farmers.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div class="timeline-dot rounded-full absolute left-1/2 transform -translate-x-1/2"></div>
+                        </div>
+                        <div class="w-1/2 pl-12"></div>
+                    </div>
+                    
+                    <!-- 2023 Q3 -->
+                    <div class="flex items-center" data-aos="fade-up" data-aos-delay="100">
+                        <div class="w-1/2 pr-12"></div>
+                        <div class="relative">
+                            <div class="timeline-dot rounded-full absolute left-1/2 transform -translate-x-1/2"></div>
+                        </div>
+                        <div class="w-1/2 pl-12">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
+                                <span class="inline-block px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-sm font-semibold rounded-full mb-2">Q3 2023</span>
+                                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">First Major Partnership</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Collaborated with State Animal Husbandry Department. Expanded to 500+ farmers.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 2024 Q1 -->
+                    <div class="flex items-center" data-aos="fade-up" data-aos-delay="200">
+                        <div class="w-1/2 pr-12 text-right">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
+                                <span class="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-sm font-semibold rounded-full mb-2">Q1 2024</span>
+                                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Platform 2.0 Launch</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Introduced AI-powered features, offline mode, and multi-language support.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div class="timeline-dot rounded-full absolute left-1/2 transform -translate-x-1/2"></div>
+                        </div>
+                        <div class="w-1/2 pl-12"></div>
+                    </div>
+                    
+                    <!-- 2024 Q3 -->
+                    <div class="flex items-center" data-aos="fade-up" data-aos-delay="300">
+                        <div class="w-1/2 pr-12"></div>
+                        <div class="relative">
+                            <div class="timeline-dot rounded-full absolute left-1/2 transform -translate-x-1/2"></div>
+                        </div>
+                        <div class="w-1/2 pl-12">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
+                                <span class="inline-block px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-sm font-semibold rounded-full mb-2">Q3 2024</span>
+                                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">National Expansion</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Expanded to 5 states. Partnered with major insurance companies and NGOs.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Future -->
+                    <div class="flex items-center" data-aos="fade-up" data-aos-delay="400">
+                        <div class="w-1/2 pr-12 text-right">
+                            <div class="bg-gradient-to-r from-blue-500 to-green-500 p-6 rounded-2xl shadow-lg">
+                                <span class="inline-block px-3 py-1 bg-white/20 text-white text-sm font-semibold rounded-full mb-2">2025 & Beyond</span>
+                                <h4 class="text-xl font-bold text-white mb-2">The Future</h4>
+                                <p class="text-white/90">
+                                    Pan-India coverage. Advanced analytics. Integration with IoT devices.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div class="timeline-dot rounded-full absolute left-1/2 transform -translate-x-1/2 border-4 border-blue-500"></div>
+                        </div>
+                        <div class="w-1/2 pl-12"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section id="team" class="py-20 bg-white dark:bg-gray-900">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Meet Our Leadership
+            </h2>
+            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                Passionate individuals driving innovation in livestock management
+            </p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Team Member 1 -->
+            <div class="team-card bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 text-center" data-aos="fade-up">
+                <div class="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-r from-blue-500 to-green-500 p-1">
+                    <div class="w-full h-full bg-white dark:bg-gray-900 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-md text-blue-500 text-4xl"></i>
+                    </div>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Dr. Rajesh Kumar</h4>
+                <p class="text-blue-600 dark:text-blue-400 font-medium mb-4">Chief Veterinary Officer</p>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    15+ years in veterinary science. Former State Animal Husbandry Director.
+                </p>
+                <div class="flex justify-center space-x-3">
+                    <a href="#" class="text-gray-400 hover:text-blue-500 transition-colors">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Team Member 2 -->
+            <div class="team-card bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 text-center" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-r from-green-500 to-purple-500 p-1">
+                    <div class="w-full h-full bg-white dark:bg-gray-900 rounded-full flex items-center justify-center">
+                        <i class="fas fa-laptop-code text-green-500 text-4xl"></i>
+                    </div>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Priya Sharma</h4>
+                <p class="text-green-600 dark:text-green-400 font-medium mb-4">CTO & Co-Founder</p>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    Ex-Google engineer. Expert in scalable platforms and mobile technologies.
+                </p>
+                <div class="flex justify-center space-x-3">
+                    <a href="#" class="text-gray-400 hover:text-blue-500 transition-colors">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Team Member 3 -->
+            <div class="team-card bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 text-center" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 p-1">
+                    <div class="w-full h-full bg-white dark:bg-gray-900 rounded-full flex items-center justify-center">
+                        <i class="fas fa-chart-line text-purple-500 text-4xl"></i>
+                    </div>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Anil Patel</h4>
+                <p class="text-purple-600 dark:text-purple-400 font-medium mb-4">Head of Partnerships</p>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    12+ years in agri-business. Built networks across government and NGOs.
+                </p>
+                <div class="flex justify-center space-x-3">
+                    <a href="#" class="text-gray-400 hover:text-blue-500 transition-colors">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-green-500 transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Extended Team -->
+        <div class="mt-16 text-center" data-aos="fade-up">
+            <div class="inline-flex items-center gap-4 bg-gray-50 dark:bg-gray-800 px-8 py-6 rounded-2xl">
+                <div class="text-left">
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white">And Many More</h4>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        40+ dedicated professionals in technology, field operations, data science, and support
+                    </p>
+                </div>
+                <div class="flex -space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">A</div>
+                    <div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">S</div>
+                    <div class="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">M</div>
+                    <div class="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">+37</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Partners Section -->
+<section class="py-16 bg-gray-50 dark:bg-gray-900/50">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="text-center mb-12">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Trusted By Leading Organizations
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                We collaborate with government agencies, NGOs, and industry partners to create impact at scale
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-center h-24">
+                <span class="text-gray-700 dark:text-gray-300 font-semibold text-lg">Govt. Dept.</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-center h-24">
+                <span class="text-gray-700 dark:text-gray-300 font-semibold text-lg">Insurance Co.</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-center h-24">
+                <span class="text-gray-700 dark:text-gray-300 font-semibold text-lg">NGO Partner</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-center h-24">
+                <span class="text-gray-700 dark:text-gray-300 font-semibold text-lg">Animal Health</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-center h-24">
+                <span class="text-gray-700 dark:text-gray-300 font-semibold text-lg">Dairy Board</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-center h-24">
+                <span class="text-gray-700 dark:text-gray-300 font-semibold text-lg">Agri-Tech</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-20 bg-gradient-to-r from-blue-600 to-green-600">
+    <div class="container mx-auto px-4 md:px-8 text-center">
+        <div class="max-w-3xl mx-auto" data-aos="fade-up">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                Join Our Mission
+            </h2>
+            <p class="text-xl text-blue-100 mb-10">
+                Whether you're a farmer, veterinarian, government agency, or partner organization, 
+                there's a place for you in the Zoopito ecosystem.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/contact" 
+                   class="px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3">
+                    <i class="fas fa-handshake"></i>
+                    Partner With Us
+                </a>
+                
+                <a href="/careers" 
+                   class="px-8 py-4 border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-3">
+                    <i class="fas fa-briefcase"></i>
+                    View Careers
+                </a>
+                
+                <a href="/contact" 
+                   class="px-8 py-4 bg-black/20 text-white font-semibold rounded-xl hover:bg-black/30 transition-all duration-300 flex items-center justify-center gap-3">
+                    <i class="fas fa-envelope"></i>
+                    Contact Us
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Animate stats on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        const statCards = document.querySelectorAll('.stat-card');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const numberElement = entry.target.querySelector('p:first-child');
+                    if (numberElement) {
+                        const number = parseInt(numberElement.textContent.replace(/[^0-9]/g, ''));
+                        animateNumber(numberElement, number);
+                        observer.unobserve(entry.target);
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        statCards.forEach(card => observer.observe(card));
+        
+        function animateNumber(element, target) {
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target.toLocaleString() + '+';
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 30);
+        }
+        
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    /* Custom animations */
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .floating {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    /* Timeline animation */
+    .timeline-dot {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { 
+            box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); 
+        }
+        70% { 
+            box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); 
+        }
+    }
+</style>

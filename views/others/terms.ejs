@@ -1,0 +1,1357 @@
+<% layout("/layouts/boilerplate", {
+    title: 'Terms & Conditions - Zoopito',
+    description: 'Terms of Service for Zoopito Livestock Management Platform. Read about user responsibilities, data usage, and platform rules.',
+    pageStyles: `
+        .terms-section {
+            border-left: 3px solid transparent;
+            padding-left: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .terms-section:hover {
+            border-left-color: #38BDF8;
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.05), transparent);
+            padding-left: 2rem;
+        }
+        
+        .clause-box {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.05), rgba(34, 197, 94, 0.05));
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .warning-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 0.25rem;
+        }
+        
+        .legal-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .acceptance-toggle {
+            transition: all 0.3s ease;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .acceptance-toggle:hover {
+            border-color: #38BDF8;
+            transform: translateY(-2px);
+        }
+    `
+}) -%>
+
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800 py-16 md:py-24">
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-200 dark:bg-blue-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-green-200 dark:bg-green-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+    </div>
+    
+    <div class="relative container mx-auto px-4 md:px-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-semibold mb-6">
+                <i class="fas fa-balance-scale"></i>
+                Legal Agreement
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+                Terms & Conditions
+            </h1>
+            
+            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                Last Updated: <span class="font-semibold text-blue-600 dark:text-blue-400"><%= new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+            </p>
+            
+            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-8">
+                Please read these Terms and Conditions carefully before using the Zoopito Livestock Management Platform.
+                By accessing or using our services, you agree to be bound by these terms.
+            </p>
+            
+            <div class="inline-flex items-center gap-3 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                <i class="fas fa-clock text-blue-500"></i>
+                <span class="text-sm text-gray-600 dark:text-gray-400">
+                    Estimated reading time: <span class="font-semibold">15 minutes</span>
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Summary -->
+<section class="py-12 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-6 text-white">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fas fa-lightbulb"></i>
+                    Quick Summary
+                </h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-white/90 mb-2">Key Points</h4>
+                        <ul class="space-y-2 text-white/80 text-sm">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle mt-1"></i>
+                                <span>You own your data, we secure it</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle mt-1"></i>
+                                <span>Use platform only for livestock management</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle mt-1"></i>
+                                <span>Follow animal welfare guidelines</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle mt-1"></i>
+                                <span>Respect privacy of others</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-white/90 mb-2">For Different Users</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="role-badge bg-white/20 text-white">
+                                <i class="fas fa-user"></i>
+                                Farmers
+                            </span>
+                            <span class="role-badge bg-white/20 text-white">
+                                <i class="fas fa-user-md"></i>
+                                Veterinarians
+                            </span>
+                            <span class="role-badge bg-white/20 text-white">
+                                <i class="fas fa-users"></i>
+                                Sales Team
+                            </span>
+                            <span class="role-badge bg-white/20 text-white">
+                                <i class="fas fa-cog"></i>
+                                Administrators
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Navigation -->
+<section class="sticky top-16 bg-white dark:bg-gray-900 shadow-sm z-40 border-b border-gray-200 dark:border-gray-800">
+    <div class="container mx-auto px-4 py-4">
+        <div class="overflow-x-auto">
+            <div class="flex space-x-4 min-w-max">
+                <a href="#acceptance" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <i class="fas fa-check-circle"></i>
+                    Acceptance
+                </a>
+                <a href="#definitions" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <i class="fas fa-book"></i>
+                    Definitions
+                </a>
+                <a href="#accounts" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <i class="fas fa-user-circle"></i>
+                    Accounts
+                </a>
+                <a href="#usage" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <i class="fas fa-laptop"></i>
+                    Usage
+                </a>
+                <a href="#data" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <i class="fas fa-database"></i>
+                    Data
+                </a>
+                <a href="#intellectual" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <i class="fas fa-copyright"></i>
+                    Intellectual Property
+                </a>
+                <a href="#termination" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <i class="fas fa-ban"></i>
+                    Termination
+                </a>
+                <a href="#liability" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <i class="fas fa-balance-scale"></i>
+                    Liability
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="container mx-auto px-4 md:px-8 py-12 max-w-6xl">
+    <div class="grid lg:grid-cols-3 gap-12">
+        <!-- Sidebar Table of Contents -->
+        <div class="lg:col-span-1">
+            <div class="sticky top-32 bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <i class="fas fa-list"></i>
+                    Table of Contents
+                </h3>
+                <nav class="space-y-2">
+                    <a href="#acceptance" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>1. Acceptance of Terms</span>
+                    </a>
+                    <a href="#definitions" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>2. Definitions</span>
+                    </a>
+                    <a href="#accounts" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>3. User Accounts</span>
+                    </a>
+                    <a href="#usage" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>4. Platform Usage</span>
+                    </a>
+                    <a href="#data" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>5. Data Management</span>
+                    </a>
+                    <a href="#intellectual" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>6. Intellectual Property</span>
+                    </a>
+                    <a href="#termination" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>7. Termination</span>
+                    </a>
+                    <a href="#liability" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>8. Liability & Warranty</span>
+                    </a>
+                    <a href="#disputes" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>9. Dispute Resolution</span>
+                    </a>
+                    <a href="#updates" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>10. Updates to Terms</span>
+                    </a>
+                    <a href="#contact" class="flex items-center gap-2 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                        <span>11. Contact Information</span>
+                    </a>
+                </nav>
+                
+                <!-- Acceptance Box -->
+                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <div class="acceptance-toggle bg-white dark:bg-gray-900 p-4 rounded-xl">
+                        <div class="flex items-center gap-3 mb-3">
+                            <input type="checkbox" id="termsAcceptance" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                            <label for="termsAcceptance" class="text-sm font-medium text-gray-900 dark:text-white">
+                                I have read and agree to these Terms
+                            </label>
+                        </div>
+                        <button onclick="handleAcceptance()" 
+                                class="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white 
+                                       font-medium rounded-lg hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+                                disabled>
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Accept Terms
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                        Required for platform access
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Terms Content -->
+        <div class="lg:col-span-2 space-y-12">
+            
+            <!-- Section 1: Acceptance of Terms -->
+            <section id="acceptance" class="terms-section scroll-mt-24">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="legal-icon bg-blue-100 dark:bg-blue-900/30">
+                        <i class="fas fa-check-circle text-blue-600 dark:text-blue-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">1. Acceptance of Terms</h2>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            By accessing or using the Zoopito Livestock Management Platform ("Platform"), 
+                            you agree to be bound by these Terms and Conditions ("Terms"). If you disagree 
+                            with any part of these Terms, you may not access the Platform.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="clause-box">
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <i class="fas fa-user-check text-green-500"></i>
+                        Binding Agreement
+                    </h4>
+                    <p class="text-gray-700 dark:text-gray-300">
+                        These Terms constitute a legally binding agreement between you and 
+                        <span class="font-semibold text-blue-600 dark:text-blue-400">Zoopito Technologies Private Limited</span> 
+                        ("Company", "we", "us", or "our"). Your use of the Platform indicates your 
+                        acceptance of these Terms and our Privacy Policy.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4 mt-6">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                            <i class="fas fa-user-tie text-blue-500"></i>
+                            For Organizations
+                        </h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            If you're accessing on behalf of an organization, you represent that you have 
+                            authority to bind that organization to these Terms.
+                        </p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                            <i class="fas fa-users text-green-500"></i>
+                            Multiple Users
+                        </h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Each user must accept these Terms individually. Shared accounts are prohibited 
+                            except for family farms with explicit permission.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 2: Definitions -->
+            <section id="definitions" class="terms-section scroll-mt-24">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="legal-icon bg-green-100 dark:bg-green-900/30">
+                        <i class="fas fa-book text-green-600 dark:text-green-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">2. Definitions</h2>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            For the purpose of these Terms, the following definitions apply:
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 dark:bg-gray-800">
+                                <th class="p-4 text-left font-semibold text-gray-900 dark:text-white border-b border-gray-300 dark:border-gray-700">Term</th>
+                                <th class="p-4 text-left font-semibold text-gray-900 dark:text-white border-b border-gray-300 dark:border-gray-700">Definition</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <td class="p-4 font-medium text-gray-900 dark:text-white">Platform</td>
+                                <td class="p-4 text-gray-700 dark:text-gray-300">The Zoopito livestock management software, mobile apps, websites, and related services</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <td class="p-4 font-medium text-gray-900 dark:text-white">User</td>
+                                <td class="p-4 text-gray-700 dark:text-gray-300">Any individual or entity accessing or using the Platform</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <td class="p-4 font-medium text-gray-900 dark:text-white">Farmer</td>
+                                <td class="p-4 text-gray-700 dark:text-gray-300">Livestock owner registered on the Platform for data management</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <td class="p-4 font-medium text-gray-900 dark:text-white">Paravet/Veterinarian</td>
+                                <td class="p-4 text-gray-700 dark:text-gray-300">Trained animal healthcare provider using the Platform for service delivery</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <td class="p-4 font-medium text-gray-900 dark:text-white">Sales Executive</td>
+                                <td class="p-4 text-gray-700 dark:text-gray-300">Field staff responsible for farmer onboarding and data collection</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <td class="p-4 font-medium text-gray-900 dark:text-white">Animal Data</td>
+                                <td class="p-4 text-gray-700 dark:text-gray-300">Information about livestock including photos, health records, and ownership details</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-medium text-gray-900 dark:text-white">Content</td>
+                                <td class="p-4 text-gray-700 dark:text-gray-300">All data, text, images, photos, and other materials uploaded to the Platform</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- Section 3: User Accounts -->
+            <section id="accounts" class="terms-section scroll-mt-24">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="legal-icon bg-purple-100 dark:bg-purple-900/30">
+                        <i class="fas fa-user-circle text-purple-600 dark:text-purple-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">3. User Accounts</h2>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            To access certain features of the Platform, you must create an account.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-key text-blue-500"></i>
+                            Account Responsibilities
+                        </h4>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-user text-blue-600 dark:text-blue-400 text-xs"></i>
+                                </div>
+                                <span class="text-gray-600 dark:text-gray-400">
+                                    You must provide accurate, complete, and current information
+                                </span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-lock text-red-600 dark:text-red-400 text-xs"></i>
+                                </div>
+                                <span class="text-gray-600 dark:text-gray-400">
+                                    You are responsible for maintaining the confidentiality of your account credentials
+                                </span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-shield-alt text-green-600 dark:text-green-400 text-xs"></i>
+                                </div>
+                                <span class="text-gray-600 dark:text-gray-400">
+                                    You must immediately notify us of any unauthorized use of your account
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h4 class="font-semibold text-yellow-800 dark:text-yellow-400 mb-3 flex items-center gap-2">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Prohibited Activities
+                        </h4>
+                        <ul class="space-y-2 text-yellow-700 dark:text-yellow-300">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-ban mt-1"></i>
+                                <span>Creating multiple accounts for the same individual</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-ban mt-1"></i>
+                                <span>Sharing account credentials with others</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-ban mt-1"></i>
+                                <span>Using false identity or impersonating others</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-ban mt-1"></i>
+                                <span>Creating accounts for non-existent farmers or animals</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Role-specific Requirements -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5">
+                            <h4 class="font-semibold text-blue-800 dark:text-blue-400 mb-3 flex items-center gap-2">
+                                <i class="fas fa-user-md"></i>
+                                For Veterinarians
+                            </h4>
+                            <ul class="space-y-2 text-blue-700 dark:text-blue-300 text-sm">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-certificate text-xs mt-1"></i>
+                                    <span>Must provide valid veterinary license number</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-map-marker-alt text-xs mt-1"></i>
+                                    <span>Service area must be accurately defined</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-syringe text-xs mt-1"></i>
+                                    <span>Must maintain accurate vaccination records</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-5">
+                            <h4 class="font-semibold text-green-800 dark:text-green-400 mb-3 flex items-center gap-2">
+                                <i class="fas fa-users"></i>
+                                For Sales Executives
+                            </h4>
+                            <ul class="space-y-2 text-green-700 dark:text-green-300 text-sm">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-camera text-xs mt-1"></i>
+                                    <span>Must capture clear, accurate animal photos</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-location-dot text-xs mt-1"></i>
+                                    <span>GPS location must be enabled during registration</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-user-check text-xs mt-1"></i>
+                                    <span>Must obtain farmer consent before registration</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 4: Platform Usage -->
+            <section id="usage" class="terms-section scroll-mt-24">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">4. Platform Usage</h2>
+                
+                <div class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-4">Permitted Use</h4>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            The Platform is designed for legitimate livestock management purposes:
+                        </p>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-check text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">Data Collection</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Registering farmers and animals with accurate information</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-check text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">Health Tracking</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Recording vaccinations and medical treatments</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-check text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">Analytics</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Generating reports for government and research purposes</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-check text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">Communication</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Coordinating between farmers and veterinarians</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h4 class="font-semibold text-red-700 dark:text-red-400 mb-4 flex items-center gap-2">
+                            <i class="fas fa-ban"></i>
+                            Prohibited Uses
+                        </h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-times text-red-600 dark:text-red-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-red-800 dark:text-red-400">Illegal Activities</p>
+                                    <p class="text-sm text-red-700 dark:text-red-300">Using platform for unauthorized livestock trading or smuggling</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-times text-red-600 dark:text-red-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-red-800 dark:text-red-400">False Data</p>
+                                    <p class="text-sm text-red-700 dark:text-red-300">Entering fake farmer or animal information</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-times text-red-600 dark:text-red-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-red-800 dark:text-red-400">Animal Cruelty</p>
+                                    <p class="text-sm text-red-700 dark:text-red-300">Documenting or promoting animal abuse</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-times text-red-600 dark:text-red-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-red-800 dark:text-red-400">Commercial Use</p>
+                                    <p class="text-sm text-red-700 dark:text-red-300">Reselling platform access or data without authorization</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Field Guidelines -->
+                    <div class="bg-gradient-to-r from-blue-500 to-green-500 rounded-xl p-6 text-white">
+                        <h4 class="font-semibold text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Field Usage Guidelines
+                        </h4>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h5 class="font-medium text-white mb-2">During Farmer Visits</h5>
+                                <ul class="space-y-2 text-white/90 text-sm">
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-hand-point-right mt-1"></i>
+                                        <span>Obtain explicit consent before taking photographs</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-hand-point-right mt-1"></i>
+                                        <span>Respect cultural and religious sensitivities</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-hand-point-right mt-1"></i>
+                                        <span>Explain data usage clearly in local language</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-white mb-2">Animal Photography</h5>
+                                <ul class="space-y-2 text-white/90 text-sm">
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-hand-point-right mt-1"></i>
+                                        <span>Ensure animal safety during photo sessions</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-hand-point-right mt-1"></i>
+                                        <span>Capture all required angles (front, back, left, right)</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-hand-point-right mt-1"></i>
+                                        <span>Use good lighting for clear identification</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 5: Data Management -->
+            <section id="data" class="terms-section scroll-mt-24">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">5. Data Management</h2>
+                
+                <div class="space-y-6">
+                    <div class="clause-box">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-3">Data Ownership</h4>
+                        <p class="text-gray-700 dark:text-gray-300">
+                            <span class="font-semibold">Farmers retain ownership of their personal data and animal information.</span> 
+                            Zoopito acts as a data processor, providing storage, management, and analysis services. 
+                            You grant us a license to use your data only for providing Platform services and as 
+                            described in our Privacy Policy.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-4">Data Accuracy & Responsibility</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-check-double text-blue-600 dark:text-blue-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">Accuracy Requirement</p>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        You are responsible for ensuring all data entered is accurate, complete, 
+                                        and up-to-date. This includes farmer details, animal information, and 
+                                        vaccination records.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-camera text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">Photo Guidelines</p>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        Animal photographs must be clear, properly lit, and show the actual animal. 
+                                        Do not upload stock photos, edited images, or pictures of other animals.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6 text-white">
+                        <h4 class="font-semibold text-white mb-4">Data Sharing & Monetization</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <h5 class="font-medium text-white mb-2">Aggregated Data</h5>
+                                <p class="text-white/90">
+                                    We may share <span class="font-semibold">aggregated, anonymized data</span> with:
+                                </p>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="px-3 py-1 bg-white/20 rounded-full text-sm">Government Agencies</span>
+                                    <span class="px-3 py-1 bg-white/20 rounded-full text-sm">Research Institutions</span>
+                                    <span class="px-3 py-1 bg-white/20 rounded-full text-sm">Insurance Companies</span>
+                                    <span class="px-3 py-1 bg-white/20 rounded-full text-sm">NGO Partners</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-white mb-2">Future Monetization</h5>
+                                <p class="text-white/90">
+                                    As stated in our vision, data is Zoopito's main long-term asset. We may 
+                                    monetize aggregated data through partnerships, while always protecting 
+                                    individual farmer privacy as per our Privacy Policy.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Export Rights -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-file-export text-blue-500"></i>
+                            Data Export Rights
+                        </h4>
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-download text-green-500 mt-1"></i>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">Farmer Rights</p>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        Farmers can request export of their data in Excel/CSV format at any time 
+                                        through their dashboard or by contacting support.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-chart-bar text-purple-500 mt-1"></i>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">Administrator Rights</p>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        Administrators can export data with filters (date-wise, village-wise, 
+                                        animal-wise) for government reports and impact studies.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 6: Intellectual Property -->
+            <section id="intellectual" class="terms-section scroll-mt-24">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">6. Intellectual Property</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-copyright text-blue-600 dark:text-blue-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">Platform IP</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Owned by Zoopito</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-code text-blue-500 mt-1"></i>
+                                <span>Software code, algorithms, and platform design</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-trademark text-blue-500 mt-1"></i>
+                                <span>Zoopito name, logo, and brand elements</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-cube text-blue-500 mt-1"></i>
+                                <span>Dashboard designs and user interface</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-brain text-blue-500 mt-1"></i>
+                                <span>AI models trained on aggregated data</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user text-green-600 dark:text-green-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">User Content</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Owned by users</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-camera text-green-500 mt-1"></i>
+                                <span>Animal photographs uploaded by users</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-file-alt text-green-500 mt-1"></i>
+                                <span>Farmer and animal registration data</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-history text-green-500 mt-1"></i>
+                                <span>Vaccination and health records</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-map text-green-500 mt-1"></i>
+                                <span>Location data and farm details</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="clause-box mt-6">
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-3">License Grant</h4>
+                    <p class="text-gray-700 dark:text-gray-300">
+                        By uploading content to the Platform, you grant Zoopito a worldwide, non-exclusive, 
+                        royalty-free license to use, store, reproduce, and analyze your data for the purpose 
+                        of providing Platform services, improving our algorithms, and creating aggregated 
+                        insights as described in our Privacy Policy.
+                    </p>
+                </div>
+            </section>
+            
+            <!-- Section 7: Termination -->
+            <section id="termination" class="terms-section scroll-mt-24">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">7. Termination</h2>
+                
+                <div class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-4">Termination Rights</h4>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h5 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                                    <i class="fas fa-times-circle text-red-500"></i>
+                                    By Zoopito
+                                </h5>
+                                <ul class="space-y-2 text-gray-600 dark:text-gray-400 text-sm">
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-ban text-red-500 text-xs mt-1"></i>
+                                        <span>Violation of these Terms</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-ban text-red-500 text-xs mt-1"></i>
+                                        <span>Illegal or fraudulent activities</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-ban text-red-500 text-xs mt-1"></i>
+                                        <span>Extended account inactivity (12+ months)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                                    <i class="fas fa-user-slash text-blue-500"></i>
+                                    By User
+                                </h5>
+                                <ul class="space-y-2 text-gray-600 dark:text-gray-400 text-sm">
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-power-off text-blue-500 text-xs mt-1"></i>
+                                        <span>Request account deletion anytime</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <i class="fas fa-trash text-blue-500 text-xs mt-1"></i>
+                                        <span>Stop using platform and request data deletion</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h4 class="font-semibold text-yellow-800 dark:text-yellow-400 mb-3 flex items-center gap-2">
+                            <i class="fas fa-database"></i>
+                            Data Retention After Termination
+                        </h4>
+                        <p class="text-yellow-700 dark:text-yellow-300">
+                            Upon account termination, we will retain your data for the periods specified in our 
+                            Privacy Policy for legal compliance and aggregated analytics. You may request 
+                            immediate deletion of personal data, except where retention is required by law.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 8: Liability & Warranty -->
+            <section id="liability" class="terms-section scroll-mt-24">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">8. Liability & Warranty</h2>
+                
+                <div class="space-y-6">
+                    <div class="clause-box">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-3">Disclaimer of Warranties</h4>
+                        <p class="text-gray-700 dark:text-gray-300">
+                            The Platform is provided "as is" and "as available" without warranties of any kind, 
+                            either express or implied. We do not warrant that:
+                        </p>
+                        <ul class="space-y-2 mt-3 text-gray-700 dark:text-gray-300">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-times text-red-500 mt-1"></i>
+                                <span>The Platform will be uninterrupted or error-free</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-times text-red-500 mt-1"></i>
+                                <span>Data entered by users is accurate or complete</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-times text-red-500 mt-1"></i>
+                                <span>The Platform will prevent animal diseases or health issues</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-4">Limitation of Liability</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-exclamation text-blue-600 dark:text-blue-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">Indirect Damages</p>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        Zoopito shall not be liable for any indirect, incidental, special, 
+                                        consequential, or punitive damages resulting from your use of the Platform.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-rupee-sign text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">Maximum Liability</p>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        Our total liability shall not exceed the amount paid by you, if any, 
+                                        for using the Platform in the 12 months preceding the claim.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Responsibilities -->
+                    <div class="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-6 text-white">
+                        <h4 class="font-semibold text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-stethoscope"></i>
+                            Veterinary Disclaimer
+                        </h4>
+                        <p class="text-white/90 mb-3">
+                            <span class="font-semibold">IMPORTANT:</span> Zoopito is a data management platform, 
+                            not a veterinary service provider.
+                        </p>
+                        <ul class="space-y-2 text-white/80">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-exclamation-circle mt-1"></i>
+                                <span>Always consult qualified veterinarians for animal health decisions</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-exclamation-circle mt-1"></i>
+                                <span>Platform data should supplement, not replace professional advice</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-exclamation-circle mt-1"></i>
+                                <span>Vaccination reminders are for information only, not medical advice</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 9: Dispute Resolution -->
+            <section id="disputes" class="terms-section scroll-mt-24">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">9. Dispute Resolution</h2>
+                
+                <div class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-handshake text-purple-600 dark:text-purple-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">Governing Law</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Jurisdiction and dispute process</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white mb-1">Governing Law</p>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    These Terms shall be governed by the laws of India, without regard to 
+                                    conflict of law principles.
+                                </p>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white mb-1">Jurisdiction</p>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Any disputes shall be subject to the exclusive jurisdiction of the courts 
+                                    in Pune, Maharashtra.
+                                </p>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white mb-1">Dispute Process</p>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Before filing any legal action, parties agree to attempt to resolve 
+                                    disputes through good faith negotiation for at least 30 days.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Farmer Grievance -->
+                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6">
+                        <h4 class="font-semibold text-green-800 dark:text-green-400 mb-4 flex items-center gap-2">
+                            <i class="fas fa-headset"></i>
+                            Farmer Grievance Redressal
+                        </h4>
+                        <p class="text-green-700 dark:text-green-300 mb-3">
+                            For farmers with limited digital access, we provide alternative dispute resolution:
+                        </p>
+                        <ul class="space-y-2 text-green-700 dark:text-green-300">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-phone-alt mt-1"></i>
+                                <span>Toll-free helpline: 1800-XXX-XXXX (Available in local languages)</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-envelope mt-1"></i>
+                                <span>Email: grievances@zoopito.com</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-map-marker-alt mt-1"></i>
+                                <span>Field office visits by regional coordinators</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 10: Updates to Terms -->
+            <section id="updates" class="terms-section scroll-mt-24">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">10. Updates to Terms</h2>
+                
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-bell text-orange-600 dark:text-orange-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white">Modification Rights</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">We may update these Terms</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-calendar-alt text-blue-500 mt-1"></i>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">30-Day Notice</p>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    We will provide at least 30 days' notice before implementing material changes 
+                                    to these Terms.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-envelope text-green-500 mt-1"></i>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">Notification Methods</p>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Registered users will receive email notifications. All users will see 
+                                    in-platform notifications and updated terms on our website.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-user-check text-purple-500 mt-1"></i>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">Continued Use</p>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Your continued use of the Platform after changes take effect constitutes 
+                                    acceptance of the modified Terms.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Current Version</p>
+                                <p class="font-semibold text-gray-900 dark:text-white">v3.2</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Effective Date</p>
+                                <p class="font-semibold text-gray-900 dark:text-white"><%= new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 11: Contact Information -->
+            <section id="contact" class="terms-section scroll-mt-24">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">11. Contact Information</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-blue-500 to-green-500 rounded-xl p-6 text-white">
+                        <h4 class="font-semibold text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-building"></i>
+                            Company Information
+                        </h4>
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-home text-white/80"></i>
+                                <div>
+                                    <p class="font-medium text-white">Registered Office</p>
+                                    <p class="text-white/90 text-sm">
+                                        Zoopito Technologies Private Limited<br>
+                                        123 Tech Park, Hinjewadi Phase 3<br>
+                                        Pune, Maharashtra 411057<br>
+                                        India
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-envelope text-white/80"></i>
+                                <div>
+                                    <p class="font-medium text-white">Legal Email</p>
+                                    <p class="text-white/90">legal@zoopito.com</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-phone text-white/80"></i>
+                                <div>
+                                    <p class="font-medium text-white">Phone</p>
+                                    <p class="text-white/90">+91 20 XXXX XXXX</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-4">Contact by User Type</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">For farmers:</p>
+                                <p class="font-medium text-gray-900 dark:text-white">support@zoopito.com</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">For veterinarians:</p>
+                                <p class="font-medium text-gray-900 dark:text-white">vetsupport@zoopito.com</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">For partners:</p>
+                                <p class="font-medium text-gray-900 dark:text-white">partners@zoopito.com</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Working hours:</p>
+                                <p class="font-medium text-gray-900 dark:text-white">
+                                    Monday to Saturday, 9:00 AM to 6:00 PM IST<br>
+                                    Closed on national holidays
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Final Acceptance -->
+            <div class="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-8 text-white text-center">
+                <h3 class="text-2xl font-bold text-white mb-4">Acceptance Confirmation</h3>
+                <p class="text-white/90 mb-6 max-w-2xl mx-auto">
+                    By clicking "Accept Terms" or by using the Zoopito Platform, you acknowledge that you have 
+                    read, understood, and agree to be bound by these Terms and Conditions.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="handleAcceptance()" 
+                            class="px-8 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:shadow-xl 
+                                   hover:scale-105 transition-all duration-300">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        I Accept These Terms
+                    </button>
+                    <button onclick="window.print()" 
+                            class="px-8 py-3 border-2 border-white text-white font-semibold rounded-xl 
+                                   hover:bg-white/10 transition-all duration-300">
+                        <i class="fas fa-print mr-2"></i>
+                        Print Terms
+                    </button>
+                </div>
+                <p class="text-white/70 text-sm mt-4">
+                    Version 3.2 | Effective <%= new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Terms acceptance functionality
+    const termsCheckbox = document.getElementById('termsAcceptance');
+    const acceptButton = document.querySelector('.acceptance-toggle button');
+    
+    termsCheckbox.addEventListener('change', function() {
+        acceptButton.disabled = !this.checked;
+    });
+    
+    function handleAcceptance() {
+        if (!termsCheckbox.checked) {
+            alert('Please check the box to indicate you have read and agree to the Terms.');
+            return;
+        }
+        
+        // Store acceptance in localStorage
+        localStorage.setItem('zoopito_terms_accepted', JSON.stringify({
+            version: '3.2',
+            date: new Date().toISOString(),
+            ip: 'recorded' // In production, you'd record the IP
+        }));
+        
+        // Show success message
+        alert('Thank you for accepting the Terms and Conditions! You may now proceed to use the platform.');
+        
+        // In production, this would redirect to dashboard or next step
+        // window.location.href = '/dashboard';
+    }
+    
+    // Check if already accepted
+    document.addEventListener('DOMContentLoaded', function() {
+        const accepted = localStorage.getItem('zoopito_terms_accepted');
+        if (accepted) {
+            const data = JSON.parse(accepted);
+            if (data.version === '3.2') {
+                termsCheckbox.checked = true;
+                acceptButton.disabled = false;
+            }
+        }
+    });
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            if (targetId !== '#') {
+                const target = document.querySelector(targetId);
+                if (target) {
+                    const offset = 80;
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+    
+    // Update active section in TOC
+    window.addEventListener('scroll', function() {
+        const sections = document.querySelectorAll('.terms-section');
+        const scrollPosition = window.scrollY + 100;
+        
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+            const sectionId = section.getAttribute('id');
+            
+            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                document.querySelectorAll('.sticky nav a').forEach(link => {
+                    link.classList.remove('text-blue-600', 'dark:text-blue-400', 'font-medium');
+                    link.classList.add('text-gray-700', 'dark:text-gray-300');
+                });
+                
+                const activeLink = document.querySelector(`.sticky nav a[href="#${sectionId}"]`);
+                if (activeLink) {
+                    activeLink.classList.remove('text-gray-700', 'dark:text-gray-300');
+                    activeLink.classList.add('text-blue-600', 'dark:text-blue-400', 'font-medium');
+                }
+            }
+        });
+    });
+    
+    // Print functionality
+    function printTerms() {
+        window.print();
+    }
+</script>
+
+<style>
+    /* Print styles */
+    @media print {
+        .sticky,
+        #footerBackToTop,
+        .no-print,
+        .acceptance-toggle,
+        .bg-gradient-to-r {
+            display: none !important;
+        }
+        
+        body {
+            font-size: 12pt;
+            line-height: 1.5;
+        }
+        
+        .terms-section {
+            break-inside: avoid;
+            border: none !important;
+            padding-left: 0 !important;
+        }
+        
+        .bg-gradient-to-r,
+        .shadow-sm,
+        .shadow-xl {
+            background: white !important;
+            color: black !important;
+            box-shadow: none !important;
+        }
+        
+        a[href^="#"]::after {
+            content: " (page " target-counter(attr(href url), page) ")";
+        }
+    }
+    
+    /* Custom scrollbar for terms */
+    .terms-section::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .terms-section::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .terms-section::-webkit-scrollbar-thumb {
+        background: linear-gradient(to bottom, #38BDF8, #22C55E);
+        border-radius: 3px;
+    }
+    
+    .terms-section::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(to bottom, #0ea5e9, #16a34a);
+    }
+</style>

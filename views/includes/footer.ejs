@@ -1,0 +1,482 @@
+<!-- Offline Banner (Enhanced) -->
+<div id="offline-banner" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 w-11/12 max-w-md bg-gradient-to-r from-red-600 to-orange-500 text-white p-4 rounded-xl shadow-2xl z-50 backdrop-blur-sm border border-red-300/30 animate-pulse">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+        <i class="fas fa-wifi-slash text-white"></i>
+      </div>
+      <div>
+        <h5 class="font-bold text-base mb-0.5">Connection Lost</h5>
+        <p class="text-xs opacity-90">Working offline - Limited functionality</p>
+      </div>
+    </div>
+    <button onclick="retryConnection()" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors">
+      Retry
+    </button>
+  </div>
+  <div class="mt-3 h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
+    <div id="connectionTimer" class="h-full bg-white/50 rounded-full animate-[shrink_60s_linear_infinite]"></div>
+  </div>
+</div>
+
+<div id="offline-overlay" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40 pointer-events-auto"></div>
+
+<!-- Online Banner -->
+<div id="online-banner" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 w-11/12 max-w-md bg-gradient-to-r from-green-600 to-emerald-500 text-white p-4 rounded-xl shadow-2xl z-50 backdrop-blur-sm border border-green-300/30">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+        <i class="fas fa-wifi text-white"></i>
+      </div>
+      <div>
+        <h5 class="font-bold text-base mb-0.5">Back Online!</h5>
+        <p class="text-xs opacity-90">Connection restored. Sync in progress...</p>
+      </div>
+    </div>
+    <button onclick="hideBanner('online')" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors">
+      Dismiss
+    </button>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gradient-to-b from-gray-900 to-black text-gray-100 pt-12 pb-8 border-t border-gray-800">
+  <div class="container mx-auto px-4 md:px-8">
+    
+    <!-- Main Footer Content -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+      
+      <!-- Brand & Description -->
+      <div class="lg:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <img src="/images/logo.png" alt="Zoopito" class="h-10 zoopito-logo">
+          <span class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
+            Zoopito
+          </span>
+        </div>
+        <p class="text-gray-300 mb-6 max-w-md">
+          Revolutionizing livestock management through data intelligence. 
+          Empowering farmers, veterinarians, and government agencies with 
+          cutting-edge technology for animal health and productivity.
+        </p>
+        
+        <!-- Newsletter Subscription -->
+        <div class="mb-6">
+          <h4 class="text-sm font-semibold text-white mb-3">Stay Updated</h4>
+          <div class="flex gap-2">
+            <input type="email" 
+                   placeholder="Your email address" 
+                   class="flex-1 px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <button class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-green-500 text-white font-medium rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Subscribe for updates and livestock insights</p>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h4 class="text-lg font-bold text-white mb-6 pb-2 border-b border-gray-800 inline-block">
+          Quick Links
+        </h4>
+        <ul class="space-y-3">
+          <li>
+            <a href="/" class="flex items-center gap-2 text-gray-300 hover:text-blue-400 hover:translate-x-1 transition-all duration-200 group">
+              <i class="fas fa-home text-blue-500 text-sm group-hover:scale-110 transition-transform"></i>
+              <span>Home</span>
+            </a>
+          </li>
+          <li>
+            <a href="/about" class="flex items-center gap-2 text-gray-300 hover:text-green-400 hover:translate-x-1 transition-all duration-200 group">
+              <i class="fas fa-info-circle text-green-500 text-sm group-hover:scale-110 transition-transform"></i>
+              <span>About Us</span>
+            </a>
+          </li>
+          <li>
+            <a href="/services" class="flex items-center gap-2 text-gray-300 hover:text-purple-400 hover:translate-x-1 transition-all duration-200 group">
+              <i class="fas fa-concierge-bell text-purple-500 text-sm group-hover:scale-110 transition-transform"></i>
+              <span>Services</span>
+            </a>
+          </li>
+          <li>
+            <a href="/contact" class="flex items-center gap-2 text-gray-300 hover:text-yellow-400 hover:translate-x-1 transition-all duration-200 group">
+              <i class="fas fa-envelope text-yellow-500 text-sm group-hover:scale-110 transition-transform"></i>
+              <span>Contact Us</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Resources -->
+      <div>
+        <h4 class="text-lg font-bold text-white mb-6 pb-2 border-b border-gray-800 inline-block">
+          Resources
+        </h4>
+        <ul class="space-y-3">
+          <li>
+            <a href="/docs" class="flex items-center gap-2 text-gray-300 hover:text-blue-400 hover:translate-x-1 transition-all duration-200 group">
+              <i class="fas fa-book text-blue-500 text-sm group-hover:scale-110 transition-transform"></i>
+              <span>Documentation</span>
+            </a>
+          </li>
+          <li>
+            <a href="/blog" class="flex items-center gap-2 text-gray-300 hover:text-green-400 hover:translate-x-1 transition-all duration-200 group">
+              <i class="fas fa-blog text-green-500 text-sm group-hover:scale-110 transition-transform"></i>
+              <span>Blog & News</span>
+            </a>
+          </li>
+          <li>
+            <a href="/faq" class="flex items-center gap-2 text-gray-300 hover:text-purple-400 hover:translate-x-1 transition-all duration-200 group">
+              <i class="fas fa-question-circle text-purple-500 text-sm group-hover:scale-110 transition-transform"></i>
+              <span>FAQs</span>
+            </a>
+          </li>
+          <li>
+            <a href="/support" class="flex items-center gap-2 text-gray-300 hover:text-yellow-400 hover:translate-x-1 transition-all duration-200 group">
+              <i class="fas fa-headset text-yellow-500 text-sm group-hover:scale-110 transition-transform"></i>
+              <span>Support Center</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Legal & Contact -->
+      <div>
+        <h4 class="text-lg font-bold text-white mb-6 pb-2 border-b border-gray-800 inline-block">
+          Legal & Contact
+        </h4>
+        <ul class="space-y-3 mb-6">
+          <li>
+            <a href="/privacy-policy" class="flex items-center gap-2 text-gray-300 hover:text-blue-400 transition-colors duration-200 group">
+              <i class="fas fa-shield-alt text-blue-500 text-sm"></i>
+              <span>Privacy Policy</span>
+            </a>
+          </li>
+          <li>
+            <a href="/terms-conditions" class="flex items-center gap-2 text-gray-300 hover:text-green-400 transition-colors duration-200 group">
+              <i class="fas fa-file-contract text-green-500 text-sm"></i>
+              <span>Terms of Service</span>
+            </a>
+          </li>
+          <li>
+            <a href="/cookies" class="flex items-center gap-2 text-gray-300 hover:text-purple-400 transition-colors duration-200 group">
+              <i class="fas fa-cookie text-purple-500 text-sm"></i>
+              <span>Cookie Policy</span>
+            </a>
+          </li>
+        </ul>
+        
+        <!-- Contact Info -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-3 text-gray-300">
+            <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+              <i class="fas fa-phone text-blue-400 text-sm"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Support Hotline</p>
+              <p class="text-sm font-medium">+91 1800-XXX-XXXX</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 text-gray-300">
+            <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+              <i class="fas fa-envelope text-green-400 text-sm"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Email Support</p>
+              <p class="text-sm font-medium">support@zoopito.com</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="my-8 border-t border-gray-800"></div>
+
+    <!-- Bottom Footer -->
+    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+      
+      <!-- Social Media -->
+      <div>
+        <h5 class="text-sm font-semibold text-gray-400 mb-3">Connect With Us</h5>
+        <div class="flex items-center gap-3">
+          <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200" 
+             aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-pink-600 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200"
+             aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-blue-400 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200"
+             aria-label="Twitter">
+            <i class="fab fa-twitter"></i>
+          </a>
+          <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-green-500 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200"
+             aria-label="WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+          </a>
+          <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-red-600 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200"
+             aria-label="YouTube">
+            <i class="fab fa-youtube"></i>
+          </a>
+          <a href="https://github.com" class="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all duration-200"
+             aria-label="GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Copyright & Badges -->
+      <div class="text-center md:text-right">
+        <div class="flex flex-wrap items-center justify-center md:justify-end gap-4 mb-3">
+          <span class="px-3 py-1 bg-gray-800 text-gray-300 text-xs font-medium rounded-full">
+            <i class="fas fa-shield-alt mr-1"></i> GDPR Compliant
+          </span>
+          <span class="px-3 py-1 bg-gray-800 text-gray-300 text-xs font-medium rounded-full">
+            <i class="fas fa-lock mr-1"></i> 256-bit SSL
+          </span>
+          <span class="px-3 py-1 bg-gray-800 text-gray-300 text-xs font-medium rounded-full">
+            <i class="fas fa-mobile-alt mr-1"></i> Mobile First
+          </span>
+        </div>
+        
+        <p class="text-gray-400 text-sm">
+          &copy; <%= new Date().getFullYear() %> Zoopito Livestock Intelligence Platform. 
+          <span class="block md:inline">All rights reserved.</span>
+        </p>
+        <p class="text-gray-500 text-xs mt-2">
+          Made with <i class="fas fa-heart text-red-400 mx-1"></i> for farmers & veterinarians
+          <span class="mx-2">•</span>
+          Version 1.0.0
+        </p>
+      </div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button id="footerBackToTop" 
+            class="fixed bottom-24 right-6 w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 z-40 flex items-center justify-center"
+            aria-label="Back to top">
+      <i class="fas fa-chevron-up text-lg"></i>
+    </button>
+  </div>
+</footer>
+
+<!-- JavaScript for Enhanced Offline/Online Handling -->
+<script>
+  // Enhanced connection management
+  let offlineTimer;
+  let connectionCheckInterval;
+
+  function showOfflineBanner() {
+    const banner = document.getElementById('offline-banner');
+    const overlay = document.getElementById('offline-overlay');
+    const onlineBanner = document.getElementById('online-banner');
+    
+    if (onlineBanner) onlineBanner.classList.add('hidden');
+    banner.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+    
+    // Start connection timer animation
+    const timer = document.getElementById('connectionTimer');
+    timer.style.animation = 'shrink 60s linear infinite';
+    
+    // Disable critical interactions
+    disableCriticalInteractions();
+    
+    // Start periodic connection checks
+    startConnectionCheck();
+    
+    // Notify user
+    if (Notification.permission === 'granted') {
+      new Notification('Zoopito - Offline Mode', {
+        body: 'You are offline. Some features are limited.',
+        icon: '/images/logo.png'
+      });
+    }
+  }
+
+  function showOnlineBanner() {
+    const banner = document.getElementById('offline-banner');
+    const overlay = document.getElementById('offline-overlay');
+    const onlineBanner = document.getElementById('online-banner');
+    
+    banner.classList.add('hidden');
+    overlay.classList.add('hidden');
+    
+    if (onlineBanner) {
+      onlineBanner.classList.remove('hidden');
+      setTimeout(() => {
+        onlineBanner.classList.add('hidden');
+      }, 5000);
+    }
+    
+    // Enable interactions
+    enableCriticalInteractions();
+    
+    // Stop connection checks
+    stopConnectionCheck();
+    
+    // Sync offline data if any
+    syncOfflineData();
+  }
+
+  function retryConnection() {
+    if (navigator.onLine) {
+      showOnlineBanner();
+    } else {
+      // Show retrying animation
+      const button = document.querySelector('#offline-banner button');
+      const originalText = button.textContent;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      button.disabled = true;
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.disabled = false;
+        
+        if (!navigator.onLine) {
+          alert('Still offline. Please check your internet connection.');
+        }
+      }, 2000);
+    }
+  }
+
+  function hideBanner(type) {
+    const banner = document.getElementById(type + '-banner');
+    if (banner) banner.classList.add('hidden');
+  }
+
+  function disableCriticalInteractions() {
+    const criticalElements = document.querySelectorAll('form, [data-requires-online="true"], .critical-action');
+    criticalElements.forEach(el => {
+      el.style.opacity = '0.6';
+      el.style.pointerEvents = 'none';
+      el.title = 'Action disabled while offline';
+    });
+  }
+
+  function enableCriticalInteractions() {
+    const criticalElements = document.querySelectorAll('form, [data-requires-online="true"], .critical-action');
+    criticalElements.forEach(el => {
+      el.style.opacity = '';
+      el.style.pointerEvents = '';
+      el.title = '';
+    });
+  }
+
+  function startConnectionCheck() {
+    connectionCheckInterval = setInterval(() => {
+      if (navigator.onLine) {
+        showOnlineBanner();
+      }
+    }, 5000); // Check every 5 seconds
+  }
+
+  function stopConnectionCheck() {
+    if (connectionCheckInterval) {
+      clearInterval(connectionCheckInterval);
+    }
+  }
+
+  function syncOfflineData() {
+    // Check if there's offline data to sync
+    const offlineData = localStorage.getItem('zoopito_offline_data');
+    if (offlineData) {
+      console.log('Syncing offline data...');
+      // Implement your sync logic here
+      // This could be sending queued API requests, etc.
+    }
+  }
+
+  // Initialize connection status
+  window.addEventListener('load', () => {
+    if (!navigator.onLine) {
+      showOfflineBanner();
+    }
+  });
+
+  window.addEventListener('online', showOnlineBanner);
+  window.addEventListener('offline', showOfflineBanner);
+
+  // Back to top functionality
+  document.getElementById('footerBackToTop')?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Newsletter form handling
+  document.querySelector('footer input[type="email"]')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      subscribeNewsletter();
+    }
+  });
+
+  function subscribeNewsletter() {
+    const emailInput = document.querySelector('footer input[type="email"]');
+    const email = emailInput.value.trim();
+    
+    if (!email || !validateEmail(email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    
+    // Simulate subscription (replace with actual API call)
+    emailInput.value = '';
+    alert('Thank you for subscribing to Zoopito updates!');
+  }
+
+  function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  }
+
+  // Add animation for the shrink effect
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes shrink {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+  `;
+  document.head.appendChild(style);
+</script>
+
+<style>
+  /* Custom styles for footer */
+  .zoopito-logo {
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.3));
+  }
+  
+  footer a:hover {
+    text-decoration: none;
+  }
+  
+  /* Gradient border effect on hover */
+  footer .social-link {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  footer .social-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  footer .social-link:hover::before {
+    left: 100%;
+  }
+  
+  /* Pulse animation for online indicator */
+  @keyframes pulse-online {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+</style>

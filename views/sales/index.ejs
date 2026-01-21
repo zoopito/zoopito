@@ -1,0 +1,92 @@
+<% layout("/layouts/boilerplate") %>
+<div class="w-full">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">
+      👋 Welcome, <%= User.name %>
+    </h1>
+    <p class="text-gray-600 mt-1">
+      <%= shortDescription %>
+    </p>
+  </div>
+
+  <!-- Dashboard Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+    <!-- Farmers -->
+    <div class="bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500">Total Farmers</p>
+          <h2 class="text-3xl font-bold text-green-600 mt-1">
+            <%= farmersCount %>
+          </h2>
+        </div>
+        <div class="bg-green-100 text-green-600 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M9 20H4v-2a3 3 0 015.356-1.857M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animals -->
+    <div class="bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500">Total Animals</p>
+          <h2 class="text-3xl font-bold text-blue-600 mt-1">
+            <%= animalsCount %>
+          </h2>
+        </div>
+        <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6c3.314 0 6-1.343 6-3s-2.686-3-6-3-6 1.343-6 3 2.686 3 6 3z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="mt-10">
+    <h2 class="text-lg font-semibold text-gray-800 mb-4">
+      Quick Actions
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <a href="/sales/farmers/new"
+        class="block bg-green-600 text-white rounded-lg px-5 py-4 hover:bg-green-700 transition">
+        <h3 class="font-semibold text-lg">➕ Add Farmer</h3>
+        <p class="text-sm opacity-90 mt-1">
+          Register a new farmer into the system
+        </p>
+      </a>
+
+      <a href="/sales/animals/new"
+        class="block bg-blue-600 text-white rounded-lg px-5 py-4 hover:bg-blue-700 transition">
+        <h3 class="font-semibold text-lg">➕ Add Animal</h3>
+        <p class="text-sm opacity-90 mt-1">
+          Add animals under a farmer
+        </p>
+      </a>
+
+      <a href="/sales/farmers"
+        class="block bg-gray-800 text-white rounded-lg px-5 py-4 hover:bg-gray-900 transition">
+        <h3 class="font-semibold text-lg">📋 View Farmers</h3>
+        <p class="text-sm opacity-90 mt-1">
+          View and manage registered farmers
+        </p>
+      </a>
+
+    </div>
+  </div>
+
+</div>

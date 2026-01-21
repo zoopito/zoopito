@@ -1,0 +1,108 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="max-w-7xl mx-auto space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
+        Sales Team Member Details
+      </h1>
+      <p class="text-gray-500 text-sm">
+        Employee Code: <span class="font-semibold"><%= salesMember.employeeCode %></span>
+      </p>
+    </div>
+
+    <span class="px-3 py-1 rounded-full text-sm font-medium
+      <%= salesMember.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+      <%= salesMember.isActive ? "Active" : "Inactive" %>
+    </span>
+  </div>
+
+  <!-- Profile Card -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Basic Info -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+      <h2 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">
+        Basic Information
+      </h2>
+
+      <ul class="text-sm space-y-2 text-gray-600 dark:text-gray-300">
+        <li><strong>Name:</strong> <%= salesMember.user.name %></li>
+        <li><strong>Email:</strong> <%= salesMember.user.email %></li>
+        <li><strong>Phone:</strong> <%= salesMember.user.phone || "N/A" %></li>
+        <li><strong>Role:</strong> <%= salesMember.user.role %></li>
+        <li><strong>Joined:</strong> <%= salesMember.createdAt.toDateString() %></li>
+      </ul>
+    </div>
+
+    <!-- Assigned Areas -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+      <h2 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">
+        Assigned Areas
+      </h2>
+
+      <% if (salesMember.assignedAreas.length === 0) { %>
+        <p class="text-sm text-gray-500">No area assigned</p>
+      <% } %>
+
+      <% salesMember.assignedAreas.forEach(area => { %>
+        <div class="border rounded-lg p-3 mb-2 text-sm">
+          <p><strong>Village:</strong> <%= area.village %></p>
+          <p><strong>Taluka:</strong> <%= area.taluka %></p>
+          <p><strong>District:</strong> <%= area.district %></p>
+          <p><strong>State:</strong> <%= area.state %></p>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- Activity Stats -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+      <h2 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">
+        Activity Overview
+      </h2>
+
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span>Farmers Onboarded</span>
+          <span class="font-semibold"><%= salesMember.onboardedFarmers.length %></span>
+        </div>
+
+        <div class="flex justify-between">
+          <span>Animals Registered</span>
+          <span class="font-semibold"><%= salesMember.onboardedAnimals.length %></span>
+        </div>
+
+        <div class="flex justify-between">
+          <span>Last Active</span>
+          <span>
+            <%= salesMember.lastActiveAt ? salesMember.lastActiveAt.toDateString() : "Never" %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Notes -->
+  <% if (salesMember.remarks) { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+      <h2 class="font-semibold text-gray-700 dark:text-gray-200 mb-2">
+        Remarks
+      </h2>
+      <p class="text-sm text-gray-600 dark:text-gray-300">
+        <%= salesMember.remarks %>
+      </p>
+    </div>
+  <% } %>
+
+  <!-- Back Button -->
+  <div>
+    <a href="/admin/sales-team"
+       class="inline-block px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800">
+      ← Back to Sales Team
+    </a>
+  </div>
+
+</div>

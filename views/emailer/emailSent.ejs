@@ -1,0 +1,101 @@
+<% layout("/layouts/boilerplate") -%>
+
+<div class="min-h-screen flex items-center justify-center 
+            bg-gradient-to-br from-green-200 via-green-50 to-green-100 
+            dark:from-gray-900 dark:via-gray-800 dark:to-gray-900
+            px-4 transition-all">
+
+  <div class="w-full max-w-md">
+
+    <!-- Card -->
+    <div class="bg-white/70 dark:bg-gray-800/60 backdrop-blur-xl
+                rounded-2xl shadow-xl p-8 border
+                border-white/40 dark:border-gray-700
+                transition-all">
+
+      <!-- Brand -->
+      <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-green-700 dark:text-green-400">
+          Zoopito
+        </h1>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          Secure Access Portal
+        </p>
+      </div>
+
+      <!-- Title -->
+      <div class="text-center mb-4">
+        <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+          Reset Your Password
+        </h2>
+
+        <% if (message && !alertmsg) { %>
+          <p class="mt-2 text-sm text-yellow-600 dark:text-yellow-400">
+            <%= message %>
+          </p>
+        <% } else if (message) { %>
+          <p class="mt-2 text-sm text-red-600 dark:text-red-400">
+            <%= message %>
+          </p>
+        <% } %>
+      </div>
+
+      <!-- Description -->
+      <p class="text-sm text-gray-700 dark:text-gray-300 mb-6 text-center leading-relaxed">
+        Enter your registered email address.  
+        We will send you a secure link to reset your password.
+      </p>
+
+      <!-- Form -->
+      <form action="/forgot-password" method="POST" class="space-y-5">
+
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Registered Email Address
+          </label>
+
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            placeholder="example@zoopito.com"
+            class="w-full px-4 py-2 rounded-xl border
+                   border-gray-300 dark:border-gray-600
+                   bg-white dark:bg-gray-900
+                   text-gray-800 dark:text-gray-200
+                   focus:border-green-500 focus:ring-1 focus:ring-green-300
+                   outline-none transition"
+          />
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="w-full py-2.5 bg-green-600 hover:bg-green-700
+                 dark:bg-green-500 dark:hover:bg-green-600
+                 text-white font-semibold rounded-xl
+                 transition-all duration-300 shadow-md">
+          Send Reset Link
+        </button>
+
+      </form>
+
+      <!-- Footer -->
+      <div class="mt-6 text-center">
+        <a href="/login"
+           class="text-sm font-medium text-green-600 dark:text-green-400 hover:underline">
+          ← Back to Login
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Trust Text -->
+    <p class="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
+      Zoopito ensures secure access and data protection for all users.
+    </p>
+
+  </div>
+</div>

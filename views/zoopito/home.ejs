@@ -1,0 +1,588 @@
+<% layout("/layouts/boilerplate") -%>
+
+
+  
+       <style>
+            .hero-gradient {
+                background: linear-gradient(135deg, #38BDF8 0%, #22C55E 100%);
+            }
+            
+            .feature-card {
+                transition: all 0.3s ease;
+                border: 1px solid #e5e7eb;
+            }
+            
+            .feature-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                border-color: #38BDF8;
+            }
+            
+            .stats-counter {
+                font-feature-settings: "tnum";
+                font-variant-numeric: tabular-nums;
+            }
+            
+            .glow-effect {
+                box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+            }
+            
+            .partner-logo {
+                filter: grayscale(100%);
+                opacity: 0.7;
+                transition: all 0.3s ease;
+            }
+            
+            .partner-logo:hover {
+                filter: grayscale(0%);
+                opacity: 1;
+            }
+        </style>
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden">
+        <!-- Background Gradient -->
+        <div class="absolute inset-0 hero-gradient opacity-10"></div>
+        
+        <!-- Animated Background Elements -->
+        <div class="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div class="absolute bottom-20 right-10 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
+        
+        <div class="relative container mx-auto px-6 py-20 md:py-32">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- Left Content -->
+                <div class="text-center md:text-left" data-aos="fade-right">
+                    <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 mb-6">
+                        <i class="fas fa-seedling mr-2"></i>
+                        <span class="text-sm font-medium">Revolutionizing Livestock Management</span>
+                    </div>
+                    
+                    <h1 class="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+                        Data-Driven
+                        <span class="bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
+                            Livestock Intelligence
+                        </span>
+                        Platform
+                    </h1>
+                    
+                    <p class="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-2xl">
+                        Collect, manage, and analyze livestock & pet data with our comprehensive platform. 
+                        Built for farmers, veterinarians, and government agencies across India.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <a href="/register" 
+                           class="px-8 py-4 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3">
+                            <i class="fas fa-rocket"></i>
+                            Start Free Trial
+                        </a>
+                        
+                        <a href="#features" 
+                           class="px-8 py-4 border-2 border-blue-500 text-blue-600 dark:text-blue-400 font-semibold rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 flex items-center justify-center gap-3">
+                            <i class="fas fa-play-circle"></i>
+                            See How It Works
+                        </a>
+                    </div>
+                    
+                    <!-- Trust Badges -->
+                    <div class="mt-12 flex flex-wrap items-center justify-center md:justify-start gap-8">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                                <i class="fas fa-shield-alt text-green-600 dark:text-green-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">GDPR Compliant</p>
+                                <p class="font-semibold text-gray-900 dark:text-white">Data Security</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                <i class="fas fa-mobile-alt text-blue-600 dark:text-blue-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Works Offline</p>
+                                <p class="font-semibold text-gray-900 dark:text-white">Field Ready</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Content - Dashboard Preview -->
+                <div class="relative" data-aos="fade-left">
+                    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <!-- Mock Dashboard -->
+                        <div class="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <div class="flex-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Zoopito Dashboard Preview
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <!-- Stats Row -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl">
+                                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 stats-counter">1,245</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Farmers</p>
+                                </div>
+                                <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl">
+                                    <p class="text-2xl font-bold text-green-600 dark:text-green-400 stats-counter">5,678</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Animals</p>
+                                </div>
+                                <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl">
+                                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 stats-counter">89%</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Vaccination Rate</p>
+                                </div>
+                                <div class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl">
+                                    <p class="text-2xl font-bold text-orange-600 dark:text-orange-400 stats-counter">45</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Villages Covered</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Chart Preview -->
+                            <div class="h-40 bg-gradient-to-r from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-900 rounded-xl mb-4 flex items-end p-4">
+                                <div class="flex-1 flex items-end justify-between">
+                                    <div class="w-6 bg-blue-400 rounded-t h-16"></div>
+                                    <div class="w-6 bg-green-400 rounded-t h-24"></div>
+                                    <div class="w-6 bg-blue-400 rounded-t h-20"></div>
+                                    <div class="w-6 bg-green-400 rounded-t h-28"></div>
+                                    <div class="w-6 bg-blue-400 rounded-t h-18"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Recent Activity -->
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user text-blue-600 dark:text-blue-400 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">New farmer registered</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">2 minutes ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-syringe text-green-600 dark:text-green-400 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">Vaccination completed</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">15 minutes ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating Elements -->
+                    <div class="absolute -top-4 -right-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-camera text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900 dark:text-white">4,560+</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Animal Photos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-16 bg-gray-50 dark:bg-gray-900/50">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="text-center" data-aos="fade-up">
+                    <p class="text-4xl md:text-5xl font-bold text-blue-600 dark:text-blue-400 mb-2 stats-counter">50,000+</p>
+                    <p class="text-gray-600 dark:text-gray-400">Animals Tracked</p>
+                </div>
+                <div class="text-center" data-aos="fade-up" data-aos-delay="100">
+                    <p class="text-4xl md:text-5xl font-bold text-green-600 dark:text-green-400 mb-2 stats-counter">10,000+</p>
+                    <p class="text-gray-600 dark:text-gray-400">Farmers Registered</p>
+                </div>
+                <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+                    <p class="text-4xl md:text-5xl font-bold text-purple-600 dark:text-purple-400 mb-2 stats-counter">500+</p>
+                    <p class="text-gray-600 dark:text-gray-400">Villages Covered</p>
+                </div>
+                <div class="text-center" data-aos="fade-up" data-aos-delay="300">
+                    <p class="text-4xl md:text-5xl font-bold text-orange-600 dark:text-orange-400 mb-2 stats-counter">200+</p>
+                    <p class="text-gray-600 dark:text-gray-400">Veterinarians</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white dark:bg-gray-900">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    Everything You Need for
+                    <span class="bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
+                        Modern Livestock Management
+                    </span>
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    From data collection to analytics, Zoopito provides a complete solution for livestock management
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-gray-50 dark:bg-gray-800 rounded-2xl p-8" data-aos="fade-up">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 glow-effect">
+                        <i class="fas fa-id-card text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Farmer Registration</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                        Quick registration with GPS location capture, photograph upload, and unique ID generation for each farmer.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            GPS Auto-capture
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Photo Documentation
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Unique Farmer ID
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="feature-card bg-gray-50 dark:bg-gray-800 rounded-2xl p-8" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 glow-effect">
+                        <i class="fas fa-paw text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Animal Registration</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                        Comprehensive animal profiles with breed, age, gender, production status, and multi-angle photo documentation.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Multiple Animal Types
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            4-Angle Photography
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Production Tracking
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="feature-card bg-gray-50 dark:bg-gray-800 rounded-2xl p-8" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 glow-effect">
+                        <i class="fas fa-syringe text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Vaccination Tracking</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                        Complete vaccination history with automated reminders, service provider tracking, and due date alerts.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Automated Reminders
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Service History
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Due Date Alerts
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="feature-card bg-gray-50 dark:bg-gray-800 rounded-2xl p-8" data-aos="fade-up">
+                    <div class="w-16 h-16 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center mb-6 glow-effect">
+                        <i class="fas fa-map-marker-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Paravet Auto-Assignment</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                        Intelligent assignment of paravets to villages with automatic farmer visibility and GPS-based tracking.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Village-wise Mapping
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Auto Farmer Assignment
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            GPS Location Tracking
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="feature-card bg-gray-50 dark:bg-gray-800 rounded-2xl p-8" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 glow-effect">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Analytics Dashboard</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                        Powerful analytics with species-wise data, village coverage metrics, and performance tracking dashboards.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Real-time Analytics
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Species-wise Reports
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Performance Metrics
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="feature-card bg-gray-50 dark:bg-gray-800 rounded-2xl p-8" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-16 h-16 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 glow-effect">
+                        <i class="fas fa-file-export text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Data Export & Reporting</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                        Export data in Excel/CSV format with flexible filters for government reports, insurance, and impact studies.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Excel/CSV Export
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Custom Filters
+                        </li>
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            Government Reports
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-900/50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    Simple 4-Step Process
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    Get started with Zoopito in just four easy steps
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center" data-aos="fade-up">
+                    <div class="relative mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mx-auto text-white text-2xl font-bold">
+                            1
+                        </div>
+                        <div class="absolute -right-4 top-1/2 transform -translate-y-1/2 w-8 h-0.5 bg-gray-300 dark:bg-gray-700 hidden lg:block"></div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Register Farmer</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Collect farmer details with GPS location and photograph
+                    </p>
+                </div>
+                
+                <div class="text-center" data-aos="fade-up" data-aos-delay="100">
+                    <div class="relative mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-yellow-500 rounded-full flex items-center justify-center mx-auto text-white text-2xl font-bold">
+                            2
+                        </div>
+                        <div class="absolute -right-4 top-1/2 transform -translate-y-1/2 w-8 h-0.5 bg-gray-300 dark:bg-gray-700 hidden lg:block"></div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Add Animals</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Register animals with complete profile and photos
+                    </p>
+                </div>
+                
+                <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+                    <div class="relative mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-r from-yellow-500 to-purple-500 rounded-full flex items-center justify-center mx-auto text-white text-2xl font-bold">
+                            3
+                        </div>
+                        <div class="absolute -right-4 top-1/2 transform -translate-y-1/2 w-8 h-0.5 bg-gray-300 dark:bg-gray-700 hidden lg:block"></div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Assign Services</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Auto-assign paravets and schedule vaccinations
+                    </p>
+                </div>
+                
+                <div class="text-center" data-aos="fade-up" data-aos-delay="300">
+                    <div class="relative mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto text-white text-2xl font-bold">
+                            4
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Track & Analyze</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Monitor progress and generate reports
+                    </p>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <a href="/register" 
+                   class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300">
+                    <i class="fas fa-play"></i>
+                    Watch Demo Video
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-blue-600 to-green-600">
+        <div class="container mx-auto px-6 text-center">
+            <div class="max-w-3xl mx-auto" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                    Ready to Transform Your Livestock Management?
+                </h2>
+                <p class="text-xl text-blue-100 mb-10">
+                    Join thousands of farmers, veterinarians, and organizations using Zoopito to streamline their operations
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/register" 
+                       class="px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3">
+                        <i class="fas fa-user-plus"></i>
+                        Start Free Trial
+                    </a>
+                    
+                    <a href="/contact" 
+                       class="px-8 py-4 border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-3">
+                        <i class="fas fa-calendar-alt"></i>
+                        Schedule a Demo
+                    </a>
+                </div>
+                
+                <p class="mt-8 text-blue-200">
+                    No credit card required • 30-day free trial • Cancel anytime
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partners Section -->
+    <section class="py-16 bg-white dark:bg-gray-900">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                    Trusted By
+                </p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    Government Agencies & NGOs
+                </h3>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
+                <div class="partner-logo">
+                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-500 dark:text-gray-400 font-semibold">Govt. Dept</span>
+                    </div>
+                </div>
+                <div class="partner-logo">
+                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-500 dark:text-gray-400 font-semibold">Insurance Co.</span>
+                    </div>
+                </div>
+                <div class="partner-logo">
+                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-500 dark:text-gray-400 font-semibold">NGO Partner</span>
+                    </div>
+                </div>
+                <div class="partner-logo">
+                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-500 dark:text-gray-400 font-semibold">Animal Health</span>
+                    </div>
+                </div>
+                <div class="partner-logo">
+                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-500 dark:text-gray-400 font-semibold">Dairy Board</span>
+                    </div>
+                </div>
+                <div class="partner-logo">
+                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-500 dark:text-gray-400 font-semibold">Agri-Tech</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript for Counter Animation -->
+    <script>
+        // Animated counter for stats
+        function animateCounter(element, target, duration = 2000) {
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 16);
+        }
+        
+        // Initialize counters when in viewport
+        document.addEventListener('DOMContentLoaded', function() {
+            const observerOptions = {
+                threshold: 0.5
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const counters = entry.target.querySelectorAll('.stats-counter');
+                        counters.forEach(counter => {
+                            const target = parseInt(counter.textContent.replace(/[^0-9]/g, ''));
+                            animateCounter(counter, target);
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+            
+            const statsSection = document.querySelector('section.bg-gray-50');
+            if (statsSection) {
+                observer.observe(statsSection);
+            }
+        });
+    </script>

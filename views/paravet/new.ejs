@@ -1,0 +1,149 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="max-w-5xl mx-auto px-4 py-6">
+
+  <!-- HEADER -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Add New Paravet</h1>
+    <p class="text-sm text-gray-500">
+      Admin can create a new user or assign an existing user as Paravet
+    </p>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-6">
+
+    <form action="/admin/paravets" method="POST" class="space-y-8">
+
+      <!-- USER DETAILS -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">
+          User Details
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div>
+            <label class="block text-sm font-medium mb-1">
+              Full Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="user[name]"
+              required
+              placeholder="Enter full name"
+              class="w-full rounded-md border px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">
+              Email <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              name="user[email]"
+              required
+              placeholder="Enter email address"
+              class="w-full rounded-md border px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">
+              Mobile Number <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="tel"
+              name="user[mobile]"
+              maxlength="10"
+              required
+              placeholder="10 digit mobile number"
+              class="w-full rounded-md border px-3 py-2 text-sm"
+            />
+          </div>
+
+          <!-- <div>
+            <label class="block text-sm font-medium mb-1">
+              Password
+              <span class="text-xs text-gray-400">(only if new user)</span>
+            </label>
+            <input
+              type="password"
+              name="user[password]"
+              placeholder="Set temporary password"
+              class="w-full rounded-md border px-3 py-2 text-sm"
+            />
+          </div> -->
+
+        </div>
+      </div>
+
+      <!-- PARAVET DETAILS -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">
+          Paravet Details
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div>
+            <label class="block text-sm font-medium mb-1">
+              Qualification <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="paravet[qualification]"
+              required
+              placeholder="Diploma / Degree"
+              class="w-full rounded-md border px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">
+              License Number
+            </label>
+            <input
+              type="text"
+              name="paravet[licenseNumber]"
+              placeholder="Unique license number"
+              class="w-full rounded-md border px-3 py-2 text-sm"
+            />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ASSIGNED AREA -->
+      <div class="border rounded-md p-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">
+          Assigned Area
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input name="paravet[assignedAreas][0][village]" placeholder="Village" class="border px-3 py-2 rounded-md text-sm"/>
+          <input name="paravet[assignedAreas][0][taluka]" placeholder="Taluka" class="border px-3 py-2 rounded-md text-sm"/>
+          <input name="paravet[assignedAreas][0][district]" placeholder="District" class="border px-3 py-2 rounded-md text-sm"/>
+          <input name="paravet[assignedAreas][0][state]" placeholder="State" class="border px-3 py-2 rounded-md text-sm"/>
+        </div>
+      </div>
+
+      <!-- STATUS -->
+      <div class="flex items-center gap-3">
+        <input type="checkbox" name="paravet[isActive]" checked />
+        <span class="text-sm text-gray-700">Mark as Active</span>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="flex gap-3">
+        <button class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+          Save Paravet
+        </button>
+        <a href="/admin/paravets" class="px-6 py-2 bg-gray-200 rounded-md">
+          Cancel
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>

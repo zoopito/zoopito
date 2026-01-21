@@ -1,0 +1,523 @@
+<style>
+  .zoopito-logo {
+    filter:
+      drop-shadow(0 0 6px rgba(56, 189, 248, 0.7))
+      drop-shadow(0 0 12px rgba(34, 197, 94, 0.4));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark .zoopito-logo {
+    filter:
+      drop-shadow(0 0 8px rgba(34, 197, 94, 0.8))
+      drop-shadow(0 0 18px rgba(56, 189, 248, 0.5));
+  }
+
+  .zoopito-logo:hover {
+    transform: scale(1.05) rotate(-2deg);
+  }
+
+  .nav-link-hover {
+    position: relative;
+  }
+
+  .nav-link-hover::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #38BDF8, #22C55E);
+    transition: width 0.3s ease;
+  }
+
+  .nav-link-hover:hover::after {
+    width: 100%;
+  }
+
+  .theme-toggle-btn {
+    background: linear-gradient(135deg, #38BDF8, #22C55E);
+    color: white;
+    transition: all 0.3s ease;
+  }
+
+  .theme-toggle-btn:hover {
+    transform: rotate(15deg) scale(1.1);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+  }
+
+  .notification-badge {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  .currUser-avatar {
+    background: linear-gradient(135deg, #38BDF8, #22C55E);
+    transition: transform 0.3s ease;
+  }
+
+  .currUser-avatar:hover {
+    transform: scale(1.1);
+  }
+</style>
+
+<nav class="bg-white dark:bg-gray-900 shadow-lg sticky top-0 z-50 transition-all duration-300 border-b border-gray-100 dark:border-gray-800">
+  <div class="max-w-8xl mx-auto px-6 py-3 flex items-center justify-between">
+    
+    <!-- LOGO & BRAND -->
+    <div class="flex items-center gap-3">
+      <a href="/" class="flex items-center gap-3 group">
+        <img src="/images/logo.png" alt="Zoopito" class="h-14 zoopito-logo">
+        <div class="flex flex-col">
+          <!-- <span class="text-2xl font-bold bg-gradient-to-r from-sky-500 to-green-500 bg-clip-text text-transparent">
+            Zoopito
+          </span>
+          <span class="text-xs text-gray-500 dark:text-gray-400 font-medium -mt-1">
+            Livestock Intelligence Platform
+          </span> -->
+        </div>
+      </a>
+      
+      <!-- ROLE BADGE (Conditional) -->
+      
+
+    <!-- DESKTOP MENU -->
+    <div class="hidden lg:flex items-center gap-1">
+      
+      <!-- MAIN NAVIGATION -->
+      <div class="flex items-center bg-gray-50 dark:bg-gray-800 rounded-full px-2 py-1 mr-4">
+        <% const active = "bg-gradient-to-r from-sky-500 to-green-500 text-white"; %>
+        <% const inactive = "text-gray-700 dark:text-gray-300 hover:text-sky-500 dark:hover:text-sky-400"; %>
+        
+        <a href="/" 
+           class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/' ? active : inactive %> nav-link-hover">
+          <i class="fas fa-home mr-2"></i>Home
+        </a>
+        
+        <!-- Conditional Menu Items based on Role -->
+        <% if (currUser) { %>
+          <% if (currUser.role === 'ADMIN') { %>
+            <a href="/admin/sales-team" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/sales-team') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-currUsers mr-2"></i>Sales Team
+            </a>
+            <a href="/admin/paravets" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/paravets') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-currUsers mr-2"></i>Paravets
+            </a>
+            <a href="/admin/farmers" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/farmers') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-currUsers mr-2"></i>Farmers
+            </a>
+            <a href="/admin/animals" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/animals') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-paw mr-2"></i>Animals
+            </a>
+            <a href="/admin/vaccinations" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/vaccinations') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-syringe mr-2"></i>Vaccinations
+            </a>
+            <!-- <a href="/admin/analytics" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/analytics') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-chart-line mr-2"></i>Analytics
+            </a> -->
+            <a href="/admin/settings" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/settings') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-cog mr-2"></i>Admin
+            </a>
+          <% } %>
+          
+          <% if (currUser.role === "SALES") { %>
+            <a href="/sales/farmers" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/sales/farmers') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-currUsers mr-2"></i>Farmers
+            </a>
+            
+            <a href="/sales/animals" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/sales/animals') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-paw mr-2"></i>Animals
+            </a>
+          <% } %>
+          
+          <% if (currUser.role === 'admin') { %>
+            <a href="/analytics" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/analytics') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-chart-line mr-2"></i>Analytics
+            </a>
+            
+            <a href="/admin" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-cog mr-2"></i>Admin
+            </a>
+          <% } %>
+        <% } else { %>
+          <!-- Public Menu Items -->
+          <a href="/services" 
+             class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/services' ? active : inactive %> nav-link-hover">
+            <i class="fas fa-concierge-bell mr-2"></i>Services
+          </a>
+          
+          <a href="/about" 
+             class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/about' ? active : inactive %> nav-link-hover">
+            <i class="fas fa-info-circle mr-2"></i>About
+          </a>
+          
+          <a href="/contact" 
+             class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/contact' ? active : inactive %> nav-link-hover">
+            <i class="fas fa-envelope mr-2"></i>Contact
+          </a>
+        <% } %>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="flex items-center gap-3">
+        
+
+        <!-- DARK MODE TOGGLE -->
+        <button id="themeToggle" 
+                class="theme-toggle-btn p-2.5 rounded-full shadow-md">
+          <i id="themeIcon" class="fas fa-moon text-sm"></i>
+        </button>
+
+        <!-- currUser PROFILE / LOGIN -->
+        <% if (currUser) { %>
+          <div class="relative">
+            <button id="currUserMenuBtn" 
+                    class="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <div class="currUser-avatar h-9 w-9 rounded-full flex items-center justify-center text-white font-semibold">
+                <%= currUser.name ? currUser.name.charAt(0).toUpperCase() : 'U' %>
+              </div>
+              <div class="text-left hidden xl:block">
+                <p class="text-sm font-medium text-gray-800 dark:text-white"><%= currUser.name || 'currUser' %></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400"><%= currUser.role || 'Guest' %></p>
+              </div>
+              <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+            </button>
+            
+            <!-- currUser DROPDOWN MENU -->
+            <div id="currUserDropdown" 
+                 class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
+              <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                <p class="font-medium text-gray-800 dark:text-white"><%= currUser.name || 'currUser' %></p>
+                <p class="text-sm text-gray-500 dark:text-gray-400"><%= currUser.email || '' %></p>
+              </div>
+              
+              <a href="/profile" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <i class="fas fa-currUser text-gray-500 w-5"></i>
+                <span class="text-gray-700 dark:text-gray-300">My Profile</span>
+              </a>
+              
+              <a href="/settings" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <i class="fas fa-cog text-gray-500 w-5"></i>
+                <span class="text-gray-700 dark:text-gray-300">Settings</span>
+              </a>
+              
+              <% if (currUser.role === 'admin') { %>
+                <a href="/admin/reports" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <i class="fas fa-file-export text-gray-500 w-5"></i>
+                  <span class="text-gray-700 dark:text-gray-300">Export Data</span>
+                </a>
+              <% } %>
+              
+              <div class="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2">
+                <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                  <i class="fas fa-sign-out-alt w-5"></i>
+                  <span>Logout</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        <% } else { %>
+          <a href="/login" 
+             class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-sky-500 to-green-500 text-white font-medium hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Login</span>
+          </a>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- MOBILE MENU BUTTON -->
+    <button id="mobileMenuBtn" 
+            class="lg:hidden p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+      <i class="fas fa-bars text-gray-700 dark:text-gray-300 text-lg"></i>
+    </button>
+  </div>
+
+  <!-- MOBILE MENU -->
+  <div id="mobileMenu" 
+       class="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-900 shadow-2xl transform translate-x-full transition-transform duration-300 z-50 lg:hidden border-l border-gray-200 dark:border-gray-800">
+    
+    <!-- MOBILE HEADER -->
+    <div class="flex justify-between items-center px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+      <div class="flex items-center gap-3">
+        <img src="/images/logo.png" alt="Zoopito" class="h-12 zoopito-logo">
+        <div class="flex flex-col">
+          <!-- <span class="text-xl font-bold bg-gradient-to-r from-sky-500 to-green-500 bg-clip-text text-transparent">
+            Zoopito
+          </span> -->
+          <% if (currUser && currUser.role) { %>
+            <span class="text-xs text-gray-500 dark:text-gray-400"><%= currUser.role.toUpperCase() %></span>
+          <% } %>
+        </div>
+      </div>
+      <button id="mobileMenuClose" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+        <i class="fas fa-times text-gray-700 dark:text-gray-300 text-xl"></i>
+      </button>
+    </div>
+
+    <!-- MOBILE CONTENT -->
+    <div class="h-full flex flex-col">
+      <!-- currUser INFO -->
+      <% if (currUser) { %>
+        <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+          <div class="flex items-center gap-3">
+            <div class="currUser-avatar h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+              <%= currUser.name ? currUser.name.charAt(0).toUpperCase() : 'U' %>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-800 dark:text-white"><%= currUser.name || 'currUser' %></p>
+              <p class="text-sm text-gray-500 dark:text-gray-400"><%= currUser.email || '' %></p>
+            </div>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- MOBILE NAVIGATION -->
+      <div class="flex-1 overflow-y-auto px-3 py-4">
+        <div class="space-y-1">
+          <% const mobileActive = "bg-gradient-to-r from-sky-500/10 to-green-500/10 text-sky-600 dark:text-sky-400 border-l-4 border-sky-500"; %>
+          <% const mobileInactive = "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"; %>
+          
+          <a href="/" 
+             class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/' ? mobileActive : mobileInactive %>">
+            <i class="fas fa-home w-5"></i>
+            <span>Dashboard</span>
+          </a>
+          
+          <!-- Conditional Mobile Menu -->
+          <% if (currUser) { %>
+            <% if (['admin', 'sales'].includes(currUser.role)) { %>
+              <a href="/farmers" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/farmers') ? mobileActive : mobileInactive %>">
+                <i class="fas fa-currUsers w-5"></i>
+                <span>Farmers</span>
+              </a>
+            <% } %>
+            
+            <% if (['admin', 'paravet'].includes(currUser.role)) { %>
+              <a href="/animals" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/animals') ? mobileActive : mobileInactive %>">
+                <i class="fas fa-paw w-5"></i>
+                <span>Animals</span>
+              </a>
+              
+              <a href="/vaccinations" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/vaccinations') ? mobileActive : mobileInactive %>">
+                <i class="fas fa-syringe w-5"></i>
+                <span>Vaccinations</span>
+              </a>
+            <% } %>
+            
+            <% if (currUser.role === 'admin') { %>
+              <a href="/analytics" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/analytics') ? mobileActive : mobileInactive %>">
+                <i class="fas fa-chart-line w-5"></i>
+                <span>Analytics</span>
+              </a>
+              
+              <a href="/admin" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/admin') ? mobileActive : mobileInactive %>">
+                <i class="fas fa-cog w-5"></i>
+                <span>Admin Panel</span>
+              </a>
+            <% } %>
+            
+            <!-- currUser Links -->
+            <a href="/profile" 
+               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/profile') ? mobileActive : mobileInactive %>">
+              <i class="fas fa-currUser w-5"></i>
+              <span>My Profile</span>
+            </a>
+            
+            <a href="/settings" 
+               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/settings') ? mobileActive : mobileInactive %>">
+              <i class="fas fa-cog w-5"></i>
+              <span>Settings</span>
+            </a>
+            
+            
+            
+            <a href="/logout" 
+               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
+              <i class="fas fa-sign-out-alt w-5"></i>
+              <span>Logout</span>
+            </a>
+            
+          <% } else { %>
+            <!-- Public Mobile Menu -->
+            <a href="/services" 
+               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/services' ? mobileActive : mobileInactive %>">
+              <i class="fas fa-concierge-bell w-5"></i>
+              <span>Services</span>
+            </a>
+            
+            <a href="/about" 
+               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/about' ? mobileActive : mobileInactive %>">
+              <i class="fas fa-info-circle w-5"></i>
+              <span>About Us</span>
+            </a>
+            
+            <a href="/contact" 
+               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/contact' ? mobileActive : mobileInactive %>">
+              <i class="fas fa-envelope w-5"></i>
+              <span>Contact</span>
+            </a>
+            
+            <a href="/login" 
+               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium bg-gradient-to-r from-sky-500 to-green-500 text-white justify-center mt-4">
+              <i class="fas fa-sign-in-alt"></i>
+              <span>Login to Dashboard</span>
+            </a>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- MOBILE FOOTER -->
+      <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+        <div class="flex items-center justify-between">
+          <button id="mobileThemeToggle" 
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <i id="mobileThemeIcon" class="fas fa-moon text-sky-500"></i>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Dark Mode</span>
+          </button>
+          
+          <div class="text-xs text-gray-500 dark:text-gray-400 text-center">
+            <p>Zoopito v1.0</p>
+            <p>Livestock Intelligence</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- BACKDROP FOR MOBILE MENU -->
+<div id="mobileBackdrop" 
+     class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity"></div>
+
+<script>
+  // Mobile Menu Toggle
+  const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+  const mobileMenuClose = document.getElementById('mobileMenuClose');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileBackdrop = document.getElementById('mobileBackdrop');
+
+  function openMobileMenu() {
+    mobileMenu.classList.remove('translate-x-full');
+    mobileBackdrop.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileMenu() {
+    mobileMenu.classList.add('translate-x-full');
+    mobileBackdrop.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  mobileMenuBtn.addEventListener('click', openMobileMenu);
+  mobileMenuClose.addEventListener('click', closeMobileMenu);
+  mobileBackdrop.addEventListener('click', closeMobileMenu);
+
+  // Theme Toggle
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  const mobileThemeToggle = document.getElementById('mobileThemeToggle');
+  const mobileThemeIcon = document.getElementById('mobileThemeIcon');
+
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    updateThemeIcon(isDark);
+  }
+
+  function updateThemeIcon(isDark) {
+    const icon = isDark ? 'fa-sun' : 'fa-moon';
+    const mobileIcon = isDark ? 'fa-sun' : 'fa-moon';
+    themeIcon.className = `fas ${icon}`;
+    mobileThemeIcon.className = `fas ${mobileIcon} ${isDark ? 'text-yellow-400' : 'text-sky-500'}`;
+  }
+
+  // Initialize theme
+  const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+  updateThemeIcon(savedTheme === 'dark');
+
+  themeToggle?.addEventListener('click', toggleTheme);
+  mobileThemeToggle?.addEventListener('click', toggleTheme);
+
+  // currUser Dropdown
+  const currUserMenuBtn = document.getElementById('currUserMenuBtn');
+  const currUserDropdown = document.getElementById('currUserDropdown');
+  
+  if (currUserMenuBtn && currUserDropdown) {
+    currUserMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currUserDropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!currUserMenuBtn.contains(e.target) && !currUserDropdown.contains(e.target)) {
+        currUserDropdown.classList.add('hidden');
+      }
+    });
+  }
+
+  // Notification Dropdown
+  const notificationBtn = document.getElementById('notificationBtn');
+  const notificationDropdown = document.getElementById('notificationDropdown');
+  
+  if (notificationBtn && notificationDropdown) {
+    notificationBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      notificationDropdown.classList.toggle('hidden');
+      // Mark notifications as read
+      if (!notificationDropdown.classList.contains('hidden')) {
+        fetch('/api/notifications/read', { method: 'POST' });
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+        notificationDropdown.classList.add('hidden');
+      }
+    });
+  }
+
+  // Close dropdowns on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      currUserDropdown?.classList.add('hidden');
+      notificationDropdown?.classList.add('hidden');
+      closeMobileMenu();
+    }
+  });
+
+  // Add active state to current page
+  document.addEventListener('DOMContentLoaded', () => {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('nav a');
+    
+    navLinks.forEach(link => {
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+    });
+  });
+</script>

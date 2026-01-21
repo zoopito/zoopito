@@ -1,0 +1,142 @@
+<% layout("/layouts/boilerplate") -%>
+
+<div class="min-h-screen flex items-center justify-center
+            bg-gradient-to-br from-green-200 via-green-50 to-green-100
+            dark:from-gray-900 dark:via-gray-800 dark:to-gray-900
+            px-4 transition-all">
+
+  <div class="w-full max-w-md">
+
+    <!-- Card -->
+    <div class="bg-white/70 dark:bg-gray-800/60 backdrop-blur-xl
+                shadow-xl rounded-2xl p-6 sm:p-8
+                border border-white/40 dark:border-gray-700">
+
+      <!-- Brand -->
+      <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-green-700 dark:text-green-400">
+          Zoopito
+        </h1>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          Secure Email Verification
+        </p>
+      </div>
+
+      <!-- Title -->
+      <div class="text-center mb-4">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
+          Verify Your Email
+        </h2>
+
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+          A 6-digit One-Time Password (OTP) has been sent to your registered email address.
+        </p>
+      </div>
+
+      <!-- OTP Form -->
+      <form action="/verify/<%= user._id %>" method="POST" class="space-y-5">
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 text-center">
+            Enter OTP
+          </label>
+
+          <input
+            type="text"
+            name="otp"
+            maxlength="6"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            required
+            placeholder="● ● ● ● ● ●"
+            class="w-full px-4 py-3 text-center text-xl tracking-widest
+                   rounded-xl border
+                   border-gray-300 dark:border-gray-600
+                   bg-gray-50 dark:bg-gray-900
+                   text-gray-900 dark:text-white
+                   focus:ring-2 focus:ring-green-400 focus:border-green-500
+                   outline-none transition"
+          />
+        </div>
+
+        <!-- Verify Button -->
+        <button
+          type="submit"
+          class="w-full py-2.5 bg-green-600 hover:bg-green-700
+                 dark:bg-green-500 dark:hover:bg-green-600
+                 text-white font-semibold rounded-xl
+                 shadow-md transition-all">
+          Verify Email
+        </button>
+
+      </form>
+
+      <!-- Divider -->
+      <div class="my-6 border-t border-gray-300 dark:border-gray-700"></div>
+
+      <!-- Resend Section -->
+      <div class="text-center">
+        <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
+          Didn’t receive the OTP?
+        </p>
+
+        <form
+          id="resendForm"
+          action="/verify/<%= user._id %>/resend"
+          method="POST"
+          class="inline-block"
+        >
+          <button
+            id="resendBtn"
+            type="submit"
+            class="px-4 py-2 rounded-lg
+                   bg-gray-200 hover:bg-gray-300
+                   dark:bg-gray-700 dark:hover:bg-gray-600
+                   text-gray-900 dark:text-white
+                   font-medium transition shadow-sm">
+            Resend OTP
+          </button>
+        </form>
+
+        <p id="timer" class="mt-3 text-xs text-gray-500 dark:text-gray-400"></p>
+      </div>
+
+    </div>
+
+    <!-- Trust Footer -->
+    <p class="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
+      Zoopito uses secure verification to protect your account.
+    </p>
+
+  </div>
+</div>
+
+<script>
+  const resendBtn = document.getElementById("resendBtn");
+  const timerEl = document.getElementById("timer");
+
+  if (resendBtn) {
+    resendBtn.addEventListener("click", function () {
+      setTimeout(startTimer, 300);
+    });
+  }
+
+  function startTimer() {
+    let countdown = 60;
+    resendBtn.disabled = true;
+    resendBtn.innerText = `Resend OTP (${countdown}s)`;
+    timerEl.innerText = "Please wait before requesting a new OTP.";
+
+    const timer = setInterval(() => {
+      countdown--;
+      resendBtn.innerText = `Resend OTP (${countdown}s)`;
+
+      if (countdown <= 0) {
+        clearInterval(timer);
+        resendBtn.disabled = false;
+        resendBtn.innerText = "Resend OTP";
+        timerEl.innerText = "";
+      }
+    }, 1000);
+  }
+</script>

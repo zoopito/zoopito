@@ -1,0 +1,129 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="max-w-6xl mx-auto space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
+        Farmer Details
+      </h1>
+      <p class="text-sm text-gray-500">
+        Farmer ID: <span class="font-medium"><%= farmer.uniqueFarmerId %></span>
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <a href="/admin/farmers" class="px-4 py-2 text-sm rounded-md border">
+        ← Back
+      </a>
+      <a href="/admin/farmers/<%= farmer._id %>/edit"
+         class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">
+        Edit
+      </a>
+    </div>
+  </div>
+
+  <!-- Farmer Profile -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Left: Photo -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow border p-4 flex justify-center">
+      <img
+        src="<%= farmer.photo?.url || '/images/user-placeholder.jpg' %>"
+        alt="Farmer Photo"
+        class="w-48 h-48 rounded-lg object-cover border"
+      />
+    </div>
+
+    <!-- Right: Info -->
+    <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow border p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div>
+          <p class="text-xs text-gray-500">Name</p>
+          <p class="font-medium"><%= farmer.name %></p>
+        </div>
+
+        <div>
+          <p class="text-xs text-gray-500">Mobile</p>
+          <p class="font-medium"><%= farmer.mobileNumber %></p>
+        </div>
+
+        <div>
+          <p class="text-xs text-gray-500">Village</p>
+          <p><%= farmer.address?.village || "-" %></p>
+        </div>
+
+        <div>
+          <p class="text-xs text-gray-500">Taluka</p>
+          <p><%= farmer.address?.taluka || "-" %></p>
+        </div>
+
+        <div>
+          <p class="text-xs text-gray-500">District</p>
+          <p><%= farmer.address?.district || "-" %></p>
+        </div>
+
+        <div>
+          <p class="text-xs text-gray-500">State</p>
+          <p><%= farmer.address?.state || "-" %></p>
+        </div>
+
+        <div>
+          <p class="text-xs text-gray-500">Registered By</p>
+          <p><%= farmer.registeredBy?.name || "System" %></p>
+        </div>
+
+        <div>
+          <p class="text-xs text-gray-500">Status</p>
+          <span class="inline-block px-3 py-1 text-xs rounded-full
+            <%= farmer.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+            <%= farmer.isActive ? 'Active' : 'Inactive' %>
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- GPS Location -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow border p-6">
+    <h2 class="text-lg font-semibold mb-3">Location</h2>
+
+    <% if (farmer.location?.coordinates?.[0] !== 0) { %>
+      <p class="text-sm">
+        Longitude: <%= farmer.location.coordinates[0] %>,
+        Latitude: <%= farmer.location.coordinates[1] %>
+      </p>
+
+      <a
+        target="_blank"
+        href="https://www.google.com/maps?q=<%= farmer.location.coordinates[1] %>,<%= farmer.location.coordinates[0] %>"
+        class="inline-block mt-2 text-blue-600 text-sm hover:underline">
+        View on Google Maps
+      </a>
+    <% } else { %>
+      <p class="text-sm text-gray-500">Location not available</p>
+    <% } %>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex flex-wrap gap-3">
+    <a href="/admin/animals?farmer=<%= farmer._id %>"
+       class="px-4 py-2 text-sm rounded-md bg-indigo-600 text-white">
+      View Animals
+    </a>
+
+    <a href="/admin/services?farmer=<%= farmer._id %>"
+       class="px-4 py-2 text-sm rounded-md bg-green-600 text-white">
+      View Services
+    </a>
+
+    <a href="/admin/vaccinations?farmer=<%= farmer._id %>"
+       class="px-4 py-2 text-sm rounded-md bg-yellow-600 text-white">
+      Vaccination Records
+    </a>
+  </div>
+
+</div>

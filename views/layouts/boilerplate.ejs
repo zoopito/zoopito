@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <title>Zoopito</title>
+
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="Zoopito" />
+  <meta name="description" content="Zoopito is a platform for managing veterinary and sales teams." />
+  <meta name="keywords" content="zoopito, veterinary, sales, team management" />
+  <meta name="author" content="Saurabh Mishra" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph / Facebook / LinkedIn -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://zoopito.com/" />
+  <meta property="og:title" content="Zoopito - Veterinary & Sales Team Management Platform" />
+  <meta property="og:description" content="Zoopito is a platform for managing veterinary and sales teams." />
+  <meta property="og:image" content="https://zoopito.com/images/favicon-32x32.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://zoopito.com/" />
+  <meta property="twitter:title" content="Zoopito - Veterinary & Sales Team Management Platform" />
+  <meta property="twitter:description" content="Zoopito is a platform for managing veterinary and sales teams." />
+  <meta property="twitter:image" content="https://zoopito.com/images/zoopito-og.png" />
+
+  <!-- WhatsApp / LinkedIn (uses OG tags automatically) -->
+  <meta property="og:site_name" content="Zoopito" />
+
+  <!-- Favicons -->
+  <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+  <link rel="manifest" href="/images/site.webmanifest" />
+  <link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#10b981" />
+  <meta name="msapplication-TileColor" content="#10b981" />
+  <meta name="theme-color" content="#10b981" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+  />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- AOS -->
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/css/output.css" />
+
+  <!-- Smooth Theme Transition -->
+  <style>
+    html, body {
+      transition: background-color 0.25s, color 0.25s;
+    }
+  </style>
+
+  <!-- Dark mode detection -->
+  <script>
+    if (localStorage.theme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  </script>
+
+  
+     
+</head>
+
+<!-- Default background for light mode -->
+<body class="bg-gray-50 font-sans text-gray-800 dark:bg-black">
+
+  <!-- Navbar -->
+  <%- include("../includes/navbar.ejs") %>
+
+  <!-- Flash Messages -->
+  <div class="w-full mx-auto" style="min-height: 100vh !important;">
+    <%- include("../includes/flash.ejs") %>
+    <%- body %>
+  </div>
+
+  <!-- Footer -->
+  <%- include("../includes/footer.ejs") %>
+
+  <!-- AOS -->
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script>AOS.init();</script>
+
+  <!-- App Script -->
+  <script src="/js/script.js"></script>
+
+</body>
+</html>

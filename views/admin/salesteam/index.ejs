@@ -1,0 +1,120 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="w-full">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+        Manage Sales Team
+      </h1>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        Field executives responsible for farmer onboarding
+      </p>
+    </div>
+
+    <a href="/admin/sales-team/new"
+       class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition">
+      + Add Sales Member
+    </a>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+        <tr>
+          <th class="px-5 py-3 text-left font-medium text-gray-600 dark:text-gray-300">
+            Employee Code
+          </th>
+          <th class="px-5 py-3 text-left font-medium text-gray-600 dark:text-gray-300">
+            Name
+          </th>
+          <th class="px-5 py-3 text-left font-medium text-gray-600 dark:text-gray-300">
+            Email
+          </th>
+          <th class="px-5 py-3 text-left font-medium text-gray-600 dark:text-gray-300">
+            Status
+          </th>
+          <th class="px-5 py-3 text-right font-medium text-gray-600 dark:text-gray-300">
+            Action
+          </th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+
+        <% if (salesTeam.length === 0) { %>
+          <tr>
+            <td colspan="5" class="px-5 py-6 text-center text-gray-500">
+              No sales team members found.
+            </td>
+          </tr>
+        <% } %>
+
+        <% salesTeam.forEach(member => { %>
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+            <td class="px-5 py-4 font-medium text-gray-800 dark:text-gray-100">
+              <%= member.employeeCode %>
+            </td>
+
+            <td class="px-5 py-4 text-gray-700 dark:text-gray-200">
+              <%= member.user?.name || "—" %>
+            </td>
+
+            <td class="px-5 py-4 text-gray-600 dark:text-gray-300">
+              <%= member.user?.email || "—" %>
+            </td>
+
+            <td class="px-5 py-4">
+              <% if (member.isActive) { %>
+                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
+                  Active
+                </span>
+              <% } else { %>
+                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">
+                  Inactive
+                </span>
+              <% } %>
+            </td>
+
+            <td class="px-5 py-4 text-right">
+              <a href="/admin/sales-team/<%= member._id %>"
+                 class="text-blue-600 hover:underline text-sm font-medium">
+                View
+              </a>
+            </td>
+          </tr>
+        <% }) %>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <% if (totalPages > 1) { %>
+    <div class="flex items-center justify-between mt-6 text-sm">
+      <p class="text-gray-600 dark:text-gray-400">
+        Page <%= currentPage %> of <%= totalPages %>
+      </p>
+
+      <div class="flex gap-2">
+        <% if (currentPage > 1) { %>
+          <a href="?page=<%= currentPage - 1 %>"
+             class="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+            Prev
+          </a>
+        <% } %>
+
+        <% if (currentPage < totalPages) { %>
+          <a href="?page=<%= currentPage + 1 %>"
+             class="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+            Next
+          </a>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
+
+</div>
