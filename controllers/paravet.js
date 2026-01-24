@@ -149,3 +149,112 @@ module.exports.viewParavet = async (req, res) => {
     res.redirect("/admin/paravets");
   }
 };
+
+module.exports.renderEditForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const paravet = await Paravet.findById(id).populate("user");
+    if (!paravet) {
+      req.flash("error", "Paravet not found");
+      return res.redirect("/admin/paravets");
+    }
+
+    res.render("paravet/edit.ejs", { paravet });
+  } catch (error) {
+    console.error("Edit Paravet Error:", error);
+    req.flash("error", "Unable to load paravet details");
+    res.redirect("/admin/paravets");
+  }
+};
+
+module.exports.updateParavet = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user, paravet } = req.body;
+
+    const existingParavet = await Paravet.findById(id);
+    if (!existingParavet) {
+      req.flash("error", "Paravet not found");
+      return res.redirect("/admin/paravets");
+    }
+
+    // ✅ Update User
+    await User.findByIdAndUpdate(existingParavet.user, {
+      name: user.name,
+      email: user.email,
+      mobile: user.mobile,
+    });
+
+    // ✅ Normalize checkbox
+    paravet.isActive = paravet.isActive === "on";
+
+    // ✅ Update Paravet
+    await Paravet.findByIdAndUpdate(id, paravet, {
+      runValidators: true,
+    });
+
+    req.flash("success", "Paravet updated successfully");
+    res.redirect("/admin/paravets");
+  } catch (error) {
+    console.error("Update Paravet Error:", error);
+    req.flash("error", "Failed to update paravet");
+    res.redirect("/admin/paravets");
+  }
+};
+
+module.exports.toggleParavetStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action } = req.body;
+
+    const paravet = await Paravet.findById(id);
+    if (!paravet) {
+      req.flash("error", "Paravet not found");
+      return res.redirect("/admin/paravets");
+    }
+
+    if (action === "activate") {
+      paravet.isActive = true;
+    } else if (action === "deactivate") {
+      paravet.isActive = false;
+    }
+
+    await paravet.save();
+
+    req.flash(
+      "success",
+      `Paravet ${paravet.isActive ? "activated" : "deactivated"} successfully`,
+    );
+    res.redirect("/admin/paravets");
+  } catch (error) {
+    console.error("Toggle Paravet Status Error:", error);
+    req.flash("error", "Unable to update paravet status");
+    res.redirect("/admin/paravets");
+  }
+};
+
+module.exports.deleteParavet = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const paravet = await Paravet.findById(id);
+    if (!paravet) {
+      req.flash("error", "Paravet not found");
+      return res.redirect("/admin/paravets");
+    }
+
+    // delete linked user
+    await User.findByIdAndDelete(paravet.user);
+
+    // delete paravet
+    await Paravet.findByIdAndDelete(id);
+
+    req.flash("success", "Paravet deleted permanently");
+    res.redirect("/admin/paravets");
+  } catch (error) {
+    console.error("Delete Paravet Error:", error);
+    req.flash("error", "Unable to delete paravet");
+    res.redirect("/admin/paravets");
+  }
+};

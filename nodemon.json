@@ -1,0 +1,6 @@
+{
+  "watch": ["app.js", "routes", "views"],
+  "ext": "js,ejs",
+  "ignore": ["public/css/output.css"],
+  "legacyWatch": true
+}

@@ -33,9 +33,44 @@ module.exports.renderLoginForm = (req, res) => {
 };
 
 module.exports.login = async (req, res) => {
-  req.flash("success", "Happy to see you again!");
-  let redirectUrl = res.locals.redirectUrl || "/";
-  res.redirect(redirectUrl);
+  try {
+    if (!req.user) {
+      req.flash("error", "Authentication failed. Please login again.");
+      return res.redirect("/login");
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      req.flash("error", "User not found.");
+      return res.redirect("/login");
+    }
+
+    user.lastLogin = new Date();
+
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+
+    user.loginHistory.unshift({
+      ip,
+      userAgent: req.headers["user-agent"],
+      loginAt: new Date(),
+    });
+
+    // keep only last 10 logins
+    if (user.loginHistory.length > 10) {
+      user.loginHistory = user.loginHistory.slice(0, 10);
+    }
+
+    await user.save();
+
+    req.flash("success", "Happy to see you again!");
+    const redirectUrl = res.locals.redirectUrl || "/";
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error("Login error:", error);
+    req.flash("error", "Something went wrong during login.");
+    res.redirect("/login");
+  }
 };
 
 module.exports.logout = (req, res, next) => {

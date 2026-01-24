@@ -1,120 +1,597 @@
 <% layout("layouts/boilerplate") %>
 
-<div class="w-full">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-6 sm:px-6 lg:px-8">
 
-  <!-- Header -->
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-        Manage Sales Team
-      </h1>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-        Field executives responsible for farmer onboarding
-      </p>
-    </div>
+  <!-- Header Section -->
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="p-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-10a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+              Sales Team Management
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">
+              Manage field executives responsible for farmer onboarding and data collection
+            </p>
+          </div>
+        </div>
+        
+        <!-- Stats Overview -->
+        <div class="flex flex-wrap gap-4 mt-4">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+            <span class="text-sm text-gray-600 dark:text-gray-400">
+              <span class="font-semibold text-gray-900 dark:text-white"><%= salesTeam.filter(m => m.isActive).length %></span> Active Members
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+            <span class="text-sm text-gray-600 dark:text-gray-400">
+              <span class="font-semibold text-gray-900 dark:text-white"><%= totalCount %></span> Total Members
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <span class="text-sm text-gray-600 dark:text-gray-400">
+              Top Performer: <span class="font-semibold text-gray-900 dark:text-white">Rahul</span>
+              <!--  topPerformer || '--' %> -->
+            </span>
+          </div>
+        </div>
+      </div>
 
-    <a href="/admin/sales-team/new"
-       class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition">
-      + Add Sales Member
-    </a>
-  </div>
-
-  <!-- Table -->
-  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-
-    <table class="min-w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-        <tr>
-          <th class="px-5 py-3 text-left font-medium text-gray-600 dark:text-gray-300">
-            Employee Code
-          </th>
-          <th class="px-5 py-3 text-left font-medium text-gray-600 dark:text-gray-300">
-            Name
-          </th>
-          <th class="px-5 py-3 text-left font-medium text-gray-600 dark:text-gray-300">
-            Email
-          </th>
-          <th class="px-5 py-3 text-left font-medium text-gray-600 dark:text-gray-300">
-            Status
-          </th>
-          <th class="px-5 py-3 text-right font-medium text-gray-600 dark:text-gray-300">
-            Action
-          </th>
-        </tr>
-      </thead>
-
-      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-
-        <% if (salesTeam.length === 0) { %>
-          <tr>
-            <td colspan="5" class="px-5 py-6 text-center text-gray-500">
-              No sales team members found.
-            </td>
-          </tr>
-        <% } %>
-
-        <% salesTeam.forEach(member => { %>
-          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
-            <td class="px-5 py-4 font-medium text-gray-800 dark:text-gray-100">
-              <%= member.employeeCode %>
-            </td>
-
-            <td class="px-5 py-4 text-gray-700 dark:text-gray-200">
-              <%= member.user?.name || "—" %>
-            </td>
-
-            <td class="px-5 py-4 text-gray-600 dark:text-gray-300">
-              <%= member.user?.email || "—" %>
-            </td>
-
-            <td class="px-5 py-4">
-              <% if (member.isActive) { %>
-                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
-                  Active
-                </span>
-              <% } else { %>
-                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">
-                  Inactive
-                </span>
-              <% } %>
-            </td>
-
-            <td class="px-5 py-4 text-right">
-              <a href="/admin/sales-team/<%= member._id %>"
-                 class="text-blue-600 hover:underline text-sm font-medium">
-                View
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2">
+        <a href="/admin/sales-team/new"
+           class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Add New Member
+        </a>
+        
+        <!-- <button onclick="openBulkUpload()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg shadow-green-500/25">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          Bulk Upload
+        </button> -->
+        
+        <div class="relative group">
+          <button class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/25">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+            </svg>
+            More Actions
+          </button>
+          <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200">
+            <div class="py-1">
+              <a href="/admin/sales-team/export" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Export to Excel
               </a>
-            </td>
-          </tr>
-        <% }) %>
-
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Pagination -->
-  <% if (totalPages > 1) { %>
-    <div class="flex items-center justify-between mt-6 text-sm">
-      <p class="text-gray-600 dark:text-gray-400">
-        Page <%= currentPage %> of <%= totalPages %>
-      </p>
-
-      <div class="flex gap-2">
-        <% if (currentPage > 1) { %>
-          <a href="?page=<%= currentPage - 1 %>"
-             class="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-            Prev
-          </a>
-        <% } %>
-
-        <% if (currentPage < totalPages) { %>
-          <a href="?page=<%= currentPage + 1 %>"
-             class="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-            Next
-          </a>
-        <% } %>
+              <a href="/admin/sales-team/performance" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                Performance Report
+              </a>
+              <a href="/admin/sales-team/assignments" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Manage Assignments
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  <% } %>
 
+    <!-- Search and Filters -->
+<form action="/admin/sales-team" method="GET">
+  <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6 mb-6">
+    
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+      <!-- Search -->
+      <div class="flex-1 max-w-2xl">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          <input
+            type="search"
+            name="search"
+            value="<%= filters.search || '' %>"
+            placeholder="Search by name, email, employee code..."
+            class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 transition-colors"
+          />
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-2 items-center">
+
+        <!-- Status -->
+        <select
+          name="status"
+          class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All Status</option>
+          <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>
+            Active
+          </option>
+          <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>
+            Inactive
+          </option>
+        </select>
+
+        <!-- Sort -->
+        <select
+          name="sort"
+          class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Sort By</option>
+          <option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>
+            Name A-Z
+          </option>
+          <option value="recent" <%= filters.sort === 'recent' ? 'selected' : '' %>>
+            Most Recent
+          </option>
+        </select>
+
+        <!-- Apply -->
+        <button
+          type="submit"
+          class="px-5 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition"
+        >
+          Apply Filters
+        </button>
+
+        <!-- Clear -->
+        <a
+          href="/admin/sales-team"
+          class="px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          Clear Filters
+        </a>
+
+      </div>
+
+    </div>
+  </div>
+</form>
+
+
+    <!-- Members Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <% if (salesTeam.length === 0) { %>
+        <div class="md:col-span-2 lg:col-span-3 text-center py-16">
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
+            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-10a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Sales Team Members</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">Start by adding your first field executive.</p>
+          <a href="/admin/sales-team/new"
+             class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Add First Member
+          </a>
+        </div>
+      <% } %>
+
+      <% salesTeam.forEach(member => { %>
+        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] group">
+          
+          <!-- Member Header -->
+          <div class="p-6 pb-4">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <div class="w-14 h-14 rounded-xl bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-lg font-bold">
+                    <%= member.user?.name?.charAt(0).toUpperCase() || member.employeeCode?.charAt(0) || "S" %>
+                  </div>
+                  <% if (member.isActive) { %>
+                    <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-800"></div>
+                  <% } %>
+                </div>
+                <div>
+                  <h3 class="font-bold text-gray-900 dark:text-white text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <%= member.user?.name || "Unnamed Member" %>
+                  </h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">ID: <%= member.employeeCode %></p>
+                </div>
+              </div>
+              
+              <div class="relative">
+                <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors member-actions-btn" data-id="<%= member._id %>">
+                  <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                  </svg>
+                </button>
+                <!-- Dropdown Menu -->
+                <div id="dropdown-<%= member._id %>" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-10">
+                  <div class="py-1">
+                    <a href="/admin/sales-team/<%= member._id %>" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      View Details
+                    </a>
+                    <a href="/admin/sales-team/<%= member._id %>/edit" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                      Edit Profile
+                    </a>
+                    <% if (member.isActive) { %>
+                      <form action="/admin/sales-team/<%= member._id %>/deactivate" method="POST" class="border-t border-gray-100 dark:border-gray-700">
+                        <button type="submit" onclick="return confirm('Deactivate this team member?')" class="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                          Deactivate
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <form action="/admin/sales-team/<%= member._id %>/activate" method="POST">
+                        <button type="submit" class="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+                          </svg>
+                          Activate
+                        </button>
+                      </form>
+                    <% } %>
+                    <form action="/admin/sales-team/<%= member._id %>/delete" method="POST" 
+                          onsubmit="return confirm('Delete this team member permanently? This action cannot be undone.')" 
+                          class="border-t border-gray-100 dark:border-gray-700">
+                      <button type="submit" class="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Member Details -->
+          <div class="px-6 pb-6">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                <span class="font-medium text-gray-900 dark:text-white"><%= member.user?.email || "N/A" %></span>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Phone</span>
+                <span class="font-medium text-gray-900 dark:text-white"><%= member.user?.mobile || "N/A" %></span>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                <span class="font-medium">
+                  <% if (member.isActive) { %>
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 flex items-center gap-1">
+                      <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                      Active
+                    </span>
+                  <% } else { %>
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+                      Inactive
+                    </span>
+                  <% } %>
+                </span>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Farmers Registered</span>
+                <span class="font-bold text-gray-900 dark:text-white"><%= member.totalFarmers || "0" %></span>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Performance</span>
+                <div class="flex items-center gap-2">
+                  <div class="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <% const performance = member.performance || 75; %>
+                    <div class="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full" style="width: 50%"></div>
+                  </div>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"><%= performance %>%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-6 grid grid-cols-2 gap-2">
+              <a href="/admin/sales-team/<%= member._id %>/assignments"
+                 class="text-center px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-colors">
+                Assign Areas
+              </a>
+              <a href="/admin/sales-team/<%= member._id %>/performance"
+                 class="text-center px-3 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-sm font-medium rounded-lg hover:bg-green-100 dark:hover:bg-green-800/30 transition-colors">
+                View Stats
+              </a>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- Enhanced Pagination -->
+    <% if (totalPages > 1) { %>
+      <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Showing <span class="font-semibold text-gray-900 dark:text-white"><%= startIndex + 1 %>-<%= Math.min(endIndex, totalCount) %></span> of 
+              <span class="font-semibold text-gray-900 dark:text-white"><%= totalCount %></span> team members
+            </p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <!-- Previous Button -->
+            <% if (currentPage > 1) { %>
+              <a href="?page=<%= currentPage - 1 %>"
+                 class="inline-flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Previous
+              </a>
+            <% } else { %>
+              <span class="inline-flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 font-medium rounded-xl cursor-not-allowed">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Previous
+              </span>
+            <% } %>
+
+            <!-- Page Numbers -->
+            <div class="flex items-center gap-1">
+              <% const maxVisiblePages = 5;
+                 let startPage = Math.max(1, currentPage - 2);
+                 let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                 
+                 if (endPage - startPage + 1 < maxVisiblePages) {
+                   startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                 }
+                 
+                 for (let i = startPage; i <= endPage; i++) { %>
+                <% if (i === currentPage) { %>
+                  <span class="w-10 h-10 flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl">
+                    <%= i %>
+                  </span>
+                <% } else { %>
+                  <a href="?page=<%= i %>"
+                     class="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    <%= i %>
+                  </a>
+                <% } %>
+              <% } %>
+              
+              <% if (endPage < totalPages) { %>
+                <span class="px-2 text-gray-500">...</span>
+                <a href="?page=<%= totalPages %>"
+                   class="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                  <%= totalPages %>
+                </a>
+              <% } %>
+            </div>
+
+            <!-- Next Button -->
+            <% if (currentPage < totalPages) { %>
+              <a href="?page=<%= currentPage + 1 %>"
+                 class="inline-flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                Next
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </a>
+            <% } else { %>
+              <span class="inline-flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 font-medium rounded-xl cursor-not-allowed">
+                Next
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  </div>
 </div>
+
+<!-- Bulk Upload Modal -->
+<div id="bulkUploadModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fade-in">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white">Bulk Upload Team Members</h3>
+      <button onclick="closeBulkUpload()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center">
+      <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+      </svg>
+      <p class="text-gray-600 dark:text-gray-400 mb-2">Upload CSV or Excel file</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Max file size: 5MB</p>
+      <input type="file" class="hidden" id="fileInput" accept=".csv,.xlsx,.xls">
+      <button onclick="document.getElementById('fileInput').click()" 
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        Choose File
+      </button>
+    </div>
+    
+    <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+      <p class="font-medium mb-1">File Format:</p>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>Columns: Name, Email, Phone, Employee Code</li>
+        <li>First row should be headers</li>
+        <li>Email must be unique</li>
+      </ul>
+    </div>
+    
+    <div class="mt-6 flex justify-end gap-2">
+      <button onclick="closeBulkUpload()" 
+              class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+        Cancel
+      </button>
+      <button onclick="processBulkUpload()" 
+              class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition-colors">
+        Upload & Process
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  // Bulk Upload Modal
+  function openBulkUpload() {
+    document.getElementById('bulkUploadModal').classList.remove('hidden');
+  }
+  
+  function closeBulkUpload() {
+    document.getElementById('bulkUploadModal').classList.add('hidden');
+  }
+  
+  function processBulkUpload() {
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files.length) {
+      alert('Please select a file first.');
+      return;
+    }
+    
+    const file = fileInput.files[0];
+    if (!['.csv', '.xlsx', '.xls'].some(ext => file.name.toLowerCase().endsWith(ext))) {
+      alert('Please upload a CSV or Excel file.');
+      return;
+    }
+    
+    // Show loading state
+    const processBtn = document.querySelector('#bulkUploadModal button:last-child');
+    const originalText = processBtn.textContent;
+    processBtn.textContent = 'Processing...';
+    processBtn.disabled = true;
+    
+    // Simulate upload process
+    setTimeout(() => {
+      alert('Bulk upload processed successfully!');
+      closeBulkUpload();
+      processBtn.textContent = originalText;
+      processBtn.disabled = false;
+      fileInput.value = '';
+    }, 2000);
+  }
+
+  // Dropdown menus for action buttons
+  document.addEventListener('DOMContentLoaded', function() {
+    // Close all dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.member-actions-btn') && !e.target.closest('.member-dropdown')) {
+        document.querySelectorAll('.member-dropdown').forEach(dropdown => {
+          dropdown.classList.add('hidden');
+        });
+      }
+    });
+
+    // Toggle dropdowns
+    document.querySelectorAll('.member-actions-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const memberId = this.getAttribute('data-id');
+        const dropdown = document.getElementById(`dropdown-${memberId}`);
+        dropdown.classList.toggle('hidden');
+        dropdown.classList.add('member-dropdown');
+      });
+    });
+  });
+
+  function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-xl shadow-xl z-50 animate-fade-in ${
+      type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+    }`;
+    notification.innerHTML = `
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <span>${message}</span>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.remove();
+    }, 3000);
+  }
+
+  // Prevent modal close on backdrop click
+  document.getElementById('bulkUploadModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeBulkUpload();
+    }
+  });
+</script>
+
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  } 
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  } 
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }  
+  .dark ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  } 
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+</style>

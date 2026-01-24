@@ -1,0 +1,108 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="max-w-7xl mx-auto px-4 py-6">
+
+  <!-- HEADER -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
+        Admin Settings
+      </h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Manage admin users, access & activity
+      </p>
+    </div>
+
+    <a href="/admin/settings/newadmin"
+       class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+      + Add New Admin
+    </a>
+  </div>
+
+  <!-- CURRENT ADMIN -->
+  <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl p-5 mb-6">
+    <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
+      Logged in as
+    </h3>
+    <p class="text-gray-800 dark:text-white font-medium">
+      <%= currUser.name %> — <%= currUser.email %>
+    </p>
+    <p class="text-xs text-gray-500">
+      Last login: <%= currUser.lastLogin ? new Date(currUser.lastLogin).toLocaleString() : "First login" %>
+    </p>
+  </div>
+
+  <!-- ADMIN LIST -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 dark:border-gray-700 overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-3 text-left">Name</th>
+          <th class="px-4 py-3 text-left">Email</th>
+          <th class="px-4 py-3 text-left">Last Login</th>
+          <th class="px-4 py-3 text-left">Status</th>
+          <th class="px-4 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y dark:divide-gray-700">
+        <% admins.forEach(admin => { %>
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-4 py-3 font-medium text-gray-800 dark:text-white">
+              <%= admin.name %>
+            </td>
+
+            <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+              <%= admin.email %>
+            </td>
+
+            <td class="px-4 py-3 text-gray-500">
+              <%= admin.lastLogin ? new Date(admin.lastLogin).toLocaleString() : "Never" %>
+            </td>
+
+            <td class="px-4 py-3">
+              <% if (admin.isActive) { %>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                  Active
+                </span>
+              <% } else { %>
+                <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                  Inactive
+                </span>
+              <% } %>
+            </td>
+
+            <td class="px-4 py-3 text-right space-x-2">
+
+              <!-- VIEW HISTORY -->
+              <a href="/admin/settings/<%= admin._id %>/history"
+                 class="text-blue-600 hover:underline text-xs">
+                View History
+              </a>
+
+              <!-- EDIT -->
+              <a href="/admin/settings/<%= admin._id %>/edit"
+                 class="text-gray-700 dark:text-gray-300 hover:underline text-xs">
+                Edit
+              </a>
+
+              <!-- PREVENT SELF DELETE -->
+              <% if (admin._id.toString() !== currUser._id.toString()) { %>
+                <form action="/admin/settings/<%= admin._id %>?_method=DELETE"
+                      method="POST"
+                      class="inline"
+                      onsubmit="return confirm('Delete this admin?')">
+                  <button class="text-red-600 hover:underline text-xs">
+                    Delete
+                  </button>
+                </form>
+              <% } %>
+
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+</div>

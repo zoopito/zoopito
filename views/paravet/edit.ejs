@@ -1,0 +1,102 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="max-w-5xl mx-auto px-4 py-6">
+
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Edit Paravet</h1>
+    <p class="text-sm text-gray-500">
+      Update user and paravet details
+    </p>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-6">
+
+    <form action="/admin/paravets/<%= paravet._id %>?_method=PUT" method="POST" class="space-y-8">
+
+      <!-- USER DETAILS -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">User Details</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Full Name *</label>
+            <input type="text" name="user[name]" required
+              value="<%= paravet.user.name || " " %>"
+              class="w-full rounded-md border px-3 py-2 text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Email *</label>
+            <input type="email" name="user[email]" required
+              value="<%= paravet.user.email %>"
+              class="w-full rounded-md border px-3 py-2 text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Mobile *</label>
+            <input type="tel" name="user[mobile]" maxlength="10" required
+              value="<%= paravet.user.mobile %>"
+              class="w-full rounded-md border px-3 py-2 text-sm" />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- PARAVET DETAILS -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Paravet Details</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Qualification *</label>
+            <input type="text" name="paravet[qualification]" required
+              value="<%= paravet.qualification %>"
+              class="w-full rounded-md border px-3 py-2 text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">License Number</label>
+            <input type="text" name="paravet[licenseNumber]"
+              value="<%= paravet.licenseNumber || '' %>"
+              class="w-full rounded-md border px-3 py-2 text-sm" />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ASSIGNED AREA -->
+      <div class="border rounded-md p-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Assigned Area</h3>
+
+        <% const area = paravet.assignedAreas[0] || {}; %>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input name="paravet[assignedAreas][0][village]" placeholder="Village"
+            value="<%= area.village || '' %>" class="border px-3 py-2 rounded-md text-sm"/>
+          <input name="paravet[assignedAreas][0][taluka]" placeholder="Taluka"
+            value="<%= area.taluka || '' %>" class="border px-3 py-2 rounded-md text-sm"/>
+          <input name="paravet[assignedAreas][0][district]" placeholder="District"
+            value="<%= area.district || '' %>" class="border px-3 py-2 rounded-md text-sm"/>
+          <input name="paravet[assignedAreas][0][state]" placeholder="State"
+            value="<%= area.state || '' %>" class="border px-3 py-2 rounded-md text-sm"/>
+        </div>
+      </div>
+
+      <!-- STATUS -->
+      <div class="flex items-center gap-3">
+        <input type="checkbox" name="paravet[isActive]" <%= paravet.isActive ? "checked" : "" %> />
+        <span class="text-sm text-gray-700">Active</span>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="flex gap-3">
+        <button class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+          Update Paravet
+        </button>
+        <a href="/admin/paravets" class="px-6 py-2 bg-gray-200 rounded-md">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+</div>

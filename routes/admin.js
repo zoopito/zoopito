@@ -5,6 +5,7 @@ const adminController = require("../controllers/admin.js");
 const formerController = require("../controllers/farmer.js");
 const paravetController = require("../controllers/paravet.js");
 const animalController = require("../controllers/animal.js");
+const vaccinationController = require("../controllers/vaccination.js");
 const multer = require("multer");
 
 const { cloudinary, storage } = require("../Cloudconfig.js");
@@ -24,12 +25,34 @@ router.post(
   isAdmin,
   adminController.createSalesMember,
 );
+router
+  .route("/sales-team/:id")
+  .get(isLoggedIn, isAdmin, adminController.viewSalesMember)
+  .put(isLoggedIn, isAdmin, adminController.updateSalesMember);
 router.get(
-  "/sales-team/:id",
+  "/sales-team/:id/edit",
   isLoggedIn,
   isAdmin,
-  adminController.viewSalesMember,
+  adminController.editSalesMemberForm,
 );
+router.post(
+  "/sales-team/:id/activate",
+  isLoggedIn,
+  isAdmin,
+  adminController.activateSalesMember,
+);
+
+router.post(
+  "/sales-team/:id/deactivate",
+  adminController.deactivateSalesMember,
+);
+router.post(
+  "/sales-team/:id/delete",
+  isLoggedIn,
+  isAdmin,
+  adminController.deleteSalesMember,
+);
+
 router.get("/farmers", isLoggedIn, isAdmin, formerController.farmersIndex);
 router.get(
   "/farmers/new",
@@ -55,7 +78,21 @@ router.get(
   paravetController.createParavetForm,
 );
 router.post("/paravets", isLoggedIn, isAdmin, paravetController.createParavet);
-router.get("/paravets/:id", isLoggedIn, isAdmin, paravetController.viewParavet);
+router
+  .route("/paravets/:id")
+  .get(isLoggedIn, isAdmin, paravetController.viewParavet)
+  .post(isLoggedIn, isAdmin, paravetController.updateParavet)
+  .put(isLoggedIn, isAdmin, paravetController.updateParavet)
+  .delete(isLoggedIn, isAdmin, paravetController.deleteParavet)
+  .patch(isLoggedIn, isAdmin, paravetController.toggleParavetStatus);
+
+router.get(
+  "/paravets/:id/edit",
+  isLoggedIn,
+  isAdmin,
+  paravetController.renderEditForm,
+);
+
 router.get("/animals", isLoggedIn, isAdmin, animalController.animalsIndexPage);
 router.get(
   "/animals/new",
@@ -77,4 +114,19 @@ router.post(
 );
 
 router.get("/animals/:id", isLoggedIn, isAdmin, animalController.viewAnimal);
+router.get(
+  "/vaccinations",
+  isLoggedIn,
+  isAdmin,
+  vaccinationController.vaccinationindex,
+);
+
+router.get("/settings", isLoggedIn, isAdmin, adminController.adminSettingPage);
+router.get(
+  "/settings/newadmin",
+  isLoggedIn,
+  isAdmin,
+  adminController.renderAddAdmin,
+);
+router.post("/settings", isLoggedIn, isAdmin, adminController.createAdmin);
 module.exports = router;

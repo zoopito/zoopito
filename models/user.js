@@ -15,7 +15,6 @@ const userSchema = new Schema(
 
     mobile: {
       type: String,
-      unique: true,
       sparse: true,
     },
 
@@ -32,7 +31,8 @@ const userSchema = new Schema(
     role: {
       type: String,
       enum: ["ADMIN", "SALES", "PARAVET", "FARMER"],
-      required: true,
+      default: "ADMIN",
+      // required: true,
     },
     assignedArea: {
       village: { type: String },
@@ -79,6 +79,19 @@ const userSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User", // Admin who created this user
     },
+    lastLogin: {
+      type: Date,
+    },
+    loginHistory: [
+      {
+        ip: String,
+        userAgent: String,
+        loggedInAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

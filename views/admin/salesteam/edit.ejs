@@ -1,0 +1,158 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="max-w-3xl">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+      Edit Sales Member
+    </h1>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+      Update sales / field executive details
+    </p>
+  </div>
+
+  <!-- Form Card -->
+  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-6">
+
+    <form 
+      action="/admin/sales-team/<%= salesMember._id %>?_method=PUT" 
+      method="POST" 
+      class="space-y-5"
+    >
+
+      <!-- Name -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Full Name
+        </label>
+        <input
+          type="text"
+          name="name"
+          required
+          value="<%= salesMember.user.name %>"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Email Address
+        </label>
+        <input
+          type="email"
+          name="email"
+          required
+          value="<%= salesMember.user.email %>"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <!-- Mobile -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Mobile Number
+        </label>
+        <input
+          type="text"
+          name="mobile"
+          required
+          value="<%= salesMember.user.mobile %>"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <!-- Assigned Area -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Village
+          </label>
+          <input
+            type="text"
+            name="assignedAreas[village]"
+            value="<%= salesMember.assignedAreas?.[0]?.village || '' %>"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Taluka
+          </label>
+          <input
+            type="text"
+            name="assignedAreas[taluka]"
+            value="<%= salesMember.assignedAreas?.[0]?.taluka || '' %>"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            District
+          </label>
+          <input
+            type="text"
+            name="assignedAreas[district]"
+            value="<%= salesMember.assignedAreas?.[0]?.district || '' %>"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            State
+          </label>
+          <input
+            type="text"
+            name="assignedAreas[state]"
+            value="<%= salesMember.assignedAreas?.[0]?.state || '' %>"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          />
+        </div>
+
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Account Status
+        </label>
+        <select
+          name="isActive"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="true" <%= salesMember.isActive ? "selected" : "" %>>
+            Active
+          </option>
+          <option value="false" <%= !salesMember.isActive ? "selected" : "" %>>
+            Inactive
+          </option>
+        </select>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center justify-end gap-3 pt-4">
+        <a
+          href="/admin/sales-team"
+          class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          Cancel
+        </a>
+
+        <button
+          type="submit"
+          class="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
+        >
+          Update Sales Member
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

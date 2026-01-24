@@ -34,19 +34,58 @@ module.exports.salesindex = async (req, res) => {
     const limit = 20;
     const skip = (page - 1) * limit;
 
-    // 🔐 Security: only active admins should reach here
-    // (Assuming middleware already checks role)
+    const { search, status, sort } = req.query;
 
-    const [salesTeam, totalCount] = await Promise.all([
-      SalesTeam.find()
-        .populate("user", "name email mobile") // minimal safe fields
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
+    // 🔹 Base query
+    let query = {};
 
-      SalesTeam.countDocuments(),
-    ]);
+    // 🔍 STATUS FILTER
+    if (status === "active") {
+      query.isActive = true;
+    } else if (status === "inactive") {
+      query.isActive = false;
+    }
+
+    // 🔍 SEARCH FILTER (via populated user fields)
+    let userMatch = {};
+    if (search && search.trim()) {
+      const regex = new RegExp(search.trim(), "i");
+
+      userMatch = {
+        $or: [{ name: regex }, { email: regex }, { mobile: regex }],
+      };
+    }
+
+    // 🔃 SORTING
+    let sortOption = { createdAt: -1 }; // default: most recent
+
+    if (sort === "name") {
+      sortOption = { "user.name": 1 };
+    } else if (sort === "recent") {
+      sortOption = { createdAt: -1 };
+    }
+
+    // 📦 DATA QUERY
+    const salesQuery = SalesTeam.find(query)
+      .populate({
+        path: "user",
+        select: "name email mobile",
+        match: userMatch,
+      })
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const countQuery = SalesTeam.countDocuments(query);
+
+    let [salesTeam, totalCount] = await Promise.all([salesQuery, countQuery]);
+
+    // ⚠️ Remove records where populate didn't match search
+    if (search) {
+      salesTeam = salesTeam.filter((member) => member.user);
+      totalCount = salesTeam.length;
+    }
 
     const totalPages = Math.ceil(totalCount / limit);
 
@@ -57,6 +96,11 @@ module.exports.salesindex = async (req, res) => {
       totalPages,
       totalCount,
       limit,
+      filters: {
+        search: search || "",
+        status: status || "",
+        sort: sort || "",
+      },
     });
   } catch (error) {
     console.error("SalesTeam Index Error:", error);
@@ -83,6 +127,7 @@ module.exports.createSalesMember = async (req, res) => {
       req.flash("error", "Name and Email are required");
       return res.redirect("back");
     }
+
     // 🔹 Normalize assigned area
     const areas = assignedAreas?.village ? [assignedAreas] : [];
     // 🔹 Find or create user
@@ -162,6 +207,146 @@ module.exports.viewSalesMember = async (req, res) => {
   }
 };
 
+module.exports.editSalesMemberForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const salesMember = await SalesTeam.findById(id).populate("user");
+    if (!salesMember) {
+      req.flash("error", "Sales member not found");
+      return res.redirect("/admin/sales-team");
+    }
+
+    res.render("admin/salesteam/edit.ejs", {
+      salesMember,
+    });
+  } catch (error) {
+    console.error(error);
+    req.flash("error", "Unable to load edit form");
+    res.redirect("/admin/sales-team");
+  }
+};
+
+module.exports.updateSalesMember = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { name, email, mobile, assignedAreas, isActive } = req.body;
+
+    // 1. Find sales member
+    const salesMember = await SalesTeam.findById(id).populate("user");
+    if (!salesMember) {
+      req.flash("error", "Sales member not found");
+      return res.redirect("/admin/sales-team");
+    }
+
+    // 2. Update linked user details
+    if (salesMember.user) {
+      salesMember.user.name = name;
+      salesMember.user.email = email;
+      salesMember.user.mobile = mobile;
+      await salesMember.user.save();
+    }
+
+    // 3. Normalize assignedAreas (form sends OBJECT, schema needs ARRAY)
+    if (assignedAreas) {
+      salesMember.assignedAreas = [
+        {
+          village: assignedAreas.village || "",
+          taluka: assignedAreas.taluka || "",
+          district: assignedAreas.district || "",
+          state: assignedAreas.state || "",
+        },
+      ];
+    }
+
+    // 4. Update active status
+    salesMember.isActive = isActive === "true";
+
+    // 5. Save sales member
+    await salesMember.save();
+
+    req.flash("success", "Sales member updated successfully");
+    res.redirect("/admin/sales-team");
+  } catch (error) {
+    console.error(error);
+    req.flash("error", "Error in updating sales member details");
+    res.redirect("/admin/sales-team");
+  }
+};
+
+// ACTIVATE sales member
+module.exports.activateSalesMember = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const salesMember = await SalesTeam.findById(id);
+    if (!salesMember) {
+      req.flash("error", "Sales member not found");
+      return res.redirect("/admin/sales-team");
+    }
+
+    salesMember.isActive = true;
+    await salesMember.save();
+
+    req.flash("success", "Sales member activated successfully");
+    res.redirect("/admin/sales-team");
+  } catch (error) {
+    console.error(error);
+    req.flash("error", "Unable to activate sales member");
+    res.redirect("/admin/sales-team");
+  }
+};
+
+// DEACTIVATE sales member
+module.exports.deactivateSalesMember = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const salesMember = await SalesTeam.findById(id);
+    if (!salesMember) {
+      req.flash("error", "Sales member not found");
+      return res.redirect("/admin/sales-team");
+    }
+
+    salesMember.isActive = false;
+    await salesMember.save();
+
+    req.flash("success", "Sales member deactivated successfully");
+    res.redirect("/admin/sales-team");
+  } catch (error) {
+    console.error(error);
+    req.flash("error", "Unable to deactivate sales member");
+    res.redirect("/admin/sales-team");
+  }
+};
+module.exports.deleteSalesMember = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Find sales member with linked user
+    const salesMember = await SalesTeam.findById(id).populate("user");
+    if (!salesMember) {
+      req.flash("error", "Sales member not found");
+      return res.redirect("/admin/sales-team");
+    }
+
+    // 2. Delete linked user (if exists)
+    if (salesMember.user) {
+      await User.findByIdAndDelete(salesMember.user._id);
+    }
+
+    // 3. Delete sales member
+    await SalesTeam.findByIdAndDelete(id);
+
+    req.flash("success", "Sales member deleted permanently");
+    res.redirect("/admin/sales-team");
+  } catch (error) {
+    console.error(error);
+    req.flash("error", "Failed to delete sales member");
+    res.redirect("/admin/sales-team");
+  }
+};
+
 module.exports.paravetsIndexpage = async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page) || 1, 1);
@@ -196,5 +381,55 @@ module.exports.paravetsIndexpage = async (req, res) => {
     console.error("Error fetching paravets:", error);
     req.flash("error", "Unable to fetch paravets at this time.");
     res.status(500).send("Internal Server Error");
+  }
+};
+
+module.exports.adminSettingPage = async (req, res) => {
+  try {
+    const admins = await User.find({ role: "ADMIN" })
+      .select("name email mobile lastLogin createdAt isActive")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.render("admin/settings", {
+      admins,
+    });
+  } catch (error) {
+    console.error("Error in Admin Settings:", error);
+    req.flash("error", "Unable to load admin settings.");
+    res.redirect("/admin");
+  }
+};
+
+module.exports.renderAddAdmin = (req, res) => {
+  res.render("admin/addAdmin.ejs");
+};
+
+module.exports.createAdmin = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    // check existing user
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      req.flash("error", "Email already registered");
+      return res.redirect("/admin/settings/add-admin");
+    }
+
+    const newAdmin = new User({
+      name,
+      email,
+      role: "ADMIN",
+    });
+
+    // passport-local-mongoose magic
+    await User.register(newAdmin, password);
+
+    req.flash("success", "New admin created successfully");
+    res.redirect("/admin/settings");
+  } catch (err) {
+    console.error("Add Admin Error:", err);
+    req.flash("error", err.message);
+    res.redirect("/admin/settings/add-admin");
   }
 };

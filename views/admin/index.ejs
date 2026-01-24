@@ -1,132 +1,681 @@
 <% layout("layouts/boilerplate") %>
 
-<div class="w-full">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 px-4 py-6 sm:px-6 lg:px-8">
 
-  <!-- Welcome Section -->
-  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm px-6 py-5 mb-6">
-    <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-      Welcome, <%= currUser.name %> 👋 
-	<span class="hidden lg:inline-block px-3 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
-		ADMIN
-    </span>
-    </h1>
-    <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm">
-      Zoopito Admin Dashboard – Livestock & Pet Data Management Platform
-    </p>
+  <!-- Top Bar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+    <!-- Welcome Section -->
+    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl px-6 py-5 shadow-xl shadow-blue-500/5">
+      <div class="flex items-center gap-4">
+        <div class="hidden md:flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500">
+          <span class="text-white text-xl font-bold"><%= currUser.name.charAt(0).toUpperCase() %></span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+              Welcome, <%= currUser.name %> 👋
+            </h1>
+            <span class="px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white animate-pulse">
+              ADMIN
+            </span>
+          </div>
+          <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm md:text-base">
+            Zoopito Admin Dashboard – Livestock & Pet Data Management Platform
+          </p>
+          <div class="flex items-center gap-2 mt-2 text-sm">
+            <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+              </svg>
+              <%= new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex gap-3">
+      <a href="/admin/export" class="inline-flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Export Report
+      </a>
+      <a href="/admin/analytics" class="inline-flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/25">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        Analytics
+      </a>
+    </div>
   </div>
 
-  <!-- Quick Stats -->
+  <!-- Filters Section -->
+  <div class="mb-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100/50 dark:border-gray-700/50 p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+        </svg>
+        Dashboard Filters
+      </h3>
+      <button onclick="clearFilters()" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Clear Filters
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Date Range Filter -->
+      <div class="group">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+        <div class="relative">
+          <select id="dateRange" class="w-full appearance-none bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-10 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="last7days">Last 7 Days</option>
+            <option value="last30days">Last 30 Days</option>
+            <option value="thismonth">This Month</option>
+            <option value="lastmonth">Last Month</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Region Filter -->
+      <div class="group">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Region</label>
+        <div class="relative">
+          <select id="region" class="w-full appearance-none bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-10 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+            <option value="">All Regions</option>
+            <option value="north">North Region</option>
+            <option value="south">South Region</option>
+            <option value="east">East Region</option>
+            <option value="west">West Region</option>
+            <option value="central">Central Region</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Animal Type Filter -->
+      <div class="group">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Animal Type</label>
+        <div class="relative">
+          <select id="animalType" class="w-full appearance-none bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-10 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+            <option value="">All Animals</option>
+            <option value="cow">Cattle</option>
+            <option value="buffalo">Buffalo</option>
+            <option value="goat">Goat</option>
+            <option value="sheep">Sheep</option>
+            <option value="poultry">Poultry</option>
+            <option value="pet">Pets (Dog/Cat)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="group">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
+        <div class="relative">
+          <select id="status" class="w-full appearance-none bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-10 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+            <option value="inactive">Inactive</option>
+            <option value="flagged">Flagged</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Date Range (Hidden by Default) -->
+    <div id="customDateRange" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">From Date</label>
+        <input type="date" class="w-full bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">To Date</label>
+        <input type="date" class="w-full bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500">
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Stats Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-sm">
-      <p class="text-sm text-gray-500 dark:text-gray-400">Total Farmers</p>
-      <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1"><%= farmersCount %></h3>
+    <!-- Total Farmers with Trend -->
+    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 shadow-xl transform hover:scale-[1.02] transition-all duration-300">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Farmers</p>
+          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><%= farmersCount %></h3>
+        </div>
+        <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30">
+          <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center text-sm">
+        <span class="text-green-600 dark:text-green-400 font-medium flex items-center">
+          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+          </svg>
+          +12.5% this month
+        </span>
+        <span class="ml-auto text-gray-500 dark:text-gray-400">Last 30 days</span>
+      </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-sm">
-      <p class="text-sm text-gray-500 dark:text-gray-400">Total Animals</p>
-      <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1"><%= animalsCount %></h3>
+    <!-- Total Animals with Species Breakdown -->
+    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 shadow-xl transform hover:scale-[1.02] transition-all duration-300">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Animals</p>
+          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><%= animalsCount %></h3>
+        </div>
+        <div class="p-3 rounded-full bg-green-100 dark:bg-green-900/30">
+          <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 grid grid-cols-3 gap-2 text-xs">
+        <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-1 rounded text-center">Cattle: 45%</span>
+        <span class="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded text-center">Goat: 30%</span>
+        <span class="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 px-2 py-1 rounded text-center">Poultry: 25%</span>
+      </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-sm">
-      <p class="text-sm text-gray-500 dark:text-gray-400">Sales Team Members</p>
-      <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1"><%= salesTeamsCount %></h3>
+    <!-- Sales Team Performance -->
+    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 shadow-xl transform hover:scale-[1.02] transition-all duration-300">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Field Executives</p>
+          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><%= salesTeamsCount %></h3>
+        </div>
+        <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+          <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <div class="flex items-center justify-between text-sm mb-1">
+          <span class="text-gray-600 dark:text-gray-400">Avg. Performance</span>
+          <span class="font-semibold text-gray-900 dark:text-white">78%</span>
+        </div>
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div class="bg-yellow-500 h-2 rounded-full" style="width: 78%"></div>
+        </div>
+      </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-sm">
-      <p class="text-sm text-gray-500 dark:text-gray-400">Paravets</p>
-      <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1"><%= paravetsCount %></h3>
+    <!-- Paravets & Services -->
+    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 shadow-xl transform hover:scale-[1.02] transition-all duration-300">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Paravets & Services</p>
+          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><%= paravetsCount %></h3>
+        </div>
+        <div class="p-3 rounded-full bg-red-100 dark:bg-red-900/30">
+          <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-600 dark:text-gray-400">Services this month</span>
+          <span class="font-semibold text-green-600 dark:text-green-400">1,247</span>
+        </div>
+        <div class="flex items-center justify-between text-sm mt-2">
+          <span class="text-gray-600 dark:text-gray-400">Vaccinations pending</span>
+          <span class="font-semibold text-yellow-600 dark:text-yellow-400">156</span>
+        </div>
+      </div>
     </div>
-
   </div>
 
-  <!-- Management Cards -->
+  <!-- Charts & Recent Activity Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Registration Trend Chart -->
+    <div class="lg:col-span-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 shadow-xl">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Registration Trends</h3>
+        <select class="text-sm bg-transparent border-0 focus:ring-0 text-gray-600 dark:text-gray-400">
+          <option>Last 7 Days</option>
+          <option>Last 30 Days</option>
+          <option>Last 3 Months</option>
+        </select>
+      </div>
+      <!-- Dummy Chart - Replace with real chart library -->
+      <div class="h-64 flex items-end justify-between pt-8">
+        <% const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; %>
+        <% const data = [45, 52, 68, 72, 65, 55, 48]; %>
+        <% days.forEach((day, index) => { %>
+          <div class="flex flex-col items-center">
+            <div 
+              class="w-10 bg-gradient-to-t from-blue-500 to-blue-300 dark:from-blue-600 dark:to-blue-400 rounded-t-lg transition-all hover:opacity-80 cursor-pointer"
+              style="height: <%= (data[index] / 72) * 160 %>px;"
+              title="<%= data[index] %> registrations"
+            ></div>
+            <span class="mt-2 text-xs text-gray-600 dark:text-gray-400"><%= day %></span>
+          </div>
+        <% }); %>
+      </div>
+      <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-600 dark:text-gray-400">Total registrations this week</span>
+          <span class="font-semibold text-gray-900 dark:text-white">405</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 shadow-xl">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Recent Activity</h3>
+      <div class="space-y-4">
+        <% const activities = [
+          { user: 'John Doe', action: 'registered new farmer', time: '2 min ago', type: 'farmer' },
+          { user: 'Sarah Smith', action: 'added 5 cattle', time: '15 min ago', type: 'animal' },
+          { user: 'Dr. Rajesh', action: 'completed vaccination', time: '1 hour ago', type: 'vaccination' },
+          { user: 'Mike Wilson', action: 'assigned new area', time: '2 hours ago', type: 'assignment' },
+          { user: 'System', action: 'exported monthly report', time: '3 hours ago', type: 'report' }
+        ]; %>
+        <% activities.forEach(activity => { %>
+          <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center <%= 
+                activity.type === 'farmer' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
+                activity.type === 'animal' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+                activity.type === 'vaccination' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+              %>">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<%= 
+                    activity.type === 'farmer' ? 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' :
+                    activity.type === 'animal' ? 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' :
+                    activity.type === 'vaccination' ? 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' :
+                    'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
+                  %>"/>
+                </svg>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900 dark:text-white">
+                <span class="font-semibold"><%= activity.user %></span> <%= activity.action %>
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= activity.time %></p>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+      <a href="/admin/activity" class="block mt-4 text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+        View all activity →
+      </a>
+    </div>
+  </div>
+
+  <!-- Enhanced Management Cards -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-    <!-- Sales Team -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-        Manage Sales Team
-      </h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-        Add field executives, assign areas, track farmer onboarding performance.
-      </p>
+    <!-- Sales Team with Stats -->
+    <div class="bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-800 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-6 shadow-xl transform hover:scale-[1.02] transition-all duration-300 group">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            Manage Sales Team
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            Add field executives, assign areas, track performance metrics.
+          </p>
+          <div class="mt-4 flex items-center gap-3">
+            <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium rounded-full">
+              Active: 12
+            </span>
+            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium rounded-full">
+              Avg. Rating: 4.2
+            </span>
+          </div>
+        </div>
+        <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/50 transition-colors">
+          <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-10a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/>
+          </svg>
+        </div>
+      </div>
       <a href="/admin/sales-team"
-         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
-        View Sales Team →
+         class="inline-flex items-center gap-2 mt-6 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 group-hover:gap-3 transition-all">
+        View Sales Dashboard
+        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
       </a>
     </div>
 
-    <!-- Farmers -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-        Manage Farmers
-      </h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-        View registered farmers, village-wise data, GPS locations & profiles.
-      </p>
+    <!-- Farmers with Map Preview -->
+    <div class="bg-gradient-to-br from-green-50 to-white dark:from-green-900/20 dark:to-gray-800 border border-green-100 dark:border-green-900/30 rounded-2xl p-6 shadow-xl transform hover:scale-[1.02] transition-all duration-300 group">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+            Manage Farmers
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            View registered farmers, village data, GPS locations & profiles.
+          </p>
+          <div class="mt-4 flex items-center gap-3">
+            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium rounded-full">
+              Villages: 24
+            </span>
+            <span class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 text-xs font-medium rounded-full">
+              Coverage: 68%
+            </span>
+          </div>
+        </div>
+        <div class="p-3 rounded-full bg-green-100 dark:bg-green-900/30 group-hover:bg-green-200 dark:group-hover:bg-green-800/50 transition-colors">
+          <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+      </div>
       <a href="/admin/farmers"
-         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
-        View Farmers →
+         class="inline-flex items-center gap-2 mt-6 text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 group-hover:gap-3 transition-all">
+        View Farmers Map
+        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
       </a>
     </div>
 
-    <!-- Animals -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-        Manage Animals
-      </h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-        Explore animal details, species-wise data, photos & health records.
-      </p>
+    <!-- Animals with AI Insights -->
+    <div class="bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-gray-800 border border-purple-100 dark:border-purple-900/30 rounded-2xl p-6 shadow-xl transform hover:scale-[1.02] transition-all duration-300 group">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+            Manage Animals
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            Explore animal details, species data, photos & health records.
+          </p>
+          <div class="mt-4 flex items-center gap-3">
+            <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs font-medium rounded-full">
+              Species: 8
+            </span>
+            <span class="px-3 py-1 bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300 text-xs font-medium rounded-full">
+              AI Photos: 85%
+            </span>
+          </div>
+        </div>
+        <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/50 transition-colors">
+          <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+          </svg>
+        </div>
+      </div>
       <a href="/admin/animals"
-         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
-        Explore Animals →
+         class="inline-flex items-center gap-2 mt-6 text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 group-hover:gap-3 transition-all">
+        Explore Animals
+        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
       </a>
     </div>
 
-    <!-- Vaccination -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-        Vaccination & Services
-      </h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-        Track animal-wise vaccination, service dates, and next due reminders.
-      </p>
+    <!-- Vaccination Tracking -->
+    <div class="bg-gradient-to-br from-red-50 to-white dark:from-red-900/20 dark:to-gray-800 border border-red-100 dark:border-red-900/30 rounded-2xl p-6 shadow-xl transform hover:scale-[1.02] transition-all duration-300 group">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+            Vaccination & Services
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            Track animal-wise vaccination, service dates, due reminders.
+          </p>
+          <div class="mt-4 flex items-center gap-3">
+            <span class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-xs font-medium rounded-full">
+              Due: 156
+            </span>
+            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium rounded-full">
+              Completed: 92%
+            </span>
+          </div>
+        </div>
+        <div class="p-3 rounded-full bg-red-100 dark:bg-red-900/30 group-hover:bg-red-200 dark:group-hover:bg-red-800/50 transition-colors">
+          <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
       <a href="/admin/vaccinations"
-         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
-        Check Vaccinations →
+         class="inline-flex items-center gap-2 mt-6 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 group-hover:gap-3 transition-all">
+        Check Vaccinations
+        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
       </a>
     </div>
 
-    <!-- Paravets -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-        Manage Paravets
-      </h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-        Assign villages, monitor services, and manage healthcare coverage.
-      </p>
+    <!-- Paravets Management -->
+    <div class="bg-gradient-to-br from-yellow-50 to-white dark:from-yellow-900/20 dark:to-gray-800 border border-yellow-100 dark:border-yellow-900/30 rounded-2xl p-6 shadow-xl transform hover:scale-[1.02] transition-all duration-300 group">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">
+            Manage Paravets
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            Assign villages, monitor services, manage healthcare coverage.
+          </p>
+          <div class="mt-4 flex items-center gap-3">
+            <span class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 text-xs font-medium rounded-full">
+              Active: 8
+            </span>
+            <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium rounded-full">
+              Avg. Rating: 4.5
+            </span>
+          </div>
+        </div>
+        <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900/30 group-hover:bg-yellow-200 dark:group-hover:bg-yellow-800/50 transition-colors">
+          <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+        </div>
+      </div>
       <a href="/admin/paravets"
-         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
-        View Paravets →
+         class="inline-flex items-center gap-2 mt-6 text-sm font-medium text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 group-hover:gap-3 transition-all">
+        View Paravets
+        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
       </a>
     </div>
 
-    <!-- Data Export -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-        Data Export & Reports
-      </h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-        Export farmer & animal data for Government, NGO & insurance reporting.
-      </p>
-      <a href="/admin/reports"
-         class="inline-block mt-4 text-sm font-medium text-blue-600 hover:underline">
-        Export Data →
+    <!-- Data Export & Analytics -->
+    <div class="bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/20 dark:to-gray-800 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-6 shadow-xl transform hover:scale-[1.02] transition-all duration-300 group">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            Data Export & Reports
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            Export data for Government, NGO & insurance reporting.
+          </p>
+          <div class="mt-4 flex items-center gap-3">
+            <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 text-xs font-medium rounded-full">
+              Formats: 3
+            </span>
+            <span class="px-3 py-1 bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300 text-xs font-medium rounded-full">
+              Last Export: Today
+            </span>
+          </div>
+        </div>
+        <div class="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900/30 group-hover:bg-indigo-200 dark:group-hover:bg-indigo-800/50 transition-colors">
+          <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-6 flex gap-2">
+        <a href="/admin/export/csv" class="flex-1 text-center px-3 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-colors">
+          CSV
+        </a>
+        <a href="/admin/export/excel" class="flex-1 text-center px-3 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-colors">
+          Excel
+        </a>
+        <a href="/admin/export/pdf" class="flex-1 text-center px-3 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-colors">
+          PDF
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Quick Links -->
+  <div class="mt-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 shadow-xl">
+    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <a href="/admin/farmers/new" class="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-colors">
+        <svg class="w-8 h-8 text-blue-600 dark:text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+        </svg>
+        <span class="text-sm font-medium text-gray-900 dark:text-white">Add Farmer</span>
+      </a>
+      <a href="/admin/animals/new" class="flex flex-col items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl hover:bg-green-100 dark:hover:bg-green-800/30 transition-colors">
+        <svg class="w-8 h-8 text-green-600 dark:text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        <span class="text-sm font-medium text-gray-900 dark:text-white">Register Animal</span>
+      </a>
+      <a href="/admin/vaccination/schedule" class="flex flex-col items-center p-4 bg-red-50 dark:bg-red-900/20 rounded-xl hover:bg-red-100 dark:hover:bg-red-800/30 transition-colors">
+        <svg class="w-8 h-8 text-red-600 dark:text-red-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <span class="text-sm font-medium text-gray-900 dark:text-white">Schedule Vaccination</span>
+      </a>
+      <a href="/admin/settings" class="flex flex-col items-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-800/30 transition-colors">
+        <svg class="w-8 h-8 text-purple-600 dark:text-purple-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <span class="text-sm font-medium text-gray-900 dark:text-white">Settings</span>
       </a>
     </div>
-
   </div>
 
 </div>
+
+<!-- JavaScript for Filters -->
+<script>
+  // Toggle custom date range
+  document.getElementById('dateRange').addEventListener('change', function() {
+    const customRangeDiv = document.getElementById('customDateRange');
+    if (this.value === 'custom') {
+      customRangeDiv.classList.remove('hidden');
+    } else {
+      customRangeDiv.classList.add('hidden');
+    }
+  });
+
+  // Clear all filters
+  function clearFilters() {
+    document.getElementById('dateRange').value = 'today';
+    document.getElementById('region').value = '';
+    document.getElementById('animalType').value = '';
+    document.getElementById('status').value = '';
+    document.getElementById('customDateRange').classList.add('hidden');
+    
+    // Show notification
+    showNotification('Filters cleared successfully', 'success');
+  }
+
+  function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-xl shadow-xl z-50 transform transition-all duration-300 ${
+      type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+    }`;
+    notification.innerHTML = `
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>${message}</span>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      notification.style.transform = 'translateY(-20px)';
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  }
+
+  // Initialize tooltips
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects for charts
+    const chartBars = document.querySelectorAll('[class*="bg-gradient-to-t"]');
+    chartBars.forEach(bar => {
+      bar.addEventListener('mouseenter', function() {
+        this.classList.add('opacity-80');
+      });
+      bar.addEventListener('mouseleave', function() {
+        this.classList.remove('opacity-80');
+      });
+    });
+  });
+</script>
+
+<style>
+  /* Custom animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  /* Smooth transitions */
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: #374151;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: #6b7280;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+</style>

@@ -1,0 +1,98 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-[80vh] flex items-center justify-center px-4">
+  <div class="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-lg p-6 sm:p-8">
+
+    <!-- Header -->
+    <div class="mb-6 text-center">
+      <h3 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+        Add New Admin
+      </h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Create a new administrator account
+      </p>
+    </div>
+
+    <!-- Form -->
+    <form action="/admin/settings" method="POST" class="space-y-4">
+
+      <!-- Name -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Full Name
+        </label>
+        <input
+          type="text"
+          name="name"
+          required
+          placeholder="John Doe"
+          class="w-full rounded-lg border border-gray-300 dark:border-gray-700
+                 bg-white dark:bg-gray-800
+                 text-gray-800 dark:text-gray-100
+                 placeholder-gray-400 dark:placeholder-gray-500
+                 px-4 py-2.5
+                 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Email Address
+        </label>
+        <input
+          type="email"
+          name="email"
+          required
+          placeholder="admin@example.com"
+          class="w-full rounded-lg border border-gray-300 dark:border-gray-700
+                 bg-white dark:bg-gray-800
+                 text-gray-800 dark:text-gray-100
+                 placeholder-gray-400 dark:placeholder-gray-500
+                 px-4 py-2.5
+                 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Password
+        </label>
+        <input
+          type="password"
+          name="password"
+          required
+          placeholder="••••••••"
+          class="w-full rounded-lg border border-gray-300 dark:border-gray-700
+                 bg-white dark:bg-gray-800
+                 text-gray-800 dark:text-gray-100
+                 placeholder-gray-400 dark:placeholder-gray-500
+                 px-4 py-2.5
+                 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center justify-between pt-4">
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center
+                 rounded-lg bg-indigo-600 hover:bg-indigo-700
+                 text-white font-medium
+                 px-5 py-2.5
+                 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          Create Admin
+        </button>
+
+        <a
+          href="/admin/settings"
+          class="text-sm font-medium text-gray-600 dark:text-gray-400
+                 hover:text-gray-900 dark:hover:text-gray-200 transition">
+          Cancel
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
