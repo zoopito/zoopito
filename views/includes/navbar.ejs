@@ -84,7 +84,7 @@
       </a>
       
       <!-- ROLE BADGE (Conditional) -->
-      
+    </div>
 
     <!-- DESKTOP MENU -->
     <div class="hidden lg:flex items-center gap-1">
@@ -173,80 +173,78 @@
           </a>
         <% } %>
       </div>
-
-      <!-- ACTION BUTTONS -->
-      <div class="flex items-center gap-3">
-        
-
-        <!-- DARK MODE TOGGLE -->
-        <button id="themeToggle" 
-                class="theme-toggle-btn p-2.5 rounded-full shadow-md">
-          <i id="themeIcon" class="fas fa-moon text-sm"></i>
-        </button>
-
-        <!-- currUser PROFILE / LOGIN -->
-        <% if (currUser) { %>
-          <div class="relative">
-            <button id="currUserMenuBtn" 
-                    class="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <div class="currUser-avatar h-9 w-9 rounded-full flex items-center justify-center text-white font-semibold">
-                <%= currUser.name ? currUser.name.charAt(0).toUpperCase() : 'U' %>
-              </div>
-              <div class="text-left hidden xl:block">
-                <p class="text-sm font-medium text-gray-800 dark:text-white"><%= currUser.name || 'currUser' %></p>
-                <p class="text-xs text-gray-500 dark:text-gray-400"><%= currUser.role || 'Guest' %></p>
-              </div>
-              <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
-            </button>
-            
-            <!-- currUser DROPDOWN MENU -->
-            <div id="currUserDropdown" 
-                 class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
-              <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                <p class="font-medium text-gray-800 dark:text-white"><%= currUser.name || 'currUser' %></p>
-                <p class="text-sm text-gray-500 dark:text-gray-400"><%= currUser.email || '' %></p>
-              </div>
-              
-              <a href="/profile" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <i class="fas fa-currUser text-gray-500 w-5"></i>
-                <span class="text-gray-700 dark:text-gray-300">My Profile</span>
-              </a>
-              
-              <a href="/settings" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <i class="fas fa-cog text-gray-500 w-5"></i>
-                <span class="text-gray-700 dark:text-gray-300">Settings</span>
-              </a>
-              
-              <% if (currUser.role === 'admin') { %>
-                <a href="/admin/reports" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <i class="fas fa-file-export text-gray-500 w-5"></i>
-                  <span class="text-gray-700 dark:text-gray-300">Export Data</span>
-                </a>
-              <% } %>
-              
-              <div class="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2">
-                <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                  <i class="fas fa-sign-out-alt w-5"></i>
-                  <span>Logout</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        <% } else { %>
-          <a href="/login" 
-             class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-sky-500 to-green-500 text-white font-medium hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
-            <i class="fas fa-sign-in-alt"></i>
-            <span>Login</span>
-          </a>
-        <% } %>
-      </div>
     </div>
 
-    <!-- MOBILE MENU BUTTON -->
-    <button id="mobileMenuBtn" 
-            class="lg:hidden p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-      <i class="fas fa-bars text-gray-700 dark:text-gray-300 text-lg"></i>
-    </button>
+    <!-- ACTION BUTTONS - RIGHT SIDE -->
+    <div class="flex items-center gap-3">
+      <!-- DARK MODE TOGGLE -->
+      <button id="themeToggle" 
+              class="theme-toggle-btn p-2.5 rounded-full shadow-md">
+        <i id="themeIcon" class="fas fa-moon text-sm"></i>
+      </button>
+
+      <!-- currUser PROFILE / LOGIN -->
+      <% if (currUser) { %>
+        <div class="relative hidden lg:block">
+          <button id="currUserMenuBtn" 
+                  class="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <div class="currUser-avatar h-9 w-9 rounded-full flex items-center justify-center text-white font-semibold">
+              <%= currUser.name ? currUser.name.charAt(0).toUpperCase() : 'U' %>
+            </div>
+            <div class="text-left hidden xl:block">
+              <p class="text-sm font-medium text-gray-800 dark:text-white"><%= currUser.name || 'currUser' %></p>
+              <p class="text-xs text-gray-500 dark:text-gray-400"><%= currUser.role || 'Guest' %></p>
+            </div>
+            <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+          </button>
+          
+          <!-- currUser DROPDOWN MENU -->
+          <div id="currUserDropdown" 
+               class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
+            <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+              <p class="font-medium text-gray-800 dark:text-white"><%= currUser.name || 'currUser' %></p>
+              <p class="text-sm text-gray-500 dark:text-gray-400"><%= currUser.email || '' %></p>
+            </div>
+            
+            <a href="/profile" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <i class="fas fa-currUser text-gray-500 w-5"></i>
+              <span class="text-gray-700 dark:text-gray-300">My Profile</span>
+            </a>
+            
+            <a href="/settings" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <i class="fas fa-cog text-gray-500 w-5"></i>
+              <span class="text-gray-700 dark:text-gray-300">Settings</span>
+            </a>
+            
+            <% if (currUser.role === 'admin') { %>
+              <a href="/admin/reports" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <i class="fas fa-file-export text-gray-500 w-5"></i>
+                <span class="text-gray-700 dark:text-gray-300">Export Data</span>
+              </a>
+            <% } %>
+            
+            <div class="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2">
+              <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                <i class="fas fa-sign-out-alt w-5"></i>
+                <span>Logout</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      <% } else { %>
+        <a href="/login" 
+           class="hidden lg:flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-sky-500 to-green-500 text-white font-medium hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>Login</span>
+        </a>
+      <% } %>
+
+      <!-- MOBILE MENU BUTTON -->
+      <button id="mobileMenuBtn"
+              class="lg:hidden p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+        <i class="fas fa-bars text-gray-700 dark:text-gray-300 text-lg"></i>
+      </button>
+    </div>
   </div>
 
   <!-- MOBILE MENU -->
