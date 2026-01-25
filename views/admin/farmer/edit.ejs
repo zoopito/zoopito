@@ -1,0 +1,223 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="max-w-5xl mx-auto">
+
+  <!-- Header -->
+  <div class="text-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
+      Edit Farmer
+    </h1>
+    <p class="text-sm text-gray-500">
+      Update farmer details carefully
+    </p>
+  </div>
+
+  <!-- Form Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+
+    <form
+      action="/admin/farmers/<%= farmer._id %>?_method=PUT"
+      method="POST"
+      enctype="multipart/form-data"
+      class="space-y-6"
+    >
+
+      <!-- Basic Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div>
+          <label class="block text-sm font-medium mb-1">
+            Farmer Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="farmer[name]"
+            value="<%= farmer.name %>"
+            required
+            class="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">
+            Mobile Number <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="tel"
+            name="farmer[mobileNumber]"
+            value="<%= farmer.mobileNumber %>"
+            maxlength="10"
+            required
+            class="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
+
+      </div>
+
+      <!-- Address -->
+      <div>
+        <h2 class="text-lg font-semibold mb-2">Address Details</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <input type="text" name="farmer[address][village]"
+            value="<%= farmer.address?.village || '' %>"
+            placeholder="Village"
+            class="rounded-md border px-3 py-2 text-sm" />
+
+          <input type="text" name="farmer[address][taluka]"
+            value="<%= farmer.address?.taluka || '' %>"
+            placeholder="Taluka"
+            class="rounded-md border px-3 py-2 text-sm" />
+
+          <input type="text" name="farmer[address][district]"
+            value="<%= farmer.address?.district || '' %>"
+            placeholder="District"
+            class="rounded-md border px-3 py-2 text-sm" />
+
+          <input type="text" name="farmer[address][state]"
+            value="<%= farmer.address?.state || '' %>"
+            placeholder="State"
+            class="rounded-md border px-3 py-2 text-sm" />
+
+          <input type="text" name="farmer[address][pincode]"
+            value="<%= farmer.address?.pincode || '' %>"
+            placeholder="Pincode"
+            class="rounded-md border px-3 py-2 text-sm" />
+
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div>
+        <h2 class="text-lg font-semibold mb-2">GPS Location</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            type="number"
+            step="any"
+            name="farmer[location][coordinates][]"
+            id="longitude"
+            value="<%= farmer.location?.coordinates?.[0] || '' %>"
+            placeholder="Longitude"
+            class="rounded-md border px-3 py-2 text-sm"
+          />
+
+          <input
+            type="number"
+            step="any"
+            name="farmer[location][coordinates][]"
+            id="latitude"
+            value="<%= farmer.location?.coordinates?.[1] || '' %>"
+            placeholder="Latitude"
+            class="rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
+
+        <button
+          type="button"
+          onclick="getLocation()"
+          class="mt-2 px-4 py-1.5 text-sm rounded-md bg-blue-600 text-white"
+        >
+          Use Current Location
+        </button>
+      </div>
+
+      <!-- Farmer Photo -->
+<div>
+  <label class="block text-sm font-medium mb-1">
+    Farmer Photo
+  </label>
+
+  <% if (farmer.photo && farmer.photo.url) { %>
+    <div class="mb-3">
+      <p class="text-xs text-gray-500 mb-1">Current Photo:</p>
+      <img
+        src="<%= farmer.photo.url %>"
+        alt="Farmer Photo"
+        class="h-24 w-24 object-cover rounded-md border"
+      />
+    </div>
+  <% } else { %>
+    <p class="text-xs text-gray-500 mb-2">
+      No photo uploaded yet
+    </p>
+  <% } %>
+
+  <input
+    type="file"
+    name="image"
+    accept="image/*"
+    class="block w-full text-sm text-gray-600
+           file:mr-4 file:py-2 file:px-4
+           file:rounded-md file:border-0
+           file:text-sm file:font-semibold
+           file:bg-blue-50 file:text-blue-700
+           hover:file:bg-blue-100"
+  />
+
+  <p class="text-xs text-gray-500 mt-1">
+    Upload a new photo only if you want to replace the existing one
+  </p>
+</div>
+
+
+      <!-- Status & Animals -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div>
+          <label class="block text-sm font-medium mb-1">
+            Total Animals
+          </label>
+          <input
+            type="number"
+            name="farmer[totalAnimals]"
+            value="<%= farmer.totalAnimals || 0 %>"
+            min="0"
+            class="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div class="flex items-center gap-2 mt-6">
+          <input
+            type="checkbox"
+            name="farmer[isActive]"
+            <%= farmer.isActive ? "checked" : "" %>
+            class="h-4 w-4"
+          />
+          <label class="text-sm">Active Farmer</label>
+        </div>
+
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-center gap-3 pt-4">
+
+        <button
+          type="submit"
+          class="px-6 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+        >
+          Update Farmer
+        </button>
+
+        <a
+          href="/admin/farmers"
+          class="px-6 py-2 rounded-md border text-center"
+        >
+          Cancel
+        </a>
+
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+  function getLocation() {
+    navigator.geolocation.getCurrentPosition(pos => {
+      longitude.value = pos.coords.longitude;
+      latitude.value = pos.coords.latitude;
+    });
+  }
+</script>

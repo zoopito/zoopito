@@ -17,7 +17,7 @@ async function main() {
 
 const initDB = async () => {
   try {
-    const user = await User.updateOne({ role: "ADMIN" });
+    const user = await User.find();
     console.log("Admin user check complete", user);
   } catch {
     console.log("Error in checking admin user");

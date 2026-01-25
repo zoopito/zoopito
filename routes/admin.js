@@ -53,21 +53,43 @@ router.post(
   adminController.deleteSalesMember,
 );
 
-router.get("/farmers", isLoggedIn, isAdmin, formerController.farmersIndex);
+router
+  .route("/farmers")
+  .get(isLoggedIn, isAdmin, formerController.farmersIndex)
+  .post(
+    upload.single("image"),
+    isLoggedIn,
+    isAdmin,
+    formerController.createFarmer,
+  );
 router.get(
   "/farmers/new",
   isLoggedIn,
   isAdmin,
   formerController.createFarmerForm,
 );
-router.post(
-  "/farmers",
-  upload.single("image"),
+router
+  .route("/farmers/:id")
+  .get(isLoggedIn, isAdmin, formerController.viewFarmer)
+  .put(
+    upload.single("image"),
+    isLoggedIn,
+    isAdmin,
+    formerController.updateFarmer,
+  )
+  .delete(isLoggedIn, isAdmin, formerController.deleteFarmer);
+router.get(
+  "/farmers/:id/edit",
   isLoggedIn,
   isAdmin,
-  formerController.createFarmer,
+  formerController.renderEditform,
 );
-router.get("/farmers/:id", isLoggedIn, isAdmin, formerController.viewFarmer);
+router.patch(
+  "/farmers/:id/toggle-status",
+  isLoggedIn,
+  isAdmin,
+  formerController.toggleFarmerStatus,
+);
 
 // paravets
 router.get("/paravets", isLoggedIn, isAdmin, adminController.paravetsIndexpage);
@@ -113,7 +135,27 @@ router.post(
   animalController.createAnimal,
 );
 
-router.get("/animals/:id", isLoggedIn, isAdmin, animalController.viewAnimal);
+router
+  .route("/animals/:id")
+  .get(isLoggedIn, isAdmin, animalController.viewAnimal)
+  .put(
+    upload.fields([
+      { name: "front", maxCount: 1 },
+      { name: "left", maxCount: 1 },
+      { name: "right", maxCount: 1 },
+      { name: "back", maxCount: 1 },
+    ]),
+    isLoggedIn,
+    isAdmin,
+    animalController.updateAnimal,
+  );
+router.get(
+  "/animals/:id/edit",
+  isLoggedIn,
+  isAdmin,
+  animalController.renderEditForm,
+);
+
 router.get(
   "/vaccinations",
   isLoggedIn,

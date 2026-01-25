@@ -1,0 +1,223 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="container mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-6 text-blue-700">
+    Edit Animal Details
+  </h1>
+
+  <form
+    action="/admin/animals/<%= animal._id %>?_method=PUT"
+    method="POST"
+    enctype="multipart/form-data"
+    class="space-y-6 bg-white p-6 rounded-lg shadow-md"
+  >
+
+    <!-- Farmer -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Farmer</label>
+      <select name="farmer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+        <% farmers.forEach(farmer => { %>
+          <option
+            value="<%= farmer._id %>"
+            <%= animal.farmer && animal.farmer._id.toString() === farmer._id.toString() ? 'selected' : '' %>
+          >
+            <%= farmer.uniqueFarmerId %> : <%= farmer.name %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <!-- Registered By -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Registered By</label>
+      <select name="registeredBy" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+        <% sales.forEach(sale => { %>
+          <option
+            value="<%= sale._id %>"
+            <%= animal.registeredBy && animal.registeredBy._id.toString() === sale._id.toString() ? 'selected' : '' %>
+          >
+            <%= sale.name %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <!-- Animal Type -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Animal Type</label>
+      <select name="animalType" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+        <% ["Cow","Buffalo","Goat","Sheep","Dog","Cat","Poultry","Other"].forEach(type => { %>
+          <option value="<%= type %>" <%= animal.animalType === type ? 'selected' : '' %>>
+            <%= type %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <!-- Breed -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Breed</label>
+      <input
+        type="text"
+        name="breed"
+        value="<%= animal.breed || '' %>"
+        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+      >
+    </div>
+
+    <!-- Age -->
+    <div class="flex space-x-4">
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-gray-700">Age</label>
+        <input
+          type="number"
+          name="age[value]"
+          value="<%= animal.age?.value || '' %>"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+        >
+      </div>
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-gray-700">Unit</label>
+        <select name="age[unit]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+          <% ["Days","Months","Years"].forEach(u => { %>
+            <option value="<%= u %>" <%= animal.age?.unit === u ? 'selected' : '' %>>
+              <%= u %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+    </div>
+
+    <!-- Gender -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Gender</label>
+      <select name="gender" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+        <% ["Male","Female","Unknown"].forEach(g => { %>
+          <option value="<%= g %>" <%= animal.gender === g ? 'selected' : '' %>>
+            <%= g %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <!-- Name -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Animal Name</label>
+      <input
+        type="text"
+        name="name"
+        value="<%= animal.name || '' %>"
+        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+      >
+    </div>
+
+    <!-- Tag Number -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Tag Number</label>
+      <input
+        type="text"
+        name="tagNumber"
+        value="<%= animal.tagNumber || '' %>"
+        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+      >
+    </div>
+
+    <!-- EXISTING PHOTOS + UPLOAD -->
+    <div class="border-t pt-4">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Animal Photos</h2>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <% ["front","left","right","back"].forEach(side => { %>
+          <div>
+            <p class="text-sm font-medium capitalize mb-1"><%= side %></p>
+
+            <% if (animal.photos?.[side]?.url) { %>
+              <img
+                src="<%= animal.photos[side].url %>"
+                class="w-full h-32 object-cover rounded border mb-2"
+              >
+            <% } else { %>
+              <p class="text-xs text-gray-400 mb-2">No image</p>
+            <% } %>
+
+            <input
+              type="file"
+              name="<%= side %>"
+              accept="image/*"
+              class="text-sm"
+            >
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Lactation Status -->
+    <div class="border-t pt-4">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Lactation Status</h2>
+
+      <div class="flex items-center space-x-2 mb-3">
+        <input
+          type="checkbox"
+          name="lactationStatus[isLactating]"
+          <%= animal.lactationStatus?.isLactating ? 'checked' : '' %>
+        >
+        <label class="text-sm">Is Lactating</label>
+      </div>
+
+      <input
+        type="date"
+        name="lactationStatus[lastCalvingDate]"
+        value="<%= animal.lactationStatus?.lastCalvingDate ? animal.lactationStatus.lastCalvingDate.toISOString().slice(0,10) : '' %>"
+        class="mb-2 w-full rounded-md border-gray-300 shadow-sm"
+      >
+
+      <div class="flex space-x-4">
+        <input
+          type="number"
+          name="lactationStatus[dailyYield]"
+          value="<%= animal.lactationStatus?.dailyYield || '' %>"
+          placeholder="Daily Yield"
+          class="w-full rounded-md border-gray-300 shadow-sm"
+        >
+        <input
+          type="text"
+          name="lactationStatus[yieldUnit]"
+          value="<%= animal.lactationStatus?.yieldUnit || '' %>"
+          placeholder="Unit"
+          class="w-full rounded-md border-gray-300 shadow-sm"
+        >
+      </div>
+    </div>
+
+    <!-- Health Status -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Health Status</label>
+      <select name="healthStatus" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+        <% ["Healthy","Sick","Under Treatment","Recovered"].forEach(h => { %>
+          <option value="<%= h %>" <%= animal.healthStatus === h ? 'selected' : '' %>>
+            <%= h %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <!-- Is Active -->
+    <div class="flex items-center space-x-2">
+      <input
+        type="checkbox"
+        name="isActive"
+        <%= animal.isActive ? 'checked' : '' %>
+      >
+      <label class="text-sm">Is Active</label>
+    </div>
+
+    <!-- Submit -->
+    <button
+      type="submit"
+      class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition"
+    >
+      Update Animal
+    </button>
+
+  </form>
+</div>

@@ -190,3 +190,142 @@ module.exports.viewAnimal = async (req, res) => {
     res.redirect("/admin/animals");
   }
 };
+
+module.exports.renderEditForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const animal = await Animal.findById(id)
+      .populate("farmer")
+      .populate("registeredBy");
+
+    if (!animal) {
+      req.flash("error", "Animal not found");
+      return res.redirect("/admin/animals");
+    }
+
+    const farmers = await Farmer.find({ isActive: true });
+    const sales = await User.find({ role: "SALES" });
+
+    res.render("admin/animals/edit", {
+      animal,
+      farmers,
+      sales,
+    });
+  } catch (error) {
+    console.error("Error rendering animal edit form:", error);
+    req.flash("error", "Unable to load animal edit page");
+    res.redirect("/admin/animals");
+  }
+};
+
+module.exports.updateAnimal = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    let animal = await Animal.findById(id);
+    if (!animal) {
+      req.flash("error", "Animal not found");
+      return res.redirect("/admin/animals");
+    }
+
+    /* ---------------- BASIC FIELDS ---------------- */
+    animal.farmer = req.body.farmer || animal.farmer;
+    animal.registeredBy = req.body.registeredBy || animal.registeredBy;
+
+    if (
+      [
+        "Cow",
+        "Buffalo",
+        "Goat",
+        "Sheep",
+        "Dog",
+        "Cat",
+        "Poultry",
+        "Other",
+      ].includes(req.body.animalType)
+    ) {
+      animal.animalType = req.body.animalType;
+    }
+
+    animal.breed = req.body.breed || animal.breed;
+
+    if (["Male", "Female", "Unknown"].includes(req.body.gender)) {
+      animal.gender = req.body.gender;
+    }
+
+    animal.name = req.body.name || animal.name;
+    animal.tagNumber = req.body.tagNumber || animal.tagNumber;
+
+    if (
+      ["Healthy", "Sick", "Under Treatment", "Recovered"].includes(
+        req.body.healthStatus,
+      )
+    ) {
+      animal.healthStatus = req.body.healthStatus;
+    }
+
+    /* ---------------- AGE ---------------- */
+    if (req.body.age) {
+      animal.age = {
+        value: req.body.age.value || animal.age?.value,
+        unit: ["Days", "Months", "Years"].includes(req.body.age.unit)
+          ? req.body.age.unit
+          : animal.age?.unit,
+      };
+    }
+
+    /* ---------------- CHECKBOXES ---------------- */
+    animal.isActive = req.body.isActive === "on";
+
+    if (req.body.lactationStatus) {
+      animal.lactationStatus = {
+        isLactating: req.body.lactationStatus.isLactating === "on",
+        lastCalvingDate:
+          req.body.lactationStatus.lastCalvingDate ||
+          animal.lactationStatus?.lastCalvingDate ||
+          null,
+        dailyYield:
+          req.body.lactationStatus.dailyYield ||
+          animal.lactationStatus?.dailyYield ||
+          null,
+        yieldUnit:
+          req.body.lactationStatus.yieldUnit ||
+          animal.lactationStatus?.yieldUnit ||
+          null,
+      };
+    }
+
+    /* ---------------- PHOTOS UPDATE ---------------- */
+    const photoFields = ["front", "left", "right", "back"];
+
+    if (req.files) {
+      for (let field of photoFields) {
+        if (req.files[field] && req.files[field][0]) {
+          // Delete old image if exists
+          if (animal.photos?.[field]?.public_id) {
+            await cloudinary.uploader.destroy(animal.photos[field].public_id);
+          }
+
+          const file = req.files[field][0];
+
+          animal.photos[field] = {
+            url: file.path,
+            filename: file.filename,
+            public_id: file.filename,
+            uploadedAt: new Date(),
+          };
+        }
+      }
+    }
+
+    await animal.save();
+
+    req.flash("success", "Animal updated successfully");
+    res.redirect(`/admin/animals/${animal._id}`);
+  } catch (error) {
+    console.error("Update animal error:", error);
+    req.flash("error", "Failed to update animal");
+    res.redirect("/admin/animals");
+  }
+};
