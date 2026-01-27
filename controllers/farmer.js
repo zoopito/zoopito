@@ -30,6 +30,7 @@ const generateStrongPassword = () => {
 };
 
 module.exports.farmersIndex = async (req, res) => {
+  const role = req.user.role.toLowerCase();
   try {
     const page = Math.max(Number(req.query.page) || 1, 1);
     const limit = 20;
@@ -48,7 +49,7 @@ module.exports.farmersIndex = async (req, res) => {
     const totalPages = Math.ceil(totalCount / limit) || 1;
 
     if (page > totalPages && totalPages > 0) {
-      return res.redirect(`/admin/farmers?page=${totalPages}`);
+      return res.redirect(`/${role}/farmers?page=${totalPages}`);
     }
 
     res.render("admin/farmer/index", {
@@ -62,21 +63,23 @@ module.exports.farmersIndex = async (req, res) => {
   } catch (error) {
     console.error("Farmer Index Error:", error);
     req.flash("error", "Unable to load farmer data");
-    res.redirect("/admin");
+    res.redirect(`/${role}`);
   }
 };
 
 module.exports.createFarmerForm = async (req, res) => {
+  const role = req.user.role.toLowerCase();
   try {
     res.render("admin/farmer/new.ejs");
   } catch (error) {
     console.error("Farmer New Form Error:", error);
     req.flash("error", "Unable to load farmer form");
-    res.redirect("/admin/farmers");
+    res.redirect(`/${role}/farmers`);
   }
 };
 
 module.exports.createFarmer = async (req, res) => {
+  const role = req.user.role.toLowerCase();
   let user;
 
   try {
@@ -89,7 +92,7 @@ module.exports.createFarmer = async (req, res) => {
 
     if (existingUser) {
       req.flash("error", "Mobile number already registered");
-      return res.redirect("/admin/farmers/new");
+      return res.redirect(`/${role}/farmers/new`);
     }
 
     // 2️⃣ Create farmer user account
@@ -146,7 +149,7 @@ module.exports.createFarmer = async (req, res) => {
       `Farmer added successfully. Temporary password: ${randomPassword}`,
     );
 
-    res.redirect("/admin/farmers");
+    res.redirect(`/${role}/farmers`);
   } catch (error) {
     console.error("Create Farmer Error:", error);
 
@@ -156,18 +159,19 @@ module.exports.createFarmer = async (req, res) => {
     }
 
     req.flash("error", "Failed to create farmer");
-    res.redirect("/admin/farmers/new");
+    res.redirect(`/${role}/farmers/new`);
   }
 };
 
 module.exports.viewFarmer = async (req, res) => {
+  const role = req.user.role.toLowerCase();
   try {
     const { id } = req.params;
 
     // 🔐 Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       req.flash("error", "Invalid farmer ID");
-      return res.redirect("/admin/farmers");
+      return res.redirect(`/${role}/farmers`);
     }
 
     const farmer = await Farmer.findOne({
@@ -185,7 +189,7 @@ module.exports.viewFarmer = async (req, res) => {
       .lean();
     if (!farmer) {
       req.flash("error", "Farmer not found or inactive");
-      return res.redirect("/admin/farmers");
+      return res.redirect(`/${role}/farmers`);
     }
 
     res.render("admin/farmer/view.ejs", {
@@ -195,11 +199,12 @@ module.exports.viewFarmer = async (req, res) => {
   } catch (error) {
     console.error("View Farmer Error:", error);
     req.flash("error", "Unable to load farmer details");
-    res.redirect("/admin/farmers");
+    res.redirect(`/${role}/farmers`);
   }
 };
 
 module.exports.renderEditform = async (req, res) => {
+  const role = req.user.role.toLowerCase();
   try {
     const { id } = req.params;
     const farmer = await Farmer.findById(id).populate("registeredBy");
@@ -207,11 +212,12 @@ module.exports.renderEditform = async (req, res) => {
   } catch (error) {
     console.error("Error in redring edit form:", error);
     req.flash("error", "Unable to load Farmer edit page");
-    res.redirect("/admin/farmers");
+    res.redirect(`/${role}/farmers`);
   }
 };
 
 module.exports.updateFarmer = async (req, res) => {
+  const role = req.user.role.toLowerCase();
   try {
     const { id } = req.params;
     const farmerData = req.body.farmer;
@@ -242,7 +248,7 @@ module.exports.updateFarmer = async (req, res) => {
 
     if (!farmer) {
       req.flash("error", "Farmer not found");
-      return res.redirect("/admin/farmers");
+      return res.redirect(`/${role}/farmers`);
     }
 
     // Handle photo update (if new photo uploaded)
@@ -275,22 +281,23 @@ module.exports.updateFarmer = async (req, res) => {
     }
 
     req.flash("success", "Farmer updated successfully");
-    res.redirect("/admin/farmers");
+    res.redirect(`/${role}/farmers`);
   } catch (error) {
     console.error("Error updating farmer:", error);
 
     // Duplicate mobile number error
     if (error.code === 11000) {
       req.flash("error", "Mobile number already exists");
-      return res.redirect(`/admin/farmers/${req.params.id}/edit`);
+      return res.redirect(`/${role}/farmers/${req.params.id}/edit`);
     }
 
     req.flash("error", "Unable to update farmer");
-    res.redirect(`/admin/farmers/${req.params.id}/edit`);
+    res.redirect(`/${role}/farmers/${req.params.id}/edit`);
   }
 };
 
 module.exports.toggleFarmerStatus = async (req, res) => {
+  const role = req.user.role.toLowerCase();
   try {
     const { id } = req.params;
 
@@ -318,6 +325,7 @@ module.exports.toggleFarmerStatus = async (req, res) => {
 };
 
 module.exports.deleteFarmer = async (req, res) => {
+  const role = req.user.role.toLowerCase();
   try {
     const { id } = req.params;
 

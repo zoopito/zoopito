@@ -17,7 +17,13 @@
       <a href="/admin/farmers" class="px-4 py-2 text-sm rounded-md border">
         ← Back
       </a>
-      <a href="/admin/farmers/<%= farmer._id %>/edit"
+      <a href="
+      <% if(currUser.role === "ADMIN"){ %>
+           /admin/farmers/<%= farmer._id %>/edit
+      <% }else if(currUser.role === "SALES"){ %>
+        /sales/farmers/<%= farmer._id %>/edit
+      <% } %>
+      "
          class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">
         Edit
       </a>

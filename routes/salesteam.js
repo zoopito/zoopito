@@ -16,20 +16,44 @@ router.get(
   isSales,
   adminController.viewSalesMember,
 );
-router.get("/farmers", isLoggedIn, isSales, formerController.farmersIndex);
+
+// farmer routes
+router
+  .route("/farmers")
+  .get(isLoggedIn, isSales, formerController.farmersIndex)
+  .post(
+    upload.single("image"),
+    isLoggedIn,
+    isSales,
+    formerController.createFarmer,
+  );
 router.get(
   "/farmers/new",
   isLoggedIn,
   isSales,
   formerController.createFarmerForm,
 );
-router.post(
-  "/farmers",
-  upload.single("image"),
+router
+  .route("/farmers/:id")
+  .get(isLoggedIn, isSales, formerController.viewFarmer)
+  .put(
+    upload.single("image"),
+    isLoggedIn,
+    isSales,
+    formerController.updateFarmer,
+  )
+  .delete(isLoggedIn, isSales, formerController.deleteFarmer);
+router.get(
+  "/farmers/:id/edit",
   isLoggedIn,
   isSales,
-  formerController.createFarmer,
+  formerController.renderEditform,
 );
-router.get("/farmers/:id", isLoggedIn, isSales, formerController.viewFarmer);
+router.patch(
+  "/farmers/:id/toggle-status",
+  isLoggedIn,
+  isSales,
+  formerController.toggleFarmerStatus,
+);
 
 module.exports = router;
