@@ -23,6 +23,7 @@ const userRouter = require("./routes/user.js");
 const resetRout = require("./routes/authRoutes.js");
 const user = require("./models/user.js");
 const adminRouter = require("./routes/admin.js");
+const othersRouter = require("./routes/others.js");
 // const animalRouter = require("./routes/animal.js");
 // const farmerRouter = require("./routes/farmer.js");
 // const paravetRouter = require("./routes/paravet.js");
@@ -133,14 +134,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", async (req, res, next) => {
-  if (!req.user) {
-    res.render("zoopito/home.ejs", { user: null });
-  } else {
-    next();
-  }
-});
-
 app.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] }),
@@ -161,6 +154,7 @@ app.get(
 app.use("/", userRouter);
 app.use("/", homeRouter);
 app.use("/", resetRout);
+app.use("/", othersRouter);
 app.use("/admin", adminRouter);
 // app.use("/animals", animalRouter);
 // app.use("/farmers", farmerRouter);

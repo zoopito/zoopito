@@ -398,13 +398,42 @@
     }
   }
 
-  function syncOfflineData() {
+  async function syncOfflineData() {
     // Check if there's offline data to sync
     const offlineData = localStorage.getItem('zoopito_offline_data');
     if (offlineData) {
       console.log('Syncing offline data...');
-      // Implement your sync logic here
-      // This could be sending queued API requests, etc.
+     try {
+            const res = await fetch("/subscribe", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.message || "Subscription failed");
+            }
+
+            // Show success
+            successMessage.querySelector("p").textContent = data.message;
+            successMessage.classList.remove("hidden");
+
+            newsletterForm.reset();
+
+            setTimeout(() => {
+                successMessage.classList.add("hidden");
+            }, 5000);
+
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = "Subscribe Now";
+        }
     }
   }
 

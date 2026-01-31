@@ -126,11 +126,11 @@
                             <!-- Stats Row -->
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                 <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl">
-                                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 stats-counter">1,245</p>
+                                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 stats-counter"><%= counts.totalFarmers %></p>
                                     <p class="text-sm text-gray-600 dark:text-gray-400">Farmers</p>
                                 </div>
                                 <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl">
-                                    <p class="text-2xl font-bold text-green-600 dark:text-green-400 stats-counter">5,678</p>
+                                    <p class="text-2xl font-bold text-green-600 dark:text-green-400 stats-counter"><%= counts.totalAnimals %></p>
                                     <p class="text-sm text-gray-600 dark:text-gray-400">Animals</p>
                                 </div>
                                 <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl">
@@ -185,7 +185,7 @@
                                 <i class="fas fa-camera text-white"></i>
                             </div>
                             <div>
-                                <p class="font-semibold text-gray-900 dark:text-white">4,560+</p>
+                                <p class="font-semibold text-gray-900 dark:text-white"><%= counts.totalAnimalImages %>+</p>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Animal Photos</p>
                             </div>
                         </div>

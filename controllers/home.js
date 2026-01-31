@@ -5,6 +5,47 @@ const Paravet = require("../models/paravet");
 const Servise = require("../models/services");
 const SalesTeam = require("../models/salesteam");
 
+module.exports.homePage = async (req, res, next) => {
+  try {
+    const [
+      totalUsers,
+      totalFarmers,
+      totalAnimals,
+      totalParavets,
+      totalSalesTeam,
+    ] = await Promise.all([
+      User.countDocuments(),
+      Farmer.countDocuments(),
+      Animal.countDocuments(),
+      Paravet.countDocuments(),
+      SalesTeam.countDocuments(),
+    ]);
+
+    const totalAnimalImages = await Animal.countDocuments({
+      $or: [
+        { "photos.front.url": { $exists: true, $ne: "" } },
+        { "photos.left.url": { $exists: true, $ne: "" } },
+        { "photos.right.url": { $exists: true, $ne: "" } },
+        { "photos.back.url": { $exists: true, $ne: "" } },
+      ],
+    });
+
+    res.render("zoopito/home.ejs", {
+      user: null,
+      counts: {
+        totalUsers,
+        totalFarmers,
+        totalAnimals,
+        totalParavets,
+        totalSalesTeam,
+        totalAnimalImages,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports.index = async (req, res) => {
   try {
     if (req.user && req.user.role === "ADMIN") {

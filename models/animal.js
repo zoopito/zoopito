@@ -33,6 +33,7 @@ const animalSchema = new Schema(
         enum: ["Days", "Months", "Years"],
       },
     },
+
     gender: {
       type: String,
       enum: ["Male", "Female", "Unknown"],
