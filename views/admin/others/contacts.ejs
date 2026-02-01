@@ -129,9 +129,10 @@
                                         <%= contact.subject %>
                                     </span>
                                 </td>
+								
                                 <td class="px-6 py-4">
                                     <button type="button" 
-                                            onclick="openMessageModal('<%= contact._id %>', '<%= contact.name %>', '<%= contact.email %>', '<%= contact.subject %>', '<%= contact.message %>', '<%= contact.msgDate %>', `<%= contact.gps ? JSON.stringify(contact.gps) : 'null' %>`, `<%= contact.isSeen %>`, `<%= contact.user ? contact.user._id || contact.user : '' %>`)"
+                                            onclick="openMessageModal('<%= contact._id %>', '<%= contact.name %>', '<%= contact.email %>', '<%= contact.subject %>', '<%= contact.message %>', '<%= contact.msgDate %>', <%= contact.gps ? JSON.stringify(contact.gps) : 'null' %>, <%= contact.isSeen %>, '<%= contact.user ? contact.user._id || contact.user : '' %>')"
                                             class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-1 px-3 rounded inline-flex items-center transition-colors duration-150">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
