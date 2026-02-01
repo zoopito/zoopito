@@ -9,12 +9,21 @@
       <p class="text-sm text-gray-500 mt-1">Manage all registered animals and their farmers</p>
     </div>
 
+    <% if(currUser.role == "ADMIN"){ %>
     <a href="/admin/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
       </svg>
       Add New Animal
     </a>
+    <% } else { %>
+      <a href="/sales/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Add New Animal
+    </a>
+    <% } %>
   </div>
 
   <!-- Stats -->
@@ -83,10 +92,10 @@
 
                 <ul id="dropdown-<%= animal._id %>" class="absolute right-0 mt-2 w-36 bg-white shadow-lg rounded-md py-1 text-sm hidden z-50">
                   <li>
-                    <a href="/admin/animals/<%= animal._id %>" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">View</a>
+                    <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">View</a>
                   </li>
                   <li>
-                    <a href="/admin/animals/<%= animal._id %>/edit" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Edit</a>
+                    <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>/edit" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Edit</a>
                   </li>
                 </ul>
               </div>

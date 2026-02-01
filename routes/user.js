@@ -8,11 +8,11 @@ const { saveRedirectUrl } = require("../middleware.js");
 const userController = require("../controllers/users.js");
 
 // signup GET
-//Signup POST
-// router
-//   .route("/signup")
-//   .get(userController.renderSignupForm)
-//   .post(wrapAsync(userController.signup));
+// Signup POST
+router
+  .route("/signup")
+  .get(userController.renderSignupForm)
+  .post(wrapAsync(userController.signup));
 
 //Login GET
 //Login POST

@@ -17,10 +17,16 @@ async function main() {
 
 const initDB = async () => {
   try {
-    const user = await User.find();
-    console.log("Admin user check complete", user);
-  } catch {
-    console.log("Error in checking admin user");
+    // 🔥 DROP OLD UNIQUE INDEX
+    await User.collection.dropIndex("mobile_1");
+    console.log("mobile_1 index dropped successfully");
+
+    const users = await User.find();
+    console.log("Admin user check complete", users.length);
+  } catch (err) {
+    console.log("Error in checking admin user or dropping index:", err.message);
+  } finally {
+    mongoose.connection.close();
   }
 };
 

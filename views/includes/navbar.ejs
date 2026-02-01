@@ -142,6 +142,10 @@
                class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/sales/animals') ? active : inactive %> nav-link-hover">
               <i class="fas fa-paw mr-2"></i>Animals
             </a>
+            <a href="/sales/paravets" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/paravets') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-currUsers mr-2"></i>Paravets
+            </a>
           <% } %>
           
           <% if (currUser.role === 'admin') { %>

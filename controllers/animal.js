@@ -6,6 +6,7 @@ const Servise = require("../models/services");
 const SalesTeam = require("../models/salesteam");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
+const { cloudinary, storage } = require("../Cloudconfig.js");
 
 //employe id generator for sales memebers
 const generateAnimaleID = async () => {
@@ -158,11 +159,11 @@ module.exports.createAnimal = async (req, res) => {
     await newAnimal.save();
 
     req.flash("success", "Animal registered successfully!");
-    res.redirect("/admin/animals");
+    res.redirect(`/${req.user.role.toLowerCase()}/animals`);
   } catch (error) {
     console.error("Error creating animal:", error);
     req.flash("error", "Failed to register animal. Please try again.");
-    res.redirect("/admin/animals/new");
+    res.redirect(`/${req.user.role.toLowerCase()}/animals/new`);
   }
 };
 
@@ -177,7 +178,7 @@ module.exports.viewAnimal = async (req, res) => {
     // console.log("Fetched Animal:", animal);
     if (!animal) {
       req.flash("error", "Animal not found.");
-      return res.redirect("/admin/animals");
+      return res.redirect(`/${req.user.role.toLowerCase()}/animals`);
     }
 
     res.render("admin/animals/view.ejs", {
@@ -187,7 +188,7 @@ module.exports.viewAnimal = async (req, res) => {
   } catch (error) {
     console.error("Error fetching animal:", error);
     req.flash("error", "Unable to fetch animal details.");
-    res.redirect("/admin/animals");
+    res.redirect(`/${req.user.role.toLowerCase()}/animals`);
   }
 };
 
@@ -201,7 +202,7 @@ module.exports.renderEditForm = async (req, res) => {
 
     if (!animal) {
       req.flash("error", "Animal not found");
-      return res.redirect("/admin/animals");
+      return res.redirect(`/${req.user.role.toLowerCase()}/animals`);
     }
 
     const farmers = await Farmer.find({ isActive: true });
@@ -215,7 +216,7 @@ module.exports.renderEditForm = async (req, res) => {
   } catch (error) {
     console.error("Error rendering animal edit form:", error);
     req.flash("error", "Unable to load animal edit page");
-    res.redirect("/admin/animals");
+    res.redirect(`/${req.user.role.toLowerCase()}/animals`);
   }
 };
 
@@ -226,7 +227,7 @@ module.exports.updateAnimal = async (req, res) => {
     let animal = await Animal.findById(id);
     if (!animal) {
       req.flash("error", "Animal not found");
-      return res.redirect("/admin/animals");
+      return res.redirect(`/${req.user.role.toLowerCase()}/animals`);
     }
 
     /* ---------------- BASIC FIELDS ---------------- */
@@ -303,8 +304,8 @@ module.exports.updateAnimal = async (req, res) => {
       for (let field of photoFields) {
         if (req.files[field] && req.files[field][0]) {
           // Delete old image if exists
-          if (animal.photos?.[field]?.public_id) {
-            await cloudinary.uploader.destroy(animal.photos[field].public_id);
+          if (animal.photos?.[field]?.filename) {
+            await cloudinary.uploader.destroy(animal.photos[field].filename);
           }
 
           const file = req.files[field][0];
@@ -320,12 +321,13 @@ module.exports.updateAnimal = async (req, res) => {
     }
 
     await animal.save();
-
+    console.log(req.user.role.toLowerCase());
     req.flash("success", "Animal updated successfully");
-    res.redirect(`/admin/animals/${animal._id}`);
+    res.redirect(`/${req.user.role.toLowerCase()}/animals/${animal._id}`);
   } catch (error) {
     console.error("Update animal error:", error);
+    console.log(req.user.role.toLowerCase());
     req.flash("error", "Failed to update animal");
-    res.redirect("/admin/animals");
+    res.redirect(`/${req.user.role.toLowerCase()}/animals`);
   }
 };

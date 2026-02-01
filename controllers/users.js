@@ -82,3 +82,11 @@ module.exports.logout = (req, res, next) => {
     res.redirect("/login");
   });
 };
+
+module.exports.profile = (req, res) => {
+  try {
+  } catch (err) {
+    console.log("Profile Error", { err });
+    req.flash("");
+  }
+};

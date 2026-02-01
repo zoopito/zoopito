@@ -15,6 +15,7 @@ const userSchema = new Schema(
 
     mobile: {
       type: String,
+      unique: true,
       sparse: true,
     },
 
@@ -22,16 +23,13 @@ const userSchema = new Schema(
       type: String,
       lowercase: true,
       trim: true,
-    },
-
-    password: {
-      type: String,
-      select: false,
+      unique: true,
+      required: true,
     },
     role: {
       type: String,
-      enum: ["ADMIN", "SALES", "PARAVET", "FARMER"],
-      default: "ADMIN",
+      enum: ["ADMIN", "SALES", "PARAVET", "FARMER", "USER"],
+      default: "USER",
       // required: true,
     },
     assignedArea: {

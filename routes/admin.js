@@ -6,6 +6,7 @@ const formerController = require("../controllers/farmer.js");
 const paravetController = require("../controllers/paravet.js");
 const animalController = require("../controllers/animal.js");
 const vaccinationController = require("../controllers/vaccination.js");
+const othersController = require("../controllers/others.js");
 const multer = require("multer");
 
 const { cloudinary, storage } = require("../Cloudconfig.js");
@@ -171,4 +172,5 @@ router.get(
   adminController.renderAddAdmin,
 );
 router.post("/settings", isLoggedIn, isAdmin, adminController.createAdmin);
+router.get("/contacts", isLoggedIn, isAdmin, othersController.showContacts);
 module.exports = router;

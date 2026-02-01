@@ -27,6 +27,11 @@ module.exports.contact = async (req, res) => {
   }
 };
 
+module.exports.showContacts = async (req, res) => {
+  const contacts = await Contact.find();
+  res.render("admin/others/contacts.ejs", { contacts });
+};
+
 module.exports.subscribe = async (req, res) => {
   try {
     const { email } = req.body;

@@ -6,7 +6,7 @@
   </h1>
 
   <form
-    action="/admin/animals/<%= animal._id %>?_method=PUT"
+    action="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>?_method=PUT"
     method="POST"
     enctype="multipart/form-data"
     class="space-y-6 bg-white p-6 rounded-lg shadow-md"

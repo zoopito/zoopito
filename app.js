@@ -105,20 +105,20 @@ passport.use(
 
         if (existingUser) {
           return done(null, existingUser);
-        } else {
-          return done(null, false, { message: "This email is not registered" });
         }
 
-        // // Create new user
-        // let newUser = new User({
-        //   name,
-        //   email,
-        //   googleId: profile.id,
-        //   isVerified: true,
-        // });
+        const username = email.split("@")[0];
 
-        // await newUser.save();
-        // return done(null, newUser);
+        // Create new user
+        let newUser = new User({
+          name,
+          email,
+          googleId: profile.id,
+          isVerified: true,
+        });
+
+        await newUser.save();
+        return done(null, newUser);
       } catch (err) {
         return done(err, null);
       }
@@ -129,6 +129,9 @@ passport.use(
 app.use((req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
+  res.locals.info = req.flash("info");
+  res.locals.warning = req.flash("warning");
+  res.locals.primary = req.flash("primary");
   res.locals.currUser = req.user || null;
   res.locals.currentPath = req.path;
   next();

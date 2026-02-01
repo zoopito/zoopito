@@ -1,0 +1,476 @@
+<% layout("layouts/boilerplate") %>
+
+<!-- all contact Messages -->
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Contact Messages</h1>
+        <nav class="flex" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="/admin" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Contact Messages</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Messages Count -->
+    <div class="mb-6">
+        <div class="bg-white rounded-lg shadow p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-700">All Messages</h2>
+                    <p class="text-gray-500">Manage and respond to contact form submissions</p>
+                </div>
+                <div class="bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full">
+                    <%= contacts.length %> <%= contacts.length === 1 ? 'message' : 'messages' %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    <% if (success && success.length > 0) { %>
+        <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-green-800"><%= success %></span>
+            </div>
+        </div>
+    <% } %>
+
+    <% if (error && error.length > 0) { %>
+        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-red-600 mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-red-800"><%= error %></span>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Messages Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            #
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Email
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Subject
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Message Preview
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <% if (contacts && contacts.length > 0) { %>
+                        <% contacts.forEach((contact, index) => { %>
+                            <tr class="<%= contact.isSeen ? 'bg-white' : 'bg-yellow-50' %> hover:bg-gray-50 transition-colors duration-150">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <%= index + 1 %>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-medium text-gray-900"><%= contact.name %></div>
+                                    <% if (contact.user) { %>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            User ID: <%= contact.user._id || contact.user %>
+                                        </div>
+                                    <% } %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <a href="mailto:<%= contact.email %>" class="text-sm text-blue-600 hover:text-blue-900 hover:underline">
+                                        <%= contact.email %>
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        <% if (contact.subject === 'Vaccination') { %>bg-blue-100 text-blue-800
+                                        <% } else if (contact.subject === 'Farmer Registration') { %>bg-indigo-100 text-indigo-800
+                                        <% } else if (contact.subject === 'Animal Registration') { %>bg-green-100 text-green-800
+                                        <% } else if (contact.subject === 'Billing and Payments') { %>bg-red-100 text-red-800
+                                        <% } else if (contact.subject === 'Partnership Opportunities') { %>bg-yellow-100 text-yellow-800
+                                        <% } else if (contact.subject === 'Service') { %>bg-gray-100 text-gray-800
+                                        <% } else { %>bg-purple-100 text-purple-800<% } %>">
+                                        <%= contact.subject %>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <button type="button" 
+                                            onclick="openMessageModal('<%= contact._id %>', '<%= contact.name %>', '<%= contact.email %>', '<%= contact.subject %>', '<%= contact.message %>', '<%= contact.msgDate %>', `<%= contact.gps ? JSON.stringify(contact.gps) : 'null' %>`, `<%= contact.isSeen %>`, `<%= contact.user ? contact.user._id || contact.user : '' %>`)"
+                                            class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-1 px-3 rounded inline-flex items-center transition-colors duration-150">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        View Full Message
+                                    </button>
+                                    <div class="mt-2 text-xs text-gray-600 max-w-xs truncate">
+                                        <%= contact.message.substring(0, 100) %><%= contact.message.length > 100 ? '...' : '' %>
+                                    </div>
+                                    <% if (contact.gps && contact.gps.latitude && contact.gps.longitude) { %>
+                                        <div class="mt-1 text-xs text-gray-500">
+                                            <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            Location Available
+                                        </div>
+                                    <% } %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        <%= new Date(contact.msgDate).toLocaleDateString() %>
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        <%= new Date(contact.msgDate).toLocaleTimeString() %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        <%= contact.isSeen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                                        <%= contact.isSeen ? 'Seen' : 'Unread' %>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <!-- Mark as Read/Unread Forms -->
+                                        <% if (!contact.isSeen) { %>
+                                            <form action="/admin/contacts/<%= contact._id %>/mark-read" method="POST" class="inline">
+                                                <input type="hidden" name="_method" value="PUT">
+                                                <button type="submit" 
+                                                        class="bg-green-100 hover:bg-green-200 text-green-800 font-medium py-1 px-3 rounded inline-flex items-center transition-colors duration-150"
+                                                        title="Mark as Read">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        <% } else { %>
+                                            <form action="/admin/contacts/<%= contact._id %>/mark-unread" method="POST" class="inline">
+                                                <input type="hidden" name="_method" value="PUT">
+                                                <button type="submit" 
+                                                        class="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-1 px-3 rounded inline-flex items-center transition-colors duration-150"
+                                                        title="Mark as Unread">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.59 6.59m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        <% } %>
+                                        
+                                        <!-- Delete Form -->
+                                        <form action="/admin/contacts/<%= contact._id %>" method="POST" class="inline">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" 
+                                                    onclick="return confirm('Are you sure you want to delete this message?')"
+                                                    class="bg-red-100 hover:bg-red-200 text-red-800 font-medium py-1 px-3 rounded inline-flex items-center transition-colors duration-150"
+                                                    title="Delete Message">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center">
+                                <div class="text-gray-500">
+                                    <svg class="w-12 h-12 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <h3 class="mt-4 text-lg font-medium text-gray-900">No messages found</h3>
+                                    <p class="mt-1 text-gray-500">No contact messages have been submitted yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Message Details Modal -->
+<div id="messageModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeMessageModal()"></div>
+
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <!-- Modal Header -->
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-900" id="modal-title">
+                                    <span id="modalSenderName"></span>
+                                </h3>
+                                <p class="text-sm text-gray-500 mt-1" id="modalSenderEmail"></p>
+                            </div>
+                            <button type="button" onclick="closeMessageModal()" class="text-gray-400 hover:text-gray-500">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Message Content -->
+                        <div class="space-y-6">
+                            <!-- Basic Info Grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Subject</label>
+                                    <span id="modalSubject" class="text-sm font-medium text-gray-900"></span>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Date</label>
+                                    <span id="modalDate" class="text-sm font-medium text-gray-900"></span>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Status</label>
+                                    <span id="modalStatus" class="text-sm font-medium px-2 py-1 rounded-full"></span>
+                                </div>
+                            </div>
+
+                            <!-- User ID if available -->
+                            <div id="modalUserIdContainer" class="hidden">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">User ID</label>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <span id="modalUserId" class="text-sm font-mono text-gray-900"></span>
+                                </div>
+                            </div>
+
+                            <!-- Full Message -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-2">Message</label>
+                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <p id="modalMessage" class="text-gray-700 whitespace-pre-wrap"></p>
+                                </div>
+                            </div>
+
+                            <!-- Location Information -->
+                            <div id="modalLocationContainer" class="hidden">
+                                <label class="block text-sm font-medium text-gray-500 mb-3">
+                                    <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Location Information
+                                </label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Latitude</label>
+                                        <span id="modalLatitude" class="text-sm font-medium text-gray-900"></span>
+                                    </div>
+                                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Longitude</label>
+                                        <span id="modalLongitude" class="text-sm font-medium text-gray-900"></span>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <a id="modalGoogleMapsLink" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center text-sm text-blue-600 hover:text-blue-900">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        View on Google Maps
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer with Action Buttons -->
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse space-x-2 space-x-reverse">
+                <!-- Mark as Read/Unread Forms -->
+                <form id="markReadForm" method="POST" class="inline">
+                    <input type="hidden" name="_method" value="PUT">
+                    <button type="submit" 
+                            class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:text-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Mark as Read
+                    </button>
+                </form>
+                
+                <form id="markUnreadForm" method="POST" class="hidden inline">
+                    <input type="hidden" name="_method" value="PUT">
+                    <button type="submit" 
+                            class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-yellow-500 text-base font-medium text-white hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:ml-3 sm:text-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.59 6.59m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                        </svg>
+                        Mark as Unread
+                    </button>
+                </form>
+
+                <!-- Delete Form -->
+                <form id="deleteForm" method="POST" class="inline">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" 
+                            onclick="return confirm('Are you sure you want to delete this message?')"
+                            class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:text-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Delete Message
+                    </button>
+                </form>
+
+                <button type="button" onclick="closeMessageModal()" class="mt-3 w-full sm:mt-0 sm:w-auto inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Modal -->
+<script>
+    let currentMessageId = '';
+
+    function openMessageModal(id, name, email, subject, message, date, gps, isSeen, userId) {
+        currentMessageId = id;
+        
+        // Set basic information
+        document.getElementById('modalSenderName').textContent = name;
+        document.getElementById('modalSenderEmail').textContent = email;
+        document.getElementById('modalSenderEmail').href = `mailto:${email}`;
+        document.getElementById('modalSubject').textContent = subject;
+        document.getElementById('modalDate').textContent = new Date(date).toLocaleString();
+        document.getElementById('modalMessage').textContent = message;
+        
+        // Set status
+        const statusElement = document.getElementById('modalStatus');
+        if (isSeen) {
+            statusElement.textContent = 'Seen';
+            statusElement.className = 'text-sm font-medium px-2 py-1 rounded-full bg-green-100 text-green-800';
+        } else {
+            statusElement.textContent = 'Unread';
+            statusElement.className = 'text-sm font-medium px-2 py-1 rounded-full bg-red-100 text-red-800';
+        }
+        
+        // Set user ID if available
+        const userIdContainer = document.getElementById('modalUserIdContainer');
+        const userIdElement = document.getElementById('modalUserId');
+        if (userId && userId.trim() !== '') {
+            userIdContainer.classList.remove('hidden');
+            userIdElement.textContent = userId;
+        } else {
+            userIdContainer.classList.add('hidden');
+        }
+        
+        // Set location information if available
+        const locationContainer = document.getElementById('modalLocationContainer');
+        if (gps && gps.latitude && gps.longitude) {
+            locationContainer.classList.remove('hidden');
+            document.getElementById('modalLatitude').textContent = gps.latitude;
+            document.getElementById('modalLongitude').textContent = gps.longitude;
+            
+            // Create Google Maps link
+            const mapsLink = document.getElementById('modalGoogleMapsLink');
+            mapsLink.href = `https://www.google.com/maps?q=${gps.latitude},${gps.longitude}`;
+        } else {
+            locationContainer.classList.add('hidden');
+        }
+        
+        // Update form actions
+        document.getElementById('markReadForm').action = `/admin/contacts/${id}/mark-read`;
+        document.getElementById('markUnreadForm').action = `/admin/contacts/${id}/mark-unread`;
+        document.getElementById('deleteForm').action = `/admin/contacts/${id}`;
+        
+        // Show/hide mark read/unread buttons
+        if (isSeen) {
+            document.getElementById('markReadForm').classList.add('hidden');
+            document.getElementById('markUnreadForm').classList.remove('hidden');
+        } else {
+            document.getElementById('markReadForm').classList.remove('hidden');
+            document.getElementById('markUnreadForm').classList.add('hidden');
+        }
+        
+        // Show modal
+        document.getElementById('messageModal').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeMessageModal() {
+        document.getElementById('messageModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeMessageModal();
+        }
+    });
+
+    // Close modal when clicking on background
+    document.getElementById('messageModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeMessageModal();
+        }
+    });
+
+    // Handle form submissions in modal
+    document.getElementById('markReadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (confirm('Mark this message as read?')) {
+            this.submit();
+        }
+    });
+
+    document.getElementById('markUnreadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (confirm('Mark this message as unread?')) {
+            this.submit();
+        }
+    });
+
+    document.getElementById('deleteForm').addEventListener('submit', function(e) {
+        if (!confirm('Are you sure you want to delete this message?')) {
+            e.preventDefault();
+        }
+    });
+</script>
