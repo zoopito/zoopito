@@ -11,14 +11,14 @@ module.exports.welComeEmail = async ({ name, email }) => {
     process.env.BREVO_API_KEY,
   );
 
-  // ROOTSHIELD THEME - WELCOME EMAIL HTML
+  // Zoopito THEME - WELCOME EMAIL HTML
   const htmlContent = `
           <!DOCTYPE html>
           <html>
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Welcome to RootShield | Your Cybersecurity Journey Begins</title>
+            <title>Welcome to Zoopito | Your Cybersecurity Journey Begins</title>
             <style>
               @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
               
@@ -311,7 +311,7 @@ module.exports.welComeEmail = async ({ name, email }) => {
               <!-- Header -->
               <div class="header">
                 <div class="logo">
-                  <span class="logo-gradient">RootShield</span>
+                  <span class="logo-gradient">Zoopito</span>
                 </div>
                 <div class="subtitle">Welcome Aboard</div>
                 <div class="tagline">Your Cybersecurity Journey Begins</div>
@@ -320,11 +320,11 @@ module.exports.welComeEmail = async ({ name, email }) => {
               <!-- Content -->
               <div class="content">
                 <div class="greeting">
-                  Welcome to RootShield, ${name}!
+                  Welcome to Zoopito, ${name}!
                 </div>
                 
                 <div class="welcome-message">
-                  <p>Thank you for joining <strong>RootShield</strong> – India's premier platform for cybersecurity and web development education. We're excited to have you as part of our growing community of security enthusiasts and developers.</p>
+                  <p>Thank you for joining <strong>Zoopito</strong> – India's premier platform for cybersecurity and web development education. We're excited to have you as part of our growing community of security enthusiasts and developers.</p>
                   
                   <p>Your account has been successfully created and verified via Google. You now have full access to our platform's features and learning resources.</p>
                 </div>
@@ -358,7 +358,7 @@ module.exports.welComeEmail = async ({ name, email }) => {
                 
                 <!-- CTA Button -->
                 <div style="text-align: center;">
-                  <a href="${process.env.DOMAIN || "https://rootshield.in"}/dashboard" class="cta-button">
+                  <a href="${process.env.DOMAIN || "https://Zoopito.in"}/dashboard" class="cta-button">
                     🚀 Go to Your Dashboard
                   </a>
                 </div>
@@ -399,8 +399,8 @@ module.exports.welComeEmail = async ({ name, email }) => {
                     Need assistance or have questions about getting started?
                   </p>
                   <p style="margin-top: 10px;">
-                    📧 <a href="mailto:info@rootshield.in" class="contact-link">info@rootshield.in</a> | 
-                    🌐 <a href="${process.env.DOMAIN || "https://rootshield.in"}" class="contact-link">Visit Our Website</a>
+                    📧 <a href="mailto:support@zoopito.in" class="contact-link">support@zoopito.in</a> | 
+                    🌐 <a href="${process.env.DOMAIN || "https://Zoopito.in"}" class="contact-link">Visit Our Website</a>
                   </p>
                 </div>
               </div>
@@ -408,31 +408,31 @@ module.exports.welComeEmail = async ({ name, email }) => {
               <!-- Footer -->
               <div class="footer">
                 <div>
-                  <strong>RootShield</strong><br>
+                  <strong>Zoopito</strong><br>
                   <span style="font-size: 13px;">Udyam Registered Education Platform</span>
                 </div>
                 
                 <div class="contact-info">
                   <p>📍 Delhi, India<br>
-                  📧 <a href="mailto:info@rootshield.in" class="contact-link">info@rootshield.in</a><br>
-                  🔗 <a href="${process.env.DOMAIN || "https://rootshield.in"}" class="contact-link">rootshield.in</a></p>
+                  📧 <a href="mailto:support@zoopito.in" class="contact-link">support@zoopito.in</a><br>
+                  🔗 <a href="${process.env.DOMAIN || "https://Zoopito.in"}" class="contact-link">Zoopito.in</a></p>
                 </div>
                 
                 <div class="social-links">
-                  <a href="https://twitter.com/rootshield" class="social-icon">𝕏</a>
-                  <a href="https://linkedin.com/company/rootshield" class="social-icon">in</a>
-                  <a href="https://github.com/rootshield" class="social-icon">{} </a>
-                  <a href="https://discord.gg/rootshield" class="social-icon">#</a>
+                  <a href="https://twitter.com/Zoopito" class="social-icon">𝕏</a>
+                  <a href="https://linkedin.com/company/Zoopito" class="social-icon">in</a>
+                  <a href="https://github.com/Zoopito" class="social-icon">{} </a>
+                  <a href="https://discord.gg/Zoopito" class="social-icon">#</a>
                 </div>
                 
                 <div style="margin-top: 25px; font-size: 12px; color: #9ca3af;">
                   <p>
                     This is an automated welcome email. Please do not reply directly.<br>
                     Protecting your data is our priority. Read our 
-                    <a href="${process.env.DOMAIN || "https://rootshield.in"}/privacy" style="color: #6b7280; text-decoration: underline;">Privacy Policy</a>.
+                    <a href="${process.env.DOMAIN || "https://Zoopito.in"}/privacy" style="color: #6b7280; text-decoration: underline;">Privacy Policy</a>.
                   </p>
                   <p style="margin-top: 15px;">
-                    © ${new Date().getFullYear()} RootShield. All rights reserved.<br>
+                    © ${new Date().getFullYear()} Zoopito. All rights reserved.<br>
                     MSME Registered • GST Compliant
                   </p>
                 </div>
@@ -444,12 +444,12 @@ module.exports.welComeEmail = async ({ name, email }) => {
 
   // Plain text version
   const textContent = `
-          WELCOME TO ROOTSHIELD
+          WELCOME TO Zoopito
           =====================
           
           Hello ${name},
           
-          Welcome to RootShield - India's premier platform for cybersecurity and web development education!
+          Welcome to Zoopito - India's premier platform for cybersecurity and web development education!
           
           Your account has been successfully created and verified via Google authentication. 
           You now have full access to our learning platform.
@@ -467,7 +467,7 @@ module.exports.welComeEmail = async ({ name, email }) => {
           - Account status: Verified & Active
           
           🚀 GET STARTED:
-          Visit your dashboard: ${process.env.DOMAIN || "https://rootshield.in"}/dashboard
+          Visit your dashboard: ${process.env.DOMAIN || "https://Zoopito.in"}/dashboard
           
           📚 OUR OFFERINGS:
           • Cybersecurity Courses (Ethical Hacking, Network Security, etc.)
@@ -480,25 +480,25 @@ module.exports.welComeEmail = async ({ name, email }) => {
           by the Indian government and enhance your career prospects.
           
           📞 NEED HELP?
-          Email: info@rootshield.in
-          Website: ${process.env.DOMAIN || "https://rootshield.in"}
+          Email: support@zoopito.in
+          Website: ${process.env.DOMAIN || "https://Zoopito.in"}
           
           ---
-          RootShield | Udyam Registered Education Platform
-          Delhi, India | info@rootshield.in | rootshield.in
+          Zoopito | Udyam Registered Education Platform
+          Delhi, India | support@zoopito.in | Zoopito.in
           
           This is an automated welcome email. Please do not reply directly.
-          © ${new Date().getFullYear()} RootShield. All rights reserved.
+          © ${new Date().getFullYear()} Zoopito. All rights reserved.
         `;
 
   try {
     await apiInstance.sendTransacEmail({
       sender: {
-        email: "info@rootshield.in",
-        name: "RootShield Welcome Team",
+        email: "support@zoopito.in",
+        name: "Zoopito Welcome Team",
       },
       to: [{ email, name }],
-      subject: "🎉 Welcome to RootShield! Your Cybersecurity Journey Begins",
+      subject: "🎉 Welcome to Zoopito! Your Journey Begins",
       htmlContent: htmlContent,
       textContent: textContent,
     });
