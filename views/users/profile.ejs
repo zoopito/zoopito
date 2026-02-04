@@ -1,4 +1,4 @@
-<%- include('../layouts/boilerplate', { title: title || 'My Profile - Zoopito' }) %>
+<% layout("/layouts/boilerplate") %>
 
 <div class="py-6">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,17 +16,6 @@
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-    <% if (success) { %>
-      <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-        <%= success %>
-      </div>
-    <% } %>
-    <% if (error) { %>
-      <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        <%= error %>
-      </div>
-    <% } %>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- Profile Information -->
@@ -39,25 +28,25 @@
               <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                  <input type="text" name="name" id="name" value="<%= user.name %>"
+                  <input type="text" name="name" id="name" value="<%= currUser.name %>"
                     class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                 </div>
 
                 <div>
                   <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                  <input type="email" name="email" id="email" value="<%= user.email %>" disabled
+                  <input type="email" name="email" id="email" value="<%= currUser.email %>" disabled
                     class="mt-1 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                 </div>
 
                 <div>
                   <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                  <input type="tel" name="phone" id="phone" value="<%= user.phone || '' %>"
+                  <input type="tel" name="phone" id="phone" value="<%= currUser.phone || '' %>"
                     class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                 </div>
 
                 <div>
                   <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
-                  <input type="text" id="role" value="<%= user.role.charAt(0).toUpperCase() + user.role.slice(1).replace('-', ' ') %>" disabled
+                  <input type="text" id="role" value="<%= currUser.role.charAt(0).toUpperCase() + currUser.role.slice(1).replace('-', ' ') %>" disabled
                     class="mt-1 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                 </div>
               </div>
@@ -134,12 +123,12 @@
             <dl class="space-y-4">
               <div class="flex items-center justify-between">
                 <dt class="text-sm font-medium text-gray-500">Member since</dt>
-                <dd class="text-sm text-gray-900"><%= new Date(user.createdAt).toLocaleDateString() %></dd>
+                <dd class="text-sm text-gray-900"><%= new Date(currUser.createdAt).toLocaleDateString() %></dd>
               </div>
               
               <div class="flex items-center justify-between">
                 <dt class="text-sm font-medium text-gray-500">Last login</dt>
-                <dd class="text-sm text-gray-900"><%= user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never' %></dd>
+                <dd class="text-sm text-gray-900"><%= currUser.lastLogin ? new Date(currUser.lastLogin).toLocaleString() : 'Never' %></dd>
               </div>
               
               <div class="flex items-center justify-between">

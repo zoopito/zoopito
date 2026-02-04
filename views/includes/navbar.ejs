@@ -146,6 +146,21 @@
                class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/paravets') ? active : inactive %> nav-link-hover">
               <i class="fas fa-currUsers mr-2"></i>Paravets
             </a>
+          <% } else{ %>
+            <a href="/services" 
+             class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/services' ? active : inactive %> nav-link-hover">
+            <i class="fas fa-concierge-bell mr-2"></i>Services
+          </a>
+          
+          <a href="/about" 
+             class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/about' ? active : inactive %> nav-link-hover">
+            <i class="fas fa-info-circle mr-2"></i>About
+          </a>
+          
+          <a href="/contact" 
+             class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/contact' ? active : inactive %> nav-link-hover">
+            <i class="fas fa-envelope mr-2"></i>Contact
+          </a>
           <% } %>
           
           <% if (currUser.role === 'admin') { %>

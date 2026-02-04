@@ -17,6 +17,7 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
+const { welComeEmail } = require("./utils/sendWelcomeEmail");
 
 const homeRouter = require("./routes/home.js");
 const userRouter = require("./routes/user.js");
@@ -118,6 +119,11 @@ passport.use(
         });
 
         await newUser.save();
+        await newUser.save();
+        await welComeEmail({
+          name: newUser.name,
+          email: newUser.email,
+        });
         return done(null, newUser);
       } catch (err) {
         return done(err, null);

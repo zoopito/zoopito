@@ -1,0 +1,732 @@
+<% layout("/layouts/boilerplate") -%>
+  <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .service-gradient {
+            background: linear-gradient(135deg, #38BDF8 0%, #22C55E 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .timeline-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            position: absolute;
+            left: -10px;
+            top: 5px;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        
+        .service-step {
+            counter-increment: step-counter;
+            position: relative;
+        }
+        
+        .service-step::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: -35px;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #38BDF8 0%, #22C55E 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+        
+        .floating-btn {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .stat-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .dark .stat-card {
+            background: rgba(30, 41, 59, 0.9);
+        }
+    </style>
+ <!-- Hero Section -->
+    <section class="relative overflow-hidden">
+        <div class="absolute inset-0 service-gradient opacity-5"></div>
+        <div class="absolute top-20 right-10 w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div class="absolute bottom-20 left-10 w-64 h-64 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
+        
+        <div class="relative container mx-auto px-6 py-16 md:py-24">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="inline-flex items-center px-5 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-6">
+                    <i class="fas fa-cogs mr-2"></i>
+                    <span class="text-sm font-medium">Rural Automation Platform</span>
+                </div>
+                
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                    Complete Livestock
+                    <span class="bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
+                        Management Services
+                    </span>
+                </h1>
+                
+                <p class="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-3xl mx-auto">
+                    From animal registration to automated health monitoring, Zoopito provides comprehensive solutions for modern livestock management. Designed for efficiency in rural conditions.
+                </p>
+                
+                <!-- Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+                    <div class="stat-card p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg">
+                        <div class="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">98%</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Registration Success</div>
+                    </div>
+                    <div class="stat-card p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg">
+                        <div class="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">2 min</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Avg Registration Time</div>
+                    </div>
+                    <div class="stat-card p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg">
+                        <div class="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">30 sec</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Vaccination Updates</div>
+                    </div>
+                    <div class="stat-card p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg">
+                        <div class="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">10K+</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Animals Managed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Animal Registration Section -->
+    <section class="py-16 bg-white dark:bg-gray-900">
+        <div class="container mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Left Content -->
+                <div>
+                    <div class="inline-flex items-center px-4 py-2 rounded-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 mb-4">
+                        <i class="fas fa-bolt mr-2"></i>
+                        <span class="text-sm font-medium">Quick Mode Default</span>
+                    </div>
+                    
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                        <span class="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent">
+                            Animal Registration
+                        </span>
+                        in Under 2 Minutes
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div class="service-step pl-10">
+                            <h3 class="text-xl font-semibold mb-2">Quick Registration Fields</h3>
+                            <p class="text-gray-600 dark:text-gray-400">Essential information only for rapid data entry in field conditions.</p>
+                        </div>
+                        
+                        <div class="service-step pl-10">
+                            <h3 class="text-xl font-semibold mb-2">Smart Pregnancy Tracking</h3>
+                            <p class="text-gray-600 dark:text-gray-400">Auto-calculate expected calving dates with pregnancy safety alerts.</p>
+                        </div>
+                        
+                        <div class="service-step pl-10">
+                            <h3 class="text-xl font-semibold mb-2">GPS & Location Intelligence</h3>
+                            <p class="text-gray-600 dark:text-gray-400">Automatic GPS capture and village assignment for accurate mapping.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Registration Demo -->
+                    <div class="mt-10 bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <div class="flex-1 text-center font-medium">Quick Registration Form</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+                                <div class="text-xs text-gray-500">Animal Type</div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg"></div>
+                                <div class="text-xs text-gray-500">Age (Months)</div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                <div class="text-xs text-gray-500">Pregnant Status</div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="h-10 bg-green-100 dark:bg-green-900/30 rounded-lg"></div>
+                                <div class="text-xs text-gray-500">GPS Location</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex justify-center">
+                            <div class="w-32 h-32 bg-gray-300 dark:bg-gray-700 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-camera text-3xl text-gray-500"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Content - Features -->
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-r from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-900 p-6 rounded-2xl border border-blue-200 dark:border-blue-800">
+                        <div class="flex items-start gap-4">
+                            <div class="feature-icon bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                                <i class="fas fa-toggle-on"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Optional Edit Fields</h3>
+                                <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+                                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Breed specification</li>
+                                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Tag number tracking</li>
+                                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Milk yield records</li>
+                                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Multiple photo uploads</li>
+                                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Health notes & observations</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 p-6 rounded-2xl border border-green-200 dark:border-green-800">
+                        <div class="flex items-start gap-4">
+                            <div class="feature-icon bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+                                <i class="fas fa-wifi-slash"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Offline-First Design</h3>
+                                <p class="text-gray-600 dark:text-gray-400 mb-3">Register animals without internet connectivity. Data automatically syncs when network returns.</p>
+                                <div class="flex items-center gap-4">
+                                    <div class="text-center">
+                                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">100%</div>
+                                        <div class="text-xs text-gray-500">Offline Capable</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">Auto</div>
+                                        <div class="text-xs text-gray-500">Background Sync</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900 p-6 rounded-2xl border border-purple-200 dark:border-purple-800">
+                        <div class="flex items-start gap-4">
+                            <div class="feature-icon bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Floating Quick Actions</h3>
+                                <p class="text-gray-600 dark:text-gray-400 mb-3">One-tap access to common tasks with floating action button for rapid field operations.</p>
+                                <div class="relative h-12">
+                                    <div class="absolute right-0 top-0 w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white shadow-lg floating-btn">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Health Management Section -->
+    <section class="py-16 bg-gray-50 dark:bg-gray-900/50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 mb-4">
+                    <i class="fas fa-heartbeat mr-2"></i>
+                    <span class="text-sm font-medium">Automated Health Monitoring</span>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                    Intelligent
+                    <span class="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+                        Health History & Scheduling
+                    </span>
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    Automated vaccination scheduling, health tracking, and reminder system for preventive livestock care.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <!-- Health Triggers Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 card-hover">
+                    <div class="feature-icon bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 mx-auto mb-6">
+                        <i class="fas fa-syringe"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Health History Triggers</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                            <span>Last FMD Vaccination</span>
+                            <span class="font-semibold">15 Jan 2024</span>
+                        </li>
+                        <li class="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <span>Last HS-BQ Vaccination</span>
+                            <span class="font-semibold">20 Apr 2024</span>
+                        </li>
+                        <li class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                            <span>Last Deworming</span>
+                            <span class="font-semibold">10 Mar 2024</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Automatic Scheduling Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 card-hover">
+                    <div class="feature-icon bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mx-auto mb-6">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Automatic Schedule Logic</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium">FMD Vaccination</span>
+                                <span class="text-sm font-semibold text-blue-600 dark:text-blue-400">Every 6 months</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: 80%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">Next due: 15 Jul 2024</div>
+                        </div>
+                        <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium">HS-BQ Vaccination</span>
+                                <span class="text-sm font-semibold text-green-600 dark:text-green-400">Pre-monsoon</span>
+                            </div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Scheduled for May-June annually</div>
+                        </div>
+                        <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium">Deworming</span>
+                                <span class="text-sm font-semibold text-purple-600 dark:text-purple-400">Every 120 days</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div class="bg-purple-600 h-2 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notification System Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 card-hover">
+                    <div class="feature-icon bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 mx-auto mb-6">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Smart Notification System</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Reminder</span>
+                                <span class="text-xs px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300 rounded-full">3 days before</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">FMD vaccination for "Lakshmi"</p>
+                        </div>
+                        <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border-l-4 border-red-500">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Due Today</span>
+                                <span class="text-xs px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 rounded-full notification-badge">Now</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Deworming for 5 animals</p>
+                        </div>
+                        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-500">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Pregnancy Alert</span>
+                                <span class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full">Safety</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">"Gauri" expected calving in 2 weeks</p>
+                        </div>
+                        <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border-l-4 border-green-500">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Auto Schedule</span>
+                                <span class="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 rounded-full">Created</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Next FMD cycle created after today's service</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Farmer Card Preview -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-xl">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-2xl font-bold flex items-center gap-3">
+                        <i class="fas fa-id-card text-blue-600 dark:text-blue-400"></i>
+                        Farmer Card Screen - One-Tap Service Updates
+                    </h3>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8 p-8">
+                    <!-- Animal Card -->
+                    <div class="bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 bg-gray-300 dark:bg-gray-700 rounded-xl overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=400&h=400&fit=crop" alt="Animal" class="w-full h-full object-cover">
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold">Lakshmi</h4>
+                                    <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                        <span>Cross Breed</span>
+                                        <span>•</span>
+                                        <span>4 Years</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium">
+                                Healthy
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-syringe text-blue-600 dark:text-blue-400"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-gray-500">Next Vaccination</div>
+                                        <div class="font-semibold">15 Jul 2024</div>
+                                    </div>
+                                </div>
+                                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                                    Update
+                                </button>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-baby text-green-600 dark:text-green-400"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-gray-500">Pregnancy Status</div>
+                                        <div class="font-semibold">6 Months</div>
+                                    </div>
+                                </div>
+                                <div class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-sm">
+                                    Due Oct 2024
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 grid grid-cols-2 gap-3">
+                            <button class="py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-syringe"></i> FMD Done
+                            </button>
+                            <button class="py-3 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-pills"></i> Deworm
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Today's Tasks -->
+                    <div class="md:col-span-2">
+                        <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
+                            <i class="fas fa-tasks text-orange-600 dark:text-orange-400"></i>
+                            Today's Quick Actions
+                        </h4>
+                        
+                        <div class="space-y-4">
+                            <!-- Today's Vaccinations -->
+                            <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-gray-800 dark:to-gray-900 p-5 rounded-xl border border-orange-200 dark:border-orange-800">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-syringe text-orange-600 dark:text-orange-400 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-lg">Today's Vaccinations</h5>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">3 animals due for FMD vaccination</p>
+                                        </div>
+                                    </div>
+                                    <div class="px-4 py-2 bg-orange-600 text-white rounded-lg font-medium">View All</div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                            <div>
+                                                <div class="font-medium">Gauri</div>
+                                                <div class="text-sm text-gray-500">Cross Breed • 5 Years</div>
+                                            </div>
+                                        </div>
+                                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">
+                                            Mark Done
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                            <div>
+                                                <div class="font-medium">Rani</div>
+                                                <div class="text-sm text-gray-500">Local Breed • 3 Years</div>
+                                            </div>
+                                        </div>
+                                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">
+                                            Mark Done
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Fast Service Update -->
+                            <div class="bg-gradient-to-r from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-900 p-5 rounded-xl border border-blue-200 dark:border-blue-800">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-bolt text-blue-600 dark:text-blue-400 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-lg">Fast Service Update Flow</h5>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Update multiple animals in seconds</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-2xl font-bold text-green-600 dark:text-green-400">30s</div>
+                                </div>
+                                
+                                <div class="grid grid-cols-3 gap-4">
+                                    <button class="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition text-center">
+                                        <div class="text-2xl mb-2">💉</div>
+                                        <div class="font-medium">FMD</div>
+                                        <div class="text-xs text-gray-500">Vaccination</div>
+                                    </button>
+                                    <button class="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-green-500 transition text-center">
+                                        <div class="text-2xl mb-2">🩺</div>
+                                        <div class="font-medium">HS-BQ</div>
+                                        <div class="text-xs text-gray-500">Vaccination</div>
+                                    </button>
+                                    <button class="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 transition text-center">
+                                        <div class="text-2xl mb-2">💊</div>
+                                        <div class="font-medium">Deworm</div>
+                                        <div class="text-xs text-gray-500">Treatment</div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin & Success Criteria -->
+    <section class="py-16 bg-white dark:bg-gray-900">
+        <div class="container mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Admin System -->
+                <div>
+                    <div class="inline-flex items-center px-4 py-2 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 mb-4">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        <span class="text-sm font-medium">Administration & Analytics</span>
+                    </div>
+                    
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                        Comprehensive
+                        <span class="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                            Admin Dashboard
+                        </span>
+                    </h2>
+                    
+                    <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">
+                        Powerful analytics dashboard for administrators with separate farmer-friendly interface for field operations.
+                    </p>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <div class="flex-1 text-center font-medium">Analytics Dashboard</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-white dark:bg-gray-900 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">1,248</div>
+                                <div class="text-sm text-gray-500">Animals Registered</div>
+                            </div>
+                            <div class="bg-white dark:bg-gray-900 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-green-600 dark:text-green-400">89%</div>
+                                <div class="text-sm text-gray-500">Vaccination Rate</div>
+                            </div>
+                            <div class="bg-white dark:bg-gray-900 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">42</div>
+                                <div class="text-sm text-gray-500">Villages Covered</div>
+                            </div>
+                            <div class="bg-white dark:bg-gray-900 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">156</div>
+                                <div class="text-sm text-gray-500">Due This Week</div>
+                            </div>
+                        </div>
+                        
+                        <div class="h-40 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-xl flex items-end p-4">
+                            <div class="flex-1 flex items-end justify-between">
+                                <div class="w-8 bg-blue-400 rounded-t h-16"></div>
+                                <div class="w-8 bg-green-400 rounded-t h-24"></div>
+                                <div class="w-8 bg-blue-400 rounded-t h-20"></div>
+                                <div class="w-8 bg-green-400 rounded-t h-28"></div>
+                                <div class="w-8 bg-purple-400 rounded-t h-18"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Success Criteria -->
+                <div>
+                    <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-4">
+                        <i class="fas fa-flag-checkered mr-2"></i>
+                        <span class="text-sm font-medium">Success Metrics</span>
+                    </div>
+                    
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                        Performance
+                        <span class="bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
+                            Success Criteria
+                        </span>
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4 p-6 bg-gradient-to-r from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl border border-blue-200 dark:border-blue-800">
+                            <div class="flex-shrink-0 w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-clock text-blue-600 dark:text-blue-400 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Animal Registration < 2 Minutes</h3>
+                                <p class="text-gray-600 dark:text-gray-400">Quick mode with GPS auto-capture and single photo upload ensures rapid field registration.</p>
+                                <div class="mt-4 flex items-center gap-4">
+                                    <div class="text-center">
+                                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">1:45</div>
+                                        <div class="text-xs text-gray-500">Average Time</div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                            <div class="bg-green-600 h-2 rounded-full" style="width: 87%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-4 p-6 bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl border border-green-200 dark:border-green-800">
+                            <div class="flex-shrink-0 w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-stopwatch text-green-600 dark:text-green-400 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Vaccination Update < 30 Seconds</h3>
+                                <p class="text-gray-600 dark:text-gray-400">One-tap service update buttons with auto-scheduling for next cycles.</p>
+                                <div class="mt-4 flex items-center gap-4">
+                                    <div class="text-center">
+                                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">0:22</div>
+                                        <div class="text-xs text-gray-500">Average Time</div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 73%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-4 p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl border border-purple-200 dark:border-purple-800">
+                            <div class="flex-shrink-0 w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-robot text-purple-600 dark:text-purple-400 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Fully Automated Scheduling</h3>
+                                <p class="text-gray-600 dark:text-gray-400">Intelligent algorithms for vaccination cycles, pregnancy tracking, and reminder systems.</p>
+                                <div class="mt-4 flex items-center gap-4">
+                                    <div class="text-center">
+                                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">100%</div>
+                                        <div class="text-xs text-gray-500">Auto Scheduled</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-2xl font-bold text-pink-600 dark:text-pink-400">98%</div>
+                                        <div class="text-xs text-gray-500">On-time Completion</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CTA Section -->
+            <div class="mt-20 text-center">
+                <div class="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-12 text-white relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -translate-y-32 translate-x-32"></div>
+                    <div class="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-10 rounded-full translate-y-32 -translate-x-32"></div>
+                    
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 relative z-10">
+                        Ready to Transform Your Livestock Management?
+                    </h2>
+                    <p class="text-xl opacity-90 mb-10 max-w-2xl mx-auto relative z-10">
+                        Join thousands of farmers and veterinarians using Zoopito for efficient, data-driven livestock care.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
+                        <button class="px-10 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-gray-100 transition-all duration-300 flex items-center justify-center gap-3">
+                            <i class="fas fa-play-circle"></i>
+                            View Demo
+                        </button>
+                        <button class="px-10 py-4 bg-transparent border-2 border-white text-white font-bold rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300 flex items-center justify-center gap-3">
+                            <i class="fas fa-calendar-check"></i>
+                            Schedule Consultation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>

@@ -6,6 +6,35 @@ const Servise = require("../models/services");
 const SalesTeam = require("../models/salesteam");
 const crypto = require("crypto");
 
+module.exports.index = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const notifications = user.notifications || [];
+    const notificationCount = notifications.length;
+    const tile = "Admin Dashboard";
+    const shortDescription =
+      "This is admin panel admin can control everything from here sales team, farmers, animals, vaccinations etc.";
+    const farmersCount = await Farmer.countDocuments();
+    const animalsCount = await Animal.countDocuments();
+    const paravetsCount = await Paravet.countDocuments();
+    // const servicesCount = await Servise.countDocuments();
+    const salesTeamsCount = await SalesTeam.countDocuments();
+    res.render("admin/index.ejs", {
+      User: user,
+      tile,
+      shortDescription,
+      farmersCount,
+      animalsCount,
+      paravetsCount,
+      salesTeamsCount,
+    });
+  } catch (err) {
+    console.log(err);
+    req.flash("error", "Somthing went wrong");
+    res.redirect("/login");
+  }
+};
+
 //employe id generator for sales memebers
 const generateEmployeeCode = async () => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

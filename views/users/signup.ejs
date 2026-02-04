@@ -1,144 +1,584 @@
-<% layout("/layouts/boilerplate") -%>
+<% layout("/layouts/boilerplate", {
+    title: 'Sign Up - Zoopito',
+    description: 'Create your Zoopito account to access livestock management dashboard, farmer data, and veterinary services.',
+    pageStyles: `
+        .signup-gradient {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(56, 189, 248, 0.1) 100%);
+        }
+        
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+        }
+        
+        .password-strength {
+            transition: all 0.3s ease;
+        }
+        
+        .strength-bar {
+            transition: width 0.5s ease;
+        }
+        
+        .google-btn {
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .google-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .password-toggle {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .password-toggle:hover {
+            color: #10B981;
+        }
+        
+        .validation-error {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    `
+}) -%>
 
-<div class="min-h-screen flex items-center justify-center 
-    bg-gradient-to-r from-green-300 via-green-50 to-green-200 
-    dark:bg-gradient-to-r dark:from-gray-800 dark:via-gray-900 dark:to-black 
-    px-4">
-
-  <div class="w-full max-w-md mt-5 mb-5">
-
-    <!-- Card -->
-    <div class="bg-white/30 dark:bg-white/10 backdrop-blur-lg 
-        rounded-2xl shadow-xl p-8 
-        border border-white/30 dark:border-gray-700 
-        transition-all duration-300">
-
-      <!-- Heading -->
-      <h1 class="text-3xl font-bold text-gray-800 dark:text-white text-center mb-6">
-        Sign Up
-      </h1>
-
-      <!-- Form -->
-      <form action="/signup" method="POST" class="space-y-5">
-
-        <!-- Name -->
-        <div>
-          <label for="name" class="block text-gray-700 dark:text-gray-300 font-medium mb-1">
-            Name
-          </label>
-
-          <input
-            type="text"
-            id="name"
-            name="name"
-            required
-            placeholder="Enter your name"
-            class="w-full px-4 py-2 rounded-xl 
-              border border-gray-300 dark:border-gray-600 
-              bg-white dark:bg-gray-800 
-              text-gray-900 dark:text-gray-100
-              focus:border-green-500 focus:ring-1 focus:ring-green-300 
-              outline-none transition"
-          />
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Sweet name!
-          </p>
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 signup-gradient">
+    <div class="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-10 border border-gray-200 dark:border-gray-700">
+        <!-- Logo & Header -->
+        <div class="text-center">
+            <div class="flex justify-center mb-6">
+                <img src="/images/logo.png" alt="Zoopito" class="h-16 zoopito-logo">
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Join Zoopito
+            </h2>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">
+                Create your account to manage livestock and veterinary services
+            </p>
         </div>
 
-        <!-- Email -->
-        <div>
-          <label for="email" class="block text-gray-700 dark:text-gray-300 font-medium mb-1">
-            Email
-          </label>
+        <!-- Signup Form -->
+        <form class="mt-8 space-y-6" action="/signup" method="POST" novalidate>
+            
+            <div class="space-y-5">
+                <!-- Name Field -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-user mr-2 text-gray-500"></i>
+                        Full Name
+                    </label>
+                    <div class="relative">
+                        <input id="name" name="name" type="text" autocomplete="name" required
+                               class="input-focus w-full px-4 py-3 border border-gray-300 dark:border-gray-600 
+                                      rounded-lg bg-gray-50 dark:bg-gray-700 
+                                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
+                                      transition duration-200"
+                               placeholder="John Doe"
+                               minlength="2"
+                               maxlength="50">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-check-circle text-gray-400" id="nameValidIcon"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-1">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Enter your full name (2-50 characters)
+                        </p>
+                        <span class="text-xs text-gray-500" id="nameCharCount">0/50</span>
+                    </div>
+                </div>
 
-          <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            placeholder="Enter your email"
-            class="w-full px-4 py-2 rounded-xl 
-              border border-gray-300 dark:border-gray-600 
-              bg-white dark:bg-gray-800 
-              text-gray-900 dark:text-gray-100
-              focus:border-green-500 focus:ring-1 focus:ring-green-300 
-              outline-none transition"
-          />
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Please recheck the email. Is it correct?
-          </p>
+                <!-- Email Field -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-envelope mr-2 text-gray-500"></i>
+                        Email Address
+                    </label>
+                    <div class="relative">
+                        <input id="email" name="email" type="email" autocomplete="email" required
+                               class="input-focus w-full px-4 py-3 border border-gray-300 dark:border-gray-600 
+                                      rounded-lg bg-gray-50 dark:bg-gray-700 
+                                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
+                                      transition duration-200"
+                               placeholder="you@example.com"
+                               pattern="[^@\s]+@[^@\s]+\.[^@\s]+">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-at text-gray-400"></i>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        We'll never share your email with anyone else
+                    </p>
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-lock mr-2 text-gray-500"></i>
+                        Password
+                    </label>
+                    <div class="relative">
+                        <input id="password" name="password" type="password" autocomplete="new-password" required
+                               class="input-focus w-full px-4 py-3 border border-gray-300 dark:border-gray-600 
+                                      rounded-lg bg-gray-50 dark:bg-gray-700 
+                                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
+                                      transition duration-200"
+                               placeholder="••••••••"
+                               minlength="8"
+                               pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$">
+                        <button type="button" id="togglePassword" 
+                                class="password-toggle absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i id="passwordIcon" class="fas fa-eye text-gray-400"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Password Strength Meter -->
+                    <div class="mt-3">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Password Strength</span>
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400" id="strengthText">Weak</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div id="strengthBar" class="strength-bar h-2 rounded-full bg-red-500 w-0"></div>
+                        </div>
+                        <div class="mt-2 space-y-1">
+                            <div class="flex items-center">
+                                <i id="lengthCheck" class="fas fa-times text-xs text-red-500 mr-2"></i>
+                                <span class="text-xs text-gray-600 dark:text-gray-400">At least 8 characters</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i id="letterCheck" class="fas fa-times text-xs text-red-500 mr-2"></i>
+                                <span class="text-xs text-gray-600 dark:text-gray-400">Contains letters</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i id="numberCheck" class="fas fa-times text-xs text-red-500 mr-2"></i>
+                                <span class="text-xs text-gray-600 dark:text-gray-400">Contains numbers</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-lock mr-2 text-gray-500"></i>
+                        Confirm Password
+                    </label>
+                    <div class="relative">
+                        <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required
+                               class="input-focus w-full px-4 py-3 border border-gray-300 dark:border-gray-600 
+                                      rounded-lg bg-gray-50 dark:bg-gray-700 
+                                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
+                                      transition duration-200"
+                               placeholder="••••••••">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i id="confirmPasswordIcon" class="fas fa-check-circle text-gray-400"></i>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Re-enter your password for confirmation
+                    </p>
+                </div>
+
+                <!-- Terms & Conditions -->
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
+                        <input id="terms" name="terms" type="checkbox" required
+                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-gray-600 rounded">
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="terms" class="text-gray-700 dark:text-gray-300">
+                            I agree to the 
+                            <a href="/terms-conditions" class="text-green-600 dark:text-green-400 font-medium hover:text-green-500">Terms of Service</a>
+                             and 
+                            <a href="/privacy-policy" class="text-green-600 dark:text-green-400 font-medium hover:text-green-500">Privacy Policy</a>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit"
+                        id="signupButton"
+                        class="group relative w-full flex justify-center py-3.5 px-4 border border-transparent 
+                               text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-blue-500 
+                               hover:from-green-600 hover:to-blue-600 focus:outline-none focus:ring-2 
+                               focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 
+                               disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span id="buttonText" class="flex items-center gap-2">
+                        <i class="fas fa-user-plus"></i>
+                        Create Account
+                    </span>
+                    <span id="loadingSpinner" class="hidden">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Divider -->
+        <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300 dark:border-gray-700"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                    Or sign up with
+                </span>
+            </div>
         </div>
 
-        <!-- Password -->
+        <!-- Google Sign Up -->
         <div>
-          <label for="password" class="block text-gray-700 dark:text-gray-300 font-medium mb-1">
-            Password
-          </label>
-
-          <input
-            type="password"
-            id="password"
-            name="password"
-            required
-            placeholder="Enter a strong password"
-            class="w-full px-4 py-2 rounded-xl 
-              border border-gray-300 dark:border-gray-600 
-              bg-white dark:bg-gray-800 
-              text-gray-900 dark:text-gray-100
-              focus:border-green-500 focus:ring-1 focus:ring-green-300 
-              outline-none transition"
-          />
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Make a strong password!
-          </p>
+            <a href="/auth/google"
+               class="google-btn w-full flex items-center justify-center gap-3 py-3.5 px-4 
+                      rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 
+                      font-medium hover:bg-gray-50 dark:hover:bg-gray-600">
+                <img src="https://www.google.com/favicon.ico" alt="Google" class="w-5 h-5">
+                Continue with Google
+            </a>
         </div>
 
-        <!-- Submit Button -->
-        <button 
-          type="submit" 
-          class="w-full py-2 bg-green-500 hover:bg-green-600 
-            dark:bg-green-600 dark:hover:bg-green-700 
-            text-white font-semibold rounded-2xl 
-            transition-all duration-300">
-          Sign Up
-        </button>
-      </form>
+        <!-- Login Link -->
+        <div class="text-center pt-6 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-gray-600 dark:text-gray-400">
+                Already have an account?
+                <a href="/login" class="font-medium text-green-600 dark:text-green-400 hover:text-green-500 ml-1">
+                    Sign in here
+                </a>
+            </p>
+        </div>
 
-
-
-      <!-- Divider -->
-<div class="flex items-center my-4">
-  <div class="flex-1 h-px bg-gray-300 dark:bg-gray-700"></div>
-  <span class="px-3 text-gray-500 dark:text-gray-400 text-sm">OR</span>
-  <div class="flex-1 h-px bg-gray-300 dark:bg-gray-700"></div>
-</div>
-
-<!-- Google Login Button -->
-<a
-  href="/auth/google"
-  class="w-full flex items-center justify-center gap-3 
-         py-2 mt-2 bg-white dark:bg-gray-800 
-         border border-gray-300 dark:border-gray-600 
-         rounded-xl shadow-sm hover:shadow-md
-         transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium"
->
-  <img src="https://www.svgrepo.com/show/475656/google-color.svg" 
-       class="w-5 h-5" />
-  Continue with Google
-</a>
-
-
-
-      <!-- Login Link -->
-      <p class="mt-4 text-center text-gray-700 dark:text-gray-300">
-        Already have an account?
-        <a 
-          href="/login" 
-          class="text-green-500 dark:text-green-400 font-semibold hover:underline">
-          Login here
-        </a>
-      </p>
-
+        
     </div>
-  </div>
 </div>
+
+<script>
+    // DOM Elements
+    const signupForm = document.getElementById('signupForm');
+    const signupButton = document.getElementById('signupButton');
+    const buttonText = document.getElementById('buttonText');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
+    // Password toggle
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const passwordIcon = document.getElementById('passwordIcon');
+    
+    // Password strength elements
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+    const lengthCheck = document.getElementById('lengthCheck');
+    const letterCheck = document.getElementById('letterCheck');
+    const numberCheck = document.getElementById('numberCheck');
+    
+    // Character counter
+    const nameInput = document.getElementById('name');
+    const nameCharCount = document.getElementById('nameCharCount');
+    const nameValidIcon = document.getElementById('nameValidIcon');
+    
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        confirmPasswordInput.setAttribute('type', type);
+        
+        // Toggle icon
+        if (type === 'text') {
+            passwordIcon.classList.remove('fa-eye');
+            passwordIcon.classList.add('fa-eye-slash');
+            passwordIcon.classList.add('text-green-500');
+        } else {
+            passwordIcon.classList.remove('fa-eye-slash');
+            passwordIcon.classList.add('fa-eye');
+            passwordIcon.classList.remove('text-green-500');
+        }
+    });
+    
+    // Name character counter
+    nameInput.addEventListener('input', function() {
+        const length = this.value.length;
+        nameCharCount.textContent = `${length}/50`;
+        
+        // Update validation icon
+        if (length >= 2 && length <= 50) {
+            nameValidIcon.classList.remove('text-gray-400', 'text-red-500');
+            nameValidIcon.classList.add('text-green-500');
+        } else {
+            nameValidIcon.classList.remove('text-green-500');
+            nameValidIcon.classList.add('text-red-500');
+        }
+    });
+    
+    // Password strength checker
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        checkPasswordStrength(password);
+        validatePasswordMatch();
+    });
+    
+    // Confirm password validation
+    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+    
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        
+        // Check length
+        const hasLength = password.length >= 8;
+        updateCheckIcon(lengthCheck, hasLength);
+        if (hasLength) strength += 25;
+        
+        // Check letters
+        const hasLetters = /[A-Za-z]/.test(password);
+        updateCheckIcon(letterCheck, hasLetters);
+        if (hasLetters) strength += 25;
+        
+        // Check numbers
+        const hasNumbers = /\d/.test(password);
+        updateCheckIcon(numberCheck, hasNumbers);
+        if (hasNumbers) strength += 25;
+        
+        // Check special characters
+        const hasSpecial = /[@$!%*#?&]/.test(password);
+        if (hasSpecial) strength += 25;
+        
+        // Update strength bar and text
+        strengthBar.style.width = `${strength}%`;
+        
+        if (strength < 50) {
+            strengthBar.className = 'strength-bar h-2 rounded-full bg-red-500';
+            strengthText.textContent = 'Weak';
+            strengthText.className = 'text-xs font-medium text-red-600 dark:text-red-400';
+        } else if (strength < 75) {
+            strengthBar.className = 'strength-bar h-2 rounded-full bg-yellow-500';
+            strengthText.textContent = 'Fair';
+            strengthText.className = 'text-xs font-medium text-yellow-600 dark:text-yellow-400';
+        } else {
+            strengthBar.className = 'strength-bar h-2 rounded-full bg-green-500';
+            strengthText.textContent = 'Strong';
+            strengthText.className = 'text-xs font-medium text-green-600 dark:text-green-400';
+        }
+    }
+    
+    function updateCheckIcon(element, isValid) {
+        if (isValid) {
+            element.classList.remove('fa-times', 'text-red-500');
+            element.classList.add('fa-check', 'text-green-500');
+        } else {
+            element.classList.remove('fa-check', 'text-green-500');
+            element.classList.add('fa-times', 'text-red-500');
+        }
+    }
+    
+    function validatePasswordMatch() {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        const confirmIcon = document.getElementById('confirmPasswordIcon');
+        
+        if (confirmPassword === '') {
+            confirmIcon.classList.remove('text-green-500', 'text-red-500');
+            confirmIcon.classList.add('text-gray-400');
+            return false;
+        }
+        
+        if (password === confirmPassword && password.length >= 8) {
+            confirmIcon.classList.remove('text-gray-400', 'text-red-500');
+            confirmIcon.classList.add('text-green-500');
+            return true;
+        } else {
+            confirmIcon.classList.remove('text-gray-400', 'text-green-500');
+            confirmIcon.classList.add('text-red-500');
+            return false;
+        }
+    }
+    
+    // Form validation and submission
+    signupForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Get form values
+        const name = nameInput.value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        const terms = document.getElementById('terms').checked;
+        
+        // Validate all fields
+        const errors = [];
+        
+        if (!name || name.length < 2 || name.length > 50) {
+            errors.push('Name must be between 2 and 50 characters');
+            nameInput.classList.add('validation-error', 'border-red-500');
+        } else {
+            nameInput.classList.remove('validation-error', 'border-red-500');
+        }
+        
+        if (!isValidEmail(email)) {
+            errors.push('Please enter a valid email address');
+            document.getElementById('email').classList.add('validation-error', 'border-red-500');
+        } else {
+            document.getElementById('email').classList.remove('validation-error', 'border-red-500');
+        }
+        
+        if (!isValidPassword(password)) {
+            errors.push('Password must be at least 8 characters with letters and numbers');
+            passwordInput.classList.add('validation-error', 'border-red-500');
+        } else {
+            passwordInput.classList.remove('validation-error', 'border-red-500');
+        }
+        
+        if (password !== confirmPassword) {
+            errors.push('Passwords do not match');
+            confirmPasswordInput.classList.add('validation-error', 'border-red-500');
+        } else {
+            confirmPasswordInput.classList.remove('validation-error', 'border-red-500');
+        }
+        
+        if (!terms) {
+            errors.push('You must agree to the terms and conditions');
+        }
+        
+        // If there are errors, show them
+        if (errors.length > 0) {
+            showError(errors.join('<br>'));
+            return;
+        }
+        
+        // Show loading state
+        buttonText.classList.add('hidden');
+        loadingSpinner.classList.remove('hidden');
+        signupButton.disabled = true;
+        
+        // Simulate API call (replace with actual fetch)
+        try {
+            const response = await submitSignupForm({
+                name,
+                email,
+                password,
+                terms
+            });
+            
+            if (response.success) {
+                // Redirect to success page or login
+                window.location.href = '/signup-success?email=' + encodeURIComponent(email);
+            } else {
+                showError(response.message || 'Signup failed. Please try again.');
+            }
+        } catch (error) {
+            showError('Network error. Please check your connection.');
+        } finally {
+            // Reset loading state
+            buttonText.classList.remove('hidden');
+            loadingSpinner.classList.add('hidden');
+            signupButton.disabled = false;
+        }
+    });
+    
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+    
+    function isValidPassword(password) {
+        const re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
+        return re.test(password);
+    }
+    
+    async function submitSignupForm(data) {
+        // Simulate API call
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // In real implementation, replace with fetch:
+                // fetch('/signup', { method: 'POST', body: JSON.stringify(data) })
+                
+                // Mock successful response
+                resolve({ success: true, message: 'Account created successfully' });
+            }, 1500);
+        });
+    }
+    
+    function showError(message) {
+        // Remove existing error alerts
+        const existingAlert = document.querySelector('.error-alert');
+        if (existingAlert) existingAlert.remove();
+        
+        // Create error alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'error-alert rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 mb-4';
+        alertDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                <p class="text-sm text-red-700 dark:text-red-300">${message}</p>
+            </div>
+        `;
+        
+        // Insert after form header
+        const form = document.getElementById('signupForm');
+        form.parentNode.insertBefore(alertDiv, form);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+    
+    // Auto-focus name field on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        nameInput.focus();
+        
+        // Check for URL parameters for pre-filled email
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailParam = urlParams.get('email');
+        if (emailParam) {
+            document.getElementById('email').value = emailParam;
+        }
+    });
+    
+    // Enter key submission
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !signupButton.disabled) {
+            signupForm.dispatchEvent(new Event('submit'));
+        }
+    });
+</script>
+
+<style>
+    /* Additional styles for better UX */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px white inset !important;
+        box-shadow: 0 0 0 30px white inset !important;
+        -webkit-text-fill-color: #1f2937 !important;
+    }
+    
+    .dark input:-webkit-autofill,
+    .dark input:-webkit-autofill:hover,
+    .dark input:-webkit-autofill:focus,
+    .dark input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px #1f2937 inset !important;
+        box-shadow: 0 0 0 30px #1f2937 inset !important;
+        -webkit-text-fill-color: #f3f4f6 !important;
+    }
+    
+    /* Smooth transitions */
+    .strength-bar {
+        transition: width 0.5s ease, background-color 0.3s ease;
+    }
+</style>
