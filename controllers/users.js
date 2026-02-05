@@ -757,7 +757,7 @@ module.exports.resendOtp = async (req, res) => {
       return res.redirect("/signup");
     }
 
-    if (user.isvalid) {
+    if (user.isVerified) {
       req.flash("info", "Your email is already verified. Please log in.");
       return res.redirect("/login");
     }

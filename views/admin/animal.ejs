@@ -1,24 +1,24 @@
 <% layout("layouts/boilerplate") %>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+<div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 lg:py-6">
 
   <!-- Header -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-3 md:space-y-0">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 lg:mb-8 space-y-3 md:space-y-0">
     <div>
-      <h1 class="text-2xl font-bold text-gray-800">Animals Management</h1>
-      <p class="text-sm text-gray-500 mt-1">Manage all registered animals and their farmers</p>
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">Animals Management</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage all registered animals and their farmers</p>
     </div>
 
     <% if(currUser.role == "ADMIN"){ %>
-    <a href="/admin/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <a href="/admin/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
       </svg>
       Add New Animal
     </a>
     <% } else { %>
-      <a href="/sales/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <a href="/sales/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
       </svg>
       Add New Animal
@@ -27,95 +27,237 @@
   </div>
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white shadow rounded-lg p-4">
-      <p class="text-xs text-gray-500">Total Animals</p>
-      <p class="text-xl font-bold text-gray-800 mt-1"><%= totalAnimals %></p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 lg:mb-8">
+    <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
+          <svg class="h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Total Animals</p>
+          <p class="text-xl font-bold text-gray-800 dark:text-gray-100 mt-0.5"><%= totalAnimals %></p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Table -->
-  <div class="bg-white shadow rounded-lg ">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50 sticky top-0 z-10">
-        <tr>
-          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unique ID</th>
-          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Animal</th>
-          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Farmer</th>
-          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Gender</th>
-          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-          <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-        </tr>
-      </thead>
-
-      <tbody class="bg-white divide-y divide-gray-200">
-        <% if (animals.length === 0) { %>
+  <!-- Table Container -->
+  <div class="bg-white dark:bg-gray-800 shadow-xl rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-900/50 sticky top-0 z-10">
           <tr>
-            <td colspan="8" class="text-center py-10 text-gray-400">
-              No animals registered yet
-            </td>
+            <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">#</th>
+            <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Unique ID</th>
+            <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Animal</th>
+            <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Farmer</th>
+            <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+            <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Gender</th>
+            <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            <th class="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
           </tr>
-        <% } %>
+        </thead>
 
-        <% animals.forEach((animal, index) => { %>
-          <tr class="hover:bg-gray-50 transition">
-            <td class="px-4 py-2 text-sm text-gray-700"><%= (currentPage - 1) * limit + index + 1 %></td>
-            <td class="px-4 py-2 text-sm font-semibold text-blue-600"><%= animal.uniqueAnimalId %></td>
-            <td class="px-4 py-2 text-sm text-gray-700"><%= animal.name || "Unnamed" %></td>
-            <td class="px-4 py-2 text-sm text-gray-700">
-              <%= animal.farmer?.name || "N/A" %><br />
-              <span class="text-xs text-gray-400"><%= animal.farmer?.mobile || "" %></span>
-            </td>
-            <td class="px-4 py-2">
-              <span class="inline-block px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">
-                <%= animal.animalType %>
-              </span>
-            </td>
-            <td class="px-4 py-2 text-sm text-gray-700"><%= animal.gender || "Unknown" %></td>
-            <td class="px-4 py-2">
-              <% if (animal.isActive) { %>
-                <span class="inline-block px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">Active</span>
-              <% } else { %>
-                <span class="inline-block px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">Inactive</span>
-              <% } %>
-            </td>
-            <td class="px-4 py-2 text-right relative">
-              <div class="relative inline-block text-left">
-                <button type="button" onclick="toggleDropdown('<%= animal._id %>')" class="inline-flex justify-center w-full text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="menu-button-<%= animal._id %>">
-                  Actions
-                  <svg class="-mr-1 ml-1 h-4 w-4 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <% if (animals.length === 0) { %>
+            <tr>
+              <td colspan="8" class="text-center py-12 text-gray-400 dark:text-gray-500">
+                <div class="flex flex-col items-center">
+                  <svg class="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                </button>
+                  <p class="text-base font-medium text-gray-500 dark:text-gray-400">No animals registered yet</p>
+                  <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Get started by adding your first animal</p>
+                </div>
+              </td>
+            </tr>
+          <% } %>
 
-                <ul id="dropdown-<%= animal._id %>" class="absolute right-0 mt-2 w-36 bg-white shadow-lg rounded-md py-1 text-sm hidden z-50">
-                  <li>
-                    <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">View</a>
-                  </li>
-                  <li>
-                    <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>/edit" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Edit</a>
-                  </li>
-                </ul>
-              </div>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+          <% animals.forEach((animal, index) => { %>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+              <td class="px-3 sm:px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <%= (currentPage - 1) * limit + index + 1 %>
+              </td>
+              <td class="px-3 sm:px-4 py-3">
+                <div class="text-sm font-semibold text-blue-600 dark:text-blue-400 font-mono">
+                  <%= animal.uniqueAnimalId %>
+                </div>
+              </td>
+              <td class="px-3 sm:px-4 py-3">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <svg class="h-4 w-4 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <%= animal.name || "Unnamed" %>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-3 sm:px-4 py-3">
+                <div class="text-sm text-gray-900 dark:text-gray-100">
+                  <%= animal.farmer?.name || "N/A" %>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <%= animal.farmer?.mobile || "" %>
+                </div>
+              </td>
+              <td class="px-3 sm:px-4 py-3">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                  <%= animal.animalType %>
+                </span>
+              </td>
+              <td class="px-3 sm:px-4 py-3">
+                <div class="flex items-center">
+                  <% if (animal.gender === 'Male') { %>
+                    <svg class="h-4 w-4 text-blue-500 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  <% } else if (animal.gender === 'Female') { %>
+                    <svg class="h-4 w-4 text-pink-500 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H9v-1a2 2 0 012-2h2a2 2 0 012 2v1zm5-18a2 2 0 00-2-2h-2a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2V3z" />
+                    </svg>
+                  <% } %>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">
+                    <%= animal.gender || "Unknown" %>
+                  </span>
+                </div>
+              </td>
+              <td class="px-3 sm:px-4 py-3">
+                <% if (animal.isActive) { %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                    <span class="h-1.5 w-1.5 rounded-full bg-green-500 dark:bg-green-400 mr-1.5"></span>
+                    Active
+                  </span>
+                <% } else { %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                    <span class="h-1.5 w-1.5 rounded-full bg-red-500 dark:bg-red-400 mr-1.5"></span>
+                    Inactive
+                  </span>
+                <% } %>
+              </td>
+              <td class="px-3 sm:px-4 py-3 text-right">
+                <div class="flex justify-end space-x-2">
+                  <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>" 
+                     class="inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150"
+                     title="View">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </a>
+                  <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>/edit" 
+                     class="inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150"
+                     title="Edit">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </a>
+                  <div class="relative inline-block text-left">
+                    <button type="button" onclick="toggleDropdown('<%= animal._id %>')" class="inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150" title="More options">
+                      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                      </svg>
+                    </button>
+
+                    <div id="dropdown-<%= animal._id %>" class="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-700 z-50 hidden transition-all duration-200 origin-top-right">
+                      <div class="py-1">
+                        <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                          <svg class="mr-3 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          View Details
+                        </a>
+                        <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>/edit" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                          <svg class="mr-3 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Edit Animal
+                        </a>
+                        <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                        <a href="#" class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                          <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Delete Animal
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Pagination -->
   <% if (totalPages > 1) { %>
-    <div class="mt-6 flex justify-center flex-wrap gap-1">
-      <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 <%= currentPage === 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' %>">Previous</a>
+    <div class="mt-6 lg:mt-8 flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+      <div class="text-sm text-gray-500 dark:text-gray-400">
+        Showing <span class="font-medium"><%= (currentPage - 1) * limit + 1 %></span> to 
+        <span class="font-medium"><%= Math.min(currentPage * limit, totalAnimals) %></span> of 
+        <span class="font-medium"><%= totalAnimals %></span> animals
+      </div>
+      
+      <div class="flex items-center space-x-1">
+        <a href="?page=<%= currentPage - 1 %>" 
+           class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium <%= currentPage === 1 ? 'text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' %>"
+           <%= currentPage === 1 ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Previous
+        </a>
 
-      <% for (let i = 1; i <= totalPages; i++) { %>
-        <a href="?page=<%= i %>" class="px-3 py-1 rounded-md text-sm <%= currentPage === i ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' %>"><%= i %></a>
-      <% } %>
+        <% const maxVisible = 5; %>
+        <% let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2)); %>
+        <% let endPage = Math.min(totalPages, startPage + maxVisible - 1); %>
+        <% if (endPage - startPage + 1 < maxVisible) { %>
+          <% startPage = Math.max(1, endPage - maxVisible + 1); %>
+        <% } %>
 
-      <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 <%= currentPage === totalPages ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' %>">Next</a>
+        <% if (startPage > 1) { %>
+          <a href="?page=1" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">1</a>
+          <% if (startPage > 2) { %>
+            <span class="px-2 text-gray-400 dark:text-gray-600">...</span>
+          <% } %>
+        <% } %>
+
+        <% for (let i = startPage; i <= endPage; i++) { %>
+          <a href="?page=<%= i %>" 
+             class="px-3 py-2 rounded-lg text-sm font-medium <%= currentPage === i ? 'bg-blue-600 text-white' : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' %>">
+            <%= i %>
+          </a>
+        <% } %>
+
+        <% if (endPage < totalPages) { %>
+          <% if (endPage < totalPages - 1) { %>
+            <span class="px-2 text-gray-400 dark:text-gray-600">...</span>
+          <% } %>
+          <a href="?page=<%= totalPages %>" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <%= totalPages %>
+          </a>
+        <% } %>
+
+        <a href="?page=<%= currentPage + 1 %>" 
+           class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium <%= currentPage === totalPages ? 'text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' %>"
+           <%= currentPage === totalPages ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+          Next
+          <svg class="h-4 w-4 ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
     </div>
   <% } %>
 </div>
@@ -123,25 +265,46 @@
 <script>
   function toggleDropdown(id) {
     const dropdown = document.getElementById('dropdown-' + id);
-    const buttonIcon = document.querySelector('#menu-button-' + id + ' svg');
-
-    dropdown.classList.toggle('hidden');
-    buttonIcon.classList.toggle('rotate-180');
-
-    // Close other dropdowns
-    document.querySelectorAll('ul[id^="dropdown-"]').forEach(el => {
+    const isHidden = dropdown.classList.contains('hidden');
+    
+    // Close all other dropdowns
+    document.querySelectorAll('div[id^="dropdown-"]').forEach(el => {
       if (el.id !== 'dropdown-' + id) {
         el.classList.add('hidden');
-        const otherIcon = document.querySelector('#menu-button-' + el.id.split('-')[1] + ' svg');
-        if (otherIcon) otherIcon.classList.remove('rotate-180');
       }
     });
+    
+    // Toggle current dropdown
+    dropdown.classList.toggle('hidden');
+    
+    // Add animation
+    if (!isHidden) {
+      dropdown.style.opacity = '0';
+      dropdown.style.transform = 'scale(0.95) translateY(-10px)';
+    } else {
+      dropdown.style.opacity = '1';
+      dropdown.style.transform = 'scale(1) translateY(0)';
+    }
   }
 
-  window.addEventListener('click', function(e) {
-    if (!e.target.closest('[id^="menu-button-"]')) {
-      document.querySelectorAll('ul[id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('button[id^="menu-button-"] svg').forEach(icon => icon.classList.remove('rotate-180'));
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(event) {
+    const isDropdownButton = event.target.closest('button[onclick^="toggleDropdown"]');
+    const isDropdownContent = event.target.closest('div[id^="dropdown-"]');
+    
+    if (!isDropdownButton && !isDropdownContent) {
+      document.querySelectorAll('div[id^="dropdown-"]').forEach(el => {
+        el.classList.add('hidden');
+      });
+    }
+  });
+
+  // Add keyboard navigation support
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      document.querySelectorAll('div[id^="dropdown-"]').forEach(el => {
+        el.classList.add('hidden');
+      });
     }
   });
 </script>

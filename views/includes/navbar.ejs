@@ -130,9 +130,9 @@
                class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/settings') ? active : inactive %> nav-link-hover">
               <i class="fas fa-cog mr-2"></i>Admin
             </a>
-          <% } %>
           
-          <% if (currUser.role === "SALES") { %>
+          
+          <% } else if (currUser.role === "SALES") { %>
             <a href="/sales/farmers" 
                class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/sales/farmers') ? active : inactive %> nav-link-hover">
               <i class="fas fa-currUsers mr-2"></i>Farmers
@@ -163,7 +163,7 @@
           </a>
           <% } %>
           
-          <% if (currUser.role === 'admin') { %>
+          <% if (currUser.role === 'ADMIN ') { %>
             <a href="/analytics" 
                class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/analytics') ? active : inactive %> nav-link-hover">
               <i class="fas fa-chart-line mr-2"></i>Analytics
@@ -174,7 +174,7 @@
               <i class="fas fa-cog mr-2"></i>Admin
             </a>
           <% } %>
-        <% } else { %>
+        <% } else{ %>
           <!-- Public Menu Items -->
           <a href="/services" 
              class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/services' ? active : inactive %> nav-link-hover">
@@ -226,7 +226,7 @@
             </div>
             
             <a href="/profile" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-              <i class="fas fa-currUser text-gray-500 w-5"></i>
+              <i class="fas fa-user-circle text-gray-500 w-5"></i>
               <span class="text-gray-700 dark:text-gray-300">My Profile</span>
             </a>
             
@@ -319,52 +319,66 @@
           
           <!-- Conditional Mobile Menu -->
           <% if (currUser) { %>
-            <% if (['admin', 'sales'].includes(currUser.role)) { %>
-              <a href="/farmers" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/farmers') ? mobileActive : mobileInactive %>">
-                <i class="fas fa-currUsers w-5"></i>
+            <% if(currUser.role === "ADMIN"){ %>
+              <a href="/<%= currUser.role.toLowerCase() %>/sales-team" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/sales-team`) ? mobileActive : mobileInactive %>">
+                <i class="fas fa-user-tie w-5"></i>
+                <span>Sales Team</span>
+              </a>
+              <a href="/<%= currUser.role.toLowerCase() %>/paravets" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/paravets`) ? mobileActive : mobileInactive %>">
+                <i class="fas fa-user-doctor w-5"></i>
+                <span>Paravets</span>
+              </a>
+
+            <% } %>
+            <% if (['ADMIN', 'SALES'].includes(currUser.role)) { %>
+              <a href="/<%= currUser.role.toLowerCase() %>/farmers" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/farmers`) ? mobileActive : mobileInactive %>">
+                <i class="fas fa-tractor w-5"></i>
                 <span>Farmers</span>
               </a>
             <% } %>
             
-            <% if (['admin', 'paravet'].includes(currUser.role)) { %>
-              <a href="/animals" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/animals') ? mobileActive : mobileInactive %>">
+            <% if (['ADMIN', 'PARAVET','SALES','FARMER'].includes(currUser.role)) { %>
+              <a href="/<%= currUser.role.toLowerCase() %>/animals" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/animals`) ? mobileActive : mobileInactive %>">
                 <i class="fas fa-paw w-5"></i>
                 <span>Animals</span>
               </a>
               
-              <a href="/vaccinations" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/vaccinations') ? mobileActive : mobileInactive %>">
+            <% } %>
+             <% if (['ADMIN', 'PARAVET','FARMER'].includes(currUser.role)) { %>
+              
+              <a href="/<%= currUser.role.toLowerCase() %>/vaccinations" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/vaccinations`) ? mobileActive : mobileInactive %>">
                 <i class="fas fa-syringe w-5"></i>
                 <span>Vaccinations</span>
               </a>
             <% } %>
+
             
-            <% if (currUser.role === 'admin') { %>
-              <a href="/analytics" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/analytics') ? mobileActive : mobileInactive %>">
+            <% if (currUser.role === 'ADMIN') { %>
+              <a href="/<%= currUser.role.toLowerCase() %>/analytics" 
+                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/analytics`) ? mobileActive : mobileInactive %>">
                 <i class="fas fa-chart-line w-5"></i>
                 <span>Analytics</span>
               </a>
               
-              <a href="/admin" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/admin') ? mobileActive : mobileInactive %>">
-                <i class="fas fa-cog w-5"></i>
-                <span>Admin Panel</span>
-              </a>
+              
+              
             <% } %>
             
             <!-- currUser Links -->
             <a href="/profile" 
                class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/profile') ? mobileActive : mobileInactive %>">
-              <i class="fas fa-currUser w-5"></i>
+              <i class="fas fa-user-circle w-5"></i>
               <span>My Profile</span>
             </a>
             
-            <a href="/settings" 
-               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/settings') ? mobileActive : mobileInactive %>">
-              <i class="fas fa-cog w-5"></i>
+            <a href="/<%= currUser.role.toLowerCase() %>/settings" 
+               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/settings`) ? mobileActive : mobileInactive %>">
+              <i class="fas fa-sliders w-5"></i>
               <span>Settings</span>
             </a>
             

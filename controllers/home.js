@@ -55,7 +55,6 @@ module.exports.homePage = async (req, res, next) => {
       // const servicesCount = await Servise.countDocuments();
       res.render("sales/index.ejs", {
         User: user,
-        showsplash: true,
         tile,
         shortDescription,
         farmersCount,

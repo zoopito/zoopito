@@ -175,6 +175,22 @@ module.exports.createSalesMember = async (req, res) => {
       await User.register(user, randomPassword);
 
       console.log(`Login password for ${email}: ${randomPassword}`);
+    } else {
+      let changed = false;
+
+      if (user.role !== "SALES") {
+        user.role = "SALES";
+        changed = true;
+      }
+
+      if (!user.isActive) {
+        user.isActive = true;
+        changed = true;
+      }
+
+      if (changed) {
+        await user.save();
+      }
     }
 
     // 🔹 Prevent duplicate sales member
