@@ -1,0 +1,94 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="container mx-auto px-4 py-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>" class="text-blue-600 hover:underline">← Back to Animal</a>
+    <h1 class="text-2xl font-bold text-gray-900 mt-2">Manage Animal Photos</h1>
+    <p class="text-gray-600"><%= animal.name || animal.tagNumber %> (<%= animal.uniqueAnimalId %>)</p>
+  </div>
+
+  <!-- Photo Upload Form -->
+  <div class="bg-white rounded-lg shadow p-6 mb-6">
+    <form action="/<%= currUser.role.toLowerCase() %>/animal/<%= animal._id %>/photos/upload" method="POST" enctype="multipart/form-data">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Front View -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Front View</label>
+          <% if (animal.photos?.front?.url) { %>
+            <div class="mb-2">
+              <img src="<%= animal.photos.front.url %>" alt="Front view" class="w-full h-48 object-cover rounded">
+              <p class="text-xs text-gray-500 mt-1">Current photo</p>
+            </div>
+          <% } %>
+          <input type="file" name="front" accept="image/*" class="w-full">
+        </div>
+
+        <!-- Left View -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Left Side View</label>
+          <% if (animal.photos?.left?.url) { %>
+            <div class="mb-2">
+              <img src="<%= animal.photos.left.url %>" alt="Left view" class="w-full h-48 object-cover rounded">
+              <p class="text-xs text-gray-500 mt-1">Current photo</p>
+            </div>
+          <% } %>
+          <input type="file" name="left" accept="image/*" class="w-full">
+        </div>
+
+        <!-- Right View -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Right Side View</label>
+          <% if (animal.photos?.right?.url) { %>
+            <div class="mb-2">
+              <img src="<%= animal.photos.right.url %>" alt="Right view" class="w-full h-48 object-cover rounded">
+              <p class="text-xs text-gray-500 mt-1">Current photo</p>
+            </div>
+          <% } %>
+          <input type="file" name="right" accept="image/*" class="w-full">
+        </div>
+
+        <!-- Back View -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Back View</label>
+          <% if (animal.photos?.back?.url) { %>
+            <div class="mb-2">
+              <img src="<%= animal.photos.back.url %>" alt="Back view" class="w-full h-48 object-cover rounded">
+              <p class="text-xs text-gray-500 mt-1">Current photo</p>
+            </div>
+          <% } %>
+          <input type="file" name="back" accept="image/*" class="w-full">
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>" class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50">
+          Cancel
+        </a>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          Upload Photos
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Photo Guidelines -->
+  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+    <div class="flex">
+      <svg class="h-5 w-5 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+      </svg>
+      <div>
+        <h3 class="text-sm font-semibold text-yellow-800">Photo Guidelines</h3>
+        <ul class="mt-1 text-sm text-yellow-700 list-disc list-inside">
+          <li>All four views (front, left, right, back) are required for AI identification</li>
+          <li>Use good lighting and clear background</li>
+          <li>Ensure animal is standing naturally</li>
+          <li>Maximum file size: 5MB per photo</li>
+          <li>Accepted formats: JPG, PNG, JPEG</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

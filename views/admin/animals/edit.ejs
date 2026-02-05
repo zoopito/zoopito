@@ -1,223 +1,737 @@
 <% layout("layouts/boilerplate") %>
 
-<div class="container mx-auto p-6">
-  <h1 class="text-3xl font-bold mb-6 text-blue-700">
-    Edit Animal Details
-  </h1>
-
-  <form
-    action="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>?_method=PUT"
-    method="POST"
-    enctype="multipart/form-data"
-    class="space-y-6 bg-white p-6 rounded-lg shadow-md"
-  >
-
-    <!-- Farmer -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Farmer</label>
-      <select name="farmer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-        <% farmers.forEach(farmer => { %>
-          <option
-            value="<%= farmer._id %>"
-            <%= animal.farmer && animal.farmer._id.toString() === farmer._id.toString() ? 'selected' : '' %>
-          >
-            <%= farmer.uniqueFarmerId %> : <%= farmer.name %>
-          </option>
-        <% }) %>
-      </select>
-    </div>
-
-    <!-- Registered By -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Registered By</label>
-      <select name="registeredBy" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-        <% sales.forEach(sale => { %>
-          <option
-            value="<%= sale._id %>"
-            <%= animal.registeredBy && animal.registeredBy._id.toString() === sale._id.toString() ? 'selected' : '' %>
-          >
-            <%= sale.name %>
-          </option>
-        <% }) %>
-      </select>
-    </div>
-
-    <!-- Animal Type -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Animal Type</label>
-      <select name="animalType" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-        <% ["Cow","Buffalo","Goat","Sheep","Dog","Cat","Poultry","Other"].forEach(type => { %>
-          <option value="<%= type %>" <%= animal.animalType === type ? 'selected' : '' %>>
-            <%= type %>
-          </option>
-        <% }) %>
-      </select>
-    </div>
-
-    <!-- Breed -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Breed</label>
-      <input
-        type="text"
-        name="breed"
-        value="<%= animal.breed || '' %>"
-        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-      >
-    </div>
-
-    <!-- Age -->
-    <div class="flex space-x-4">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-6 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+    
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
       <div class="flex-1">
-        <label class="block text-sm font-medium text-gray-700">Age</label>
-        <input
-          type="number"
-          name="age[value]"
-          value="<%= animal.age?.value || '' %>"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-        >
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Edit Animal: <%= animal.name || animal.tagNumber %>
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">
+          Update details for <span class="font-semibold text-blue-600 dark:text-blue-400"><%= animal.uniqueAnimalId %></span>
+        </p>
       </div>
-      <div class="flex-1">
-        <label class="block text-sm font-medium text-gray-700">Unit</label>
-        <select name="age[unit]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-          <% ["Days","Months","Years"].forEach(u => { %>
-            <option value="<%= u %>" <%= animal.age?.unit === u ? 'selected' : '' %>>
-              <%= u %>
-            </option>
-          <% }) %>
-        </select>
+      <div class="flex items-center gap-2">
+        <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>" 
+           class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Cancel
+        </a>
       </div>
     </div>
 
-    <!-- Gender -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Gender</label>
-      <select name="gender" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-        <% ["Male","Female","Unknown"].forEach(g => { %>
-          <option value="<%= g %>" <%= animal.gender === g ? 'selected' : '' %>>
-            <%= g %>
-          </option>
-        <% }) %>
-      </select>
-    </div>
+    <!-- Main Form -->
+    <form action="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>?_method=PUT"
+          method="POST"
+          enctype="multipart/form-data"
+          class="space-y-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6">
+      
+      <!-- Tabs Navigation -->
+      <div class="border-b border-gray-200 dark:border-gray-700">
+        <nav class="flex overflow-x-auto" id="formTabs">
+          <button type="button" onclick="showFormTab('basic')" class="form-tab active px-6 py-3 font-medium text-sm border-b-2 border-blue-500 text-blue-600 dark:text-blue-400">
+            Basic Info
+          </button>
+          <button type="button" onclick="showFormTab('reproductive')" class="form-tab px-6 py-3 font-medium text-sm text-gray-600 dark:text-gray-400">
+            Reproductive
+          </button>
+          <button type="button" onclick="showFormTab('health')" class="form-tab px-6 py-3 font-medium text-sm text-gray-600 dark:text-gray-400">
+            Health
+          </button>
+          <button type="button" onclick="showFormTab('photos')" class="form-tab px-6 py-3 font-medium text-sm text-gray-600 dark:text-gray-400">
+            Photos
+          </button>
+          <button type="button" onclick="showFormTab('management')" class="form-tab px-6 py-3 font-medium text-sm text-gray-600 dark:text-gray-400">
+            Management
+          </button>
+        </nav>
+      </div>
 
-    <!-- Name -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Animal Name</label>
-      <input
-        type="text"
-        name="name"
-        value="<%= animal.name || '' %>"
-        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-      >
-    </div>
-
-    <!-- Tag Number -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Tag Number</label>
-      <input
-        type="text"
-        name="tagNumber"
-        value="<%= animal.tagNumber || '' %>"
-        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-      >
-    </div>
-
-    <!-- EXISTING PHOTOS + UPLOAD -->
-    <div class="border-t pt-4">
-      <h2 class="text-xl font-semibold mb-4 text-gray-700">Animal Photos</h2>
-
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        <% ["front","left","right","back"].forEach(side => { %>
+      <!-- Basic Info Tab -->
+      <div id="basic-tab-form" class="form-tab-content active space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Farmer -->
           <div>
-            <p class="text-sm font-medium capitalize mb-1"><%= side %></p>
-
-            <% if (animal.photos?.[side]?.url) { %>
-              <img
-                src="<%= animal.photos[side].url %>"
-                class="w-full h-32 object-cover rounded border mb-2"
-              >
-            <% } else { %>
-              <p class="text-xs text-gray-400 mb-2">No image</p>
-            <% } %>
-
-            <input
-              type="file"
-              name="<%= side %>"
-              accept="image/*"
-              class="text-sm"
-            >
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Farmer *</label>
+            <select name="farmer" required 
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+              <% farmers.forEach(farmer => { %>
+                <option value="<%= farmer._id %>"
+                        <%= animal.farmer && animal.farmer._id.toString() === farmer._id.toString() ? 'selected' : '' %>>
+                  <%= farmer.uniqueFarmerId %> : <%= farmer.name %>
+                </option>
+              <% }) %>
+            </select>
           </div>
-        <% }) %>
+
+          <!-- Animal Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Animal Type *</label>
+            <select name="animalType" required 
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+              <% ["Cow","Buffalo","Goat","Sheep","Dog","Cat","Poultry","Other"].forEach(type => { %>
+                <option value="<%= type %>" <%= animal.animalType === type ? 'selected' : '' %>>
+                  <%= type %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <!-- Breed -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Breed</label>
+            <input type="text" name="breed" value="<%= animal.breed || '' %>"
+                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                   placeholder="Enter breed">
+          </div>
+
+          <!-- Age -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Age Value</label>
+              <input type="number" name="age[value]" value="<%= animal.age?.value || '' %>" min="0"
+                     class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Age Unit</label>
+              <select name="age[unit]" 
+                      class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <% ["Days","Months","Years"].forEach(u => { %>
+                  <option value="<%= u %>" <%= animal.age?.unit === u ? 'selected' : '' %>>
+                    <%= u %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+
+          <!-- Gender -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender *</label>
+            <select name="gender" required 
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+              <% ["Male","Female","Unknown"].forEach(g => { %>
+                <option value="<%= g %>" <%= animal.gender === g ? 'selected' : '' %>>
+                  <%= g %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <!-- Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Animal Name</label>
+            <input type="text" name="name" value="<%= animal.name || '' %>"
+                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                   placeholder="Enter animal name">
+          </div>
+
+          <!-- Tag Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tag Number *</label>
+            <input type="text" name="tagNumber" value="<%= animal.tagNumber || '' %>" required
+                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                   placeholder="Enter tag number">
+          </div>
+
+          <!-- Date of Birth -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
+            <input type="date" name="dateOfBirth" 
+                   value="<%= animal.dateOfBirth ? animal.dateOfBirth.toISOString().split('T')[0] : '' %>"
+                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+          </div>
+
+          <!-- Source of Animal -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Source of Animal</label>
+            <select name="sourceOfAnimal" 
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+              <% ["born_on_farm","purchased","gifted","other"].forEach(source => { %>
+                <option value="<%= source %>" <%= animal.sourceOfAnimal === source ? 'selected' : '' %>>
+                  <%= source.replace('_', ' ').toUpperCase() %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <!-- Purchase Details (if purchased) -->
+        <% if (animal.sourceOfAnimal === 'purchased' && animal.purchaseDetails) { %>
+          <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Purchase Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Price</label>
+                <input type="number" step="0.01" name="purchaseDetails[price]" 
+                       value="<%= animal.purchaseDetails?.price || '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Currency</label>
+                <select name="purchaseDetails[currency]" 
+                        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                  <option value="INR" <%= animal.purchaseDetails?.currency === 'INR' ? 'selected' : '' %>>INR</option>
+                  <option value="USD" <%= animal.purchaseDetails?.currency === 'USD' ? 'selected' : '' %>>USD</option>
+                  <option value="EUR" <%= animal.purchaseDetails?.currency === 'EUR' ? 'selected' : '' %>>EUR</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Purchase Date</label>
+                <input type="date" name="purchaseDetails[purchaseDate]" 
+                       value="<%= animal.purchaseDetails?.purchaseDate ? animal.purchaseDetails.purchaseDate.toISOString().split('T')[0] : '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+              <div class="md:col-span-3">
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Seller</label>
+                <input type="text" name="purchaseDetails[seller]" 
+                       value="<%= animal.purchaseDetails?.seller || '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Is Active -->
+        <div class="flex items-center space-x-3">
+          <input type="checkbox" name="isActive" id="isActive" 
+                 <%= animal.isActive ? 'checked' : '' %>
+                 class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+          <label for="isActive" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Animal is Active
+          </label>
+        </div>
       </div>
-    </div>
 
-    <!-- Lactation Status -->
-    <div class="border-t pt-4">
-      <h2 class="text-xl font-semibold mb-2 text-gray-700">Lactation Status</h2>
+      <!-- Reproductive Tab -->
+      <div id="reproductive-tab-form" class="form-tab-content hidden space-y-6">
+        <!-- Pregnancy Status -->
+        <div class="bg-pink-50 dark:bg-pink-900/20 rounded-xl p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pregnancy Status</h3>
+          
+          <div class="flex items-center space-x-3 mb-4">
+            <input type="checkbox" name="pregnancyStatus[isPregnant]" id="isPregnant"
+                   <%= animal.pregnancyStatus?.isPregnant ? 'checked' : '' %>
+                   class="w-5 h-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500">
+            <label for="isPregnant" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Is Pregnant
+            </label>
+          </div>
 
-      <div class="flex items-center space-x-2 mb-3">
-        <input
-          type="checkbox"
-          name="lactationStatus[isLactating]"
-          <%= animal.lactationStatus?.isLactating ? 'checked' : '' %>
-        >
-        <label class="text-sm">Is Lactating</label>
+          <!-- Pregnancy Details -->
+          <div id="pregnancyDetails" class="<%= animal.pregnancyStatus?.isPregnant ? 'block' : 'hidden' %> space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Test Date</label>
+                <input type="date" name="pregnancyStatus[testDate]" 
+                       value="<%= animal.pregnancyStatus?.testDate ? animal.pregnancyStatus.testDate.toISOString().split('T')[0] : '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Confirmed Date</label>
+                <input type="date" name="pregnancyStatus[confirmedDate]" 
+                       value="<%= animal.pregnancyStatus?.confirmedDate ? animal.pregnancyStatus.confirmedDate.toISOString().split('T')[0] : '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Expected Delivery</label>
+                <input type="date" name="pregnancyStatus[expectedDeliveryDate]" 
+                       value="<%= animal.pregnancyStatus?.expectedDeliveryDate ? animal.pregnancyStatus.expectedDeliveryDate.toISOString().split('T')[0] : '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Stage</label>
+                <select name="pregnancyStatus[stage]" 
+                        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                  <option value="">Select Stage</option>
+                  <option value="early" <%= animal.pregnancyStatus?.stage === 'early' ? 'selected' : '' %>>Early (0-3 months)</option>
+                  <option value="mid" <%= animal.pregnancyStatus?.stage === 'mid' ? 'selected' : '' %>>Mid (3-6 months)</option>
+                  <option value="late" <%= animal.pregnancyStatus?.stage === 'late' ? 'selected' : '' %>>Late (6-9 months)</option>
+                  <option value="full_term" <%= animal.pregnancyStatus?.stage === 'full_term' ? 'selected' : '' %>>Full Term</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Kit Used</label>
+                <select name="pregnancyStatus[kitUsed]" 
+                        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                  <option value="">Select Kit</option>
+                  <option value="ultrasound" <%= animal.pregnancyStatus?.kitUsed === 'ultrasound' ? 'selected' : '' %>>Ultrasound</option>
+                  <option value="blood_test" <%= animal.pregnancyStatus?.kitUsed === 'blood_test' ? 'selected' : '' %>>Blood Test</option>
+                  <option value="palpation" <%= animal.pregnancyStatus?.kitUsed === 'palpation' ? 'selected' : '' %>>Rectal Palpation</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Number of Fetuses</label>
+                <input type="number" name="pregnancyStatus[numberOfFetuses]" min="1" max="10"
+                       value="<%= animal.pregnancyStatus?.numberOfFetuses || '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Previous Pregnancies</label>
+                <input type="number" name="pregnancyStatus[previousPregnancies]" min="0"
+                       value="<%= animal.pregnancyStatus?.previousPregnancies || '0' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Pregnancy Notes</label>
+              <textarea name="pregnancyStatus[pregnancyNotes]" rows="2"
+                        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"><%= animal.pregnancyStatus?.pregnancyNotes || '' %></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lactation Status -->
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Lactation Status</h3>
+          
+          <div class="flex items-center space-x-3 mb-4">
+            <input type="checkbox" name="lactationStatus[isLactating]" id="isLactating"
+                   <%= animal.lactationStatus?.isLactating ? 'checked' : '' %>
+                   class="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
+            <label for="isLactating" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Is Currently Lactating
+            </label>
+          </div>
+
+          <!-- Lactation Details -->
+          <div id="lactationDetails" class="<%= animal.lactationStatus?.isLactating ? 'block' : 'hidden' %> space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Last Calving Date</label>
+                <input type="date" name="lactationStatus[lastCalvingDate]" 
+                       value="<%= animal.lactationStatus?.lastCalvingDate ? animal.lactationStatus.lastCalvingDate.toISOString().split('T')[0] : '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Lactation Number</label>
+                <input type="number" name="lactationStatus[lactationNumber]" min="1"
+                       value="<%= animal.lactationStatus?.lactationNumber || '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Days in Milk (DIM)</label>
+                <input type="number" name="lactationStatus[daysInMilk]" min="0"
+                       value="<%= animal.lactationStatus?.daysInMilk || '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Milking Frequency</label>
+                <select name="lactationStatus[milkingFrequency]" 
+                        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                  <option value="">Select Frequency</option>
+                  <option value="1" <%= animal.lactationStatus?.milkingFrequency === '1' ? 'selected' : '' %>>Once daily</option>
+                  <option value="2" <%= animal.lactationStatus?.milkingFrequency === '2' ? 'selected' : '' %>>Twice daily</option>
+                  <option value="3" <%= animal.lactationStatus?.milkingFrequency === '3' ? 'selected' : '' %>>Thrice daily</option>
+                  <option value="machine" <%= animal.lactationStatus?.milkingFrequency === 'machine' ? 'selected' : '' %>>Machine Milking</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Daily Yield</label>
+                <input type="number" step="0.1" name="lactationStatus[dailyYield]" min="0"
+                       value="<%= animal.lactationStatus?.dailyYield?.value || '' %>"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+                       placeholder="Amount">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Yield Unit</label>
+                <select name="lactationStatus[yieldUnit]" 
+                        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                  <option value="">Select Unit</option>
+                  <option value="liters" <%= animal.lactationStatus?.dailyYield?.unit === 'liters' ? 'selected' : '' %>>Liters</option>
+                  <option value="kg" <%= animal.lactationStatus?.dailyYield?.unit === 'kg' ? 'selected' : '' %>>Kilograms</option>
+                  <option value="ml" <%= animal.lactationStatus?.dailyYield?.unit === 'ml' ? 'selected' : '' %>>Milliliters</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Milk Quality</label>
+              <select name="lactationStatus[milkQuality]" 
+                      class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                <option value="">Select Quality</option>
+                <option value="excellent" <%= animal.lactationStatus?.milkQuality === 'excellent' ? 'selected' : '' %>>Excellent</option>
+                <option value="good" <%= animal.lactationStatus?.milkQuality === 'good' ? 'selected' : '' %>>Good</option>
+                <option value="average" <%= animal.lactationStatus?.milkQuality === 'average' ? 'selected' : '' %>>Average</option>
+                <option value="poor" <%= animal.lactationStatus?.milkQuality === 'poor' ? 'selected' : '' %>>Poor</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Lactation Notes</label>
+              <textarea name="lactationStatus[lactationNotes]" rows="2"
+                        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"><%= animal.lactationStatus?.lactationNotes || '' %></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reproductive Status -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reproductive Status</label>
+          <select name="reproductiveStatus" 
+                  class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            <% ["normal","in_heat","bred","open","sterile","castrated","not_applicable"].forEach(status => { %>
+              <option value="<%= status %>" <%= animal.reproductiveStatus === status ? 'selected' : '' %>>
+                <%= status.replace('_', ' ').toUpperCase() %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
       </div>
 
-      <input
-        type="date"
-        name="lactationStatus[lastCalvingDate]"
-        value="<%= animal.lactationStatus?.lastCalvingDate ? animal.lactationStatus.lastCalvingDate.toISOString().slice(0,10) : '' %>"
-        class="mb-2 w-full rounded-md border-gray-300 shadow-sm"
-      >
+      <!-- Health Tab -->
+      <div id="health-tab-form" class="form-tab-content hidden space-y-6">
+        <!-- Health Status -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Health Information</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Health Status *</label>
+              <select name="healthStatus" required
+                      class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                <% ["Healthy","Sick","Under Treatment","Recovered","Quarantined","Chronic Condition"].forEach(h => { %>
+                  <option value="<%= h %>" <%= animal.healthStatus?.currentStatus === h ? 'selected' : '' %>>
+                    <%= h %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Body Condition Score (1-5)</label>
+              <input type="number" name="bodyConditionScore" min="1" max="5" step="0.5"
+                     value="<%= animal.healthStatus?.bodyConditionScore || '3' %>"
+                     class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+            </div>
+          </div>
 
-      <div class="flex space-x-4">
-        <input
-          type="number"
-          name="lactationStatus[dailyYield]"
-          value="<%= animal.lactationStatus?.dailyYield || '' %>"
-          placeholder="Daily Yield"
-          class="w-full rounded-md border-gray-300 shadow-sm"
-        >
-        <input
-          type="text"
-          name="lactationStatus[yieldUnit]"
-          value="<%= animal.lactationStatus?.yieldUnit || '' %>"
-          placeholder="Unit"
-          class="w-full rounded-md border-gray-300 shadow-sm"
-        >
+          <!-- Weight -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Weight</label>
+              <input type="number" step="0.1" name="weight[value]" min="0"
+                     value="<%= animal.healthStatus?.weight?.value || '' %>"
+                     class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+                     placeholder="Weight value">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Weight Unit</label>
+              <select name="weight[unit]"
+                      class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                <option value="kg" <%= animal.healthStatus?.weight?.unit === 'kg' ? 'selected' : '' %>>Kilograms (kg)</option>
+                <option value="pounds" <%= animal.healthStatus?.weight?.unit === 'pounds' ? 'selected' : '' %>>Pounds (lbs)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Checkup Dates -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Last Checkup Date</label>
+              <input type="date" name="lastCheckupDate"
+                     value="<%= animal.healthStatus?.lastCheckupDate ? animal.healthStatus.lastCheckupDate.toISOString().split('T')[0] : '' %>"
+                     class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Next Checkup Date</label>
+              <input type="date" name="nextCheckupDate"
+                     value="<%= animal.healthStatus?.nextCheckupDate ? animal.healthStatus.nextCheckupDate.toISOString().split('T')[0] : '' %>"
+                     class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+            </div>
+          </div>
+
+          <!-- Health Notes -->
+          <div>
+            <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Health Notes</label>
+            <textarea name="healthNotes" rows="3"
+                      class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"><%= animal.healthStatus?.healthNotes || '' %></textarea>
+          </div>
+        </div>
+
+        <!-- Vaccination Summary -->
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Vaccination Summary</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Last Vaccination Date</label>
+              <input type="date" name="vaccinationSummary[lastVaccinationDate]"
+                     value="<%= animal.vaccinationSummary?.lastVaccinationDate ? animal.vaccinationSummary.lastVaccinationDate.toISOString().split('T')[0] : '' %>"
+                     class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Next Vaccination Date</label>
+              <input type="date" name="vaccinationSummary[nextVaccinationDate]"
+                     value="<%= animal.vaccinationSummary?.nextVaccinationDate ? animal.vaccinationSummary.nextVaccinationDate.toISOString().split('T')[0] : '' %>"
+                     class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Last Vaccine Type</label>
+              <input type="text" name="vaccinationSummary[lastVaccineType]"
+                     value="<%= animal.vaccinationSummary?.lastVaccineType || '' %>"
+                     class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+            </div>
+            <div class="flex items-center space-x-3">
+              <input type="checkbox" name="vaccinationSummary[isUpToDate]" id="isUpToDate"
+                     <%= animal.vaccinationSummary?.isUpToDate ? 'checked' : '' %>
+                     class="w-5 h-5 rounded border-gray-300 text-yellow-600 focus:ring-yellow-500">
+              <label for="isUpToDate" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Vaccination Up to Date
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Health Status -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Health Status</label>
-      <select name="healthStatus" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-        <% ["Healthy","Sick","Under Treatment","Recovered"].forEach(h => { %>
-          <option value="<%= h %>" <%= animal.healthStatus === h ? 'selected' : '' %>>
-            <%= h %>
-          </option>
-        <% }) %>
-      </select>
-    </div>
+      <!-- Photos Tab -->
+      <div id="photos-tab-form" class="form-tab-content hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <% ["front","left","right","back"].forEach(side => { %>
+            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 capitalize">
+                <%= side %> View
+              </label>
+              
+              <% if (animal.photos?.[side]?.url) { %>
+                <div class="mb-4">
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Current Photo:</p>
+                  <img src="<%= animal.photos[side].url %>" 
+                       alt="<%= side %> view"
+                       class="w-full h-48 object-cover rounded-lg border border-gray-300 dark:border-gray-600">
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Uploaded: <%= animal.photos[side].uploadedAt ? new Date(animal.photos[side].uploadedAt).toLocaleDateString() : 'Unknown' %>
+                  </p>
+                </div>
+              <% } else { %>
+                <div class="mb-4 text-center p-6 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                  <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">No photo uploaded</p>
+                </div>
+              <% } %>
 
-    <!-- Is Active -->
-    <div class="flex items-center space-x-2">
-      <input
-        type="checkbox"
-        name="isActive"
-        <%= animal.isActive ? 'checked' : '' %>
-      >
-      <label class="text-sm">Is Active</label>
-    </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                  <%= animal.photos?.[side]?.url ? 'Replace Photo' : 'Upload Photo' %>
+                </label>
+                <input type="file" name="<%= side %>" accept="image/*"
+                       class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
+              </div>
 
-    <!-- Submit -->
-    <button
-      type="submit"
-      class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition"
-    >
-      Update Animal
-    </button>
+              <% if (animal.photos?.[side]?.url) { %>
+                <div class="mt-3 flex items-center space-x-2">
+                  <input type="checkbox" name="deletePhotos[<%= side %>]" id="delete<%= side %>"
+                         class="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500">
+                  <label for="delete<%= side %>" class="text-sm text-red-600 dark:text-red-400">
+                    Delete this photo
+                  </label>
+                </div>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      </div>
 
-  </form>
+      <!-- Management Tab -->
+      <div id="management-tab-form" class="form-tab-content hidden space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Feeding Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Feeding Type</label>
+            <select name="feedingType"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+              <option value="">Select Feeding Type</option>
+              <% ["grazing","stall_feeding","mixed","concentrate","organic"].forEach(type => { %>
+                <option value="<%= type %>" <%= animal.feedingType === type ? 'selected' : '' %>>
+                  <%= type.replace('_', ' ').toUpperCase() %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <!-- Housing Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Housing Type</label>
+            <select name="housingType"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+              <option value="">Select Housing Type</option>
+              <% ["free_stall","tie_stall","pasture","shelter","open_yard","other"].forEach(type => { %>
+                <option value="<%= type %>" <%= animal.housingType === type ? 'selected' : '' %>>
+                  <%= type.replace('_', ' ').toUpperCase() %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+          <select name="status"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            <% ["active","sold","deceased","transferred","missing"].forEach(s => { %>
+              <option value="<%= s %>" <%= animal.status === s ? 'selected' : '' %>>
+                <%= s.toUpperCase() %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <% if (animal.status !== 'active') { %>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status Change Reason</label>
+            <textarea name="statusChangeReason" rows="2"
+                      class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"><%= animal.statusChangeReason || '' %></textarea>
+          </div>
+        <% } %>
+
+        <!-- Additional Notes -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Additional Notes</label>
+          <textarea name="additionalNotes" rows="4"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"><%= animal.additionalNotes || '' %></textarea>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <button type="submit"
+                class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3.5 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
+          <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Update Animal
+        </button>
+        <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>"
+           class="flex-1 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold py-3.5 px-6 rounded-xl text-center transition-all">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
 </div>
+
+<!-- JavaScript -->
+<script>
+  // Tab functionality
+  function showFormTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.form-tab-content').forEach(content => {
+      content.classList.remove('active');
+      content.classList.add('hidden');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.form-tab').forEach(button => {
+      button.classList.remove('active', 'text-blue-600', 'dark:text-blue-400', 'border-blue-500');
+      button.classList.add('text-gray-600', 'dark:text-gray-400', 'border-transparent');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-tab-form').classList.remove('hidden');
+    document.getElementById(tabName + '-tab-form').classList.add('active');
+    
+    // Activate selected tab button
+    const activeButton = Array.from(document.querySelectorAll('.form-tab')).find(btn => 
+      btn.getAttribute('onclick')?.includes(tabName)
+    );
+    if (activeButton) {
+      activeButton.classList.remove('text-gray-600', 'dark:text-gray-400', 'border-transparent');
+      activeButton.classList.add('active', 'text-blue-600', 'dark:text-blue-400', 'border-blue-500');
+    }
+  }
+
+  // Pregnancy checkbox toggle
+  const pregnancyCheckbox = document.getElementById('isPregnant');
+  if (pregnancyCheckbox) {
+    pregnancyCheckbox.addEventListener('change', function() {
+      const details = document.getElementById('pregnancyDetails');
+      if (this.checked) {
+        details.classList.remove('hidden');
+        details.classList.add('block');
+      } else {
+        details.classList.remove('block');
+        details.classList.add('hidden');
+      }
+    });
+  }
+
+  // Lactation checkbox toggle
+  const lactationCheckbox = document.getElementById('isLactating');
+  if (lactationCheckbox) {
+    lactationCheckbox.addEventListener('change', function() {
+      const details = document.getElementById('lactationDetails');
+      if (this.checked) {
+        details.classList.remove('hidden');
+        details.classList.add('block');
+      } else {
+        details.classList.remove('block');
+        details.classList.add('hidden');
+      }
+    });
+  }
+
+  // Source of animal change
+  const sourceSelect = document.querySelector('select[name="sourceOfAnimal"]');
+  if (sourceSelect) {
+    sourceSelect.addEventListener('change', function() {
+      const purchaseDetails = document.querySelector('.purchase-details');
+      if (purchaseDetails) {
+        if (this.value === 'purchased') {
+          purchaseDetails.classList.remove('hidden');
+        } else {
+          purchaseDetails.classList.add('hidden');
+        }
+      }
+    });
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide pregnancy details based on current state
+    if (pregnancyCheckbox && pregnancyCheckbox.checked) {
+      document.getElementById('pregnancyDetails').classList.remove('hidden');
+      document.getElementById('pregnancyDetails').classList.add('block');
+    }
+
+    // Show/hide lactation details based on current state
+    if (lactationCheckbox && lactationCheckbox.checked) {
+      document.getElementById('lactationDetails').classList.remove('hidden');
+      document.getElementById('lactationDetails').classList.add('block');
+    }
+  });
+</script>
+
+<style>
+  .form-tab {
+    transition: all 0.3s ease;
+    border-bottom-width: 2px;
+  }
+  
+  .form-tab:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+  }
+  
+  .form-tab.active {
+    border-color: #3b82f6;
+  }
+  
+  .form-tab-content {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

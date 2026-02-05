@@ -1,0 +1,79 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="container mx-auto px-4 py-6 max-w-2xl">
+  <!-- Header -->
+  <div class="mb-6">
+    <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>" class="text-blue-600 hover:underline">← Back to Animal</a>
+    <h1 class="text-2xl font-bold text-gray-900 mt-2">Add Breeding Record</h1>
+    <p class="text-gray-600">For <%= animal.name || animal.tagNumber %> (<%= animal.uniqueAnimalId %>)</p>
+  </div>
+
+  <!-- Form -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <form action="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>/breeding" method="POST">
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Mating Date *</label>
+        <input type="date" name="matingDate" required class="w-full border rounded px-3 py-2" value="<%= new Date().toISOString().split('T')[0] %>">
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Bull/Male Animal</label>
+        <select name="bullId" class="w-full border rounded px-3 py-2">
+          <option value="">Select Bull</option>
+          <% bulls.forEach(bull => { %>
+            <option value="<%= bull._id %>"><%= bull.name || bull.tagNumber %> (<%= bull.uniqueAnimalId %>) - <%= bull.breed || 'Unknown breed' %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Bull Breed</label>
+        <input type="text" name="bullBreed" class="w-full border rounded px-3 py-2" placeholder="Breed of the bull">
+      </div>
+
+      <div class="mb-6">
+        <div class="flex items-center mb-4">
+          <input type="checkbox" name="pregnancyConfirmed" id="pregnancyConfirmed" class="h-4 w-4 text-pink-600 rounded">
+          <label for="pregnancyConfirmed" class="ml-2 text-sm text-gray-700">Pregnancy Confirmed</label>
+        </div>
+
+        <div id="pregnancyDetails" class="hidden space-y-4 bg-pink-50 p-4 rounded-lg">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Confirmation Date</label>
+            <input type="date" name="confirmedDate" class="w-full border rounded px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Expected Calving Date</label>
+            <input type="date" name="expectedCalvingDate" class="w-full border rounded px-3 py-2">
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+        <textarea name="notes" rows="3" class="w-full border rounded px-3 py-2" placeholder="Any observations or notes about the breeding..."></textarea>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>" class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50">
+          Cancel
+        </a>
+        <button type="submit" class="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700">
+          Save Breeding Record
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.getElementById('pregnancyConfirmed').addEventListener('change', function() {
+    const details = document.getElementById('pregnancyDetails');
+    if (this.checked) {
+      details.classList.remove('hidden');
+    } else {
+      details.classList.add('hidden');
+    }
+  });
+</script>

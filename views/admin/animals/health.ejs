@@ -1,0 +1,95 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="container mx-auto px-4 py-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>" class="text-blue-600 hover:underline">← Back to Animal</a>
+    <div class="flex justify-between items-center mt-2">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Health Records</h1>
+        <p class="text-gray-600"><%= animal.name || animal.tagNumber %> (<%= animal.uniqueAnimalId %>)</p>
+      </div>
+      <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>/health/add" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+        + Add Health Record
+      </a>
+    </div>
+  </div>
+
+  <!-- Current Health Status -->
+  <div class="bg-white rounded-lg shadow p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Current Health Status</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <p class="text-sm text-gray-600">Status</p>
+        <p class="text-xl font-semibold <%= animal.healthStatus?.currentStatus === 'Healthy' ? 'text-green-600' : 'text-red-600' %>">
+          <%= animal.healthStatus?.currentStatus || 'N/A' %>
+        </p>
+      </div>
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <p class="text-sm text-gray-600">Body Condition Score</p>
+        <p class="text-xl font-semibold"><%= animal.healthStatus?.bodyConditionScore || 'N/A' %>/5</p>
+      </div>
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <p class="text-sm text-gray-600">Last Checkup</p>
+        <p class="text-xl font-semibold">
+          <% if (animal.healthStatus?.lastCheckupDate) { %>
+            <%= new Date(animal.healthStatus.lastCheckupDate).toLocaleDateString() %>
+          <% } else { %>
+            N/A
+          <% } %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Medical History -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-semibold text-gray-900">Medical History</h2>
+      <p class="text-sm text-gray-600"><%= animal.medicalHistory?.length || 0 %> records found</p>
+    </div>
+
+    <% if (animal.medicalHistory && animal.medicalHistory.length > 0) { %>
+      <div class="divide-y divide-gray-200">
+        <% animal.medicalHistory.forEach(record => { %>
+          <div class="p-6 hover:bg-gray-50">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <h3 class="font-medium text-gray-900"><%= record.condition %></h3>
+                <p class="text-sm text-gray-600 mt-1"><%= record.treatment %></p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-1 text-xs rounded-full <%= record.resolved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %>">
+                  <%= record.resolved ? 'Resolved' : 'Ongoing' %>
+                </span>
+              </div>
+            </div>
+            <div class="flex justify-between items-center text-sm text-gray-500">
+              <div>
+                <% if (record.treatedBy?.name) { %>
+                  <span>By <%= record.treatedBy.name %></span>
+                <% } %>
+              </div>
+              <div>
+                <%= new Date(record.date).toLocaleDateString() %>
+                <% if (record.notes) { %>
+                  • <%= record.notes %>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="p-12 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p class="mt-4 text-gray-500">No medical records found for this animal.</p>
+        <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>/health/add" class="mt-2 inline-block text-blue-600 hover:underline">
+          Add first health record
+        </a>
+      </div>
+    <% } %>
+  </div>
+</div>

@@ -19,11 +19,17 @@
                 Animal Details
               </h1>
               <span class="px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-                ID: <%= animal.uniqueAnimalId %>
+                <%= animal.uniqueAnimalId %>
+              </span>
+              <span class="px-2 py-1 text-xs rounded-full <%= animal.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' %>">
+                <%= animal.isActive ? 'Active' : 'Inactive' %>
               </span>
             </div>
             <p class="text-gray-600 dark:text-gray-400 mt-1">
               Complete profile for <span class="font-semibold text-gray-900 dark:text-white"><%= animal.name || "Unnamed" %></span>
+              <% if (animal.tagNumber) { %>
+                • Tag: <%= animal.tagNumber %>
+              <% } %>
             </p>
           </div>
         </div>
@@ -31,14 +37,15 @@
 
       <!-- Action Buttons -->
       <div class="flex flex-wrap gap-2">
+        <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>/edit" 
+           class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Edit Animal
+        </a>
+        
         <% if (animal.isActive) { %>
-          <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>/edit" 
-             class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-            Edit Animal
-          </a>
           <form action="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/deactivate" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to deactivate this animal?')">
             <button type="submit" 
                     class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-medium rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all transform hover:scale-105 shadow-lg shadow-yellow-500/25">
@@ -59,49 +66,75 @@
             </button>
           </form>
         <% } %>
-        
-        <div class="relative group">
-          <button type="button" 
-                  class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/25">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+      </div>
+    </div>
+
+    <!-- Status Indicators Row -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <!-- Health Status -->
+      <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-xl shadow border border-gray-100/50 dark:border-gray-700/50 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Health Status</p>
+            <span class="px-2 py-1 text-xs font-medium rounded-full <%= helpers.getHealthColor(animal.healthStatus?.currentStatus || 'Healthy') %>">
+              <%= animal.healthStatus?.currentStatus || 'Healthy' %>
+            </span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            More Actions
-          </button>
-          <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-10 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200">
-            <div class="py-1">
-              <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/vaccinations" 
-                 class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                View Vaccinations
-              </a>
-              <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/photos" 
-                 class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                Manage Photos
-              </a>
-              <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/health" 
-                 class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Health Records
-              </a>
-              <form action="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/delete" method="POST" 
-                    onsubmit="return confirm('⚠️ WARNING: This will permanently delete this animal and all associated data. This action cannot be undone. Are you sure?')">
-                <button type="submit" 
-                        class="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                  </svg>
-                  Delete Permanently
-                </button>
-              </form>
-            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pregnancy Status -->
+      <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-xl shadow border border-gray-100/50 dark:border-gray-700/50 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Pregnancy Status</p>
+            <span class="px-2 py-1 text-xs font-medium rounded-full <%= animal.pregnancyStatus?.isPregnant ? 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' %>">
+              <%= animal.pregnancyStatus?.isPregnant ? 'Pregnant' : 'Not Pregnant' %>
+            </span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
+            <svg class="w-5 h-5 text-pink-600 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lactation Status -->
+      <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-xl shadow border border-gray-100/50 dark:border-gray-700/50 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Lactation Status</p>
+            <span class="px-2 py-1 text-xs font-medium rounded-full <%= animal.lactationStatus?.isLactating ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' %>">
+              <%= animal.lactationStatus?.isLactating ? 'Lactating' : 'Not Lactating' %>
+            </span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 10-9.78 2.096A4 4 0 003 15z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vaccination Status -->
+      <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-xl shadow border border-gray-100/50 dark:border-gray-700/50 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Vaccination Status</p>
+            <span class="px-2 py-1 text-xs font-medium rounded-full <%= animal.vaccinationSummary?.isUpToDate ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' %>">
+              <%= animal.vaccinationSummary?.isUpToDate ? 'Up to Date' : 'Pending' %>
+            </span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+            <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -120,14 +153,20 @@
               </svg>
               Photo Documentation
             </h3>
-            <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/photos/upload" 
-               class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              Add Photos
-            </a>
+            <% const photoCount = animal.photos ? Object.values(animal.photos).filter(photo => photo?.url).length : 0; %>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-600 dark:text-gray-400">
+                <%= photoCount %>/4 photos
+              </span>
+              <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/photos/upload" 
+                 class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Manage Photos
+              </a>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -154,6 +193,12 @@
                       </svg>
                     </div>
                   </a>
+                  <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                    <p class="text-white text-sm font-medium capitalize"><%= side.name %> View</p>
+                    <% if (animal.photos[side.name]?.uploadedAt) { %>
+                      <p class="text-white/80 text-xs">Uploaded <%= helpers.formatDate(animal.photos[side.name].uploadedAt) %></p>
+                    <% } %>
+                  </div>
                 <% } else { %>
                   <div class="w-full h-48 flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
                     <span class="text-3xl mb-2"><%= side.icon %></span>
@@ -161,198 +206,344 @@
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">No photo</p>
                   </div>
                 <% } %>
-                
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                  <p class="text-white text-sm font-medium capitalize"><%= side.name %> View</p>
-                  <% if (animal.photos[side.name]?.uploadedAt) { %>
-                    <p class="text-white/80 text-xs">Uploaded <%= new Date(animal.photos[side.name].uploadedAt).toLocaleDateString() %></p>
-                  <% } %>
-                </div>
               </div>
             <% }) %>
           </div>
+        </div>
 
-          <% if (animal.photos) { %>
-            <div class="mt-4 text-center">
-              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        <!-- Animal Information Tabs -->
+        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 overflow-hidden">
+          <!-- Tabs Header -->
+          <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="flex overflow-x-auto">
+              <button onclick="showTab('basic')" id="basic-tab" class="tab-button active px-6 py-4 font-medium text-sm border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
-                <% const photoCount = Object.values(animal.photos).filter(photo => photo?.url).length; %>
-                <%= photoCount %> out of 4 photos uploaded
-              </span>
-              <% if (photoCount === 4) { %>
-                <span class="ml-2 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                  </svg>
-                  AI Ready
-                </span>
+                Basic Info
+              </button>
+              <button onclick="showTab('health')" id="health-tab" class="tab-button px-6 py-4 font-medium text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 whitespace-nowrap">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Health & Medical
+              </button>
+              <button onclick="showTab('reproductive')" id="reproductive-tab" class="tab-button px-6 py-4 font-medium text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 whitespace-nowrap">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Reproductive
+              </button>
+              <button onclick="showTab('management')" id="management-tab" class="tab-button px-6 py-4 font-medium text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 whitespace-nowrap">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                Management
+              </button>
+            </nav>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="p-6">
+            <!-- Basic Info Tab -->
+            <div id="basic-tab-content" class="tab-content active">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
+                    <p class="text-gray-900 dark:text-white font-semibold"><%= animal.name || "Unnamed" %></p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Animal Type</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <%= animal.animalType %>
+                      <% if (animal.breed) { %>• <%= animal.breed %><% } %>
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Gender</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <%= animal.gender || "Unknown" %>
+                      <% if (animal.gender === 'Female') { %>
+                        <span class="text-pink-500 ml-1">♀</span>
+                      <% } else if (animal.gender === 'Male') { %>
+                        <span class="text-blue-500 ml-1">♂</span>
+                      <% } %>
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Age</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <% if (animal.age?.value) { %>
+                        <%= animal.age.value %> <%= animal.age.unit %>
+                      <% } else if (ageInMonths) { %>
+                        <%= ageInMonths %> months (approx.)
+                      <% } else { %>
+                        N/A
+                      <% } %>
+                    </p>
+                  </div>
+                </div>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Tag Number</label>
+                    <p class="text-gray-900 dark:text-white font-semibold"><%= animal.tagNumber || "N/A" %></p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Date of Birth</label>
+                    <p class="text-gray-900 dark:text-white font-semibold"><%= helpers.formatDate(animal.dateOfBirth) %></p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Source</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <%= animal.sourceOfAnimal ? animal.sourceOfAnimal.replace('_', ' ').toUpperCase() : 'N/A' %>
+                      <% if (animal.purchaseDetails) { %>
+                        <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">
+                          (<%= animal.purchaseDetails.currency %> <%= animal.purchaseDetails.price || '0' %>)
+                        </span>
+                      <% } %>
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Registration Date</label>
+                    <p class="text-gray-900 dark:text-white font-semibold"><%= helpers.formatDateTime(animal.createdAt) %></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Health & Medical Tab -->
+            <div id="health-tab-content" class="tab-content hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Current Health Status</label>
+                    <span class="px-3 py-1 rounded-full text-sm font-medium <%= helpers.getHealthColor(animal.healthStatus?.currentStatus || 'Healthy') %>">
+                      <%= animal.healthStatus?.currentStatus || 'Healthy' %>
+                    </span>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Body Condition Score</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <%= animal.healthStatus?.bodyConditionScore || 'N/A' %>/5
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Weight</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <% if (animal.healthStatus?.weight?.value) { %>
+                        <%= animal.healthStatus.weight.value %> <%= animal.healthStatus.weight.unit %>
+                      <% } else { %>
+                        N/A
+                      <% } %>
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Last Checkup</label>
+                    <p class="text-gray-900 dark:text-white font-semibold"><%= helpers.formatDate(animal.healthStatus?.lastCheckupDate) %></p>
+                  </div>
+                </div>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Health Notes</label>
+                    <p class="text-gray-900 dark:text-white"><%= animal.healthStatus?.healthNotes || 'No notes' %></p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Vaccination Status</label>
+                    <div class="space-y-2">
+                      <p class="text-gray-900 dark:text-white">
+                        Last: <%= helpers.formatDate(animal.vaccinationSummary?.lastVaccinationDate) %>
+                      </p>
+                      <p class="text-gray-900 dark:text-white">
+                        Next: <%= helpers.formatDate(animal.vaccinationSummary?.nextVaccinationDate) %>
+                      </p>
+                      <p class="text-gray-900 dark:text-white">
+                        Total: <%= animal.vaccinationSummary?.totalVaccinations || 0 %> vaccines
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Medical History -->
+              <% if (animal.medicalHistory && animal.medicalHistory.length > 0) { %>
+                <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Medical History</h4>
+                  <div class="space-y-3">
+                    <% animal.medicalHistory.slice(0, 3).forEach(record => { %>
+                      <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-start">
+                          <div>
+                            <p class="font-medium text-gray-900 dark:text-white"><%= record.condition %></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1"><%= record.treatment %></p>
+                          </div>
+                          <span class="px-2 py-1 text-xs rounded-full <%= record.resolved ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' %>">
+                            <%= record.resolved ? 'Resolved' : 'Ongoing' %>
+                          </span>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                          <%= helpers.formatDate(record.date) %> • 
+                          <% if (record.treatedBy?.name) { %>By <%= record.treatedBy.name %><% } %>
+                        </p>
+                      </div>
+                    <% }); %>
+                    <% if (animal.medicalHistory.length > 3) { %>
+                      <a href="/animal/<%= animal._id %>/health" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">
+                        View all <%= animal.medicalHistory.length %> medical records →
+                      </a>
+                    <% } %>
+                  </div>
+                </div>
               <% } %>
             </div>
-          <% } %>
+
+            <!-- Reproductive Tab -->
+            <div id="reproductive-tab-content" class="tab-content hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Pregnancy Status -->
+                <div class="space-y-4">
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Pregnancy Status</h4>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Status</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <%= animal.pregnancyStatus?.isPregnant ? 'Pregnant' : 'Not Pregnant' %>
+                      <% if (animal.pregnancyStatus?.isPregnant && pregnancyDuration) { %>
+                        <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">
+                          (<%= pregnancyDuration %> days)
+                        </span>
+                      <% } %>
+                    </p>
+                  </div>
+                  <% if (animal.pregnancyStatus?.isPregnant) { %>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Expected Delivery</label>
+                      <p class="text-gray-900 dark:text-white font-semibold"><%= helpers.formatDate(animal.pregnancyStatus?.expectedDeliveryDate) %></p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Stage</label>
+                      <p class="text-gray-900 dark:text-white font-semibold"><%= animal.pregnancyStatus?.stage ? animal.pregnancyStatus.stage.replace('_', ' ').toUpperCase() : 'N/A' %></p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Number of Fetuses</label>
+                      <p class="text-gray-900 dark:text-white font-semibold"><%= animal.pregnancyStatus?.numberOfFetuses || 'N/A' %></p>
+                    </div>
+                  <% } %>
+                </div>
+
+                <!-- Lactation Status -->
+                <div class="space-y-4">
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Lactation Status</h4>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Status</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <%= animal.lactationStatus?.isLactating ? 'Lactating' : 'Not Lactating' %>
+                      <% if (daysSinceCalving) { %>
+                        <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">
+                          (<%= daysSinceCalving %> days since calving)
+                        </span>
+                      <% } %>
+                    </p>
+                  </div>
+                  <% if (animal.lactationStatus?.isLactating) { %>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Daily Yield</label>
+                      <p class="text-gray-900 dark:text-white font-semibold">
+                        <% if (animal.lactationStatus?.dailyYield?.value) { %>
+                          <%= animal.lactationStatus.dailyYield.value %> <%= animal.lactationStatus.dailyYield.unit || 'units' %>
+                        <% } else { %>
+                          N/A
+                        <% } %>
+                      </p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Milk Quality</label>
+                      <p class="text-gray-900 dark:text-white font-semibold"><%= animal.lactationStatus?.milkQuality ? animal.lactationStatus.milkQuality.replace('_', ' ').toUpperCase() : 'N/A' %></p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Milking Frequency</label>
+                      <p class="text-gray-900 dark:text-white font-semibold"><%= animal.lactationStatus?.milkingFrequency ? animal.lactationStatus.milkingFrequency.replace('_', ' ').toUpperCase() : 'N/A' %></p>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Breeding History -->
+              <% if (animal.breedingHistory && animal.breedingHistory.length > 0) { %>
+                <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Breeding History</h4>
+                  <div class="space-y-3">
+                    <% animal.breedingHistory.slice(0, 3).forEach(breeding => { %>
+                      <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-start">
+                          <div>
+                            <p class="font-medium text-gray-900 dark:text-white">
+                              <%= helpers.formatDate(breeding.matingDate) %> • Bull: <%= breeding.bullId || 'Unknown' %>
+                            </p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              <%= breeding.pregnancyConfirmed ? 'Pregnancy Confirmed' : 'Not Confirmed' %>
+                              <% if (breeding.calvingDate) { %>• Calved on <%= helpers.formatDate(breeding.calvingDate) %><% } %>
+                            </p>
+                          </div>
+                          <% if (breeding.offspringCount) { %>
+                            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                              <%= breeding.offspringCount %> offspring
+                            </span>
+                          <% } %>
+                        </div>
+                        <% if (breeding.notes) { %>
+                          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2"><%= breeding.notes %></p>
+                        <% } %>
+                      </div>
+                    <% }); %>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Management Tab -->
+            <div id="management-tab-content" class="tab-content hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Feeding Type</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <%= animal.feedingType ? animal.feedingType.replace('_', ' ').toUpperCase() : 'N/A' %>
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Housing Type</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <%= animal.housingType ? animal.housingType.replace('_', ' ').toUpperCase() : 'N/A' %>
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Reproductive Status</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <%= animal.reproductiveStatus ? animal.reproductiveStatus.replace('_', ' ').toUpperCase() : 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Additional Notes</label>
+                    <p class="text-gray-900 dark:text-white"><%= animal.additionalNotes || 'No additional notes' %></p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Current Status</label>
+                    <p class="text-gray-900 dark:text-white font-semibold">
+                      <%= animal.status ? animal.status.toUpperCase() : 'ACTIVE' %>
+                      <% if (animal.statusChangeDate) { %>
+                        <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">
+                          since <%= helpers.formatDate(animal.statusChangeDate) %>
+                        </span>
+                      <% } %>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <!-- Animal Information Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Basic Info Card -->
-          <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-              </svg>
-              Basic Information
-            </h3>
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Name</span>
-                <span class="font-semibold text-gray-900 dark:text-white"><%= animal.name || "Unnamed" %></span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Type</span>
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  <%= animal.animalType %>
-                  <% if (animal.breed) { %>
-                    <span class="text-gray-500 dark:text-gray-400 ml-1">(<%= animal.breed %>)</span>
-                  <% } %>
-                </span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Gender</span>
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  <%= animal.gender || "Unknown" %>
-                  <% if (animal.gender === 'Female') { %>
-                    <span class="text-pink-500 ml-1">♀</span>
-                  <% } else if (animal.gender === 'Male') { %>
-                    <span class="text-blue-500 ml-1">♂</span>
-                  <% } %>
-                </span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Age</span>
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  <% if (animal.age?.value) { %>
-                    <%= animal.age.value %> <%= animal.age.unit %>
-                  <% } else { %>
-                    N/A
-                  <% } %>
-                </span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Tag Number</span>
-                <span class="font-semibold text-gray-900 dark:text-white"><%= animal.tagNumber || "N/A" %></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Health & Status Card -->
-          <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              Health & Status
-            </h3>
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Health Status</span>
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  <% const healthColors = {
-                    'Healthy': 'text-green-600 bg-green-100 dark:bg-green-900/30',
-                    'Sick': 'text-red-600 bg-red-100 dark:bg-red-900/30',
-                    'Under Treatment': 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30',
-                    'Recovered': 'text-blue-600 bg-blue-100 dark:bg-blue-900/30'
-                  }; %>
-                  <span class="px-3 py-1 rounded-full text-xs font-medium <%= healthColors[animal.healthStatus] || 'text-gray-600 bg-gray-100' %>">
-                    <%= animal.healthStatus %>
-                  </span>
-                </span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Account Status</span>
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  <% if (animal.isActive) { %>
-                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
-                      <span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1 animate-pulse"></span>
-                      Active
-                    </span>
-                  <% } else { %>
-                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
-                      <span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span>
-                      Inactive
-                    </span>
-                  <% } %>
-                </span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Registration Date</span>
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  <%= animal.createdAt ? new Date(animal.createdAt).toLocaleDateString() : "N/A" %>
-                </span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Last Updated</span>
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  <%= animal.updatedAt ? new Date(animal.updatedAt).toLocaleDateString() : "N/A" %>
-                </span>
-              </div>
-              <div class="pt-3 border-t border-gray-100 dark:border-gray-700">
-                <a href="/animal/<%= animal._id %>/health" 
-                   class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  View Health History
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Lactation Information (if applicable) -->
-        <% if (animal.lactationStatus?.isLactating || animal.lactationStatus?.lastCalvingDate) { %>
-          <div class="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 rounded-2xl shadow-xl border border-pink-100 dark:border-pink-900/30 p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <svg class="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4 4 0 003 15z"/>
-                </svg>
-                Lactation Information
-              </h3>
-              <span class="px-3 py-1 rounded-full text-xs font-medium bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300">
-                Dairy Animal
-              </span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="text-center">
-                <div class="text-2xl font-bold text-pink-600 dark:text-pink-400 mb-1">
-                  <%= animal.lactationStatus.isLactating ? "Yes" : "No" %>
-                </div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Currently Lactating</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                  <% if (animal.lactationStatus.lastCalvingDate) { %>
-                    <%= new Date(animal.lactationStatus.lastCalvingDate).toLocaleDateString() %>
-                  <% } else { %>
-                    N/A
-                  <% } %>
-                </div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Last Calving</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                  <% if (animal.lactationStatus.dailyYield) { %>
-                    <%= animal.lactationStatus.dailyYield %> <%= animal.lactationStatus.yieldUnit || "L" %>
-                  <% } else { %>
-                    N/A
-                  <% } %>
-                </div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Daily Yield</div>
-              </div>
-            </div>
-          </div>
-        <% } %>
       </div>
 
       <!-- Right Column: Farmer Info & Actions -->
@@ -363,18 +554,20 @@
             <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
             </svg>
-            Farmer Information
+            Owner Information
           </h3>
           
           <div class="flex items-start gap-4 mb-6">
             <div class="flex-shrink-0">
               <div class="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center text-white text-xl font-bold">
-                <%= animal.farmer?.name?.charAt(0).toUpperCase() || "F" %>
+                <%= animal.currentOwner?.name?.charAt(0).toUpperCase() || animal.farmer?.name?.charAt(0).toUpperCase() || "F" %>
               </div>
             </div>
             <div class="flex-1">
-              <h4 class="font-bold text-gray-900 dark:text-white text-lg"><%= animal.farmer?.name || "N/A" %></h4>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Farmer ID: <%= animal.farmer?.uniqueFarmerId || "N/A" %></p>
+              <h4 class="font-bold text-gray-900 dark:text-white text-lg"><%= animal.currentOwner?.name || animal.farmer?.name || "N/A" %></h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Farmer ID: <%= animal.currentOwner?.uniqueFarmerId || animal.farmer?.uniqueFarmerId || "N/A" %>
+              </p>
               <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 <svg class="w-4 h-4 inline-block mr-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
@@ -385,10 +578,10 @@
           </div>
 
           <div class="space-y-3">
-            <div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Address</p>
-              <p class="text-sm text-gray-800 dark:text-gray-300">
-                <% if (animal.farmer?.address) { %>
+            <% if (animal.farmer?.address) { %>
+              <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Address</p>
+                <p class="text-sm text-gray-800 dark:text-gray-300">
                   <%= animal.farmer.address.village || '' %>, 
                   <%= animal.farmer.address.taluka || '' %><br>
                   <%= animal.farmer.address.district || '' %>, 
@@ -396,23 +589,14 @@
                   <% if (animal.farmer.address.pincode) { %>
                     - <%= animal.farmer.address.pincode %>
                   <% } %>
-                <% } else { %>
-                  N/A
-                <% } %>
-              </p>
-            </div>
+                </p>
+              </div>
+            <% } %>
 
             <div>
               <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Registered On</p>
               <p class="text-sm text-gray-800 dark:text-gray-300">
-                <%= animal.farmer?.createdAt ? new Date(animal.farmer.createdAt).toLocaleDateString() : "N/A" %>
-              </p>
-            </div>
-
-            <div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total Animals</p>
-              <p class="text-sm text-gray-800 dark:text-gray-300">
-                <%= animal.farmer?.totalAnimals || "0" %> animals
+                <%= animal.farmer?.createdAt ? helpers.formatDate(animal.farmer.createdAt) : "N/A" %>
               </p>
             </div>
           </div>
@@ -428,40 +612,11 @@
           </div>
         </div>
 
-        <!-- Registered By Card -->
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl shadow-xl border border-blue-100 dark:border-blue-900/30 p-6">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-10a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/>
-            </svg>
-            Registered By
-          </h3>
-          
-          <div class="flex items-center gap-3">
-            <div class="flex-shrink-0">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold">
-                <%= animal.registeredBy?.name?.charAt(0).toUpperCase() || "U" %>
-              </div>
-            </div>
-            <div>
-              <h4 class="font-bold text-gray-900 dark:text-white"><%= animal.registeredBy?.name || "Unknown" %></h4>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1"><%= animal.registeredBy?.role || "Field Executive" %></p>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                <svg class="w-4 h-4 inline-block mr-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-                </svg>
-                <%= animal.registeredBy?.email || "N/A" %>
-              </p>
-            </div>
-          </div>
-        </div>
-
         <!-- Quick Actions Card -->
         <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6">
           <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
           <div class="space-y-3">
-            <a href="/animal/<%= animal._id %>/vaccinations/add" 
+            <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/vaccinations/add" 
                class="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl hover:bg-green-100 dark:hover:bg-green-800/30 transition-colors group">
               <div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-800/40 flex items-center justify-center">
                 <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -474,7 +629,7 @@
               </div>
             </a>
 
-            <a href="/animal/<%= animal._id %>/health/add" 
+            <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/health/add" 
                class="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl hover:bg-red-100 dark:hover:bg-red-800/30 transition-colors group">
               <div class="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-800/40 flex items-center justify-center">
                 <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -487,7 +642,7 @@
               </div>
             </a>
 
-            <a href="/animal/<%= animal._id %>/transfer" 
+            <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/transfer" 
                class="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-800/30 transition-colors group">
               <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-800/40 flex items-center justify-center">
                 <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -500,50 +655,108 @@
               </div>
             </a>
 
-            <a href="/animal/<%= animal._id %>/report" 
-               class="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-colors group">
-              <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-800/40 flex items-center justify-center">
-                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-              </div>
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white">Generate Report</p>
-                <p class="text-xs text-gray-600 dark:text-gray-400">Export animal details</p>
-              </div>
-            </a>
+            <% if (animal.reproductiveStatus === 'in_heat' || animal.gender === 'Female') { %>
+              <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/breeding/add" 
+                 class="flex items-center gap-3 p-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl hover:bg-pink-100 dark:hover:bg-pink-800/30 transition-colors group">
+                <div class="w-10 h-10 rounded-lg bg-pink-100 dark:bg-pink-800/40 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-pink-600 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">Record Breeding</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">Add mating record</p>
+                </div>
+              </a>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Vaccination Status Card -->
+        <div class="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-2xl shadow-xl border border-yellow-100 dark:border-yellow-900/30 p-6">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Vaccination Status
+          </h3>
+          
+          <div class="space-y-4">
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Last Vaccination</p>
+              <p class="text-gray-900 dark:text-white font-semibold">
+                <%= helpers.formatDate(animal.vaccinationSummary?.lastVaccinationDate) || 'Never' %>
+              </p>
+              <% if (animal.vaccinationSummary?.lastVaccineType) { %>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <%= animal.vaccinationSummary.lastVaccineType %>
+                </p>
+              <% } %>
+            </div>
+            
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Next Due</p>
+              <p class="text-gray-900 dark:text-white font-semibold">
+                <%= helpers.formatDate(animal.vaccinationSummary?.nextVaccinationDate) || 'Not scheduled' %>
+                <% if (animal.vaccinationSummary?.nextVaccinationDate) { %>
+                  <% const nextDate = new Date(animal.vaccinationSummary.nextVaccinationDate);
+                     const today = new Date();
+                     const diffTime = nextDate - today;
+                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); %>
+                  <% if (diffDays <= 7) { %>
+                    <span class="text-sm text-red-600 dark:text-red-400 ml-2">(In <%= diffDays %> days)</span>
+                  <% } else if (diffDays <= 30) { %>
+                    <span class="text-sm text-yellow-600 dark:text-yellow-400 ml-2">(In <%= diffDays %> days)</span>
+                  <% } %>
+                <% } %>
+              </p>
+            </div>
+            
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Vaccinations</p>
+              <p class="text-gray-900 dark:text-white font-semibold">
+                <%= animal.vaccinationSummary?.totalVaccinations || 0 %>
+              </p>
+            </div>
+            
+            <div class="pt-3">
+              <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/vaccinations" 
+                 class="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-medium rounded-xl hover:from-yellow-600 hover:to-amber-600 transition-all transform hover:scale-105 shadow-lg shadow-yellow-500/25">
+                View Vaccination History
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Vaccination History (Bottom Section) -->
+    <!-- Vaccination History -->
     <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6 mb-8">
       <div class="flex items-center justify-between mb-6">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          Vaccination History
+          Recent Vaccinations
         </h3>
-        <a href="/animal/<%= animal._id %>/vaccinations" 
-           class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1">
-          View All Vaccinations
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </a>
+        <div class="flex items-center gap-2">
+          <% if (upcomingVaccinations && upcomingVaccinations.length > 0) { %>
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+              <%= upcomingVaccinations.length %> upcoming
+            </span>
+          <% } %>
+          <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/vaccinations" 
+             class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1">
+            View All
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
       </div>
 
-      <!-- Dummy vaccination data - Replace with real data -->
-      <div class="space-y-3">
-        <% const vaccinations = [
-          { name: 'Foot & Mouth Disease', date: '2024-01-15', due: '2024-07-15', status: 'Completed', vet: 'Dr. Sharma' },
-          { name: 'Rabies Vaccine', date: '2023-12-10', due: '2024-12-10', status: 'Completed', vet: 'Dr. Patel' },
-          { name: 'Hemorrhagic Septicemia', date: '2024-02-20', due: '2024-08-20', status: 'Pending', vet: 'Dr. Gupta' }
-        ]; %>
-        
-        <% if (vaccinations.length > 0) { %>
+      <% if (vaccinations && vaccinations.length > 0) { %>
+        <div class="space-y-3">
           <% vaccinations.forEach(vax => { %>
             <div class="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
               <div class="flex items-center gap-3">
@@ -553,42 +766,67 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="font-medium text-gray-900 dark:text-white"><%= vax.name %></h4>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">By <%= vax.vet %></p>
+                  <h4 class="font-medium text-gray-900 dark:text-white"><%= vax.vaccineName %></h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    <% if (vax.administeredBy?.name) { %>By <%= vax.administeredBy.name %><% } %>
+                    • <%= vax.vaccineType || 'Preventive' %>
+                  </p>
                 </div>
               </div>
               <div class="text-right">
-                <p class="text-sm <%= vax.status === 'Pending' ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400' %> font-medium">
+                <p class="text-sm <%= vax.status === 'Completed' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' %> font-medium">
                   <%= vax.status %>
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Given: <%= new Date(vax.date).toLocaleDateString() %>
+                  Given: <%= helpers.formatDate(vax.dateAdministered) %>
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Due: <%= new Date(vax.due).toLocaleDateString() %>
+                  Next: <%= helpers.formatDate(vax.nextDueDate) %>
                 </p>
               </div>
             </div>
           <% }); %>
-        <% } else { %>
-          <div class="text-center py-8">
-            <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <p class="mt-4 text-gray-500 dark:text-gray-400">No vaccination records found</p>
-            <a href="/animal/<%= animal._id %>/vaccinations/add" 
-               class="inline-block mt-2 text-blue-600 dark:text-blue-400 hover:underline">
-              Add first vaccination record
-            </a>
-          </div>
-        <% } %>
-      </div>
+        </div>
+      <% } else { %>
+        <div class="text-center py-8">
+          <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p class="mt-4 text-gray-500 dark:text-gray-400">No vaccination records found</p>
+          <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animal/<%= animal._id %>/vaccinations/add" 
+             class="inline-block mt-2 text-blue-600 dark:text-blue-400 hover:underline">
+            Add first vaccination record
+          </a>
+        </div>
+      <% } %>
     </div>
   </div>
 </div>
 
-<!-- JavaScript for Interactive Features -->
+<!-- JavaScript for Tab Functionality -->
 <script>
+  function showTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.remove('active');
+      content.classList.add('hidden');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.classList.remove('active', 'text-blue-600', 'dark:text-blue-400', 'border-blue-500');
+      button.classList.add('text-gray-600', 'dark:text-gray-400');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-tab-content').classList.remove('hidden');
+    document.getElementById(tabName + '-tab-content').classList.add('active');
+    
+    // Activate selected tab button
+    document.getElementById(tabName + '-tab').classList.remove('text-gray-600', 'dark:text-gray-400');
+    document.getElementById(tabName + '-tab').classList.add('active', 'text-blue-600', 'dark:text-blue-400', 'border-blue-500');
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     // Photo hover effects
     const photoCards = document.querySelectorAll('.group');
@@ -601,90 +839,32 @@
       });
     });
 
-    // Confirmation for delete
-    const deleteForms = document.querySelectorAll('form[action*="/delete"]');
-    deleteForms.forEach(form => {
-      form.addEventListener('submit', function(e) {
-        if (!confirm('⚠️ WARNING: This action cannot be undone. All animal data including photos and health records will be permanently deleted. Are you absolutely sure?')) {
-          e.preventDefault();
-        }
-      });
-    });
-
-    // Tooltip for photo status
-    const photoStatus = document.querySelectorAll('[title]');
-    photoStatus.forEach(el => {
-      el.addEventListener('mouseenter', function(e) {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'absolute z-50 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded shadow-lg';
-        tooltip.textContent = this.getAttribute('title');
-        tooltip.style.left = e.pageX + 'px';
-        tooltip.style.top = (e.pageY - 30) + 'px';
-        document.body.appendChild(tooltip);
-        this._tooltip = tooltip;
-      });
-      el.addEventListener('mouseleave', function() {
-        if (this._tooltip) {
-          this._tooltip.remove();
-        }
-      });
-    });
+    // Initialize first tab
+    showTab('basic');
   });
 </script>
 
 <style>
-  /* Smooth animations */
-  .animate-fade-in {
-    animation: fadeIn 0.5s ease-out;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.3);
-  }
-
-  .dark ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .dark ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-  }
-
-  .dark ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
-  }
-
-  /* Card hover effects */
-  .card-hover {
+  .tab-button {
     transition: all 0.3s ease;
+    border-bottom-width: 2px;
+    border-color: transparent;
   }
-
-  .card-hover:hover {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  
+  .tab-button:hover {
+    background-color: rgba(59, 130, 246, 0.05);
   }
-
-  .dark .card-hover:hover {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  
+  .tab-button.active {
+    border-color: #3b82f6;
+  }
+  
+  .tab-content {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 </style>

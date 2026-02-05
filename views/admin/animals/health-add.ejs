@@ -1,0 +1,58 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="container mx-auto px-4 py-6 max-w-2xl">
+  <!-- Header -->
+  <div class="mb-6">
+    <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>/health" class="text-blue-600 hover:underline">← Back to Health Records</a>
+    <h1 class="text-2xl font-bold text-gray-900 mt-2">Add Health Record</h1>
+    <p class="text-gray-600">For <%= animal.name || animal.tagNumber %> (<%= animal.uniqueAnimalId %>)</p>
+  </div>
+
+  <!-- Form -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <form action="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>/health" method="POST">
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Condition/Diagnosis *</label>
+        <input type="text" name="condition" required class="w-full border rounded px-3 py-2" placeholder="e.g., Fever, Injury, Infection">
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Treatment *</label>
+        <textarea name="treatment" required rows="3" class="w-full border rounded px-3 py-2" placeholder="Describe the treatment given..."></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Treated By</label>
+          <input type="text" name="treatedBy" class="w-full border rounded px-3 py-2" placeholder="Name of vet/paravet">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Date of Treatment</label>
+          <input type="date" name="date" class="w-full border rounded px-3 py-2" value="<%= new Date().toISOString().split('T')[0] %>">
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+        <textarea name="notes" rows="2" class="w-full border rounded px-3 py-2" placeholder="Any additional information..."></textarea>
+      </div>
+
+      <div class="mb-6">
+        <div class="flex items-center">
+          <input type="checkbox" name="resolved" id="resolved" class="h-4 w-4 text-blue-600 rounded">
+          <label for="resolved" class="ml-2 text-sm text-gray-700">Treatment completed/resolved</label>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>/health" class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50">
+          Cancel
+        </a>
+        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          Save Health Record
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

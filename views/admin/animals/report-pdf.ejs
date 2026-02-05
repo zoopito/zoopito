@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animal Report - <%= report.animal.id %></title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .header h1 { margin: 0; color: #333; }
+    .section { margin-bottom: 20px; }
+    .section h3 { border-bottom: 2px solid #4F46E5; padding-bottom: 5px; color: #333; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .row { display: flex; justify-content: space-between; margin: 8px 0; }
+    .label { color: #666; }
+    .value { font-weight: bold; }
+    .badge { padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+    .badge-green { background: #D1FAE5; color: #065F46; }
+    .badge-red { background: #FEE2E2; color: #991B1B; }
+    .badge-blue { background: #DBEAFE; color: #1E40AF; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+    .stat-box { text-align: center; padding: 10px; background: #F3F4F6; border-radius: 8px; }
+    .footer { margin-top: 40px; text-align: center; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Animal Information Report</h1>
+    <p>Generated on: <%= report.generatedOn %></p>
+    <h2><%= report.animal.name %> - <%= report.animal.id %></h2>
+  </div>
+
+  <div class="grid">
+    <!-- Basic Information -->
+    <div class="section">
+      <h3>Basic Information</h3>
+      <div class="row"><span class="label">Name:</span><span class="value"><%= report.animal.name %></span></div>
+      <div class="row"><span class="label">Tag Number:</span><span class="value"><%= report.animal.tagNumber %></span></div>
+      <div class="row"><span class="label">Type:</span><span class="value"><%= report.animal.type %></span></div>
+      <div class="row"><span class="label">Breed:</span><span class="value"><%= report.animal.breed %></span></div>
+      <div class="row"><span class="label">Gender:</span><span class="value"><%= report.animal.gender %></span></div>
+      <div class="row"><span class="label">Age:</span><span class="value"><%= report.animal.age %></span></div>
+      <div class="row"><span class="label">Date of Birth:</span><span class="value"><%= report.animal.dateOfBirth %></span></div>
+    </div>
+
+    <!-- Health Information -->
+    <div class="section">
+      <h3>Health Information</h3>
+      <div class="row">
+        <span class="label">Health Status:</span>
+        <span class="value badge <%= report.health.status === 'Healthy' ? 'badge-green' : 'badge-red' %>">
+          <%= report.health.status %>
+        </span>
+      </div>
+      <div class="row"><span class="label">Body Score:</span><span class="value"><%= report.health.bodyScore %></span></div>
+      <div class="row"><span class="label">Weight:</span><span class="value"><%= report.health.weight %></span></div>
+      <div class="row"><span class="label">Last Checkup:</span><span class="value"><%= report.health.lastCheckup %></span></div>
+      <div class="row"><span class="label">Next Checkup:</span><span class="value"><%= report.health.nextCheckup %></span></div>
+    </div>
+
+    <!-- Reproductive Information -->
+    <div class="section">
+      <h3>Reproductive Information</h3>
+      <div class="row"><span class="label">Status:</span><span class="value"><%= report.reproductive.status %></span></div>
+      <div class="row">
+        <span class="label">Pregnant:</span>
+        <span class="value badge <%= report.reproductive.isPregnant === 'Yes' ? 'badge-blue' : '' %>">
+          <%= report.reproductive.isPregnant %>
+        </span>
+      </div>
+      <div class="row"><span class="label">Expected Delivery:</span><span class="value"><%= report.reproductive.expectedDelivery %></span></div>
+      <div class="row">
+        <span class="label">Lactating:</span>
+        <span class="value badge <%= report.reproductive.isLactating === 'Yes' ? 'badge-blue' : '' %>">
+          <%= report.reproductive.isLactating %>
+        </span>
+      </div>
+      <div class="row"><span class="label">Last Calving:</span><span class="value"><%= report.reproductive.lastCalving %></span></div>
+    </div>
+
+    <!-- Owner Information -->
+    <div class="section">
+      <h3>Owner Information</h3>
+      <div class="row"><span class="label">Current Owner:</span><span class="value"><%= report.owner.current %></span></div>
+      <div class="row"><span class="label">Farmer ID:</span><span class="value"><%= report.owner.farmerId %></span></div>
+      <div class="row"><span class="label">Phone:</span><span class="value"><%= report.owner.phone %></span></div>
+      <div class="row"><span class="label">Address:</span><span class="value"><%= report.owner.address %></span></div>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="section">
+    <h3>History Summary</h3>
+    <div class="stats">
+      <div class="stat-box">
+        <div style="font-size: 24px; font-weight: bold; color: #4F46E5;"><%= report.history.medicalRecords %></div>
+        <div>Medical Records</div>
+      </div>
+      <div class="stat-box">
+        <div style="font-size: 24px; font-weight: bold; color: #EC4899;"><%= report.history.breedingRecords %></div>
+        <div>Breeding Records</div>
+      </div>
+      <div class="stat-box">
+        <div style="font-size: 24px; font-weight: bold; color: #10B981;"><%= report.history.vaccinationRecords %></div>
+        <div>Vaccination Records</div>
+      </div>
+      <div class="stat-box">
+        <div style="font-size: 24px; font-weight: bold; color: #F59E0B;"><%= report.history.previousOwners %></div>
+        <div>Previous Owners</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Report generated by Livestock Management System</p>
+    <p>This is an official document</p>
+  </div>
+</body>
+</html>

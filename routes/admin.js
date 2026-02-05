@@ -158,6 +158,98 @@ router.get(
   animalController.renderEditForm,
 );
 
+// Animal routes
+router.get(
+  "/animal/export",
+  isLoggedIn,
+  isAdmin,
+  animalController.exportAnimals,
+);
+
+// Individual animal routes
+router.delete(
+  "/animal/:id",
+  isLoggedIn,
+  isAdmin,
+  animalController.deleteAnimal,
+);
+
+// Status routes
+router.post(
+  "/animal/:id/deactivate",
+  isLoggedIn,
+  isAdmin,
+  animalController.toggleAnimalStatus,
+);
+router.post(
+  "/animal/:id/activate",
+  isLoggedIn,
+  isAdmin,
+  animalController.toggleAnimalStatus,
+);
+router.post(
+  "/animal/:id/quick-update",
+  isLoggedIn,
+  isAdmin,
+  animalController.quickStatusUpdate,
+);
+
+// Transfer routes
+router.get(
+  "/animal/:id/transfer",
+  isLoggedIn,
+  isAdmin,
+  animalController.getTransferForm,
+);
+router.post(
+  "/animal/:id/transfer",
+  isLoggedIn,
+  isAdmin,
+  animalController.transferAnimal,
+);
+
+// Health routes
+router.get(
+  "/animal/:id/health",
+  isLoggedIn,
+  isAdmin,
+  animalController.viewHealthRecords,
+);
+router.get(
+  "/animal/:id/health/add",
+  isLoggedIn,
+  isAdmin,
+  animalController.getAddHealthRecordForm,
+);
+router.post(
+  "/animal/:id/health",
+  isLoggedIn,
+  isAdmin,
+  animalController.addHealthRecord,
+);
+
+// Breeding routes
+router.get(
+  "/animal/:id/breeding/add",
+  isLoggedIn,
+  isAdmin,
+  animalController.getAddBreedingRecordForm,
+);
+router.post(
+  "/animal/:id/breeding",
+  isLoggedIn,
+  isAdmin,
+  animalController.addBreedingRecord,
+);
+
+// Report routes
+router.get(
+  "/animal/:id/report",
+  isLoggedIn,
+  isAdmin,
+  animalController.generateAnimalReport,
+);
+
 router.get(
   "/vaccinations",
   isLoggedIn,

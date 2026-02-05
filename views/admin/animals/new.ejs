@@ -1,162 +1,522 @@
 <% layout("layouts/boilerplate") %>
 
-<div class="container mx-auto p-6">
-  <h1 class="text-3xl font-bold mb-6 text-blue-700">Register New Animal</h1>
+<div class="container mx-auto p-4 md:p-6">
+  <h1 class="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-blue-700 dark:text-blue-400">Register New Animal</h1>
 
-  <form action="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals" method="POST" enctype="multipart/form-data" class="space-y-6 bg-white p-6 rounded-lg shadow-md">
-
-    <!-- Farmer -->
-    <div>
-      <label for="farmer" class="block text-sm font-medium text-gray-700">Farmer</label>
-      <select name="farmer" id="farmer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-        <% farmers.forEach(farmer => { %>
-          <option value="<%= farmer._id %>"> <%= farmer.uniqueFarmerId %>: <%= farmer.name %></option>
-        <% }) %>
-      </select>
-    </div>
-
-    <!-- Registered By -->
-    <div>
-      <label for="registeredBy" class="block text-sm font-medium text-gray-700">Registered By</label>
-      <select name="registeredBy" id="registeredBy" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-        <% sales.forEach(sale => { %>
-          <option value="<%= sale.user._id %>"><%= sale.user.name %></option>
-        <% }) %>
-      </select>
-    </div>
-
-    <!-- Animal Type -->
-    <div>
-      <label for="animalType" class="block text-sm font-medium text-gray-700">Animal Type</label>
-      <select name="animalType" id="animalType" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-        <option value="">Select Animal Type</option>
-        <option value="Cow">Cow</option>
-        <option value="Buffalo">Buffalo</option>
-        <option value="Goat">Goat</option>
-        <option value="Sheep">Sheep</option>
-        <option value="Dog">Dog</option>
-        <option value="Cat">Cat</option>
-        <option value="Poultry">Poultry</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
-
-    <!-- Breed -->
-    <div>
-      <label for="breed" class="block text-sm font-medium text-gray-700">Breed</label>
-      <input type="text" name="breed" id="breed" placeholder="Breed" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-    </div>
-
-    <!-- Age -->
-    <div class="flex space-x-4">
-      <div class="flex-1">
-        <label for="ageValue" class="block text-sm font-medium text-gray-700">Age</label>
-        <input type="number" name="age[value]" id="ageValue" placeholder="Value" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-      </div>
-      <div class="flex-1">
-        <label for="ageUnit" class="block text-sm font-medium text-gray-700">Unit</label>
-        <select name="age[unit]" id="ageUnit" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-          <option value="Days">Days</option>
-          <option value="Months">Months</option>
-          <option value="Years">Years</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Gender -->
-    <div>
-      <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
-      <select name="gender" id="gender" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Unknown">Unknown</option>
-      </select>
-    </div>
-
-    <!-- Name -->
-    <div>
-      <label for="name" class="block text-sm font-medium text-gray-700">Animal Name</label>
-      <input type="text" name="name" id="name" placeholder="Animal Name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-    </div>
-
-    <!-- Tag Number -->
-    <div>
-      <label for="tagNumber" class="block text-sm font-medium text-gray-700">Tag Number</label>
-      <input type="text" name="tagNumber" id="tagNumber" placeholder="Tag Number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-    </div>
-
-    <!-- Photos -->
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label for="frontPhoto" class="block text-sm font-medium text-gray-700">Front Photo</label>
-        <input type="file" name="front" id="frontPhoto" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
-      </div>
-      <div>
-        <label for="leftPhoto" class="block text-sm font-medium text-gray-700">Left Photo</label>
-        <input type="file" name="left" id="leftPhoto" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
-      </div>
-      <div>
-        <label for="rightPhoto" class="block text-sm font-medium text-gray-700">Right Photo</label>
-        <input type="file" name="right" id="rightPhoto" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
-      </div>
-      <div>
-        <label for="backPhoto" class="block text-sm font-medium text-gray-700">Back Photo</label>
-        <input type="file" name="back" id="backPhoto" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
-      </div>
-    </div>
-
-    <!-- Lactation Status -->
-    <div class="border-t pt-4 mt-4">
-      <h2 class="text-xl font-semibold mb-2 text-gray-700">Lactation Status</h2>
-      <div class="flex items-center space-x-4 mb-2">
-        <input type="checkbox" name="lactationStatus[isLactating]" id="isLactating" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
-        <label for="isLactating" class="text-sm text-gray-700">Is Lactating</label>
-      </div>
-      <div class="mb-2">
-        <label for="lastCalvingDate" class="block text-sm font-medium text-gray-700">Last Calving Date</label>
-        <input type="date" name="lactationStatus[lastCalvingDate]" id="lastCalvingDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-      </div>
-      <div class="flex space-x-4">
-        <div class="flex-1">
-          <label for="dailyYield" class="block text-sm font-medium text-gray-700">Daily Yield</label>
-          <input type="number" name="lactationStatus[dailyYield]" id="dailyYield" placeholder="Amount" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+  <form action="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals" method="POST" enctype="multipart/form-data" class="space-y-6 bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow-md transition-colors duration-300">
+    
+    <!-- Basic Information Section -->
+    <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
+      <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+        </svg>
+        Basic Information
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <!-- Farmer -->
+        <div>
+          <label for="farmer" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Farmer *</label>
+          <select name="farmer" id="farmer" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            <option value="">Select Farmer</option>
+            <% farmers.forEach(farmer => { %>
+              <option value="<%= farmer._id %>"><%= farmer.uniqueFarmerId %>: <%= farmer.name %></option>
+            <% }) %>
+          </select>
         </div>
-        <div class="flex-1">
-          <label for="yieldUnit" class="block text-sm font-medium text-gray-700">Yield Unit</label>
-          <input type="text" name="lactationStatus[yieldUnit]" id="yieldUnit" placeholder="Liters / Kg" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+
+        <!-- Registered By -->
+        <div>
+          <label for="registeredBy" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Registered By *</label>
+          <select name="registeredBy" id="registeredBy" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            <option value="">Select Sales Agent</option>
+            <% sales.forEach(sale => { %>
+              <option value="<%= sale.user._id %>"><%= sale.user.name %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <!-- Animal Type -->
+        <div>
+          <label for="animalType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Animal Type *</label>
+          <select name="animalType" id="animalType" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            <option value="">Select Type</option>
+            <option value="Cow">Cow</option>
+            <option value="Buffalo">Buffalo</option>
+            <option value="Goat">Goat</option>
+            <option value="Sheep">Sheep</option>
+            <option value="Dog">Dog</option>
+            <option value="Cat">Cat</option>
+            <option value="Poultry">Poultry</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Breed -->
+        <div>
+          <label for="breed" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Breed</label>
+          <input type="text" name="breed" id="breed" placeholder="Enter breed" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+        </div>
+
+        <!-- Age -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="ageValue" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Age</label>
+            <input type="number" name="age[value]" id="ageValue" min="0" placeholder="Value" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+          <div>
+            <label for="ageUnit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unit</label>
+            <select name="age[unit]" id="ageUnit" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              <option value="Days">Days</option>
+              <option value="Months">Months</option>
+              <option value="Years" selected>Years</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Gender -->
+        <div>
+          <label for="gender" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gender *</label>
+          <select name="gender" id="gender" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Unknown">Unknown</option>
+          </select>
+        </div>
+
+        <!-- Name -->
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Animal Name</label>
+          <input type="text" name="name" id="name" placeholder="Enter animal name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+        </div>
+
+        <!-- Tag Number -->
+        <div>
+          <label for="tagNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tag Number *</label>
+          <input type="text" name="tagNumber" id="tagNumber" required placeholder="Enter tag number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
         </div>
       </div>
     </div>
 
-    <!-- Health Status -->
-    <div>
-      <label for="healthStatus" class="block text-sm font-medium text-gray-700">Health Status</label>
-      <select name="healthStatus" id="healthStatus" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-        <option value="Healthy">Healthy</option>
-        <option value="Sick">Sick</option>
-        <option value="Under Treatment">Under Treatment</option>
-        <option value="Recovered">Recovered</option>
-      </select>
+    <!-- Photos Section -->
+    <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
+      <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+        </svg>
+        Animal Photos
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="frontPhoto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Front Photo</label>
+          <input type="file" name="front" id="frontPhoto" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Clear front view of the animal</p>
+        </div>
+        <div>
+          <label for="leftPhoto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Left Side Photo</label>
+          <input type="file" name="left" id="leftPhoto" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
+        </div>
+        <div>
+          <label for="rightPhoto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Right Side Photo</label>
+          <input type="file" name="right" id="rightPhoto" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
+        </div>
+        <div>
+          <label for="backPhoto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Back Photo</label>
+          <input type="file" name="back" id="backPhoto" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
+        </div>
+      </div>
     </div>
 
-    <!-- Is Active -->
-    <div class="flex items-center space-x-2">
-      <input type="checkbox" name="isActive" id="isActive" checked class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
-      <label for="isActive" class="text-sm text-gray-700">Is Active</label>
+    <!-- Pregnancy Status Section -->
+    <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700" id="pregnancySection">
+      <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+        </svg>
+        Pregnancy Status
+      </h2>
+      
+      <div class="space-y-4">
+        <!-- Pregnancy Check -->
+        <div class="flex items-center mb-4">
+          <input type="checkbox" name="pregnancyStatus[isPregnant]" id="isPregnant" class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+          <label for="isPregnant" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Is Pregnant</label>
+        </div>
+
+        <!-- Pregnancy Details (hidden by default) -->
+        <div id="pregnancyDetails" class="hidden space-y-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+          <!-- Pregnancy Kit -->
+          <div>
+            <label for="pregnancyKit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregnancy Test Kit Used</label>
+            <select name="pregnancyStatus[kitUsed]" id="pregnancyKit" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              <option value="">Select Kit</option>
+              <option value="ultrasound">Ultrasound</option>
+              <option value="blood_test">Blood Test</option>
+              <option value="palpation">Rectal Palpation</option>
+              <option value="urine_test">Urine Test</option>
+              <option value="milk_test">Milk Progesterone Test</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <!-- Test Date -->
+          <div>
+            <label for="pregnancyTestDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Test Date</label>
+            <input type="date" name="pregnancyStatus[testDate]" id="pregnancyTestDate" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+
+          <!-- Confirmation Date -->
+          <div>
+            <label for="pregnancyConfirmedDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirmed Date</label>
+            <input type="date" name="pregnancyStatus[confirmedDate]" id="pregnancyConfirmedDate" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+
+          <!-- Expected Delivery Date -->
+          <div>
+            <label for="expectedDeliveryDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expected Delivery Date</label>
+            <input type="date" name="pregnancyStatus[expectedDeliveryDate]" id="expectedDeliveryDate" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+
+          <!-- Pregnancy Stage -->
+          <div>
+            <label for="pregnancyStage" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregnancy Stage</label>
+            <select name="pregnancyStatus[stage]" id="pregnancyStage" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              <option value="">Select Stage</option>
+              <option value="early">Early (0-3 months)</option>
+              <option value="mid">Mid (3-6 months)</option>
+              <option value="late">Late (6-9 months)</option>
+              <option value="full_term">Full Term</option>
+            </select>
+          </div>
+
+          <!-- Number of Fetuses -->
+          <div>
+            <label for="numberOfFetuses" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of Fetuses</label>
+            <input type="number" name="pregnancyStatus[numberOfFetuses]" id="numberOfFetuses" min="1" max="10" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+
+          <!-- Previous Pregnancies -->
+          <div>
+            <label for="previousPregnancies" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of Previous Pregnancies</label>
+            <input type="number" name="pregnancyStatus[previousPregnancies]" id="previousPregnancies" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Unique Animal ID -->
-    <!-- <div>
-      <label for="uniqueAnimalId" class="block text-sm font-medium text-gray-700">Unique Animal ID</label>
-      <input type="text" name="uniqueAnimalId" id="uniqueAnimalId" placeholder="Auto or Manual ID" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-    </div> -->
+    <!-- Lactation Status Section -->
+    <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700" id="lactationSection">
+      <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
+        </svg>
+        Lactation Status
+      </h2>
+      
+      <div class="space-y-4">
+        <!-- Lactation Check -->
+        <div class="flex items-center mb-4">
+          <input type="checkbox" name="lactationStatus[isLactating]" id="isLactating" class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+          <label for="isLactating" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Is Currently Lactating</label>
+        </div>
 
-    <!-- Submit Button -->
-    <div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition">
-        Register Animal
-      </button>
+        <!-- Lactation Details (hidden by default) -->
+        <div id="lactationDetails" class="hidden space-y-4 bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+          <!-- Last Calving Date -->
+          <div>
+            <label for="lastCalvingDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Calving Date</label>
+            <input type="date" name="lactationStatus[lastCalvingDate]" id="lastCalvingDate" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+
+          <!-- Lactation Number -->
+          <div>
+            <label for="lactationNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lactation Number</label>
+            <input type="number" name="lactationStatus[lactationNumber]" id="lactationNumber" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+
+          <!-- Days in Milk -->
+          <div>
+            <label for="daysInMilk" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Days in Milk (DIM)</label>
+            <input type="number" name="lactationStatus[daysInMilk]" id="daysInMilk" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+
+          <!-- Milk Yield -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="dailyYield" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Daily Yield</label>
+              <input type="number" name="lactationStatus[dailyYield]" id="dailyYield" step="0.1" min="0" placeholder="Amount" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+            <div>
+              <label for="yieldUnit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Yield Unit</label>
+              <select name="lactationStatus[yieldUnit]" id="yieldUnit" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+                <option value="liters">Liters</option>
+                <option value="kg">Kilograms</option>
+                <option value="ml">Milliliters</option>
+                <option value="gallons">Gallons</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Milk Quality -->
+          <div>
+            <label for="milkQuality" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Milk Quality</label>
+            <select name="lactationStatus[milkQuality]" id="milkQuality" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              <option value="excellent">Excellent</option>
+              <option value="good">Good</option>
+              <option value="average">Average</option>
+              <option value="poor">Poor</option>
+              <option value="not_tested">Not Tested</option>
+            </select>
+          </div>
+
+          <!-- Milking Frequency -->
+          <div>
+            <label for="milkingFrequency" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Milking Frequency (per day)</label>
+            <select name="lactationStatus[milkingFrequency]" id="milkingFrequency" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              <option value="1">Once</option>
+              <option value="2" selected>Twice</option>
+              <option value="3">Thrice</option>
+              <option value="4">Four Times</option>
+              <option value="machine">Machine Milking</option>
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <!-- Vaccination & Health Section -->
+    <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
+      <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+        </svg>
+        Vaccination & Health Status
+      </h2>
+      
+      <div class="space-y-6">
+        <!-- Health Status -->
+        <div>
+          <label for="healthStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Health Status *</label>
+          <select name="healthStatus" id="healthStatus" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            <option value="Healthy">Healthy</option>
+            <option value="Sick">Sick</option>
+            <option value="Under Treatment">Under Treatment</option>
+            <option value="Recovered">Recovered</option>
+            <option value="Quarantined">Quarantined</option>
+            <option value="Chronic Condition">Chronic Condition</option>
+          </select>
+        </div>
+
+        <!-- Vaccination Status -->
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+          <div class="flex items-center mb-4">
+            <input type="checkbox" name="vaccinationStatus[isVaccinated]" id="isVaccinated" class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+            <label for="isVaccinated" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Is Vaccinated</label>
+          </div>
+
+          <!-- Vaccination Details -->
+          <div id="vaccinationDetails" class="hidden space-y-4">
+            <!-- Last Vaccination Date -->
+            <div>
+              <label for="lastVaccinationDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Vaccination Date</label>
+              <input type="date" name="vaccinationStatus[lastVaccinationDate]" id="lastVaccinationDate" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+
+            <!-- Vaccine Type -->
+            <div>
+              <label for="vaccineType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vaccine Type</label>
+              <select name="vaccinationStatus[vaccineType]" id="vaccineType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+                <option value="">Select Vaccine</option>
+                <option value="foot_mouth">Foot and Mouth Disease</option>
+                <option value="brucellosis">Brucellosis</option>
+                <option value="black_quarter">Black Quarter</option>
+                <option value="hs">Hemorrhagic Septicemia</option>
+                <option value="anthrax">Anthrax</option>
+                <option value="rabies">Rabies</option>
+                <option value="parvo">Parvovirus</option>
+                <option value="distemper">Distemper</option>
+                <option value="multi_vaccine">Multi-vaccine</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <!-- Next Vaccination Date -->
+            <div>
+              <label for="nextVaccinationDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Next Vaccination Due</label>
+              <input type="date" name="vaccinationStatus[nextVaccinationDate]" id="nextVaccinationDate" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+
+            <!-- Vaccination History -->
+            <div>
+              <label for="vaccinationHistory" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vaccination History (Notes)</label>
+              <textarea name="vaccinationStatus[history]" id="vaccinationHistory" rows="3" placeholder="Any previous vaccination details..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Health Notes -->
+        <div>
+          <label for="healthNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Health Notes</label>
+          <textarea name="healthNotes" id="healthNotes" rows="3" placeholder="Any health concerns, treatments, or special care instructions..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other Information -->
+    <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
+      <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        Other Information
+      </h2>
+      
+      <div class="space-y-6">
+        <!-- Reproductive Status -->
+        <div>
+          <label for="reproductiveStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reproductive Status</label>
+          <select name="reproductiveStatus" id="reproductiveStatus" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            <option value="normal">Normal</option>
+            <option value="in_heat">In Heat</option>
+            <option value="bred">Bred</option>
+            <option value="open">Open (Not Bred)</option>
+            <option value="sterile">Sterile</option>
+            <option value="castrated">Castrated</option>
+          </select>
+        </div>
+
+        <!-- Body Condition Score -->
+        <div>
+          <label for="bodyConditionScore" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Body Condition Score (1-5)</label>
+          <div class="flex items-center space-x-4">
+            <input type="range" name="bodyConditionScore" id="bodyConditionScore" min="1" max="5" step="0.5" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+            <span id="scoreValue" class="text-sm font-medium text-gray-700 dark:text-gray-300">3</span>
+          </div>
+          <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <span>1 (Poor)</span>
+            <span>2</span>
+            <span>3 (Ideal)</span>
+            <span>4</span>
+            <span>5 (Obese)</span>
+          </div>
+        </div>
+
+        <!-- Feeding Type -->
+        <div>
+          <label for="feedingType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Feeding Type</label>
+          <select name="feedingType" id="feedingType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            <option value="grazing">Grazing</option>
+            <option value="stall_feeding">Stall Feeding</option>
+            <option value="mixed">Mixed</option>
+            <option value="concentrate">Concentrate Based</option>
+            <option value="organic">Organic</option>
+          </select>
+        </div>
+
+        <!-- Housing Type -->
+        <div>
+          <label for="housingType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Housing Type</label>
+          <select name="housingType" id="housingType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            <option value="free_stall">Free Stall</option>
+            <option value="tie_stall">Tie Stall</option>
+            <option value="pasture">Pasture</option>
+            <option value="shelter">Shelter</option>
+            <option value="open_yard">Open Yard</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status & Submit Section -->
+    <div class="space-y-6">
+      <!-- Is Active -->
+      <div class="flex items-center">
+        <input type="checkbox" name="isActive" id="isActive" checked class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+        <label for="isActive" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Animal is Active</label>
+      </div>
+
+      <!-- Additional Notes -->
+      <div>
+        <label for="additionalNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Additional Notes</label>
+        <textarea name="additionalNotes" id="additionalNotes" rows="3" placeholder="Any additional information about this animal..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"></textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="pt-4">
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 dark:bg-blue-700 dark:hover:bg-blue-600">
+          Register Animal
+        </button>
+      </div>
+    </div>
   </form>
 </div>
+
+<script>
+  // Toggle pregnancy details
+  document.getElementById('isPregnant').addEventListener('change', function() {
+    const details = document.getElementById('pregnancyDetails');
+    if (this.checked) {
+      details.classList.remove('hidden');
+    } else {
+      details.classList.add('hidden');
+    }
+  });
+
+  // Toggle lactation details
+  document.getElementById('isLactating').addEventListener('change', function() {
+    const details = document.getElementById('lactationDetails');
+    if (this.checked) {
+      details.classList.remove('hidden');
+    } else {
+      details.classList.add('hidden');
+    }
+  });
+
+  // Toggle vaccination details
+  document.getElementById('isVaccinated').addEventListener('change', function() {
+    const details = document.getElementById('vaccinationDetails');
+    if (this.checked) {
+      details.classList.remove('hidden');
+    } else {
+      details.classList.add('hidden');
+    }
+  });
+
+  // Update body condition score display
+  const scoreSlider = document.getElementById('bodyConditionScore');
+  const scoreValue = document.getElementById('scoreValue');
+  
+  scoreSlider.addEventListener('input', function() {
+    scoreValue.textContent = this.value;
+  });
+
+  // Auto-calculate expected delivery date based on pregnancy confirmation
+  document.getElementById('pregnancyConfirmedDate').addEventListener('change', function() {
+    const confirmedDate = new Date(this.value);
+    const expectedDate = document.getElementById('expectedDeliveryDate');
+    
+    if (confirmedDate && !isNaN(confirmedDate.getTime())) {
+      // Assuming average gestation period (modify based on animal type)
+      const gestationDays = 283; // Average for cows
+      const expectedDelivery = new Date(confirmedDate);
+      expectedDelivery.setDate(expectedDelivery.getDate() + gestationDays);
+      
+      const formattedDate = expectedDelivery.toISOString().split('T')[0];
+      expectedDate.value = formattedDate;
+    }
+  });
+
+  // Set default dates
+  window.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('pregnancyTestDate').value = today;
+    document.getElementById('lastVaccinationDate').value = today;
+    
+    // Set next vaccination date to 6 months from today
+    const nextVaccination = new Date();
+    nextVaccination.setMonth(nextVaccination.getMonth() + 6);
+    document.getElementById('nextVaccinationDate').value = nextVaccination.toISOString().split('T')[0];
+  });
+</script>

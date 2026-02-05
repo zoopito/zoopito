@@ -33,7 +33,6 @@ module.exports.isAdmin = (req, res, next) => {
     req.flash("error", "You do not have permission to access this page.");
     return res.redirect("/");
   }
-  console.log("Admin access granted");
   next();
 };
 

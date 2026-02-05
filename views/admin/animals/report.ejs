@@ -1,0 +1,241 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="container mx-auto px-4 py-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Animal Report</h1>
+      <p class="text-gray-600"><%= animal.name || animal.tagNumber %> (<%= animal.uniqueAnimalId %>)</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="?format=pdf" target="_blank" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Export PDF</a>
+      <a href="?format=json" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export JSON</a>
+      <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Back</a>
+    </div>
+  </div>
+
+  <!-- Report Content -->
+  <div class="bg-white rounded-lg shadow">
+    <!-- Report Header -->
+    <div class="border-b border-gray-200 p-6">
+      <div class="flex justify-between items-start">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">Animal Information Report</h2>
+          <p class="text-gray-600">Generated on <%= report.generatedOn %></p>
+        </div>
+        <div class="text-right">
+          <div class="text-2xl font-bold text-blue-600"><%= report.animal.id %></div>
+          <div class="text-gray-600">Unique Animal ID</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animal Details -->
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Basic Information -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Basic Information</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Name:</span>
+              <span class="font-medium"><%= report.animal.name %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Tag Number:</span>
+              <span class="font-medium"><%= report.animal.tagNumber %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Type:</span>
+              <span class="font-medium"><%= report.animal.type %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Breed:</span>
+              <span class="font-medium"><%= report.animal.breed %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Gender:</span>
+              <span class="font-medium"><%= report.animal.gender %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Age:</span>
+              <span class="font-medium"><%= report.animal.age %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Date of Birth:</span>
+              <span class="font-medium"><%= report.animal.dateOfBirth %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Registration Date:</span>
+              <span class="font-medium"><%= report.animal.registrationDate %></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Health Information -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Health Information</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Health Status:</span>
+              <span class="font-medium <%= report.health.status === 'Healthy' ? 'text-green-600' : 'text-red-600' %>">
+                <%= report.health.status %>
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Body Condition Score:</span>
+              <span class="font-medium"><%= report.health.bodyScore %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Weight:</span>
+              <span class="font-medium"><%= report.health.weight %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Last Checkup:</span>
+              <span class="font-medium"><%= report.health.lastCheckup %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Next Checkup:</span>
+              <span class="font-medium"><%= report.health.nextCheckup %></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reproductive Information -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Reproductive Information</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Reproductive Status:</span>
+              <span class="font-medium"><%= report.reproductive.status %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Pregnant:</span>
+              <span class="font-medium <%= report.reproductive.isPregnant === 'Yes' ? 'text-pink-600' : '' %>">
+                <%= report.reproductive.isPregnant %>
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Expected Delivery:</span>
+              <span class="font-medium"><%= report.reproductive.expectedDelivery %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Lactating:</span>
+              <span class="font-medium <%= report.reproductive.isLactating === 'Yes' ? 'text-blue-600' : '' %>">
+                <%= report.reproductive.isLactating %>
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Last Calving:</span>
+              <span class="font-medium"><%= report.reproductive.lastCalving %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Daily Yield:</span>
+              <span class="font-medium"><%= report.reproductive.dailyYield %></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vaccination Information -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Vaccination Information</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Last Vaccination:</span>
+              <span class="font-medium"><%= report.vaccination.lastVaccination %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Next Vaccination:</span>
+              <span class="font-medium <%= report.vaccination.status === 'Up to Date' ? 'text-green-600' : 'text-yellow-600' %>">
+                <%= report.vaccination.nextVaccination %>
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Status:</span>
+              <span class="font-medium <%= report.vaccination.status === 'Up to Date' ? 'text-green-600' : 'text-yellow-600' %>">
+                <%= report.vaccination.status %>
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Total Vaccinations:</span>
+              <span class="font-medium"><%= report.vaccination.totalVaccinations %></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Owner Information -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Owner Information</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Current Owner:</span>
+              <span class="font-medium"><%= report.owner.current %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Farmer ID:</span>
+              <span class="font-medium"><%= report.owner.farmerId %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Phone:</span>
+              <span class="font-medium"><%= report.owner.phone %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Address:</span>
+              <span class="font-medium"><%= report.owner.address %></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Management Information -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Management Information</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Feeding Type:</span>
+              <span class="font-medium"><%= report.management.feeding %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Housing Type:</span>
+              <span class="font-medium"><%= report.management.housing %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Status:</span>
+              <span class="font-medium <%= report.management.status === 'active' ? 'text-green-600' : 'text-red-600' %>">
+                <%= report.management.status.toUpperCase() %>
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Active:</span>
+              <span class="font-medium <%= report.management.isActive === 'Yes' ? 'text-green-600' : 'text-red-600' %>">
+                <%= report.management.isActive %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Summary -->
+      <div class="mt-8 pt-6 border-t">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">History Summary</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-gray-50 p-4 rounded-lg text-center">
+            <div class="text-2xl font-bold text-blue-600"><%= report.history.medicalRecords %></div>
+            <div class="text-sm text-gray-600">Medical Records</div>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg text-center">
+            <div class="text-2xl font-bold text-pink-600"><%= report.history.breedingRecords %></div>
+            <div class="text-sm text-gray-600">Breeding Records</div>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg text-center">
+            <div class="text-2xl font-bold text-green-600"><%= report.history.vaccinationRecords %></div>
+            <div class="text-sm text-gray-600">Vaccination Records</div>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg text-center">
+            <div class="text-2xl font-bold text-yellow-600"><%= report.history.previousOwners %></div>
+            <div class="text-sm text-gray-600">Previous Owners</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
