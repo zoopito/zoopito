@@ -84,7 +84,7 @@ function setTheme(isDark) {
 // ------------------------------
 const savedTheme = localStorage.getItem("theme");
 const systemPrefersDark = window.matchMedia(
-  "(prefers-color-scheme: dark)"
+  "(prefers-color-scheme: dark)",
 ).matches;
 
 // Saved theme → apply it
@@ -144,3 +144,74 @@ document.addEventListener("click", (e) => {
     mobileMenu.classList.add("translate-x-full");
   }
 });
+
+// Generate particles
+function createParticles() {
+  const particlesContainer = document.getElementById("particles");
+  const particleCount = window.innerWidth < 768 ? 15 : 30;
+
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement("div");
+    particle.className = "particle";
+
+    // Random properties
+    const size = Math.random() * 4 + 4;
+    const x = Math.random() * 100;
+    const delay = Math.random() * 15;
+    const duration = Math.random() * 10 + 15;
+
+    particle.style.cssText = `
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}vw;
+                    --x-offset: ${(Math.random() - 0.5) * 0.2};
+                    animation-delay: ${delay}s;
+                    animation-duration: ${duration}s;
+                    opacity: ${Math.random() * 0.5 + 0.3};
+                `;
+
+    particlesContainer.appendChild(particle);
+  }
+}
+
+// Simulate loading completion
+function simulateLoading() {
+  return new Promise((resolve) => {
+    // Check if document is already loaded
+    if (document.readyState === "complete") {
+      resolve();
+      return;
+    }
+
+    // Or wait for load event
+    window.addEventListener("load", resolve);
+
+    // Fallback timeout
+    setTimeout(resolve, 2000);
+  });
+}
+
+// Initialize splash screen
+document.addEventListener("DOMContentLoaded", () => {
+  createParticles();
+
+  simulateLoading().then(() => {
+    // Add a small delay for smooth transition
+    setTimeout(() => {
+      // Show main app content
+      document.getElementById("app").style.display = "block";
+
+      // Optional: Add class for exit animation
+      document.getElementById("splash").classList.add("exiting");
+    }, 500);
+  });
+});
+
+// Service Worker registration for PWA
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .catch((err) => console.log("ServiceWorker registration failed: ", err));
+  });
+}

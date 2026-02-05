@@ -19,7 +19,7 @@
   <meta property="og:url" content="https://zoopito.in/" />
   <meta property="og:title" content="Zoopito - Veterinary & Sales Team Management Platform" />
   <meta property="og:description" content="Zoopito is a platform for managing veterinary and sales teams." />
-  <meta property="og:image" content="https://zoopito.com/images/favicon-32x32.png" />
+  <meta property="og:image" content="https://zoopito.in/images/favicon-32x32.png" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
@@ -62,6 +62,7 @@
   <!-- AOS -->
   <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
 
+  <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/output.css" />
 
   <!-- Smooth Theme Transition -->
@@ -84,6 +85,25 @@
 
 <!-- Default background for light mode -->
 <body class="bg-gray-50 font-sans text-gray-800 dark:bg-black">
+
+  <!-- Splash Screen -->
+    <div id="splash">
+        <div class="particles" id="particles"></div>
+        
+        <div class="splash-content">
+            <div class="logo-container">
+                <div class="logo-ring"></div>
+                <img src="images/logo2.png" class="logo" alt="Zoopito Logo" />
+            </div>
+            
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            
+            <div class="loading-text">Loading Zoopito...</div>
+        </div>
+    </div>
+    
 
   <!-- Navbar -->
   <%- include("../includes/navbar.ejs") %>
