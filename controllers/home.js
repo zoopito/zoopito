@@ -33,6 +33,7 @@ module.exports.homePage = async (req, res, next) => {
 
       res.render("zoopito/home.ejs", {
         user: null,
+        showsplash: true,
         counts: {
           totalUsers,
           totalFarmers,
@@ -54,6 +55,7 @@ module.exports.homePage = async (req, res, next) => {
       // const servicesCount = await Servise.countDocuments();
       res.render("sales/index.ejs", {
         User: user,
+        showsplash: true,
         tile,
         shortDescription,
         farmersCount,

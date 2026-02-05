@@ -140,6 +140,7 @@ app.use((req, res, next) => {
   res.locals.primary = req.flash("primary");
   res.locals.currUser = req.user || null;
   res.locals.currentPath = req.path;
+  res.locals.showsplash = false;
   next();
 });
 

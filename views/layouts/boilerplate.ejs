@@ -86,6 +86,7 @@
 <!-- Default background for light mode -->
 <body class="bg-gray-50 font-sans text-gray-800 dark:bg-black">
 
+  <% if(showsplash){ %>
   <!-- Splash Screen -->
     <div id="splash">
         <div class="particles" id="particles"></div>
@@ -103,7 +104,7 @@
             <div class="loading-text">Loading Zoopito...</div>
         </div>
     </div>
-    
+  <% } %>
 
   <!-- Navbar -->
   <%- include("../includes/navbar.ejs") %>
