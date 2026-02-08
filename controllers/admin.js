@@ -478,3 +478,261 @@ module.exports.createAdmin = async (req, res) => {
     res.redirect("/admin/settings/add-admin");
   }
 };
+
+module.exports.allUsers = async (req, res) => {
+  try {
+    const {
+      search,
+      role,
+      status,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      page = 1,
+      limit = 20,
+    } = req.query;
+
+    // Build query
+    const query = {};
+
+    // Search functionality
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { mobile: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // Filter by role
+    if (role && role !== "all") {
+      query.role = role.toUpperCase();
+    }
+
+    // Filter by status
+    if (status === "active") {
+      query.isActive = true;
+      query.isBlocked = false;
+    } else if (status === "inactive") {
+      query.isActive = false;
+    } else if (status === "blocked") {
+      query.isBlocked = true;
+    }
+
+    // Sort options
+    const sort = {};
+    sort[sortBy] = sortOrder === "desc" ? -1 : 1;
+
+    // Pagination
+    const skip = (page - 1) * limit;
+
+    // Get users with pagination
+    const users = await User.find(query)
+      .populate("createdBy", "name email")
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean();
+
+    // Get total count for pagination
+    const totalUsers = await User.countDocuments(query);
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    // Get user statistics
+    const stats = {
+      total: await User.countDocuments(),
+      active: await User.countDocuments({ isActive: true, isBlocked: false }),
+      inactive: await User.countDocuments({ isActive: false }),
+      blocked: await User.countDocuments({ isBlocked: true }),
+      verified: await User.countDocuments({ isVerified: true }),
+      byRole: {
+        admin: await User.countDocuments({ role: "ADMIN" }),
+        sales: await User.countDocuments({ role: "SALES" }),
+        paravet: await User.countDocuments({ role: "PARAVET" }),
+        farmer: await User.countDocuments({ role: "FARMER" }),
+        user: await User.countDocuments({ role: "USER" }),
+      },
+    };
+
+    res.render("admin/others/allusers.ejs", {
+      users,
+      stats,
+      filters: req.query,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages,
+        totalUsers,
+      },
+      roles: ["ADMIN", "SALES", "PARAVET", "FARMER", "USER"],
+      statuses: ["active", "inactive", "blocked"],
+      title: "User Management",
+    });
+  } catch (err) {
+    console.error("All users error:", err);
+    req.flash("error", "❌ Failed to load users page");
+    res.redirect("/admin/dashboard");
+  }
+};
+
+// Export Users to CSV
+module.exports.exportUsers = async (req, res) => {
+  try {
+    const { search, role, status } = req.query;
+
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { mobile: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (role && role !== "all") {
+      query.role = role.toUpperCase();
+    }
+
+    if (status === "active") {
+      query.isActive = true;
+      query.isBlocked = false;
+    } else if (status === "inactive") {
+      query.isActive = false;
+    } else if (status === "blocked") {
+      query.isBlocked = true;
+    }
+
+    const users = await User.find(query)
+      .select(
+        "name email mobile role designation isActive isBlocked isVerified createdAt lastLogin",
+      )
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Convert to CSV
+    const fields = [
+      "Name",
+      "Email",
+      "Mobile",
+      "Role",
+      "Designation",
+      "Status",
+      "Verified",
+      "Created At",
+      "Last Login",
+    ];
+    const csvData = users.map((user) => ({
+      Name: user.name,
+      Email: user.email,
+      Mobile: user.mobile || "",
+      Role: user.role,
+      Designation: user.designation || "",
+      Status: user.isBlocked
+        ? "Blocked"
+        : user.isActive
+          ? "Active"
+          : "Inactive",
+      Verified: user.isVerified ? "Yes" : "No",
+      "Created At": new Date(user.createdAt).toLocaleDateString(),
+      "Last Login": user.lastLogin
+        ? new Date(user.lastLogin).toLocaleDateString()
+        : "Never",
+    }));
+
+    // Generate CSV
+    const csv = [
+      fields.join(","),
+      ...csvData.map((row) =>
+        fields.map((field) => `"${row[field] || ""}"`).join(","),
+      ),
+    ].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=users_${Date.now()}.csv`,
+    );
+    res.send(csv);
+  } catch (err) {
+    console.error("Export users error:", err);
+    req.flash("error", "❌ Failed to export users");
+    res.redirect("/admin/users");
+  }
+};
+
+// User status toggle controllers
+module.exports.activateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await User.findByIdAndUpdate(id, { isActive: true });
+    req.flash("success", "✅ User activated successfully");
+    res.redirect("/admin/allusers");
+  } catch (err) {
+    console.error("Activate user error:", err);
+    req.flash("error", "❌ Failed to activate user");
+    res.redirect("/admin/allusers");
+  }
+};
+
+module.exports.deactivateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await User.findByIdAndUpdate(id, { isActive: false });
+    req.flash("warning", "⚠️ User deactivated");
+    res.redirect("/admin/allusers");
+  } catch (err) {
+    console.error("Deactivate user error:", err);
+    req.flash("error", "❌ Failed to deactivate user");
+    res.redirect("/admin/allusers");
+  }
+};
+
+module.exports.blockUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await User.findByIdAndUpdate(id, { isBlocked: true });
+    req.flash("warning", "⛔ User blocked");
+    res.redirect("/admin/allusers");
+  } catch (err) {
+    console.error("Block user error:", err);
+    req.flash("error", "❌ Failed to block user");
+    res.redirect("/admin/allusers");
+  }
+};
+
+module.exports.unblockUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await User.findByIdAndUpdate(id, { isBlocked: false });
+    req.flash("success", "✅ User unblocked");
+    res.redirect("/admin/allusers");
+  } catch (err) {
+    console.error("Unblock user error:", err);
+    req.flash("error", "❌ Failed to unblock user");
+    res.redirect("/admin/allusers");
+  }
+};
+
+// View user details
+module.exports.viewUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id)
+      .populate("createdBy", "name email")
+      .lean();
+
+    if (!user) {
+      req.flash("error", "❌ User not found");
+      return res.redirect("/admin/allusers");
+    }
+
+    res.render("admin/users/view", {
+      user,
+      title: `User Details - ${user.name}`,
+    });
+  } catch (err) {
+    console.error("View user error:", err);
+    req.flash("error", "❌ Failed to load user details");
+    res.redirect("/admin/allusers");
+  }
+};

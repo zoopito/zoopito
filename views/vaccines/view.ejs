@@ -1,0 +1,681 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-8 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="p-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+              Vaccine Management
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">
+              Manage all vaccines and immunization protocols
+            </p>
+          </div>
+        </div>
+        
+        <!-- Stats Summary -->
+        <div class="flex flex-wrap gap-4 mt-4">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+            <span class="text-sm text-gray-600 dark:text-gray-400">
+              Total Vaccines: <span class="font-semibold text-gray-900 dark:text-white"><%= total %></span>
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+            <span class="text-sm text-gray-600 dark:text-gray-400">
+              Active Vaccines: <span class="font-semibold text-gray-900 dark:text-white">
+                <%= vaccines.filter(v => v.isActive).length %>
+              </span>
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <span class="text-sm text-gray-600 dark:text-gray-400">
+              Page: <span class="font-semibold text-gray-900 dark:text-white">
+                <%= currentPage %>/<%= totalPages %>
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="flex flex-wrap gap-2">
+        <a href="/vaccines/new"
+           class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg shadow-green-500/25">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Add New Vaccine
+        </a>
+        
+        <button onclick="toggleAdvancedFilters()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+          </svg>
+          Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div id="advancedFilters" class="hidden bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6 mb-6">
+      <form method="GET" action="/vaccines" class="space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div class="flex-1">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+              <input type="text" 
+                     name="search"
+                     placeholder="Search by name, brand, disease target..." 
+                     class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 transition-colors"
+                     value="<%= search || '' %>">
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Species Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Target Species
+            </label>
+            <select name="species" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              <option value="">All Species</option>
+              <% speciesOptions.forEach(option => { %>
+                <option value="<%= option %>" <%= species === option ? 'selected' : '' %>>
+                  <%= option %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          
+          <!-- Category Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Category
+            </label>
+            <select name="category" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              <option value="">All Categories</option>
+              <% categoryOptions.forEach(option => { %>
+                <option value="<%= option %>" <%= category === option ? 'selected' : '' %>>
+                  <%= option %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          
+          <!-- Status Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Status
+            </label>
+            <select name="isActive" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+              <option value="">All Status</option>
+              <option value="true" <%= isActive === 'true' ? 'selected' : '' %>>Active</option>
+              <option value="false" <%= isActive === 'false' ? 'selected' : '' %>>Inactive</option>
+            </select>
+          </div>
+          
+          <!-- Actions -->
+          <div class="flex items-end gap-2">
+            <button type="submit" 
+                    class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-colors">
+              Apply Filters
+            </button>
+            <a href="/vaccines" 
+               class="px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+              Clear
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Vaccines Grid/Table View Toggle -->
+    <div class="flex justify-between items-center mb-6">
+      <div class="text-sm text-gray-600 dark:text-gray-400">
+        Showing <span class="font-semibold text-gray-900 dark:text-white">
+          <%= (currentPage - 1) * 10 + 1 %>-<%= Math.min(currentPage * 10, total) %>
+        </span> of <span class="font-semibold text-gray-900 dark:text-white"><%= total %></span> vaccines
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-600 dark:text-gray-400">View:</span>
+        <div class="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+          <button id="gridViewBtn" onclick="toggleView('grid')" 
+                  class="px-3 py-1.5 rounded-md bg-white dark:bg-gray-800 shadow-sm text-gray-900 dark:text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            </svg>
+          </button>
+          <button id="tableViewBtn" onclick="toggleView('table')" 
+                  class="px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vaccines Grid View -->
+    <div id="gridView" class="mb-8">
+      <% if (vaccines.length > 0) { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <% vaccines.forEach(vaccine => { %>
+            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+              <!-- Vaccine Header -->
+              <div class="p-6 pb-4">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                      <h3 class="text-lg font-bold text-gray-900 dark:text-white truncate">
+                        <%= vaccine.name %>
+                      </h3>
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium <%= vaccine.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' %>">
+                        <%= vaccine.isActive ? 'Active' : 'Inactive' %>
+                      </span>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                      <span class="font-medium"><%= vaccine.brand %></span>
+                      <% if (vaccine.manufacturer) { %>
+                        • <%= vaccine.manufacturer %>
+                      <% } %>
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-500">
+                      <%= vaccine.diseaseTarget %>
+                    </p>
+                  </div>
+                  
+                  <div class="ml-2">
+                    <div class="p-2 rounded-lg <%= vaccine.category === 'Core' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
+                                         vaccine.category === 'Seasonal' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400' :
+                                         vaccine.category === 'Emergency' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                                         'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400' %>">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Vaccine Details -->
+                <div class="space-y-3">
+                  <!-- Vaccine Type -->
+                  <div class="flex items-center text-sm">
+                    <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="text-gray-600 dark:text-gray-400">
+                      Type: <span class="font-medium text-gray-900 dark:text-white"><%= vaccine.vaccineType %></span>
+                    </span>
+                  </div>
+                  
+                  <!-- ADMINistration -->
+                  <div class="flex items-center text-sm">
+                    <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <span class="text-gray-600 dark:text-gray-400">
+                      Route: <span class="font-medium text-gray-900 dark:text-white"><%= vaccine.ADMINistrationRoute %></span>
+                    </span>
+                  </div>
+                  
+                  <!-- Species -->
+                  <div class="flex items-center text-sm">
+                    <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                    </svg>
+                    <span class="text-gray-600 dark:text-gray-400">
+                      Species: <span class="font-medium text-gray-900 dark:text-white">
+                        <%= vaccine.targetSpecies && vaccine.targetSpecies.length > 0 
+                          ? vaccine.targetSpecies.slice(0, 2).join(', ') + (vaccine.targetSpecies.length > 2 ? '...' : '')
+                          : 'All' %>
+                      </span>
+                    </span>
+                  </div>
+                  
+                  <!-- Timing -->
+                  <% if (vaccine.boosterIntervalWeeks) { %>
+                    <div class="flex items-center text-sm">
+                      <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      <span class="text-gray-600 dark:text-gray-400">
+                        Booster: <span class="font-medium text-gray-900 dark:text-white">
+                          Every <%= Math.round(vaccine.boosterIntervalWeeks / 4.33) %> months
+                        </span>
+                      </span>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+              
+              <!-- Card Footer with Actions -->
+              <div class="px-6 py-4 bg-gray-50/50 dark:bg-gray-700/30 border-t border-gray-100/50 dark:border-gray-700/50">
+                <div class="flex justify-between items-center">
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Updated: <%= new Date(vaccine.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) %>
+                  </div>
+                  
+                  <div class="flex gap-2">
+                    <a href="/vaccines/<%= vaccine._id %>" 
+                       class="p-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                       title="View Details">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                    </a>
+                    
+                    <a href="/vaccines/<%= vaccine._id %>/edit" 
+                       class="p-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                       title="Edit">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </a>
+                    
+                    <% if (currUser && currUser.role === 'ADMIN') { %>
+                      <form action="/vaccines/<%= vaccine._id %>/toggle-active?_method=PATCH" method="POST" class="inline" onsubmit="return confirmToggleActive(event, `<%= vaccine.isActive %>`)">
+                        <input type="hidden" name="_method" value="PATCH">
+                        <button type="submit" 
+                                class="p-2 <%= vaccine.isActive ? 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20' : 'text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20' %> rounded-lg transition-colors"
+                                title="<%= vaccine.isActive ? 'Deactivate' : 'Activate' %>">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <% if (vaccine.isActive) { %>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                            <% } else { %>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <% } %>
+                          </svg>
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <!-- Empty State -->
+        <div class="text-center py-16">
+          <div class="mx-auto w-24 h-24 mb-6">
+            <svg class="w-full h-full text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No vaccines found</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+            <% if (search || species || category || isActive) { %>
+              Try adjusting your filters or search terms
+            <% } else { %>
+              Get started by adding your first vaccine
+            <% } %>
+          </p>
+          <div class="flex justify-center gap-3">
+            <% if (search || species || category || isActive) { %>
+              <a href="/vaccines" 
+                 class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                Clear Filters
+              </a>
+            <% } %>
+            <a href="/vaccines/new" 
+               class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700">
+              Add New Vaccine
+            </a>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Vaccines Table View (Hidden by default) -->
+    <div id="tableView" class="hidden mb-8">
+      <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Vaccine Details
+                </th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Type & Category
+                </th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  ADMINistration
+                </th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Species
+                </th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Status
+                </th>
+                <th scope="col" class="px-6 py-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% if (vaccines.length > 0) { %>
+                <% vaccines.forEach(vaccine => { %>
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <!-- Vaccine Details -->
+                    <td class="px-6 py-4">
+                      <div>
+                        <div class="font-medium text-gray-900 dark:text-white">
+                          <%= vaccine.name %>
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                          <%= vaccine.brand %>
+                          <% if (vaccine.manufacturer) { %>
+                            • <%= vaccine.manufacturer %>
+                          <% } %>
+                        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                          <%= vaccine.diseaseTarget %>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <!-- Type & Category -->
+                    <td class="px-6 py-4">
+                      <div class="text-sm text-gray-900 dark:text-white">
+                        <%= vaccine.vaccineType %>
+                      </div>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1
+                        <%= vaccine.category === 'Core' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                           vaccine.category === 'Seasonal' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                           vaccine.category === 'Emergency' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                           'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' %>">
+                        <%= vaccine.category %>
+                      </span>
+                    </td>
+                    
+                    <!-- ADMINistration -->
+                    <td class="px-6 py-4">
+                      <div class="text-sm text-gray-900 dark:text-white">
+                        <%= vaccine.ADMINistrationRoute %>
+                      </div>
+                      <% if (vaccine.standardDosage && vaccine.dosageUnit) { %>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                          <%= vaccine.standardDosage %> <%= vaccine.dosageUnit %>
+                        </div>
+                      <% } %>
+                      <% if (vaccine.boosterIntervalWeeks) { %>
+                        <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                          Every <%= Math.round(vaccine.boosterIntervalWeeks / 4.33) %> months
+                        </div>
+                      <% } %>
+                    </td>
+                    
+                    <!-- Species -->
+                    <td class="px-6 py-4">
+                      <div class="text-sm text-gray-900 dark:text-white">
+                        <% if (vaccine.targetSpecies && vaccine.targetSpecies.length > 0) { %>
+                          <div class="flex flex-wrap gap-1">
+                            <% vaccine.targetSpecies.slice(0, 3).forEach(species => { %>
+                              <span class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                <%= species %>
+                              </span>
+                            <% }) %>
+                            <% if (vaccine.targetSpecies.length > 3) { %>
+                              <span class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                +<%= vaccine.targetSpecies.length - 3 %>
+                              </span>
+                            <% } %>
+                          </div>
+                        <% } else { %>
+                          <span class="text-gray-500 dark:text-gray-500">All</span>
+                        <% } %>
+                      </div>
+                    </td>
+                    
+                    <!-- Status -->
+                    <td class="px-6 py-4">
+                      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                        <%= vaccine.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' %>">
+                        <span class="w-2 h-2 rounded-full mr-2 <%= vaccine.isActive ? 'bg-green-500' : 'bg-gray-500' %>"></span>
+                        <%= vaccine.isActive ? 'Active' : 'Inactive' %>
+                      </span>
+                    </td>
+                    
+                    <!-- Actions -->
+                    <td class="px-6 py-4 text-right">
+                      <div class="flex justify-end gap-2">
+                        <a href="/vaccines/<%= vaccine._id %>" 
+                           class="p-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                           title="View">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                          </svg>
+                        </a>
+                        
+                        <a href="/vaccines/<%= vaccine._id %>/edit" 
+                           class="p-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
+                           title="Edit">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                          </svg>
+                        </a>
+                        
+                        <% if (currUser && currUser.role === 'ADMIN') { %>
+                          <form action="/vaccines/<%= vaccine._id %>/toggle-active?_method=PATCH" method="POST" class="inline">
+                            <button type="submit" 
+                                    class="p-2 <%= vaccine.isActive ? 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20' : 'text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20' %> rounded-lg"
+                                    title="<%= vaccine.isActive ? 'Deactivate' : 'Activate' %>"
+                                    onclick="return confirm(`<%= vaccine.isActive ? 'Deactivate this vaccine?' : 'Activate this vaccine?' %>`)">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <% if (vaccine.isActive) { %>
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                                <% } else { %>
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                <% } %>
+                              </svg>
+                            </button>
+                          </form>
+                        <% } %>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <div class="mx-auto w-12 h-12 mb-4">
+                      <svg class="w-full h-full text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                      </svg>
+                    </div>
+                    <p class="text-lg font-medium">No vaccines found</p>
+                    <p class="text-sm mt-1">
+                      <% if (search || species || category || isActive) { %>
+                        Try adjusting your filters or search terms
+                      <% } else { %>
+                        Get started by adding your first vaccine
+                      <% } %>
+                    </p>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <% if (totalPages > 1) { %>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+          Page <span class="font-medium text-gray-900 dark:text-white"><%= currentPage %></span> of 
+          <span class="font-medium text-gray-900 dark:text-white"><%= totalPages %></span>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <!-- Previous Button -->
+          <% if (currentPage > 1) { %>
+            <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %><%= species ? '&species=' + species : '' %><%= category ? '&category=' + category : '' %><%= isActive ? '&isActive=' + isActive : '' %>"
+               class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+              <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+              Previous
+            </a>
+          <% } %>
+          
+          <!-- Page Numbers -->
+          <div class="flex items-center gap-1">
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <% if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) { %>
+                <a href="?page=<%= i %><%= search ? '&search=' + search : '' %><%= species ? '&species=' + species : '' %><%= category ? '&category=' + category : '' %><%= isActive ? '&isActive=' + isActive : '' %>"
+                   class="w-10 h-10 flex items-center justify-center rounded-lg <%= i === currentPage ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' %>">
+                  <%= i %>
+                </a>
+              <% } else if (i === currentPage - 3 || i === currentPage + 3) { %>
+                <span class="px-2 text-gray-500">...</span>
+              <% } %>
+            <% } %>
+          </div>
+          
+          <!-- Next Button -->
+          <% if (currentPage < totalPages) { %>
+            <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %><%= species ? '&species=' + species : '' %><%= category ? '&category=' + category : '' %><%= isActive ? '&isActive=' + isActive : '' %>"
+               class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+              Next
+              <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  // Toggle advanced filters
+  function toggleAdvancedFilters() {
+    const filters = document.getElementById('advancedFilters');
+    filters.classList.toggle('hidden');
+  }
+
+  // Toggle between grid and table view
+  function toggleView(viewType) {
+    const gridView = document.getElementById('gridView');
+    const tableView = document.getElementById('tableView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const tableBtn = document.getElementById('tableViewBtn');
+    
+    if (viewType === 'grid') {
+      gridView.classList.remove('hidden');
+      tableView.classList.add('hidden');
+      gridBtn.classList.add('bg-white', 'dark:bg-gray-800', 'shadow-sm', 'text-gray-900', 'dark:text-white');
+      gridBtn.classList.remove('text-gray-600', 'dark:text-gray-400', 'hover:text-gray-900', 'dark:hover:text-white');
+      tableBtn.classList.remove('bg-white', 'dark:bg-gray-800', 'shadow-sm', 'text-gray-900', 'dark:text-white');
+      tableBtn.classList.add('text-gray-600', 'dark:text-gray-400', 'hover:text-gray-900', 'dark:hover:text-white');
+    } else {
+      gridView.classList.add('hidden');
+      tableView.classList.remove('hidden');
+      tableBtn.classList.add('bg-white', 'dark:bg-gray-800', 'shadow-sm', 'text-gray-900', 'dark:text-white');
+      tableBtn.classList.remove('text-gray-600', 'dark:text-gray-400', 'hover:text-gray-900', 'dark:hover:text-white');
+      gridBtn.classList.remove('bg-white', 'dark:bg-gray-800', 'shadow-sm', 'text-gray-900', 'dark:text-white');
+      gridBtn.classList.add('text-gray-600', 'dark:text-gray-400', 'hover:text-gray-900', 'dark:hover:text-white');
+    }
+    
+    // Save preference to localStorage
+    localStorage.setItem('vaccineViewPreference', viewType);
+  }
+
+  // Confirm toggle active status
+  function confirmToggleActive(event, isActive) {
+    const action = isActive ? 'deactivate' : 'activate';
+    if (!confirm(`Are you sure you want to ${action} this vaccine?`)) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  // Load saved view preference
+  document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('vaccineViewPreference') || 'grid';
+    toggleView(savedView);
+    
+    // Auto-submit filters on change
+    const filterSelects = document.querySelectorAll('select[name]');
+    filterSelects.forEach(select => {
+      select.addEventListener('change', function() {
+        this.closest('form').submit();
+      });
+    });
+  });
+
+  // Quick actions
+  function exportVaccines() {
+    alert('Export functionality will be implemented soon!');
+  }
+</script>
+
+<style>
+  /* Smooth transitions */
+  .transition-all {
+    transition: all 0.3s ease-in-out;
+  }
+  
+  /* Card hover effects */
+  .hover\\:-translate-y-1:hover {
+    transform: translateY(-4px);
+  }
+  
+  /* Gradient text for active state */
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(to right, #3b82f6, #8b5cf6);
+  }
+  
+  /* Custom scrollbar for table */
+  .overflow-x-auto::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+  }
+  
+  .dark .overflow-x-auto::-webkit-scrollbar-track {
+    background: #374151;
+  }
+  
+  .dark .overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #6b7280;
+  }
+</style>

@@ -266,4 +266,37 @@ router.get(
 );
 router.post("/settings", isLoggedIn, isAdmin, adminController.createAdmin);
 router.get("/contacts", isLoggedIn, isAdmin, othersController.showContacts);
+router.get("/allusers", isLoggedIn, isAdmin, adminController.allUsers);
+
+router.get("/users/export", isLoggedIn, isAdmin, adminController.exportUsers);
+// router.get("/users/create", isLoggedIn, isAdmin, adminController.getCreateForm);
+// router.post("/users", isLoggedIn, isAdmin, adminController.createUser);
+router.get("/users/:id", isLoggedIn, isAdmin, adminController.viewUser);
+// router.get("/users/:id/edit", isLoggedIn, isAdmin, adminController.getEditForm);
+// router.put("/users/:id", isLoggedIn, isAdmin, adminController.updateUser);
+//router.delete("/users/:id", isLoggedIn, isAdmin, adminController.deleteUser);
+
+// User Status Management
+router.post(
+  "/users/:id/activate",
+  isLoggedIn,
+  isAdmin,
+  adminController.activateUser,
+);
+router.post(
+  "/users/:id/deactivate",
+  isLoggedIn,
+  isAdmin,
+  adminController.deactivateUser,
+);
+router.post("/users/:id/block", isLoggedIn, isAdmin, adminController.blockUser);
+router.post(
+  "/users/:id/unblock",
+  isLoggedIn,
+  isAdmin,
+  adminController.unblockUser,
+);
+// router.post("/allusers/:id/reset-password", adminController.resetPassword);
+// router.get("/allusers/:id/login-history", adminController.loginHistory);
+
 module.exports = router;

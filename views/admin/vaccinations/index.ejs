@@ -17,7 +17,7 @@
               Vaccination & Deworming Management
             </h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1">
-              Automated veterinary assistant following Maharashtra cattle health protocols
+              Digital Veterinary Assistant - <%= farmName || 'Farm Management System' %>
             </p>
           </div>
         </div>
@@ -27,19 +27,19 @@
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
             <span class="text-sm text-gray-600 dark:text-gray-400">
-              System Philosophy: <span class="font-semibold text-gray-900 dark:text-white">Digital Veterinary Assistant</span>
+              Active Animals: <span class="font-semibold text-gray-900 dark:text-white"><%= stats?.totalAnimals || 0 %></span>
             </span>
           </div>
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-blue-500"></div>
             <span class="text-sm text-gray-600 dark:text-gray-400">
-              Total Vaccinations/Year: <span class="font-semibold text-gray-900 dark:text-white">3 per animal</span>
+              Today's Tasks: <span class="font-semibold text-gray-900 dark:text-white"><%= stats?.todayTasks || 0 %></span>
             </span>
           </div>
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
             <span class="text-sm text-gray-600 dark:text-gray-400">
-              Pregnancy Safety: <span class="font-semibold text-gray-900 dark:text-white">Auto-controlled</span>
+              Pregnancy Safety: <span class="font-semibold text-gray-900 dark:text-white"><%= stats?.pregnantAnimals || 0 %> animals</span>
             </span>
           </div>
         </div>
@@ -47,16 +47,28 @@
 
       <!-- Quick Actions -->
       <div class="flex flex-wrap gap-2">
-        <button onclick="markAllCompleted()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg shadow-green-500/25">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-          </svg>
-          Mark All Done
-        </button>
-        
-        <a href="/vaccination/calendar"
+        <a href="/vaccines/new"
            class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          New Vaccine
+        </a>
+        <a href="/vaccines"
+           class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
+          
+          See All Vaccines
+        </a>
+        <a href="/vaccination/new"
+           class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          New Vaccination
+        </a>
+        
+        <a href="/vaccines/calendar"
+           class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/25">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
@@ -64,7 +76,7 @@
         </a>
         
         <button onclick="showSystemRules()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/25">
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg shadow-green-500/25">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
@@ -75,7 +87,7 @@
 
     <!-- Filters Section -->
     <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6 mb-6">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <form method="GET" action="/vaccinaes" class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex-1 max-w-2xl">
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -84,42 +96,53 @@
               </svg>
             </div>
             <input type="text" 
+                   name="search"
                    placeholder="Search by animal ID, farmer name, village..." 
                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 transition-colors"
-                   id="searchInput">
+                   value="<%= search || '' %>">
           </div>
         </div>
         
         <div class="flex flex-wrap gap-2">
-          <select id="statusFilter" class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+          <select name="status" class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
             <option value="">All Status</option>
-            <option value="today">Today's Tasks</option>
-            <option value="week">This Week</option>
-            <option value="upcoming">Upcoming (7-14 days)</option>
-            <option value="overdue">Overdue</option>
-            <option value="blocked">Blocked (Pregnancy)</option>
+            <option value="today" <%= status === 'today' ? 'selected' : '' %>>Today's Tasks</option>
+            <option value="week" <%= status === 'week' ? 'selected' : '' %>>This Week</option>
+            <option value="upcoming" <%= status === 'upcoming' ? 'selected' : '' %>>Upcoming (7-14 days)</option>
+            <option value="overdue" <%= status === 'overdue' ? 'selected' : '' %>>Overdue</option>
+            <option value="blocked" <%= status === 'blocked' ? 'selected' : '' %>>Blocked (Pregnancy)</option>
+            <option value="completed" <%= status === 'completed' ? 'selected' : '' %>>Completed</option>
           </select>
           
-          <select id="vaccineFilter" class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+          <select name="vaccineType" class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
             <option value="">All Treatments</option>
-            <option value="fmd">FMD Vaccine</option>
-            <option value="hsbq">HS-BQ Vaccine</option>
-            <option value="deworming">Deworming</option>
+            <% vaccineTypes.forEach(type => { %>
+              <option value="<%= type._id %>" <%= vaccineType === type._id.toString() ? 'selected' : '' %>>
+                <%= type.name %>
+              </option>
+            <% }); %>
           </select>
           
-          <select id="animalTypeFilter" class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+          <select name="animalType" class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
             <option value="">All Animals</option>
-            <option value="cow">Cow</option>
-            <option value="buffalo">Buffalo</option>
-            <option value="pregnant">Pregnant Animals</option>
+            <option value="Cow" <%= animalType === 'Cow' ? 'selected' : '' %>>Cow</option>
+            <option value="Buffalo" <%= animalType === 'Buffalo' ? 'selected' : '' %>>Buffalo</option>
+            <option value="Goat" <%= animalType === 'Goat' ? 'selected' : '' %>>Goat</option>
+            <option value="Sheep" <%= animalType === 'Sheep' ? 'selected' : '' %>>Sheep</option>
+            <option value="pregnant" <%= animalType === 'pregnant' ? 'selected' : '' %>>Pregnant Animals</option>
           </select>
           
-          <button onclick="clearFilters()" 
-                  class="px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-            Clear Filters
+          <button type="submit" 
+                  class="px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-colors">
+            Filter
           </button>
+          
+          <a href="/admin/vaccinations" 
+             class="px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+            Clear
+          </a>
         </div>
-      </div>
+      </form>
     </div>
 
     <!-- Overview Cards -->
@@ -129,7 +152,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Tasks</p>
-            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2">12</h3>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><%= stats?.todayTasks || 0 %></h3>
           </div>
           <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30">
             <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +161,7 @@
           </div>
         </div>
         <div class="mt-4">
-          <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+          <a href="?status=today" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
             View schedule →
           </a>
         </div>
@@ -149,7 +172,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">This Week</p>
-            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2">47</h3>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><%= stats?.weekTasks || 0 %></h3>
           </div>
           <div class="p-3 rounded-full bg-green-100 dark:bg-green-900/30">
             <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +181,9 @@
           </div>
         </div>
         <div class="mt-4">
-          <div class="text-xs text-gray-500 dark:text-gray-400">Includes: 28 FMD, 12 HS-BQ, 7 Deworming</div>
+          <a href="?status=week" class="text-sm text-green-600 dark:text-green-400 hover:underline">
+            View this week →
+          </a>
         </div>
       </div>
 
@@ -167,7 +192,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Blocked (Pregnancy)</p>
-            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2">8</h3>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><%= stats?.blockedTasks || 0 %></h3>
           </div>
           <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900/30">
             <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,7 +201,9 @@
           </div>
         </div>
         <div class="mt-4">
-          <div class="text-xs text-yellow-600 dark:text-yellow-400">Safety protocol active</div>
+          <a href="?status=blocked&animalType=pregnant" class="text-sm text-yellow-600 dark:text-yellow-400 hover:underline">
+            View details →
+          </a>
         </div>
       </div>
 
@@ -185,7 +212,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Upcoming (7-14d)</p>
-            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2">36</h3>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><%= stats?.upcomingTasks || 0 %></h3>
           </div>
           <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30">
             <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,33 +221,10 @@
           </div>
         </div>
         <div class="mt-4">
-          <a href="#" class="text-sm text-purple-600 dark:text-purple-400 hover:underline">
+          <a href="?status=upcoming" class="text-sm text-purple-600 dark:text-purple-400 hover:underline">
             Plan ahead →
           </a>
         </div>
-      </div>
-    </div>
-
-    <!-- Tabs Navigation -->
-    <div class="mb-6">
-      <div class="border-b border-gray-200 dark:border-gray-700">
-        <nav class="-mb-px flex space-x-8">
-          <button id="tab-today" class="tab-button border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 px-1 py-4 text-sm font-medium">
-            Today's Tasks
-          </button>
-          <button id="tab-week" class="tab-button border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-1 py-4 text-sm font-medium">
-            This Week
-          </button>
-          <button id="tab-upcoming" class="tab-button border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-1 py-4 text-sm font-medium">
-            Upcoming (7-14 days)
-          </button>
-          <button id="tab-blocked" class="tab-button border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-1 py-4 text-sm font-medium">
-            Blocked (Pregnancy)
-          </button>
-          <button id="tab-all" class="tab-button border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-1 py-4 text-sm font-medium">
-            All Scheduled
-          </button>
-        </nav>
       </div>
     </div>
 
@@ -250,11 +254,202 @@
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-gray-700" id="tasksTable">
-            <!-- Tasks will be loaded here based on tab selection -->
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <% if (vaccinations && vaccinations.length > 0) { %>
+              <% vaccinations.forEach(vaccination => { %>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <td class="px-6 py-4">
+                    <div>
+                      <% if (vaccination.animal) { %>
+                        <div class="font-medium text-gray-900 dark:text-white">
+                          <%= vaccination.animal.name %> (<%= vaccination.animal.tagId || vaccination.animal._id %>)
+                        </div>
+                        <% if (vaccination.farmer) { %>
+                          <div class="text-sm text-gray-500 dark:text-gray-400">
+                            Farmer: <%= vaccination.farmer.name %> • <%= vaccination.farmer.village %>
+                          </div>
+                        <% } %>
+                        <span class="inline-flex items-center px-2 py-1 mt-1 text-xs font-medium rounded-full 
+                          <%= vaccination.animal.species === 'Cow' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300' :
+                             vaccination.animal.species === 'Buffalo' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' :
+                             vaccination.animal.species === 'Goat' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                             'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' %>">
+                          <%= vaccination.animal.species %>
+                          <% if (vaccination.animal.gender === 'Female') { %>
+                            <span class="ml-1">♀</span>
+                          <% } else if (vaccination.animal.gender === 'Male') { %>
+                            <span class="ml-1">♂</span>
+                          <% } %>
+                        </span>
+                      <% } else { %>
+                        <div class="text-gray-400 italic">Animal data not found</div>
+                      <% } %>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <% if (vaccination.vaccine) { %>
+                      <div class="font-medium text-gray-900 dark:text-white">
+                        <%= vaccination.vaccine.name %>
+                      </div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">
+                        <%= vaccination.vaccine.brand %>
+                        <% if (vaccination.doseNumber && vaccination.totalDosesRequired) { %>
+                          • Dose <%= vaccination.doseNumber %>/<%= vaccination.totalDosesRequired %>
+                        <% } %>
+                      </div>
+                    <% } else { %>
+                      <div class="text-gray-400 italic">Vaccine data not found</div>
+                    <% } %>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="font-medium text-gray-900 dark:text-white">
+                      <%= new Date(vaccination.dateAdministered).toLocaleDateString('en-IN', { 
+                        day: 'numeric', 
+                        month: 'short', 
+                        year: 'numeric' 
+                      }) %>
+                    </div>
+                    <% if (vaccination.nextDueDate) { %>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">
+                        Next due: <%= new Date(vaccination.nextDueDate).toLocaleDateString('en-IN', { 
+                          day: 'numeric', 
+                          month: 'short' 
+                        }) %>
+                      </div>
+                    <% } %>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                      <%= vaccination.status === 'Completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                         vaccination.status === 'Pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                         vaccination.status === 'Overdue' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                         vaccination.status === 'Blocked' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                         'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' %>">
+                      <%= vaccination.status %>
+                      <% if (vaccination.verificationStatus === 'Verified') { %>
+                        <svg class="w-3 h-3 ml-1 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                      <% } %>
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <% if (vaccination.animal && vaccination.animal.isPregnant) { %>
+                      <% 
+                        const vaccineName = vaccination.vaccine ? vaccination.vaccine.name.toLowerCase() : '';
+                        const isBlocked = (vaccination.animal.pregnancyMonth && vaccination.animal.pregnancyMonth >= 6) &&
+                                         (vaccineName.includes('hs') || vaccineName.includes('bq') || 
+                                          vaccination.vaccine.diseaseTarget?.toLowerCase().includes('deworming'));
+                      %>
+                      <div class="text-sm <%= isBlocked ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-green-600 dark:text-green-400' %>">
+                        <% if (isBlocked) { %>
+                          BLOCKED (Pregnancy Month <%= vaccination.animal.pregnancyMonth %>)
+                        <% } else if (vaccination.animal.pregnancyMonth) { %>
+                          Pregnant (Month <%= vaccination.animal.pregnancyMonth %>) - Allowed
+                        <% } else { %>
+                          Pregnant - Check safety
+                        <% } %>
+                      </div>
+                    <% } else { %>
+                      <div class="text-sm text-green-600 dark:text-green-400">
+                        Safe
+                      </div>
+                    <% } %>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex justify-end space-x-2">
+                      <% if (vaccination.status !== 'Completed' && vaccination.status !== 'Blocked') { %>
+                        <form action="/vaccination/<%= vaccination._id %>/complete" method="POST" class="inline">
+                          <input type="hidden" name="_method" value="PUT">
+                          <button type="submit" onclick="return confirm('Mark this vaccination as completed?')"
+                                  class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Mark Done
+                          </button>
+                        </form>
+                      <% } %>
+                      
+                      <a href="/vaccination/<%= vaccination._id %>"
+                         class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                        View
+                      </a>
+                      
+                      <% if (user && user.role === 'admin') { %>
+                        <form action="/vaccination/<%= vaccination._id %>" method="POST" class="inline" onsubmit="return confirm('Delete this vaccination record?')">
+                          <input type="hidden" name="_method" value="DELETE">
+                          <button type="submit" 
+                                  class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                            Delete
+                          </button>
+                        </form>
+                      <% } %>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                  <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <p class="text-lg font-medium">No vaccination records found</p>
+                  <p class="text-sm mt-1">
+                    <% if (search || status || vaccineType || animalType) { %>
+                      Try changing your filters
+                    <% } else { %>
+                      <a href="/vaccination/new" class="text-blue-600 dark:text-blue-400 hover:underline">
+                        Add your first vaccination record
+                      </a>
+                    <% } %>
+                  </p>
+                </td>
+              </tr>
+            <% } %>
           </tbody>
         </table>
       </div>
+      
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700 dark:text-gray-400">
+              Showing <span class="font-medium"><%= startIndex + 1 %></span> to 
+              <span class="font-medium"><%= Math.min(startIndex + limit, total) %></span> of 
+              <span class="font-medium"><%= total %></span> results
+            </div>
+            <div class="flex space-x-2">
+              <% if (page > 1) { %>
+                <a href="?page=<%= page - 1 %><%= queryString %>" 
+                   class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                  Previous
+                </a>
+              <% } %>
+              
+              <% for (let i = 1; i <= totalPages; i++) { %>
+                <% if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) { %>
+                  <a href="?page=<%= i %><%= queryString %>"
+                     class="px-3 py-2 rounded-lg <%= i === page ? 'bg-blue-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' %>">
+                    <%= i %>
+                  </a>
+                <% } else if (i === page - 3 || i === page + 3) { %>
+                  <span class="px-3 py-2 text-gray-500">...</span>
+                <% } %>
+              <% } %>
+              
+              <% if (page < totalPages) { %>
+                <a href="?page=<%= page + 1 %><%= queryString %>" 
+                   class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                  Next
+                </a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% } %>
     </div>
 
     <!-- Pregnancy Safety Dashboard -->
@@ -269,52 +464,69 @@
         </h3>
         
         <div class="space-y-4">
-          <div class="p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
-            <div class="flex items-center gap-3 mb-2">
-              <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
+          <% 
+            const vaccines = vaccineTypes || [];
+            const deworming = vaccines.find(v => v.name.toLowerCase().includes('deworm') || v.diseaseTarget?.toLowerCase().includes('worm'));
+            const hsbq = vaccines.find(v => v.name.toLowerCase().includes('hs') || v.name.toLowerCase().includes('bq'));
+            const fmd = vaccines.find(v => v.name.toLowerCase().includes('fmd'));
+          %>
+          
+          <% if (deworming) { %>
+            <div class="p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white"><%= deworming.name %></h4>
               </div>
-              <h4 class="font-semibold text-gray-900 dark:text-white">Deworming Rules</h4>
+              <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-11">
+                <li>• Normal (Not Pregnant): Every <%= deworming.boosterIntervalWeeks ? Math.round(deworming.boosterIntervalWeeks / 4.33) : 120 %> days</li>
+                <li>• Pregnancy Month 1-5: Allowed</li>
+                <li>• Pregnancy Month 6-9: <span class="text-red-600 dark:text-red-400 font-medium">BLOCKED</span> (miscarriage risk)</li>
+                <li>• Post-calving: After 30 days</li>
+              </ul>
             </div>
-            <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-11">
-              <li>• Normal (Not Pregnant): Every 120 days</li>
-              <li>• Pregnancy Month 1-5: Allowed</li>
-              <li>• Pregnancy Month 6-9: <span class="text-red-600 dark:text-red-400 font-medium">BLOCKED</span> (miscarriage risk)</li>
-              <li>• Post-calving: After 30 days</li>
-            </ul>
-          </div>
-
-          <div class="p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
-            <div class="flex items-center gap-3 mb-2">
-              <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+          <% } %>
+          
+          <% if (hsbq) { %>
+            <div class="p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white"><%= hsbq.name %></h4>
               </div>
-              <h4 class="font-semibold text-gray-900 dark:text-white">HS-BQ Vaccine Rules</h4>
+              <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-11">
+                <li>• Frequency: Annual (Pre-monsoon May-June)</li>
+                <li>• Pregnancy Month 1-5: Allowed</li>
+                <li>• Pregnancy Month 6-9: <span class="text-red-600 dark:text-red-400 font-medium">BLOCKED</span></li>
+                <li>• Postponed to after calving (30 days)</li>
+              </ul>
             </div>
-            <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-11">
-              <li>• Pregnancy Month 1-5: Allowed</li>
-              <li>• Pregnancy Month 6-9: <span class="text-red-600 dark:text-red-400 font-medium">BLOCKED</span></li>
-              <li>• Postponed to after calving (30 days)</li>
-            </ul>
-          </div>
-
-          <div class="p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
-            <div class="flex items-center gap-3 mb-2">
-              <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+          <% } %>
+          
+          <% if (fmd) { %>
+            <div class="p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white"><%= fmd.name %></h4>
               </div>
-              <h4 class="font-semibold text-gray-900 dark:text-white">FMD Vaccine Rules</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400 ml-11">
+                • Safe in pregnancy - <span class="text-green-600 dark:text-green-400 font-medium">No blocking required</span>
+                <% if (fmd.boosterIntervalWeeks) { %>
+                  • Every <%= Math.round(fmd.boosterIntervalWeeks / 4.33) %> months
+                <% } %>
+              </p>
             </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 ml-11">
-              • Safe in pregnancy - <span class="text-green-600 dark:text-green-400 font-medium">No blocking required</span>
-            </p>
-          </div>
+          <% } %>
         </div>
       </div>
 
@@ -329,22 +541,36 @@
         
         <div class="space-y-4">
           <div class="text-center p-6 bg-white/50 dark:bg-gray-800/30 rounded-xl">
-            <div class="text-5xl font-bold text-gray-900 dark:text-white mb-2">3</div>
+            <div class="text-5xl font-bold text-gray-900 dark:text-white mb-2">
+              <%= stats?.annualVaccinationsPerAnimal || '3' %>
+            </div>
             <div class="text-gray-600 dark:text-gray-400">Vaccinations per animal per year</div>
           </div>
           
           <div class="grid grid-cols-2 gap-4">
-            <div class="text-center p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
-              <div class="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">2</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400">FMD doses/year</div>
-              <div class="text-xs text-gray-500 dark:text-gray-500">Every 6 months</div>
-            </div>
+            <% if (fmd) { %>
+              <div class="text-center p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
+                <div class="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
+                  <%= fmd.annualDoses || '2' %>
+                </div>
+                <div class="text-sm text-gray-600 dark:text-gray-400"><%= fmd.name %> doses/year</div>
+                <% if (fmd.boosterIntervalWeeks) { %>
+                  <div class="text-xs text-gray-500 dark:text-gray-500">
+                    Every <%= Math.round(fmd.boosterIntervalWeeks / 4.33) %> months
+                  </div>
+                <% } %>
+              </div>
+            <% } %>
             
-            <div class="text-center p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
-              <div class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">1</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400">HS-BQ dose/year</div>
-              <div class="text-xs text-gray-500 dark:text-gray-500">Pre-monsoon (May-June)</div>
-            </div>
+            <% if (hsbq) { %>
+              <div class="text-center p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
+                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                  <%= hsbq.annualDoses || '1' %>
+                </div>
+                <div class="text-sm text-gray-600 dark:text-gray-400"><%= hsbq.name %> dose/year</div>
+                <div class="text-xs text-gray-500 dark:text-gray-500">Pre-monsoon (May-June)</div>
+              </div>
+            <% } %>
           </div>
           
           <div class="p-4 bg-white/50 dark:bg-gray-800/30 rounded-xl">
@@ -362,67 +588,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Auto Schedule Generator -->
-    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6 mb-8">
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-        <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-        </svg>
-        Automatic Schedule Generator
-      </h3>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Animal Type</label>
-          <select id="animalTypeSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
-            <option value="cow">Cow</option>
-            <option value="buffalo">Buffalo</option>
-          </select>
-        </div>
-        
-        <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Registration Month</label>
-          <select id="regMonthSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
-            <option value="1">January</option>
-            <option value="2">February</option>
-            <option value="3">March</option>
-            <option value="4">April</option>
-            <option value="5">May</option>
-            <option value="6">June</option>
-            <option value="7">July</option>
-            <option value="8">August</option>
-            <option value="9">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
-          </select>
-        </div>
-        
-        <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pregnancy Status</label>
-          <select id="pregnancySelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
-            <option value="no">Not Pregnant</option>
-            <option value="1-5">Pregnant (Month 1-5)</option>
-            <option value="6-9">Pregnant (Month 6-9)</option>
-          </select>
-        </div>
-      </div>
-      
-      <div class="mt-6 text-center">
-        <button onclick="generateSchedule()" 
-                class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/25">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-          </svg>
-          Generate Annual Schedule
-        </button>
-      </div>
-      
-      <div id="scheduleResult" class="mt-6 hidden">
-        <!-- Generated schedule will appear here -->
       </div>
     </div>
   </div>
@@ -452,56 +617,70 @@
           </p>
         </div>
         
-        <!-- Vaccination Rules -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
-            <h4 class="font-bold text-gray-900 dark:text-white mb-2">FMD Vaccination</h4>
-            <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-              <li>• Frequency: Every 6 months</li>
-              <li>• Pregnancy: Safe - no blocking</li>
-              <li>• Logic: Base Date + 6 months</li>
-              <li>• Base Date: Registration or Last FMD</li>
-            </ul>
-          </div>
-          
-          <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-            <h4 class="font-bold text-gray-900 dark:text-white mb-2">HS-BQ (Combined)</h4>
-            <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-              <li>• Seasonal: Pre-monsoon (May-June)</li>
-              <li>• Pregnancy Month 1-5: Allowed</li>
-              <li>• Pregnancy Month 6-9: BLOCKED</li>
-              <li>• Postponed to after calving (30 days)</li>
-            </ul>
-          </div>
+        <!-- Auto-scheduling Logic -->
+        <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
+          <h4 class="font-bold text-gray-900 dark:text-white mb-2">Auto-scheduling Logic</h4>
+          <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+            <li class="flex items-start">
+              <span class="inline-block w-6 h-6 rounded-full bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-300 text-center mr-2">1</span>
+              <span>When animal is registered, system creates vaccination schedule for next 1 year</span>
+            </li>
+            <li class="flex items-start">
+              <span class="inline-block w-6 h-6 rounded-full bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-300 text-center mr-2">2</span>
+              <span>HS-BQ scheduled in May-June based on registration month</span>
+            </li>
+            <li class="flex items-start">
+              <span class="inline-block w-6 h-6 rounded-full bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-300 text-center mr-2">3</span>
+              <span>FMD scheduled every 6 months from registration/last vaccination</span>
+            </li>
+            <li class="flex items-start">
+              <span class="inline-block w-6 h-6 rounded-full bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-300 text-center mr-2">4</span>
+              <span>Deworming every 120 days, adjusted for pregnancy safety</span>
+            </li>
+          </ul>
         </div>
         
-        <!-- Deworming Rules -->
-        <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
-          <h4 class="font-bold text-gray-900 dark:text-white mb-2">Deworming Rules</h4>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-            <div class="p-2 bg-white dark:bg-gray-700 rounded">
-              <div class="font-semibold">Normal</div>
-              <div class="text-gray-600 dark:text-gray-400">Every 120 days</div>
-            </div>
-            <div class="p-2 bg-white dark:bg-gray-700 rounded">
-              <div class="font-semibold">Pregnancy 1-5</div>
-              <div class="text-green-600 dark:text-green-400">Allowed</div>
-            </div>
-            <div class="p-2 bg-white dark:bg-gray-700 rounded">
-              <div class="font-semibold">Pregnancy 6-9</div>
-              <div class="text-red-600 dark:text-red-400">Blocked</div>
-            </div>
-            <div class="p-2 bg-white dark:bg-gray-700 rounded">
-              <div class="font-semibold">Post-calving</div>
-              <div class="text-gray-600 dark:text-gray-400">After 30 days</div>
-            </div>
+        <!-- Pregnancy Safety Matrix -->
+        <div class="p-4 bg-pink-50 dark:bg-pink-900/20 rounded-xl">
+          <h4 class="font-bold text-gray-900 dark:text-white mb-3">Pregnancy Safety Matrix</h4>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="bg-white/50 dark:bg-gray-700/50">
+                  <th class="py-2 px-3 text-left">Treatment</th>
+                  <th class="py-2 px-3 text-left">Month 1-5</th>
+                  <th class="py-2 px-3 text-left">Month 6-9</th>
+                  <th class="py-2 px-3 text-left">Post-calving</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-t border-gray-200 dark:border-gray-700">
+                  <td class="py-2 px-3">FMD Vaccine</td>
+                  <td class="py-2 px-3 text-green-600 dark:text-green-400">✓ Safe</td>
+                  <td class="py-2 px-3 text-green-600 dark:text-green-400">✓ Safe</td>
+                  <td class="py-2 px-3">After 14 days</td>
+                </tr>
+                <tr class="border-t border-gray-200 dark:border-gray-700">
+                  <td class="py-2 px-3">HS-BQ Vaccine</td>
+                  <td class="py-2 px-3 text-green-600 dark:text-green-400">✓ Allowed</td>
+                  <td class="py-2 px-3 text-red-600 dark:text-red-400">✗ BLOCKED</td>
+                  <td class="py-2 px-3">After 30 days</td>
+                </tr>
+                <tr class="border-t border-gray-200 dark:border-gray-700">
+                  <td class="py-2 px-3">Deworming</td>
+                  <td class="py-2 px-3 text-green-600 dark:text-green-400">✓ Allowed</td>
+                  <td class="py-2 px-3 text-red-600 dark:text-red-400">✗ BLOCKED</td>
+                  <td class="py-2 px-3">After 30 days</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
         
         <!-- Annual Summary -->
         <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
           <h4 class="font-bold text-gray-900 dark:text-white mb-2">Annual Vaccination Summary</h4>
-          <div class="flex items-center justify-center gap-4">
+          <div class="flex flex-wrap items-center justify-center gap-6">
             <div class="text-center">
               <div class="text-4xl font-bold text-gray-900 dark:text-white">3</div>
               <div class="text-sm text-gray-600 dark:text-gray-400">Total per year</div>
@@ -513,6 +692,10 @@
             <div class="text-center">
               <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">1</div>
               <div class="text-sm text-gray-600 dark:text-gray-400">HS-BQ dose</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">3-4</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Deworming</div>
             </div>
           </div>
         </div>
@@ -530,219 +713,6 @@
 
 <!-- JavaScript -->
 <script>
-  // Dummy data for vaccination tasks
-  const dummyTasks = {
-    today: [
-      {
-        id: 1,
-        animal: { name: "Lakshmi", id: "AN202301", farmer: "Rajesh Kumar", village: "Village A" },
-        treatment: "FMD Vaccine",
-        scheduledDate: new Date().toISOString().split('T')[0],
-        status: "pending",
-        pregnancy: { isPregnant: true, month: 7 },
-        animalType: "cow"
-      },
-      {
-        id: 2,
-        animal: { name: "Gauri", id: "AN202302", farmer: "Suresh Patel", village: "Village B" },
-        treatment: "Deworming",
-        scheduledDate: new Date().toISOString().split('T')[0],
-        status: "pending",
-        pregnancy: { isPregnant: false },
-        animalType: "buffalo"
-      }
-    ],
-    week: [
-      {
-        id: 3,
-        animal: { name: "Sita", id: "AN202303", farmer: "Mahesh Yadav", village: "Village C" },
-        treatment: "HS-BQ Vaccine",
-        scheduledDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-        status: "scheduled",
-        pregnancy: { isPregnant: true, month: 4 },
-        animalType: "cow"
-      }
-    ],
-    blocked: [
-      {
-        id: 4,
-        animal: { name: "Radha", id: "AN202304", farmer: "Vikram Singh", village: "Village D" },
-        treatment: "HS-BQ Vaccine",
-        scheduledDate: "2024-06-15",
-        status: "blocked",
-        pregnancy: { isPregnant: true, month: 8 },
-        animalType: "cow",
-        reason: "Pregnancy safety: Month 6-9 blocked"
-      }
-    ]
-  };
-
-  // Tab functionality
-  document.addEventListener('DOMContentLoaded', function() {
-    const tabs = document.querySelectorAll('.tab-button');
-    const tableBody = document.getElementById('tasksTable');
-    
-    function loadTasks(tab) {
-      tableBody.innerHTML = '';
-      let tasks = [];
-      
-      switch(tab) {
-        case 'today':
-          tasks = dummyTasks.today;
-          break;
-        case 'week':
-          tasks = dummyTasks.week;
-          break;
-        case 'blocked':
-          tasks = dummyTasks.blocked;
-          break;
-        default:
-          tasks = [...dummyTasks.today, ...dummyTasks.week, ...dummyTasks.blocked];
-      }
-      
-      if (tasks.length === 0) {
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-              <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <p class="text-lg font-medium">No tasks found</p>
-              <p class="text-sm mt-1">All treatments are up to date</p>
-            </td>
-          </tr>
-        `;
-        return;
-      }
-      
-      tasks.forEach(task => {
-        const row = document.createElement('tr');
-        row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700/50';
-        
-        // Determine status color
-        let statusColor = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-        if (task.status === 'completed') {
-          statusColor = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-        } else if (task.status === 'blocked') {
-          statusColor = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-        }
-        
-        // Pregnancy safety message
-        let pregnancyMessage = 'Safe';
-        let pregnancyColor = 'text-green-600 dark:text-green-400';
-        
-        if (task.pregnancy.isPregnant) {
-          if (task.pregnancy.month >= 6 && task.pregnancy.month <= 9) {
-            if (task.treatment === 'HS-BQ Vaccine' || task.treatment === 'Deworming') {
-              pregnancyMessage = 'BLOCKED (Pregnancy Month 6-9)';
-              pregnancyColor = 'text-red-600 dark:text-red-400 font-semibold';
-            } else if (task.treatment === 'FMD Vaccine') {
-              pregnancyMessage = 'Safe in pregnancy';
-              pregnancyColor = 'text-green-600 dark:text-green-400';
-            }
-          } else {
-            pregnancyMessage = `Pregnant (Month ${task.pregnancy.month})`;
-            pregnancyColor = 'text-blue-600 dark:text-blue-400';
-          }
-        }
-        
-        row.innerHTML = `
-          <td class="px-6 py-4">
-            <div>
-              <div class="font-medium text-gray-900 dark:text-white">${task.animal.name} (${task.animal.id})</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">
-                Farmer: ${task.animal.farmer} • ${task.animal.village}
-              </div>
-              <span class="inline-flex items-center px-2 py-1 mt-1 text-xs font-medium rounded-full ${task.animalType === 'cow' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}">
-                ${task.animalType.charAt(0).toUpperCase() + task.animalType.slice(1)}
-              </span>
-            </div>
-          </td>
-          <td class="px-6 py-4">
-            <div class="font-medium text-gray-900 dark:text-white">${task.treatment}</div>
-            ${task.reason ? `<div class="text-sm text-red-600 dark:text-red-400 mt-1">${task.reason}</div>` : ''}
-          </td>
-          <td class="px-6 py-4">
-            <div class="font-medium text-gray-900 dark:text-white">${formatDate(task.scheduledDate)}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400">
-              ${getDaysUntil(task.scheduledDate)}
-            </div>
-          </td>
-          <td class="px-6 py-4">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusColor}">
-              ${task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-            </span>
-          </td>
-          <td class="px-6 py-4">
-            <div class="${pregnancyColor} text-sm">
-              ${pregnancyMessage}
-            </div>
-          </td>
-          <td class="px-6 py-4 text-right">
-            ${task.status !== 'blocked' ? `
-              <button onclick="markCompleted(${task.id})" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                Mark Done
-              </button>
-            ` : `
-              <button onclick="viewBlockedDetails(${task.id})" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                View Details
-              </button>
-            `}
-          </td>
-        `;
-        
-        tableBody.appendChild(row);
-      });
-    }
-    
-    // Set up tab click handlers
-    tabs.forEach(tab => {
-      tab.addEventListener('click', function() {
-        // Remove active class from all tabs
-        tabs.forEach(t => {
-          t.classList.remove('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
-          t.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-        });
-        
-        // Add active class to clicked tab
-        this.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-        this.classList.add('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
-        
-        // Load tasks for this tab
-        loadTasks(this.id.replace('tab-', ''));
-      });
-    });
-    
-    // Load today's tasks by default
-    loadTasks('today');
-  });
-
-  // Helper functions
-  function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-      day: 'numeric', 
-      month: 'short', 
-      year: 'numeric' 
-    });
-  }
-  
-  function getDaysUntil(dateString) {
-    const today = new Date();
-    const target = new Date(dateString);
-    const diffTime = target - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    if (diffDays > 0) return `In ${diffDays} days`;
-    if (diffDays === -1) return 'Yesterday';
-    return `${Math.abs(diffDays)} days ago`;
-  }
-
   // Modal functions
   function showSystemRules() {
     document.getElementById('systemRulesModal').classList.remove('hidden');
@@ -752,144 +722,47 @@
     document.getElementById('systemRulesModal').classList.add('hidden');
   }
   
-  function markCompleted(taskId) {
-    if (confirm('Mark this treatment as completed?')) {
-      // In real implementation, make API call here
-      alert('Treatment marked as completed!');
-      // Refresh the tasks
-      const activeTab = document.querySelector('.tab-button.border-blue-500').id.replace('tab-', '');
-      loadTasks(activeTab);
+  // Auto-schedule generator
+  function generateAutoSchedule() {
+    const animalId = prompt('Enter Animal ID to generate schedule:');
+    if (animalId) {
+      fetch(`/api/animals/${animalId}/generate-schedule`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Annual schedule generated successfully!');
+          location.reload();
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error generating schedule');
+      });
     }
   }
-  
-  function markAllCompleted() {
-    if (confirm('Mark all visible treatments as completed?')) {
-      // In real implementation, make API call here
-      alert('All treatments marked as completed!');
-      // Refresh the tasks
-      const activeTab = document.querySelector('.tab-button.border-blue-500').id.replace('tab-', '');
-      loadTasks(activeTab);
-    }
-  }
-  
-  function viewBlockedDetails(taskId) {
-    alert('This treatment is blocked due to pregnancy safety rules. Will be scheduled automatically after calving.');
-  }
-  
-  function clearFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('statusFilter').value = '';
-    document.getElementById('vaccineFilter').value = '';
-    document.getElementById('animalTypeFilter').value = '';
-    
-    // Reset to today's tab
-    document.querySelectorAll('.tab-button').forEach(tab => {
-      tab.classList.remove('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
-      tab.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-    });
-    document.getElementById('tab-today').classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-    document.getElementById('tab-today').classList.add('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
-    
-    loadTasks('today');
-    
-    showNotification('Filters cleared', 'success');
-  }
-  
-  function generateSchedule() {
-    const animalType = document.getElementById('animalTypeSelect').value;
-    const regMonth = parseInt(document.getElementById('regMonthSelect').value);
-    const pregnancyStatus = document.getElementById('pregnancySelect').value;
-    
-    // Calculate HS-BQ date based on rules
-    let hsbqDate;
-    if (regMonth >= 1 && regMonth <= 4) {
-      hsbqDate = `June ${new Date().getFullYear()}`;
-    } else if (regMonth >= 5 && regMonth <= 6) {
-      hsbqDate = 'May-June (same year)';
-    } else {
-      hsbqDate = `June ${new Date().getFullYear() + 1}`;
-    }
-    
-    // Pregnancy safety messages
-    let safetyMessage = '';
-    if (pregnancyStatus === '6-9') {
-      safetyMessage = '⚠️ HS-BQ and Deworming BLOCKED during pregnancy month 6-9';
-    } else if (pregnancyStatus === '1-5') {
-      safetyMessage = '✅ All treatments allowed during pregnancy month 1-5';
-    } else {
-      safetyMessage = '✅ Normal schedule - no pregnancy restrictions';
-    }
-    
-    const resultDiv = document.getElementById('scheduleResult');
-    resultDiv.innerHTML = `
-      <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl">
-        <h4 class="font-bold text-gray-900 dark:text-white mb-3">Generated Annual Schedule</h4>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="p-3 bg-white dark:bg-gray-800 rounded-lg">
-            <div class="font-semibold text-blue-600 dark:text-blue-400">HS-BQ Vaccine</div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">Annual (Pre-monsoon)</div>
-            <div class="font-medium mt-1">${hsbqDate}</div>
-          </div>
-          <div class="p-3 bg-white dark:bg-gray-800 rounded-lg">
-            <div class="font-semibold text-green-600 dark:text-green-400">FMD Vaccine</div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">Every 6 months</div>
-            <div class="font-medium mt-1">2 doses per year</div>
-          </div>
-          <div class="p-3 bg-white dark:bg-gray-800 rounded-lg">
-            <div class="font-semibold text-purple-600 dark:text-purple-400">Deworming</div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">Every 120 days</div>
-            <div class="font-medium mt-1">3-4 times per year</div>
-          </div>
-        </div>
-        <div class="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg">
-          <div class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Total Annual Requirements:</div>
-          <div class="text-lg font-bold text-gray-900 dark:text-white">3 Vaccinations per year</div>
-          <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">${safetyMessage}</div>
-        </div>
-      </div>
-    `;
-    resultDiv.classList.remove('hidden');
-  }
-  
-  function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-xl shadow-xl z-50 animate-fade-in ${
-      type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-    }`;
-    notification.innerHTML = `
-      <div class="flex items-center gap-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        </svg>
-        <span>${message}</span>
-      </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      notification.remove();
-    }, 3000);
-  }
-
-  // Filter functionality
-  document.getElementById('statusFilter').addEventListener('change', function() {
-    const value = this.value;
-    if (value) {
-      // Switch to appropriate tab
-      const tabId = 'tab-' + value;
-      const tab = document.getElementById(tabId);
-      if (tab) {
-        tab.click();
-      }
-    }
-  });
 
   // Close modal on backdrop click
   document.getElementById('systemRulesModal').addEventListener('click', function(e) {
     if (e.target === this) {
       closeSystemRules();
     }
+  });
+
+  // Filter functionality
+  document.querySelectorAll('select[name], input[name]').forEach(element => {
+    element.addEventListener('change', function() {
+      // Auto-submit form on filter change
+      if (this.closest('form')) {
+        this.closest('form').submit();
+      }
+    });
   });
 </script>
 
@@ -901,28 +774,5 @@
   
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
-  }
-  
-  /* Custom scrollbar for modal */
-  #systemRulesModal > div {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-  }
-  
-  #systemRulesModal > div::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  #systemRulesModal > div::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  #systemRulesModal > div::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-  }
-  
-  .dark #systemRulesModal > div::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
   }
 </style>
