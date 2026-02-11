@@ -2,32 +2,51 @@
 
 <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 lg:py-6">
 
-  <!-- Header -->
+  <!-- Header with Bulk Actions -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 lg:mb-8 space-y-3 md:space-y-0">
     <div>
       <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">Animals Management</h1>
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage all registered animals and their farmers</p>
     </div>
 
-    <% if(currUser.role == "ADMIN"){ %>
-    <a href="/admin/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-      </svg>
-      Add New Animal
-    </a>
-    <% } else { %>
-      <a href="/sales/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-      </svg>
-      Add New Animal
-    </a>
-    <% } %>
+    <div class="flex flex-wrap gap-2">
+      <% if(currUser.role == "ADMIN"){ %>
+        <!-- Single Registration -->
+        <a href="/admin/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Single Registration
+        </a>
+        <!-- Bulk Registration -->
+        <a href="/admin/animals/new?type=bulk" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          Bulk Registration
+        </a>
+      <% } else { %>
+        <a href="/sales/animals/new" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add New Animal
+        </a>
+      <% } %>
+      
+      <!-- Export Button -->
+      <button onclick="openExportModal()" class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Export
+      </button>
+    </div>
   </div>
 
-  <!-- Stats -->
+  <!-- Stats Cards - Enhanced -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 lg:mb-8">
+    <!-- Total Animals -->
     <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-4 border border-gray-200 dark:border-gray-700">
       <div class="flex items-center">
         <div class="flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
@@ -38,10 +57,136 @@
         </div>
         <div class="ml-4">
           <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Total Animals</p>
-          <p class="text-xl font-bold text-gray-800 dark:text-gray-100 mt-0.5"><%= totalAnimals %></p>
+          <p class="text-xl font-bold text-gray-800 dark:text-gray-100 mt-0.5"><%= totalAnimals || 0 %></p>
         </div>
       </div>
     </div>
+
+    <!-- Today's Registrations -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0 bg-green-100 dark:bg-green-900/30 p-2 rounded-lg">
+          <svg class="h-5 w-5 text-green-600 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Today's Registrations</p>
+          <p class="text-xl font-bold text-gray-800 dark:text-gray-100 mt-0.5"><%= todayRegistrations || 0 %></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Batches -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0 bg-purple-100 dark:bg-purple-900/30 p-2 rounded-lg">
+          <svg class="h-5 w-5 text-purple-600 dark:text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Bulk Batches</p>
+          <p class="text-xl font-bold text-gray-800 dark:text-gray-100 mt-0.5"><%= totalBatches || 0 %></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pregnant Animals -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0 bg-pink-100 dark:bg-pink-900/30 p-2 rounded-lg">
+          <svg class="h-5 w-5 text-pink-600 dark:text-pink-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Pregnant Animals</p>
+          <p class="text-xl font-bold text-gray-800 dark:text-gray-100 mt-0.5"><%= pregnantAnimals || 0 %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Bar -->
+  <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-4 mb-6 border border-gray-200 dark:border-gray-700">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0">
+      <div class="flex flex-wrap gap-2">
+        <!-- Filter Dropdown -->
+        <select id="filterStatus" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <option value="all">All Animals</option>
+          <option value="active">Active Only</option>
+          <option value="inactive">Inactive</option>
+          <option value="pregnant">Pregnant</option>
+          <option value="upcoming">Upcoming Vaccinations</option>
+          <option value="overdue">Overdue Vaccinations</option>
+        </select>
+
+        <!-- Animal Type Filter -->
+        <select id="filterType" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <option value="all">All Types</option>
+          <option value="Cow">Cow</option>
+          <option value="Buffalo">Buffalo</option>
+          <option value="Goat">Goat</option>
+          <option value="Sheep">Sheep</option>
+          <option value="Dog">Dog</option>
+          <option value="Cat">Cat</option>
+          <option value="Poultry">Poultry</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <!-- Batch Filter (for Admin) -->
+        <% if(currUser.role == "ADMIN"){ %>
+        <select id="filterBatch" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <option value="all">All Registrations</option>
+          <option value="single">Single Registrations</option>
+          <option value="bulk">Bulk Registrations</option>
+        </select>
+        <% } %>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="relative w-full md:w-64">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Search by tag, ID, name..." 
+          class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          value="<%= searchQuery || '' %>"
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Actions Bar (Visible when animals selected) -->
+  <div id="bulkActionsBar" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-6 hidden items-center justify-between">
+    <div class="flex items-center space-x-4">
+      <span class="text-sm font-medium text-blue-700 dark:text-blue-300">
+        <span id="selectedCount">0</span> animals selected
+      </span>
+      <div class="h-4 w-px bg-blue-200 dark:bg-blue-800"></div>
+      <button onclick="bulkTransfer()" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
+        Transfer to Farmer
+      </button>
+      <div class="h-4 w-px bg-blue-200 dark:bg-blue-800"></div>
+      <button onclick="bulkStatusUpdate()" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
+        Update Status
+      </button>
+      <div class="h-4 w-px bg-blue-200 dark:bg-blue-800"></div>
+      <button onclick="bulkDelete()" class="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium">
+        Delete
+      </button>
+    </div>
+    <button onclick="clearSelection()" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
   </div>
 
   <!-- Table Container -->
@@ -50,12 +195,18 @@
       <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead class="bg-gray-50 dark:bg-gray-900/50 sticky top-0 z-10">
           <tr>
+            <!-- Select Checkbox Column -->
+            <th class="px-3 sm:px-4 py-3 w-10">
+              <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" class="h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500">
+            </th>
             <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">#</th>
             <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Unique ID</th>
             <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Animal</th>
             <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Farmer</th>
             <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
             <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Gender</th>
+            <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Batch</th>
+            <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Vaccination</th>
             <th class="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
             <th class="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
           </tr>
@@ -64,7 +215,7 @@
         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
           <% if (animals.length === 0) { %>
             <tr>
-              <td colspan="8" class="text-center py-12 text-gray-400 dark:text-gray-500">
+              <td colspan="11" class="text-center py-12 text-gray-400 dark:text-gray-500">
                 <div class="flex flex-col items-center">
                   <svg class="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -78,14 +229,21 @@
 
           <% animals.forEach((animal, index) => { %>
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+              <!-- Select Checkbox -->
+              <td class="px-3 sm:px-4 py-3">
+                <input type="checkbox" class="animal-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500" value="<%= animal._id %>">
+              </td>
+              
               <td class="px-3 sm:px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 <%= (currentPage - 1) * limit + index + 1 %>
               </td>
+              
               <td class="px-3 sm:px-4 py-3">
                 <div class="text-sm font-semibold text-blue-600 dark:text-blue-400 font-mono">
                   <%= animal.uniqueAnimalId %>
                 </div>
               </td>
+              
               <td class="px-3 sm:px-4 py-3">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
@@ -97,9 +255,13 @@
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                       <%= animal.name || "Unnamed" %>
                     </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                      Tag: <%= animal.tagNumber %>
+                    </div>
                   </div>
                 </div>
               </td>
+              
               <td class="px-3 sm:px-4 py-3">
                 <div class="text-sm text-gray-900 dark:text-gray-100">
                   <%= animal.farmer?.name || "N/A" %>
@@ -108,11 +270,13 @@
                   <%= animal.farmer?.mobile || "" %>
                 </div>
               </td>
+              
               <td class="px-3 sm:px-4 py-3">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
                   <%= animal.animalType %>
                 </span>
               </td>
+              
               <td class="px-3 sm:px-4 py-3">
                 <div class="flex items-center">
                   <% if (animal.gender === 'Male') { %>
@@ -129,6 +293,55 @@
                   </span>
                 </div>
               </td>
+              
+              <!-- Batch Info -->
+              <td class="px-3 sm:px-4 py-3">
+                <% if (animal.registrationBatchId) { %>
+                  <a href="/<%= currUser.role.toLowerCase() %>/animals/batch/<%= animal.registrationBatchId %>" 
+                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors">
+                    <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    Batch #<%= animal.registrationBatchId.slice(-6) %>
+                  </a>
+                <% } else { %>
+                  <span class="text-xs text-gray-400 dark:text-gray-500">Single</span>
+                <% } %>
+              </td>
+              
+              <!-- Vaccination Status -->
+              <td class="px-3 sm:px-4 py-3">
+                <% if (animal.vaccinationSummary) { %>
+                  <% if (animal.vaccinationSummary.isUpToDate) { %>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                      <span class="h-1.5 w-1.5 rounded-full bg-green-500 dark:bg-green-400 mr-1.5"></span>
+                      Up to Date
+                    </span>
+                  <% } else if (animal.vaccinationSummary.nextVaccinationDate) { 
+                    const daysUntil = Math.ceil((new Date(animal.vaccinationSummary.nextVaccinationDate) - new Date()) / (1000 * 60 * 60 * 24));
+                    if (daysUntil < 0) { %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                        <span class="h-1.5 w-1.5 rounded-full bg-red-500 dark:bg-red-400 mr-1.5"></span>
+                        Overdue
+                      </span>
+                    <% } else if (daysUntil <= 7) { %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                        <span class="h-1.5 w-1.5 rounded-full bg-yellow-500 dark:bg-yellow-400 mr-1.5"></span>
+                        Due in <%= daysUntil %>d
+                      </span>
+                    <% } else { %>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">
+                        Due: <%= new Date(animal.vaccinationSummary.nextVaccinationDate).toLocaleDateString() %>
+                      </span>
+                    <% } %>
+                  <% } else { %>
+                    <span class="text-xs text-gray-400 dark:text-gray-500">No records</span>
+                  <% } %>
+                <% } else { %>
+                  <span class="text-xs text-gray-400 dark:text-gray-500">No records</span>
+                <% } %>
+              </td>
+              
               <td class="px-3 sm:px-4 py-3">
                 <% if (animal.isActive) { %>
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
@@ -142,9 +355,10 @@
                   </span>
                 <% } %>
               </td>
+              
               <td class="px-3 sm:px-4 py-3 text-right">
                 <div class="flex justify-end space-x-2">
-                  <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>" 
+                  <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>" 
                      class="inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150"
                      title="View">
                     <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -152,13 +366,15 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </a>
-                  <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>/edit" 
+                  
+                  <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>/edit" 
                      class="inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150"
                      title="Edit">
                     <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </a>
+                  
                   <div class="relative inline-block text-left">
                     <button type="button" onclick="toggleDropdown('<%= animal._id %>')" class="inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150" title="More options">
                       <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,23 +382,45 @@
                       </svg>
                     </button>
 
-                    <div id="dropdown-<%= animal._id %>" class="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-700 z-50 hidden transition-all duration-200 origin-top-right">
+                    <div id="dropdown-<%= animal._id %>" class="absolute right-0 mt-1 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-700 z-50 hidden transition-all duration-200 origin-top-right">
                       <div class="py-1">
-                        <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                           <svg class="mr-3 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                           View Details
                         </a>
-                        <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/animals/<%= animal._id %>/edit" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>/edit" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                           <svg class="mr-3 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                           Edit Animal
                         </a>
+                        
+                        <% if (animal.registrationBatchId) { %>
+                        <a href="/<%= currUser.role.toLowerCase() %>/animals/batch/<%= animal.registrationBatchId %>" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                          <svg class="mr-3 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                          </svg>
+                          View Batch
+                        </a>
+                        <% } %>
+                        
                         <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                        <a href="#" class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        
+                        <a href="#" onclick="toggleAnimalStatus('<%= animal._id %>', `<%= !animal.isActive %>`)" class="flex items-center px-4 py-2 text-sm <%= animal.isActive ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400' %> hover:bg-gray-100 dark:hover:bg-gray-700">
+                          <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <% if (animal.isActive) { %>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <% } else { %>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <% } %>
+                          </svg>
+                          <%= animal.isActive ? 'Deactivate' : 'Activate' %>
+                        </a>
+                        
+                        <a href="#" onclick="deleteAnimal('<%= animal._id %>')" class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
                           <svg class="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
@@ -210,7 +448,7 @@
       </div>
       
       <div class="flex items-center space-x-1">
-        <a href="?page=<%= currentPage - 1 %>" 
+        <a href="?page=<%= currentPage - 1 %><%= searchQuery ? '&search=' + searchQuery : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" 
            class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium <%= currentPage === 1 ? 'text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' %>"
            <%= currentPage === 1 ? 'tabindex="-1" aria-disabled="true"' : '' %>>
           <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -227,14 +465,14 @@
         <% } %>
 
         <% if (startPage > 1) { %>
-          <a href="?page=1" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">1</a>
+          <a href="?page=1<%= searchQuery ? '&search=' + searchQuery : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">1</a>
           <% if (startPage > 2) { %>
             <span class="px-2 text-gray-400 dark:text-gray-600">...</span>
           <% } %>
         <% } %>
 
         <% for (let i = startPage; i <= endPage; i++) { %>
-          <a href="?page=<%= i %>" 
+          <a href="?page=<%= i %><%= searchQuery ? '&search=' + searchQuery : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" 
              class="px-3 py-2 rounded-lg text-sm font-medium <%= currentPage === i ? 'bg-blue-600 text-white' : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' %>">
             <%= i %>
           </a>
@@ -244,12 +482,12 @@
           <% if (endPage < totalPages - 1) { %>
             <span class="px-2 text-gray-400 dark:text-gray-600">...</span>
           <% } %>
-          <a href="?page=<%= totalPages %>" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <a href="?page=<%= totalPages %><%= searchQuery ? '&search=' + searchQuery : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
             <%= totalPages %>
           </a>
         <% } %>
 
-        <a href="?page=<%= currentPage + 1 %>" 
+        <a href="?page=<%= currentPage + 1 %><%= searchQuery ? '&search=' + searchQuery : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" 
            class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium <%= currentPage === totalPages ? 'text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' %>"
            <%= currentPage === totalPages ? 'tabindex="-1" aria-disabled="true"' : '' %>>
           Next
@@ -260,9 +498,61 @@
       </div>
     </div>
   <% } %>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-opacity-80 z-50 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Export Animals</h3>
+        <button onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Export Format</label>
+          <div class="space-y-2">
+            <label class="flex items-center">
+              <input type="radio" name="exportFormat" value="csv" checked class="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500">
+              <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">CSV Format</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" name="exportFormat" value="excel" class="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500">
+              <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Excel Format</span>
+            </label>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Export Type</label>
+          <select id="exportType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="all">All Animals</option>
+            <option value="current-page">Current Page</option>
+            <option value="selected">Selected Animals</option>
+            <option value="filtered">Filtered Results</option>
+          </select>
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-6">
+          <button onclick="closeExportModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg text-sm font-medium transition-colors">
+            Cancel
+          </button>
+          <button onclick="exportAnimals()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
+            Export
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
+  // ================ DROPDOWN FUNCTIONS ================
+  
   function toggleDropdown(id) {
     const dropdown = document.getElementById('dropdown-' + id);
     const isHidden = dropdown.classList.contains('hidden');
@@ -276,15 +566,6 @@
     
     // Toggle current dropdown
     dropdown.classList.toggle('hidden');
-    
-    // Add animation
-    if (!isHidden) {
-      dropdown.style.opacity = '0';
-      dropdown.style.transform = 'scale(0.95) translateY(-10px)';
-    } else {
-      dropdown.style.opacity = '1';
-      dropdown.style.transform = 'scale(1) translateY(0)';
-    }
   }
 
   // Close dropdowns when clicking outside
@@ -299,12 +580,325 @@
     }
   });
 
-  // Add keyboard navigation support
+  // Escape key support
   document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
       document.querySelectorAll('div[id^="dropdown-"]').forEach(el => {
         el.classList.add('hidden');
       });
+      closeExportModal();
     }
   });
+
+  // ================ BULK SELECTION FUNCTIONS ================
+
+  let selectedAnimals = new Set();
+
+  function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.animal-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = selectAll.checked;
+      const id = checkbox.value;
+      if (selectAll.checked) {
+        selectedAnimals.add(id);
+      } else {
+        selectedAnimals.delete(id);
+      }
+    });
+    
+    updateBulkActionsBar();
+  }
+
+  // Initialize checkbox listeners
+  document.addEventListener('DOMContentLoaded', function() {
+    // Individual checkbox listeners
+    document.querySelectorAll('.animal-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const id = this.value;
+        if (this.checked) {
+          selectedAnimals.add(id);
+        } else {
+          selectedAnimals.delete(id);
+          document.getElementById('selectAll').checked = false;
+        }
+        updateBulkActionsBar();
+      });
+    });
+
+    // Filter listeners
+    const filterStatus = document.getElementById('filterStatus');
+    const filterType = document.getElementById('filterType');
+    const filterBatch = document.getElementById('filterBatch');
+    const searchInput = document.getElementById('searchInput');
+
+    if (filterStatus) {
+      filterStatus.addEventListener('change', applyFilters);
+      filterStatus.value = '<%= filterStatus || "all" %>';
+    }
+    if (filterType) {
+      filterType.addEventListener('change', applyFilters);
+      filterType.value = '<%= filterType || "all" %>';
+    }
+    if (filterBatch) {
+      filterBatch.addEventListener('change', applyFilters);
+      filterBatch.value = '<%= filterBatch || "all" %>';
+    }
+
+    // Search with debounce
+    let searchTimeout;
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          applyFilters();
+        }, 500);
+      });
+    }
+  });
+
+  function updateBulkActionsBar() {
+    const bar = document.getElementById('bulkActionsBar');
+    const count = document.getElementById('selectedCount');
+    const selectedCount = selectedAnimals.size;
+    
+    if (selectedCount > 0) {
+      count.textContent = selectedCount;
+      bar.classList.remove('hidden');
+      bar.classList.add('flex');
+    } else {
+      bar.classList.add('hidden');
+      bar.classList.remove('flex');
+    }
+  }
+
+  function clearSelection() {
+    selectedAnimals.clear();
+    document.querySelectorAll('.animal-checkbox').forEach(cb => {
+      cb.checked = false;
+    });
+    document.getElementById('selectAll').checked = false;
+    updateBulkActionsBar();
+  }
+
+  // ================ BULK ACTIONS ================
+
+  function bulkTransfer() {
+    const selectedIds = Array.from(selectedAnimals);
+    if (selectedIds.length === 0) {
+      alert('Please select at least one animal to transfer.');
+      return;
+    }
+    
+    // Show farmer selection modal
+    const farmerId = prompt('Enter Farmer ID to transfer these animals:');
+    if (farmerId) {
+      if (confirm(`Transfer ${selectedIds.length} animal(s) to farmer ${farmerId}?`)) {
+        fetch('/<%= currUser.role.toLowerCase() %>/animals/bulk/transfer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            animalIds: selectedIds,
+            farmerId: farmerId
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(`${data.transferred} animals transferred successfully!`);
+            window.location.reload();
+          } else {
+            alert('Failed to transfer animals: ' + data.message);
+          }
+        })
+        .catch(err => {
+          console.error('Error:', err);
+          alert('Failed to transfer animals. Please try again.');
+        });
+      }
+    }
+  }
+
+  function bulkStatusUpdate() {
+    const selectedIds = Array.from(selectedAnimals);
+    if (selectedIds.length === 0) {
+      alert('Please select at least one animal to update.');
+      return;
+    }
+    
+    const newStatus = prompt('Enter new status (active/inactive):');
+    if (newStatus && ['active', 'inactive'].includes(newStatus.toLowerCase())) {
+      if (confirm(`Update status to ${newStatus} for ${selectedIds.length} animal(s)?`)) {
+        fetch('/<%= currUser.role.toLowerCase() %>/animals/bulk/status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            animalIds: selectedIds,
+            status: newStatus.toLowerCase()
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(`${data.updated} animals updated successfully!`);
+            window.location.reload();
+          } else {
+            alert('Failed to update animals: ' + data.message);
+          }
+        })
+        .catch(err => {
+          console.error('Error:', err);
+          alert('Failed to update animals. Please try again.');
+        });
+      }
+    }
+  }
+
+  function bulkDelete() {
+    const selectedIds = Array.from(selectedAnimals);
+    if (selectedIds.length === 0) {
+      alert('Please select at least one animal to delete.');
+      return;
+    }
+    
+    if (confirm(`Are you sure you want to delete ${selectedIds.length} animal(s)? This action cannot be undone.`)) {
+      fetch('/<%= currUser.role.toLowerCase() %>/animals/bulk/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          animalIds: selectedIds
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert(`${data.deleted} animals deleted successfully!`);
+          window.location.reload();
+        } else {
+          alert('Failed to delete animals: ' + data.message);
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Failed to delete animals. Please try again.');
+      });
+    }
+  }
+
+  // ================ SINGLE ANIMAL ACTIONS ================
+
+  function toggleAnimalStatus(id, activate) {
+    const action = activate ? 'activate' : 'deactivate';
+    if (confirm(`Are you sure you want to ${action} this animal?`)) {
+      fetch(`/<%= currUser.role.toLowerCase() %>/animal/${id}/${action}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert('Failed to update animal status.');
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Failed to update animal status.');
+      });
+    }
+  }
+
+  function deleteAnimal(id) {
+    if (confirm('Are you sure you want to delete this animal? This action cannot be undone.')) {
+      fetch(`/<%= currUser.role.toLowerCase() %>/animal/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert('Failed to delete animal.');
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Failed to delete animal.');
+      });
+    }
+  }
+
+  // ================ FILTER FUNCTIONS ================
+
+  function applyFilters() {
+    const params = new URLSearchParams();
+    
+    params.set('page', '1');
+    
+    const status = document.getElementById('filterStatus')?.value;
+    if (status && status !== 'all') params.set('status', status);
+    
+    const type = document.getElementById('filterType')?.value;
+    if (type && type !== 'all') params.set('type', type);
+    
+    const batch = document.getElementById('filterBatch')?.value;
+    if (batch && batch !== 'all') params.set('batch', batch);
+    
+    const search = document.getElementById('searchInput')?.value;
+    if (search) params.set('search', search);
+    
+    window.location.href = `?${params.toString()}`;
+  }
+
+  // ================ EXPORT FUNCTIONS ================
+
+  function openExportModal() {
+    document.getElementById('exportModal').classList.remove('hidden');
+  }
+
+  function closeExportModal() {
+    document.getElementById('exportModal').classList.add('hidden');
+  }
+
+  function exportAnimals() {
+    const format = document.querySelector('input[name="exportFormat"]:checked').value;
+    const exportType = document.getElementById('exportType').value;
+    
+    let url = `/<%= currUser.role.toLowerCase() %>/animals/export?format=${format}`;
+    
+    if (exportType === 'selected' && selectedAnimals.size > 0) {
+      url += `&ids=${Array.from(selectedAnimals).join(',')}`;
+    } else if (exportType === 'current-page') {
+      url += "&page=<%= currentPage %>}&limit=<%= limit %>";
+    } else if (exportType === 'filtered') {
+      const status = document.getElementById('filterStatus')?.value;
+      const type = document.getElementById('filterType')?.value;
+      const search = document.getElementById('searchInput')?.value;
+      if (status && status !== 'all') url += `&status=${status}`;
+      if (type && type !== 'all') url += `&type=${type}`;
+      if (search) url += `&search=${search}`;
+    }
+    
+    window.location.href = url;
+    closeExportModal();
+  }
+
+  // ================ BATCH NAVIGATION ================
+
+  function viewBatch(batchId) {
+    window.location.href = `/<%= currUser.role.toLowerCase() %>/animals/batch/${batchId}`;
+  }
 </script>

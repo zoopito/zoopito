@@ -3,6 +3,7 @@ const Farmer = require("../models/farmer");
 const Animal = require("../models/animal");
 const Paravet = require("../models/paravet");
 const Servise = require("../models/services");
+const Vaccine = require("../models/vaccine");
 const SalesTeam = require("../models/salesteam");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
@@ -29,349 +30,766 @@ const generateAnimaleID = async () => {
 module.exports.animalsIndexPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 10; // animals per page
+    const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const totalAnimals = await Animal.countDocuments();
+    // Get filter parameters
+    const filterStatus = req.query.status || "all";
+    const filterType = req.query.type || "all";
+    const filterBatch = req.query.batch || "all";
+    const searchQuery = req.query.search || "";
 
-    const animals = await Animal.find()
-      .populate("farmer", "name mobile")
+    // Build query based on filters
+    let query = {};
+
+    // Status filter
+    if (filterStatus === "active") {
+      query.isActive = true;
+    } else if (filterStatus === "inactive") {
+      query.isActive = false;
+    } else if (filterStatus === "pregnant") {
+      query["pregnancyStatus.isPregnant"] = true;
+    } else if (filterStatus === "upcoming") {
+      query["vaccinationSummary.nextVaccinationDate"] = {
+        $gte: new Date(),
+        $lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      };
+    } else if (filterStatus === "overdue") {
+      query["vaccinationSummary.nextVaccinationDate"] = {
+        $lt: new Date(),
+      };
+      query["vaccinationSummary.isUpToDate"] = false;
+    }
+
+    // Animal type filter
+    if (filterType !== "all") {
+      query.animalType = filterType;
+    }
+
+    // Batch filter
+    if (filterBatch === "bulk") {
+      query.registrationBatchId = { $exists: true, $ne: null };
+    } else if (filterBatch === "single") {
+      query.registrationBatchId = { $exists: false };
+    }
+
+    // Search query
+    if (searchQuery) {
+      // First get farmer IDs that match the search
+      const farmers = await Farmer.find({
+        name: { $regex: searchQuery, $options: "i" },
+      }).select("_id");
+
+      const farmerIds = farmers.map((f) => f._id);
+
+      query.$or = [
+        { tagNumber: { $regex: searchQuery, $options: "i" } },
+        { uniqueAnimalId: { $regex: searchQuery, $options: "i" } },
+        { name: { $regex: searchQuery, $options: "i" } },
+        { farmer: { $in: farmerIds } },
+      ];
+    }
+
+    // Get total counts for pagination
+    const totalAnimals = await Animal.countDocuments(query);
+
+    // Get statistics in parallel for better performance
+    const [
+      totalActive,
+      totalInactive,
+      pregnantAnimals,
+      todayRegistrations,
+      bulkRegistrations,
+    ] = await Promise.all([
+      Animal.countDocuments({ isActive: true }),
+      Animal.countDocuments({ isActive: false }),
+      Animal.countDocuments({ "pregnancyStatus.isPregnant": true }),
+      Animal.countDocuments({
+        createdAt: {
+          $gte: new Date().setHours(0, 0, 0, 0),
+          $lt: new Date().setHours(23, 59, 59, 999),
+        },
+      }),
+      Animal.aggregate([
+        {
+          $match: {
+            registrationBatchId: { $exists: true, $ne: null },
+          },
+        },
+        {
+          $group: {
+            _id: "$registrationBatchId",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
+
+    const totalBatches = bulkRegistrations.length;
+    const bulkAnimalCount = bulkRegistrations.reduce(
+      (acc, curr) => acc + curr.count,
+      0,
+    );
+
+    // Get animals with pagination and filters
+    const animals = await Animal.find(query)
+      .populate("farmer", "name mobile uniqueFarmerId")
+      .populate("registeredBy", "name")
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
-    // Ensure uniqueAnimalId exists (safe check)
+    // Process animals for display
     for (let animal of animals) {
+      // Ensure uniqueAnimalId exists
       if (!animal.uniqueAnimalId) {
         animal.uniqueAnimalId = `ANI-${Date.now()}-${Math.floor(
           Math.random() * 1000,
         )}`;
-        await animal.save();
+        await Animal.findByIdAndUpdate(animal._id, {
+          uniqueAnimalId: animal.uniqueAnimalId,
+        });
+      }
+
+      // Format dates for display
+      if (animal.vaccinationSummary?.nextVaccinationDate) {
+        animal.vaccinationSummary.nextVaccinationDateFormatted = new Date(
+          animal.vaccinationSummary.nextVaccinationDate,
+        ).toLocaleDateString();
+      }
+
+      // Add vaccination status
+      if (animal.vaccinationSummary) {
+        if (animal.vaccinationSummary.isUpToDate) {
+          animal.vaccinationStatus = "up_to_date";
+        } else if (animal.vaccinationSummary.nextVaccinationDate) {
+          const daysUntil = Math.ceil(
+            (new Date(animal.vaccinationSummary.nextVaccinationDate) -
+              new Date()) /
+              (1000 * 60 * 60 * 24),
+          );
+          if (daysUntil < 0) {
+            animal.vaccinationStatus = "overdue";
+          } else if (daysUntil <= 7) {
+            animal.vaccinationStatus = "due_soon";
+            animal.daysUntilDue = daysUntil;
+          } else {
+            animal.vaccinationStatus = "scheduled";
+          }
+        } else {
+          animal.vaccinationStatus = "no_records";
+        }
+      } else {
+        animal.vaccinationStatus = "no_records";
+      }
+
+      // Add batch info
+      if (animal.registrationBatchId) {
+        animal.batchShortId = animal.registrationBatchId.slice(-6);
       }
     }
 
     const totalPages = Math.ceil(totalAnimals / limit);
 
+    // Get animal type statistics
+    const animalTypeStats = await Animal.aggregate([
+      {
+        $group: {
+          _id: "$animalType",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
     res.render("admin/animal.ejs", {
       title: "Animals Management",
       animals,
+      // Pagination
       currentPage: page,
       totalPages,
       limit,
       totalAnimals,
+      // Statistics - MAKE SURE ALL THESE ARE PASSED
+      totalActive: totalActive || 0,
+      totalInactive: totalInactive || 0,
+      pregnantAnimals: pregnantAnimals || 0,
+      todayRegistrations: todayRegistrations || 0, // THIS WAS MISSING
+      totalBatches: totalBatches || 0,
+      bulkAnimalCount: bulkAnimalCount || 0,
+      animalTypeStats: animalTypeStats || [],
+      // Filter state
+      filterStatus,
+      filterType,
+      filterBatch,
+      searchQuery,
+      todayRegistrations: todayRegistrations || 0,
+      totalBatches: totalBatches || 0,
+      bulkAnimalCount: bulkAnimalCount || 0,
+      animalTypeStats: animalTypeStats || [],
+      // User
+      currUser: req.user,
+      // Messages
+      success: req.flash("success"),
+      error: req.flash("error"),
+      warning: req.flash("warning"),
+      info: req.flash("info"),
     });
   } catch (error) {
     console.error("Animals Index Error:", error);
-    res.status(500).send("Internal Server Error");
+    req.flash("error", "Failed to load animals. Please try again.");
+
+    // Still render the page with default values instead of sending error page
+    res.render("admin/animal.ejs", {
+      title: "Animals Management",
+      animals: [],
+      currentPage: 1,
+      totalPages: 1,
+      limit: 10,
+      totalAnimals: 0,
+      totalActive: 0,
+      totalInactive: 0,
+      pregnantAnimals: 0,
+      todayRegistrations: 0, // ADD THIS
+      totalBatches: 0,
+      bulkAnimalCount: 0,
+      animalTypeStats: [],
+      filterStatus: "all",
+      filterType: "all",
+      filterBatch: "all",
+      searchQuery: "",
+      currUser: req.user,
+      success: req.flash("success"),
+      error: req.flash("error"),
+      warning: req.flash("warning"),
+      info: req.flash("info"),
+    });
   }
 };
+
 module.exports.createAnimalForm = async (req, res) => {
   try {
-    // Fetch all farmers and users to populate the dropdowns
-    const farmers = await Farmer.find({ isActive: true }).sort({ name: 1 }); // active farmers, sorted by name
-    const sales = await SalesTeam.find({ isActive: true })
-      .populate("user")
-      .sort({ name: 1 }); // active users, sorted by name
+    // Get all required data
+    const [farmers, salesAgents, vaccines] = await Promise.all([
+      Farmer.find({ isActive: true }).sort({ name: 1 }),
+      SalesTeam.find({ isActive: true }).populate("user").sort({ name: 1 }),
+      Vaccine.find({ isActive: true }).sort({ vaccineName: 1 }),
+    ]);
 
-    // Render the form with fetched data
-    res.render("admin/animals/new.ejs", { farmers, sales });
+    // Get form type from query parameter or default to 'single'
+    const formType = req.query.type || "bulk"; // Changed from hardcoded "bulk"
+
+    // Get form data from session if available (for repopulation)
+    const formData = req.session.formData || null;
+
+    // Clear session form data after retrieving it
+    delete req.session.formData;
+
+    res.render("admin/animals/new", {
+      farmers,
+      sales: salesAgents.map((agent) => ({
+        _id: agent.user._id, // Fixed: should be user._id not SalesTeam
+        name: agent.user.name,
+      })),
+      vaccines,
+      formType,
+      formData,
+      currUser: req.user,
+    });
   } catch (error) {
-    console.error("Error rendering create animal form:", error);
-    req.flash("error", "Unable to load form at this time.");
-    res.status(500).send("Internal Server Error");
+    console.error("Error rendering animal form:", error);
+    req.flash("error", "Failed to load registration form.");
+    const role = req.user.role.toLowerCase();
+    res.redirect(`/${role}/animals`);
   }
 };
 
 module.exports.createAnimal = async (req, res) => {
   try {
-    const {
-      farmer,
-      animalType,
-      breed,
-      gender,
-      name,
-      tagNumber,
-      healthStatus,
-      isActive,
-      registeredBy,
-      reproductiveStatus,
-      feedingType,
-      housingType,
-      dateOfBirth,
-      dateOfAcquisition,
-      sourceOfAnimal,
-      additionalNotes,
-      healthNotes,
-    } = req.body;
+    const { farmer, registeredBy, applyVaccinationToAll, vaccination } =
+      req.body;
 
-    // Age (backward compatible)
-    const age = {
-      value: req.body?.age?.value ? Number(req.body.age.value) : undefined,
-      unit: req.body?.age?.unit || undefined,
-    };
-
-    // Pregnancy Status
-    const pregnancyStatus = {
-      isPregnant: req.body?.pregnancyStatus?.isPregnant === "on",
-      kitUsed: req.body?.pregnancyStatus?.kitUsed || null,
-      testDate: req.body?.pregnancyStatus?.testDate
-        ? new Date(req.body.pregnancyStatus.testDate)
-        : null,
-      confirmedDate: req.body?.pregnancyStatus?.confirmedDate
-        ? new Date(req.body.pregnancyStatus.confirmedDate)
-        : null,
-      expectedDeliveryDate: req.body?.pregnancyStatus?.expectedDeliveryDate
-        ? new Date(req.body.pregnancyStatus.expectedDeliveryDate)
-        : null,
-      stage: req.body?.pregnancyStatus?.stage || null,
-      numberOfFetuses: req.body?.pregnancyStatus?.numberOfFetuses
-        ? Number(req.body.pregnancyStatus.numberOfFetuses)
-        : null,
-      previousPregnancies: req.body?.pregnancyStatus?.previousPregnancies
-        ? Number(req.body.pregnancyStatus.previousPregnancies)
-        : 0,
-      pregnancyNotes: req.body?.pregnancyStatus?.notes || "",
-    };
-
-    // Lactation Status
-    const lactationStatus = {
-      isLactating: req.body?.lactationStatus?.isLactating === "on",
-      lastCalvingDate: req.body?.lactationStatus?.lastCalvingDate
-        ? new Date(req.body.lactationStatus.lastCalvingDate)
-        : null,
-      lactationNumber: req.body?.lactationStatus?.lactationNumber
-        ? Number(req.body.lactationStatus.lactationNumber)
-        : null,
-      daysInMilk: req.body?.lactationStatus?.daysInMilk
-        ? Number(req.body.lactationStatus.daysInMilk)
-        : null,
-      dailyYield: {
-        value: req.body?.lactationStatus?.dailyYield
-          ? Number(req.body.lactationStatus.dailyYield)
-          : null,
-        unit: req.body?.lactationStatus?.yieldUnit || null,
-      },
-      milkQuality: req.body?.lactationStatus?.milkQuality || null,
-      milkingFrequency: req.body?.lactationStatus?.milkingFrequency || null,
-      lactationNotes: req.body?.lactationStatus?.notes || "",
-    };
-
-    // Health Status (enhanced)
-    const healthStatusObj = {
-      currentStatus: healthStatus || "Healthy",
-      lastCheckupDate: new Date(),
-      nextCheckupDate: req.body?.nextCheckupDate
-        ? new Date(req.body.nextCheckupDate)
-        : null,
-      healthNotes: healthNotes || "",
-      bodyConditionScore: req.body?.bodyConditionScore
-        ? parseFloat(req.body.bodyConditionScore)
-        : 3,
-      weight: {
-        value: req.body?.weight?.value ? Number(req.body.weight.value) : null,
-        unit: req.body?.weight?.unit || "kg",
-        lastUpdated: new Date(),
-      },
-    };
-
-    // Vaccination Summary (initialize)
-    const vaccinationSummary = {
-      lastVaccinationDate: req.body?.vaccinationStatus?.lastVaccinationDate
-        ? new Date(req.body.vaccinationStatus.lastVaccinationDate)
-        : null,
-      nextVaccinationDate: req.body?.vaccinationStatus?.nextVaccinationDate
-        ? new Date(req.body.vaccinationStatus.nextVaccinationDate)
-        : null,
-      lastVaccineType: req.body?.vaccinationStatus?.vaccineType || null,
-      totalVaccinations: 0,
-      isUpToDate: false,
-    };
-
-    // Purchase Details (if applicable)
-    const purchaseDetails =
-      sourceOfAnimal === "purchased"
-        ? {
-            price: req.body?.purchaseDetails?.price
-              ? Number(req.body.purchaseDetails.price)
-              : null,
-            currency: req.body?.purchaseDetails?.currency || "INR",
-            seller: req.body?.purchaseDetails?.seller || "",
-            purchaseDate: req.body?.purchaseDetails?.purchaseDate
-              ? new Date(req.body.purchaseDetails.purchaseDate)
-              : null,
-          }
-        : null;
-
-    // Medical History (initial entry if any)
-    const medicalHistory = req.body?.initialMedicalHistory
-      ? [
-          {
-            date: new Date(),
-            condition: req.body.initialMedicalHistory.condition,
-            treatment: req.body.initialMedicalHistory.treatment,
-            treatedBy: req.body.initialMedicalHistory.treatedBy || null,
-            resolved: req.body.initialMedicalHistory.resolved === "on",
-            notes: req.body.initialMedicalHistory.notes || "",
-          },
-        ]
-      : [];
-
-    // Base animal data
-    const animalData = {
-      farmer,
-      registeredBy: registeredBy || req.user._id,
-      animalType,
-      breed,
-      age,
-      gender,
-      name,
-      tagNumber,
-      healthStatus: healthStatusObj,
-      isActive: isActive === "on" || true,
-      pregnancyStatus,
-      lactationStatus,
-      vaccinationSummary,
-      reproductiveStatus: reproductiveStatus || "normal",
-      feedingType: feedingType || null,
-      housingType: housingType || null,
-      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-      dateOfAcquisition: dateOfAcquisition ? new Date(dateOfAcquisition) : null,
-      sourceOfAnimal: sourceOfAnimal || "born_on_farm",
-      purchaseDetails,
-      medicalHistory,
-      additionalNotes,
-      status: "active",
-      currentOwner: farmer,
-      photos: {},
-    };
-
-    // Handle photos
-    const photoFields = ["front", "left", "right", "back"];
-    if (req.files) {
-      for (const field of photoFields) {
-        if (req.files[field]?.[0]) {
-          const file = req.files[field][0];
-          animalData.photos[field] = {
-            url: file.path,
-            filename: file.originalname,
-            public_id: file.filename,
-            uploadedAt: new Date(),
-          };
-        }
-      }
+    // Handle single animal registration
+    if (!req.body.animals || !Array.isArray(req.body.animals)) {
+      return await createSingleAnimal(req, res);
     }
 
-    // Create vaccination record if provided
-    if (req.body?.vaccinationStatus?.isVaccinated === "on") {
-      const vaccinationData = {
-        farmer,
-        animal: null, // Will be set after animal creation
-        vaccineName:
-          req.body.vaccinationStatus.vaccineType || "Unknown Vaccine",
-        vaccineType: "Preventive",
-        dateAdministered: req.body.vaccinationStatus.lastVaccinationDate
-          ? new Date(req.body.vaccinationStatus.lastVaccinationDate)
-          : new Date(),
-        nextDueDate: req.body.vaccinationStatus.nextVaccinationDate
-          ? new Date(req.body.vaccinationStatus.nextVaccinationDate)
-          : new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), // 6 months default
-        administeredBy: req.user._id,
-        notes:
-          req.body.vaccinationStatus.history ||
-          "Initial vaccination during registration",
-        status: "Completed",
-      };
+    // Handle bulk animal registration
+    return await createBulkAnimals(req, res);
+  } catch (error) {
+    console.error("Error creating animal(s):", error);
+    handleError(error, req, res);
+  }
+};
 
-      // Save vaccination after animal creation
-      animalData.initialVaccination = vaccinationData;
-    }
+// Single animal registration
+async function createSingleAnimal(req, res) {
+  try {
+    const animalData = await prepareAnimalData(req, 0);
 
     // Save animal to DB
     const newAnimal = new Animal(animalData);
     await newAnimal.save();
 
-    // Create vaccination record if needed
-    if (animalData.initialVaccination) {
-      const Vaccination = require("./vaccination");
-      const vaccinationRecord = new Vaccination({
-        ...animalData.initialVaccination,
-        animal: newAnimal._id,
-      });
-      await vaccinationRecord.save();
-
-      // Update vaccination summary
-      await newAnimal.updateVaccinationSummary();
+    // Create vaccination records if provided
+    if (req.body.vaccinations) {
+      await createVaccinationRecords(req, newAnimal);
     }
 
-    // Send notification based on animal status
-    if (pregnancyStatus.isPregnant) {
-      req.flash(
-        "primary",
-        `Pregnant animal registered! Expected delivery: ${pregnancyStatus.expectedDeliveryDate ? new Date(pregnancyStatus.expectedDeliveryDate).toLocaleDateString() : "Not specified"}`,
-      );
-    }
+    // Update farmer's animal count
+    await updateFarmerAnimalCount(animalData.farmer);
 
-    if (lactationStatus.isLactating) {
-      req.flash(
-        "info",
-        `Lactating animal registered with daily yield: ${lactationStatus.dailyYield.value || "N/A"} ${lactationStatus.dailyYield.unit || "units"}`,
-      );
-    }
-
-    if (healthStatusObj.currentStatus !== "Healthy") {
-      req.flash(
-        "warning",
-        `Animal registered with health status: ${healthStatusObj.currentStatus}. Requires attention.`,
-      );
-    }
-
-    req.flash(
-      "success",
-      `Animal "${name || tagNumber}" registered successfully! ID: ${newAnimal.uniqueAnimalId}`,
-    );
-
-    // Redirect based on user role
-    const role = req.user.role.toLowerCase();
-    res.redirect(`/${role}/animals/${newAnimal._id}`);
+    // Send success response
+    sendSuccessResponse(req, res, newAnimal, "single");
   } catch (error) {
-    console.error("Error creating animal:", error);
+    throw error;
+  }
+}
 
-    // Specific error messages
-    if (error.code === 11000) {
-      if (error.keyPattern.tagNumber) {
-        req.flash(
-          "error",
-          "Tag number already exists. Please use a unique tag number.",
-        );
-      } else if (error.keyPattern.uniqueAnimalId) {
-        req.flash("error", "Duplicate animal ID generated. Please try again.");
-      } else {
-        req.flash(
-          "error",
-          "Duplicate entry detected. Please check your input.",
-        );
+// Bulk animal registration
+async function createBulkAnimals(req, res) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const animalsData = [];
+    const createdAnimals = [];
+    const errors = [];
+
+    // Prepare data for each animal
+    for (let i = 0; i < req.body.animals.length; i++) {
+      try {
+        const animalData = await prepareAnimalData(req, i);
+        animalsData.push(animalData);
+      } catch (error) {
+        errors.push({
+          index: i + 1,
+          error: error.message,
+          tagNumber: req.body.animals[i]?.tagNumber || "Unknown",
+        });
       }
-    } else if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map((val) => val.message);
-      req.flash("error", `Validation failed: ${messages.join(", ")}`);
-    } else if (error.name === "CastError") {
+    }
+
+    // If any preparation errors, abort
+    if (errors.length > 0) {
+      await session.abortTransaction();
+      session.endSession();
+
       req.flash(
         "error",
-        "Invalid data type provided. Please check your input fields.",
+        `Failed to prepare ${errors.length} animal(s). Please check the data.`,
       );
-    } else {
-      req.flash("error", "Failed to register animal. Please try again.");
+      if (errors.length <= 3) {
+        errors.forEach((err) => {
+          req.flash(
+            "error",
+            `Animal ${err.index} (Tag: ${err.tagNumber}): ${err.error}`,
+          );
+        });
+      }
+
+      req.session.formData = req.body;
+      return res.redirect(
+        `/${req.user.role.toLowerCase()}/animals/new?type=bulk`,
+      );
     }
 
-    // Store form data in session for repopulation
-    req.session.formData = req.body;
+    // Create all animals in transaction
+    for (const animalData of animalsData) {
+      const newAnimal = new Animal(animalData);
+      await newAnimal.save({ session });
+      createdAnimals.push(newAnimal);
 
-    // Redirect back to form
-    const role = req.user.role.toLowerCase();
-    res.redirect(`/${role}/animals/new`);
+      // Create vaccination records if applicable
+      if (req.body.vaccinations) {
+        await createVaccinationRecords(req, newAnimal, session);
+      }
+    }
+
+    // Update farmer's animal count
+    await updateFarmerAnimalCount(
+      req.body.farmer,
+      createdAnimals.length,
+      session,
+    );
+
+    // Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    sendSuccessResponse(req, res, createdAnimals, "bulk");
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
   }
-};
+}
 
+// Prepare animal data
+async function prepareAnimalData(req, index) {
+  const animalInput = req.body.animals ? req.body.animals[index] : req.body;
+
+  // Basic validation
+  if (!animalInput.tagNumber) {
+    throw new Error("Tag number is required");
+  }
+
+  if (!animalInput.animalType) {
+    throw new Error("Animal type is required");
+  }
+
+  if (!animalInput.gender) {
+    throw new Error("Gender is required");
+  }
+
+  if (!animalInput.healthStatus) {
+    throw new Error("Health status is required");
+  }
+
+  // Check if tag number already exists
+  const existingAnimal = await Animal.findOne({
+    tagNumber: animalInput.tagNumber.toUpperCase(),
+  });
+  if (existingAnimal) {
+    throw new Error(`Tag number ${animalInput.tagNumber} already exists`);
+  }
+
+  // Prepare base data
+  const animalData = {
+    farmer: req.body.farmer,
+    registeredBy: req.body.registeredBy || req.user._id,
+    animalType: animalInput.animalType,
+    breed: animalInput.breed || null,
+    age: {
+      value: animalInput?.age?.value ? Number(animalInput.age.value) : null,
+      unit: animalInput?.age?.unit || null,
+    },
+    gender: animalInput.gender,
+    name: animalInput.name || null,
+    tagNumber: animalInput.tagNumber.toUpperCase(),
+    healthStatus: {
+      currentStatus: animalInput.healthStatus || "Healthy",
+      lastCheckupDate: new Date(),
+      healthNotes: animalInput.healthNotes || "",
+      bodyConditionScore: animalInput.bodyConditionScore
+        ? parseFloat(animalInput.bodyConditionScore)
+        : 3,
+    },
+    isActive: true,
+    reproductiveStatus: req.body.reproductiveStatus || "normal",
+    feedingType: req.body.feedingType || null,
+    housingType: req.body.housingType || null,
+    dateOfBirth: animalInput.dateOfBirth
+      ? new Date(animalInput.dateOfBirth)
+      : null,
+    sourceOfAnimal: req.body.sourceOfAnimal || "born_on_farm",
+    additionalNotes: req.body.additionalNotes || "",
+    status: "active",
+    currentOwner: req.body.farmer,
+    photos: {},
+    vaccinationSummary: {
+      totalVaccinations: 0,
+      lastVaccinationDate: null,
+      nextVaccinationDate: null,
+      isUpToDate: false,
+      vaccinesGiven: [],
+    },
+  };
+
+  // Handle pregnancy status (only for adult female animals)
+  if (animalInput.pregnancyStatus?.isPregnant === "on") {
+    animalData.pregnancyStatus = {
+      isPregnant: true,
+      kitUsed: animalInput.pregnancyStatus.kitUsed || null,
+      testDate: animalInput.pregnancyStatus.testDate
+        ? new Date(animalInput.pregnancyStatus.testDate)
+        : null,
+      confirmedDate: animalInput.pregnancyStatus.confirmedDate
+        ? new Date(animalInput.pregnancyStatus.confirmedDate)
+        : null,
+      expectedDeliveryDate: animalInput.pregnancyStatus.expectedDeliveryDate
+        ? new Date(animalInput.pregnancyStatus.expectedDeliveryDate)
+        : null,
+      stage: animalInput.pregnancyStatus.stage || null,
+      numberOfFetuses: animalInput.pregnancyStatus.numberOfFetuses
+        ? Number(animalInput.pregnancyStatus.numberOfFetuses)
+        : null,
+      previousPregnancies: animalInput.pregnancyStatus.previousPregnancies
+        ? Number(animalInput.pregnancyStatus.previousPregnancies)
+        : 0,
+      pregnancyNotes: animalInput.pregnancyStatus.notes || "",
+    };
+  } else {
+    animalData.pregnancyStatus = {
+      isPregnant: false,
+      testDate: null,
+      confirmedDate: null,
+      expectedDeliveryDate: null,
+      stage: null,
+      numberOfFetuses: null,
+      previousPregnancies: 0,
+      pregnancyNotes: "",
+    };
+  }
+
+  // Handle photos
+  if (req.files && req.files[`animals[${index}][photos]`]) {
+    const photos = req.files[`animals[${index}][photos]`];
+    for (const field in photos) {
+      if (photos[field]?.[0]) {
+        const file = photos[field][0];
+        animalData.photos[field] = {
+          url: file.path,
+          filename: file.originalname,
+          public_id: file.filename,
+          uploadedAt: new Date(),
+        };
+      }
+    }
+  } else if (req.files && req.files[`animals[0][photos]`]) {
+    // Handle case when files might be in different structure
+    const photos = req.files[`animals[0][photos]`];
+    for (const field in photos) {
+      if (photos[field]?.[0]) {
+        const file = photos[field][0];
+        animalData.photos[field] = {
+          url: file.path,
+          filename: file.originalname,
+          public_id: file.filename,
+          uploadedAt: new Date(),
+        };
+      }
+    }
+  }
+
+  return animalData;
+}
+
+// Create vaccination records
+async function createVaccinationRecords(req, animal, session = null) {
+  try {
+    if (!req.body.vaccinations) return [];
+
+    const vaccinationRecords = [];
+
+    for (const [vaccineId, vaccineData] of Object.entries(
+      req.body.vaccinations,
+    )) {
+      if (vaccineData.administered === "true") {
+        // Get vaccine details from database
+        const vaccine = await Vaccine.findById(vaccineId);
+        if (!vaccine) {
+          console.warn(`Vaccine with ID ${vaccineId} not found`);
+          continue;
+        }
+
+        // Validate required fields
+        if (!vaccineData.dateAdministered) {
+          throw new Error(
+            `Vaccination date is required for ${vaccine.vaccineName}`,
+          );
+        }
+
+        if (!vaccineData.administeredBy) {
+          throw new Error(
+            `Administered by is required for ${vaccine.vaccineName}`,
+          );
+        }
+
+        const vaccinationRecord = new Vaccination({
+          farmer: animal.farmer,
+          animal: animal._id,
+          vaccine: vaccine._id,
+          vaccineName: vaccine.vaccineName || vaccine.name,
+          vaccineType: vaccine.vaccineType,
+          dateAdministered: new Date(vaccineData.dateAdministered),
+          nextDueDate: vaccineData.nextDueDate
+            ? new Date(vaccineData.nextDueDate)
+            : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year default
+          administeredBy: vaccineData.administeredBy,
+          notes: vaccineData.notes || "",
+          status: "Administered",
+          batchNumber: vaccineData.batchNumber || null,
+          dosageAmount: vaccine.standardDosage || null,
+          dosageUnit: vaccine.dosageUnit || "ml",
+          createdBy: req.user._id,
+        });
+
+        const saveOptions = session ? { session } : {};
+        await vaccinationRecord.save(saveOptions);
+        vaccinationRecords.push(vaccinationRecord);
+      }
+    }
+
+    // Update animal's vaccination summary
+    if (vaccinationRecords.length > 0) {
+      const latestVaccination = vaccinationRecords.sort(
+        (a, b) => new Date(b.dateAdministered) - new Date(a.dateAdministered),
+      )[0];
+
+      // Update vaccination summary
+      animal.vaccinationSummary.totalVaccinations = vaccinationRecords.length;
+      animal.vaccinationSummary.lastVaccinationDate =
+        latestVaccination.dateAdministered;
+      animal.vaccinationSummary.lastVaccineType = latestVaccination.vaccineType;
+
+      // Find earliest next due date
+      const upcomingVaccinations = vaccinationRecords.filter(
+        (v) => v.nextDueDate,
+      );
+      if (upcomingVaccinations.length > 0) {
+        const earliestDueDate = upcomingVaccinations.reduce((earliest, v) => {
+          return v.nextDueDate < earliest ? v.nextDueDate : earliest;
+        }, upcomingVaccinations[0].nextDueDate);
+
+        animal.vaccinationSummary.nextVaccinationDate = earliestDueDate;
+        animal.vaccinationSummary.isUpToDate = earliestDueDate > new Date();
+      }
+
+      // Update vaccinesGiven array
+      const vaccineMap = new Map();
+      vaccinationRecords.forEach((vaccination) => {
+        if (vaccination.vaccine) {
+          const key = vaccination.vaccine.toString();
+          if (
+            !vaccineMap.has(key) ||
+            vaccineMap.get(key).lastDate < vaccination.dateAdministered
+          ) {
+            vaccineMap.set(key, {
+              vaccine: vaccination.vaccine,
+              vaccineName: vaccination.vaccineName,
+              lastDate: vaccination.dateAdministered,
+              nextDue: vaccination.nextDueDate,
+              status:
+                vaccination.nextDueDate > new Date() ? "up_to_date" : "overdue",
+            });
+          }
+        }
+      });
+
+      animal.vaccinationSummary.vaccinesGiven = Array.from(vaccineMap.values());
+
+      const saveOptions = session ? { session } : {};
+      await animal.save(saveOptions);
+    }
+
+    return vaccinationRecords;
+  } catch (error) {
+    console.error("Error creating vaccination records:", error);
+    throw error;
+  }
+}
+
+// Update farmer animal count
+async function updateFarmerAnimalCount(farmerId, count = 1, session = null) {
+  try {
+    const updateQuery = {
+      $inc: {
+        "farmDetails.totalAnimals": count,
+        "farmDetails.activeAnimals": count,
+      },
+    };
+
+    const options = session ? { session } : {};
+    await Farmer.findByIdAndUpdate(farmerId, updateQuery, options);
+  } catch (error) {
+    console.error("Error updating farmer animal count:", error);
+    throw error;
+  }
+}
+
+// Send success response
+function sendSuccessResponse(req, res, animals, type) {
+  const isSingle = type === "single";
+  const animal = isSingle ? animals : animals[0];
+  const count = isSingle ? 1 : animals.length;
+
+  // Send notifications
+  if (animal.pregnancyStatus?.isPregnant) {
+    req.flash(
+      "primary",
+      `Pregnant animal registered! Expected delivery: ${
+        animal.pregnancyStatus.expectedDeliveryDate
+          ? new Date(
+              animal.pregnancyStatus.expectedDeliveryDate,
+            ).toLocaleDateString()
+          : "Not specified"
+      }`,
+    );
+  }
+
+  if (animal.healthStatus.currentStatus !== "Healthy") {
+    req.flash(
+      "warning",
+      `Animal registered with health status: ${animal.healthStatus.currentStatus}. Requires attention.`,
+    );
+  }
+
+  const names = isSingle
+    ? `"${animal.name || animal.tagNumber}"`
+    : `${count} animals`;
+
+  req.flash(
+    "success",
+    `${names} registered successfully! ${isSingle ? `ID: ${animal.uniqueAnimalId}` : ""}`,
+  );
+
+  // Redirect based on registration type
+  const role = req.user.role.toLowerCase();
+  if (isSingle) {
+    res.redirect(`/${role}/animals/${animal._id}`);
+  } else {
+    res.redirect(`/${role}/animals?bulk_success=true&count=${count}`);
+  }
+}
+
+// Error handling
+function handleError(error, req, res) {
+  console.error("Controller error:", error);
+
+  // Specific error messages
+  if (error.code === 11000) {
+    if (error.keyPattern?.tagNumber) {
+      req.flash(
+        "error",
+        "Tag number already exists. Please use a unique tag number.",
+      );
+    } else if (error.keyPattern?.uniqueAnimalId) {
+      req.flash("error", "Duplicate animal ID generated. Please try again.");
+    } else {
+      req.flash("error", "Duplicate entry detected. Please check your input.");
+    }
+  } else if (error.name === "ValidationError") {
+    const messages = Object.values(error.errors).map((val) => val.message);
+    req.flash("error", `Validation failed: ${messages.join(", ")}`);
+  } else if (error.name === "CastError") {
+    req.flash(
+      "error",
+      "Invalid data type provided. Please check your input fields.",
+    );
+  } else {
+    req.flash(
+      "error",
+      error.message || "Failed to register animal(s). Please try again.",
+    );
+  }
+
+  // Store form data in session for repopulation
+  req.session.formData = req.body;
+
+  // Determine redirect URL
+  const role = req.user.role.toLowerCase();
+  const isBulk = Array.isArray(req.body.animals);
+  const redirectUrl = isBulk
+    ? `/${role}/animals/new?type=bulk`
+    : `/${role}/animals/new`;
+
+  res.redirect(redirectUrl);
+}
+
+module.exports.bulkCreateAnimals = module.exports.createAnimal;
 module.exports.viewAnimal = async (req, res) => {
   try {
     const { id } = req.params;
@@ -384,9 +802,7 @@ module.exports.viewAnimal = async (req, res) => {
       )
       .populate("registeredBy", "name email role")
       .populate("currentOwner", "name uniqueFarmerId")
-      .populate("medicalHistory.treatedBy", "name")
-      .populate("breedingHistory.bullId") // Assuming bullId references Animal schema
-      .populate("previousOwners.farmer", "name uniqueFarmerId");
+      .populate("medicalHistory.treatedBy", "name");
 
     if (!animal) {
       req.flash("error", "❌ Animal not found.");
@@ -396,7 +812,7 @@ module.exports.viewAnimal = async (req, res) => {
     // Get vaccination records for this animal
     const Vaccination = require("../models/vaccination");
     const vaccinations = await Vaccination.find({ animal: id })
-      .populate("administeredBy", "name")
+      .populate("vaccine", "name vaccineType")
       .sort({ dateAdministered: -1 })
       .limit(5);
 
@@ -410,7 +826,7 @@ module.exports.viewAnimal = async (req, res) => {
       if (today.getDate() < birthDate.getDate()) {
         months--;
       }
-      animal.ageInMonths = months;
+      ageInMonths = months;
     }
 
     // Calculate pregnancy duration if pregnant
@@ -425,24 +841,59 @@ module.exports.viewAnimal = async (req, res) => {
       pregnancyDuration = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    // Calculate days since last calving
-    let daysSinceCalving = null;
-    if (animal.lactationStatus?.lastCalvingDate) {
-      const today = new Date();
-      const lastCalving = new Date(animal.lactationStatus.lastCalvingDate);
-      const diffTime = Math.abs(today - lastCalving);
-      daysSinceCalving = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    }
-
     // Get upcoming vaccinations
     const upcomingVaccinations = await Vaccination.find({
       animal: id,
       nextDueDate: { $gte: new Date() },
-      status: { $ne: "Completed" },
+      status: "Administered",
     })
-      .populate("administeredBy", "name")
+      .populate("vaccine", "name vaccineType")
       .sort({ nextDueDate: 1 })
       .limit(3);
+
+    // Get vaccination statistics
+    const vaccinationStats = await Vaccination.aggregate([
+      { $match: { animal: animal._id } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          overdue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $lt: ["$nextDueDate", new Date()] },
+                    { $eq: ["$status", "Administered"] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          upcoming: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ["$nextDueDate", new Date()] },
+                    {
+                      $lte: [
+                        "$nextDueDate",
+                        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                      ],
+                    },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      },
+    ]);
 
     // Get other animals from the same farmer
     const otherAnimals = await Animal.find({
@@ -455,21 +906,47 @@ module.exports.viewAnimal = async (req, res) => {
       )
       .limit(5);
 
-    res.render("admin/animals/view.ejs", {
+    // Check if animal was from bulk registration
+    const batchInfo = animal.registrationBatchId
+      ? await Animal.countDocuments({
+          registrationBatchId: animal.registrationBatchId,
+        })
+      : null;
+
+    res.render("admin/animals/view", {
       animal,
       vaccinations,
       upcomingVaccinations,
+      vaccinationStats: vaccinationStats[0] || {
+        total: 0,
+        overdue: 0,
+        upcoming: 0,
+      },
       otherAnimals,
       ageInMonths,
       pregnancyDuration,
-      daysSinceCalving,
+      batchInfo,
       title: `Animal Details - ${animal.uniqueAnimalId || animal.tagNumber}`,
       helpers: {
         formatDate: function (date) {
-          return date ? new Date(date).toLocaleDateString("en-IN") : "N/A";
+          return date
+            ? new Date(date).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "N/A";
         },
         formatDateTime: function (date) {
-          return date ? new Date(date).toLocaleString("en-IN") : "N/A";
+          return date
+            ? new Date(date).toLocaleString("en-IN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "N/A";
         },
         getHealthColor: function (status) {
           const colors = {
@@ -490,6 +967,21 @@ module.exports.viewAnimal = async (req, res) => {
             "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
           );
         },
+        getVaccinationStatusColor: function (dueDate) {
+          if (!dueDate) return "bg-gray-100 text-gray-800";
+          const days = Math.ceil(
+            (new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24),
+          );
+          if (days < 0)
+            return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+          if (days <= 7)
+            return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+          return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+        },
+        formatAge: function (age) {
+          if (!age || !age.value) return "N/A";
+          return `${age.value} ${age.unit}`;
+        },
       },
     });
   } catch (error) {
@@ -498,6 +990,7 @@ module.exports.viewAnimal = async (req, res) => {
     res.redirect(`/${req.user.role.toLowerCase()}/animals`);
   }
 };
+
 module.exports.renderEditForm = async (req, res) => {
   try {
     const { id } = req.params;
@@ -513,29 +1006,42 @@ module.exports.renderEditForm = async (req, res) => {
 
     // Get farmers for dropdown
     const Farmer = require("../models/farmer");
-    const farmers = await Farmer.find()
+    const farmers = await Farmer.find({ isActive: true })
       .select("name uniqueFarmerId")
       .sort({ name: 1 });
 
     // Get sales agents for dropdown
     const User = require("../models/user");
-    const sales = await User.find({ role: "Sale" })
+    const sales = await User.find({
+      $or: [{ role: "SALES" }, { role: "ADMIN" }],
+      isActive: true,
+    })
       .select("name email")
+      .sort({ name: 1 });
+
+    // Get vaccines for reference
+    const Vaccine = require("../models/vaccine");
+    const vaccines = await Vaccine.find({ isActive: true })
+      .select("name vaccineType")
       .sort({ name: 1 });
 
     res.render("admin/animals/edit", {
       animal,
       farmers,
       sales,
-      title: `Edit Animal - ${animal.uniqueAnimalId}`,
+      vaccines,
+      title: `Edit Animal - ${animal.uniqueAnimalId || animal.tagNumber}`,
+      formData: req.session.formData || null,
     });
+
+    // Clear session form data
+    delete req.session.formData;
   } catch (error) {
     console.error("Get edit form error:", error);
     req.flash("error", "❌ Unable to load edit form.");
     res.redirect(`/${req.user.role.toLowerCase()}/animals/${req.params.id}`);
   }
 };
-
 module.exports.updateAnimal = async (req, res) => {
   try {
     const { id } = req.params;
@@ -545,20 +1051,6 @@ module.exports.updateAnimal = async (req, res) => {
       req.flash("error", "❌ Animal not found.");
       return res.redirect(`/${req.user.role.toLowerCase()}/animals`);
     }
-
-    // Helper function to safely parse nested objects
-    const parseNested = (obj, path) => {
-      const keys = path.split(".");
-      let value = req.body;
-      for (const key of keys) {
-        if (value && typeof value === "object" && key in value) {
-          value = value[key];
-        } else {
-          return undefined;
-        }
-      }
-      return value;
-    };
 
     /* ---------------- BASIC FIELDS ---------------- */
     if (req.body.farmer) animal.farmer = req.body.farmer;
@@ -586,7 +1078,9 @@ module.exports.updateAnimal = async (req, res) => {
     }
 
     animal.name = req.body.name || animal.name;
-    animal.tagNumber = req.body.tagNumber || animal.tagNumber;
+    animal.tagNumber = req.body.tagNumber
+      ? req.body.tagNumber.toUpperCase()
+      : animal.tagNumber;
     animal.dateOfBirth = req.body.dateOfBirth
       ? new Date(req.body.dateOfBirth)
       : animal.dateOfBirth;
@@ -604,82 +1098,36 @@ module.exports.updateAnimal = async (req, res) => {
           : animal.age?.value,
         unit: ["Days", "Months", "Years"].includes(req.body.age.unit)
           ? req.body.age.unit
-          : animal.age?.unit,
+          : animal.age?.unit || "Months",
       };
     }
 
-    /* ---------------- PREGNANCY STATUS ---------------- */
+    /* ---------------- PREGNANCY STATUS (SIMPLIFIED) ---------------- */
     if (req.body.pregnancyStatus) {
       animal.pregnancyStatus = {
         isPregnant: req.body.pregnancyStatus.isPregnant === "on",
-        kitUsed:
-          req.body.pregnancyStatus.kitUsed ||
-          animal.pregnancyStatus?.kitUsed ||
-          null,
+        kitUsed: req.body.pregnancyStatus.kitUsed || null,
         testDate: req.body.pregnancyStatus.testDate
           ? new Date(req.body.pregnancyStatus.testDate)
-          : animal.pregnancyStatus?.testDate || null,
+          : null,
         confirmedDate: req.body.pregnancyStatus.confirmedDate
           ? new Date(req.body.pregnancyStatus.confirmedDate)
-          : animal.pregnancyStatus?.confirmedDate || null,
+          : null,
         expectedDeliveryDate: req.body.pregnancyStatus.expectedDeliveryDate
           ? new Date(req.body.pregnancyStatus.expectedDeliveryDate)
-          : animal.pregnancyStatus?.expectedDeliveryDate || null,
-        stage:
-          req.body.pregnancyStatus.stage ||
-          animal.pregnancyStatus?.stage ||
-          null,
+          : null,
+        stage: req.body.pregnancyStatus.stage || null,
         numberOfFetuses: req.body.pregnancyStatus.numberOfFetuses
           ? parseInt(req.body.pregnancyStatus.numberOfFetuses)
-          : animal.pregnancyStatus?.numberOfFetuses || null,
+          : null,
         previousPregnancies: req.body.pregnancyStatus.previousPregnancies
           ? parseInt(req.body.pregnancyStatus.previousPregnancies)
-          : animal.pregnancyStatus?.previousPregnancies || 0,
-        pregnancyNotes:
-          req.body.pregnancyStatus.pregnancyNotes ||
-          animal.pregnancyStatus?.pregnancyNotes ||
-          "",
+          : 0,
+        pregnancyNotes: req.body.pregnancyStatus.notes || "",
       };
     }
 
-    /* ---------------- LACTATION STATUS ---------------- */
-    if (req.body.lactationStatus) {
-      animal.lactationStatus = {
-        isLactating: req.body.lactationStatus.isLactating === "on",
-        lastCalvingDate: req.body.lactationStatus.lastCalvingDate
-          ? new Date(req.body.lactationStatus.lastCalvingDate)
-          : animal.lactationStatus?.lastCalvingDate || null,
-        lactationNumber: req.body.lactationStatus.lactationNumber
-          ? parseInt(req.body.lactationStatus.lactationNumber)
-          : animal.lactationStatus?.lactationNumber || null,
-        daysInMilk: req.body.lactationStatus.daysInMilk
-          ? parseInt(req.body.lactationStatus.daysInMilk)
-          : animal.lactationStatus?.daysInMilk || null,
-        dailyYield: {
-          value: req.body.lactationStatus.dailyYield
-            ? parseFloat(req.body.lactationStatus.dailyYield)
-            : animal.lactationStatus?.dailyYield?.value || null,
-          unit:
-            req.body.lactationStatus.yieldUnit ||
-            animal.lactationStatus?.dailyYield?.unit ||
-            null,
-        },
-        milkQuality:
-          req.body.lactationStatus.milkQuality ||
-          animal.lactationStatus?.milkQuality ||
-          null,
-        milkingFrequency:
-          req.body.lactationStatus.milkingFrequency ||
-          animal.lactationStatus?.milkingFrequency ||
-          null,
-        lactationNotes:
-          req.body.lactationStatus.lactationNotes ||
-          animal.lactationStatus?.lactationNotes ||
-          "",
-      };
-    }
-
-    /* ---------------- HEALTH STATUS ---------------- */
+    /* ---------------- HEALTH STATUS (SIMPLIFIED) ---------------- */
     const validHealthStatuses = [
       "Healthy",
       "Sick",
@@ -701,48 +1149,15 @@ module.exports.updateAnimal = async (req, res) => {
       );
     }
 
-    if (req.body.weight) {
-      animal.healthStatus.weight = {
-        value: req.body.weight.value
-          ? parseFloat(req.body.weight.value)
-          : animal.healthStatus?.weight?.value || null,
-        unit: req.body.weight.unit || animal.healthStatus?.weight?.unit || "kg",
-        lastUpdated: new Date(),
-      };
-    }
-
     if (req.body.lastCheckupDate) {
       animal.healthStatus.lastCheckupDate = new Date(req.body.lastCheckupDate);
-    }
-
-    if (req.body.nextCheckupDate) {
-      animal.healthStatus.nextCheckupDate = new Date(req.body.nextCheckupDate);
     }
 
     if (req.body.healthNotes !== undefined) {
       animal.healthStatus.healthNotes = req.body.healthNotes;
     }
 
-    /* ---------------- VACCINATION SUMMARY ---------------- */
-    if (req.body.vaccinationSummary) {
-      animal.vaccinationSummary = {
-        lastVaccinationDate: req.body.vaccinationSummary.lastVaccinationDate
-          ? new Date(req.body.vaccinationSummary.lastVaccinationDate)
-          : animal.vaccinationSummary?.lastVaccinationDate || null,
-        nextVaccinationDate: req.body.vaccinationSummary.nextVaccinationDate
-          ? new Date(req.body.vaccinationSummary.nextVaccinationDate)
-          : animal.vaccinationSummary?.nextVaccinationDate || null,
-        lastVaccineType:
-          req.body.vaccinationSummary.lastVaccineType ||
-          animal.vaccinationSummary?.lastVaccineType ||
-          null,
-        totalVaccinations: animal.vaccinationSummary?.totalVaccinations || 0,
-        isUpToDate: req.body.vaccinationSummary.isUpToDate === "on",
-        lastUpdated: new Date(),
-      };
-    }
-
-    /* ---------------- REPRODUCTIVE STATUS ---------------- */
+    /* ---------------- REPRODUCTIVE STATUS (SIMPLIFIED) ---------------- */
     const validReproductiveStatuses = [
       "normal",
       "in_heat",
@@ -750,7 +1165,6 @@ module.exports.updateAnimal = async (req, res) => {
       "open",
       "sterile",
       "castrated",
-      "not_applicable",
     ];
     if (
       req.body.reproductiveStatus &&
@@ -759,41 +1173,9 @@ module.exports.updateAnimal = async (req, res) => {
       animal.reproductiveStatus = req.body.reproductiveStatus;
     }
 
-    /* ---------------- MANAGEMENT FIELDS ---------------- */
-    const validFeedingTypes = [
-      "grazing",
-      "stall_feeding",
-      "mixed",
-      "concentrate",
-      "organic",
-      null,
-    ];
-    if (
-      req.body.feedingType &&
-      validFeedingTypes.includes(req.body.feedingType)
-    ) {
-      animal.feedingType = req.body.feedingType;
-    } else if (req.body.feedingType === "") {
-      animal.feedingType = null;
-    }
-
-    const validHousingTypes = [
-      "free_stall",
-      "tie_stall",
-      "pasture",
-      "shelter",
-      "open_yard",
-      "other",
-      null,
-    ];
-    if (
-      req.body.housingType &&
-      validHousingTypes.includes(req.body.housingType)
-    ) {
-      animal.housingType = req.body.housingType;
-    } else if (req.body.housingType === "") {
-      animal.housingType = null;
-    }
+    /* ---------------- MANAGEMENT FIELDS (SIMPLIFIED) ---------------- */
+    animal.feedingType = req.body.feedingType || null;
+    animal.housingType = req.body.housingType || null;
 
     /* ---------------- STATUS & OWNERSHIP ---------------- */
     const validStatuses = [
@@ -806,34 +1188,35 @@ module.exports.updateAnimal = async (req, res) => {
     if (req.body.status && validStatuses.includes(req.body.status)) {
       animal.status = req.body.status;
       animal.statusChangeDate = new Date();
-      animal.statusChangeReason =
-        req.body.statusChangeReason || animal.statusChangeReason;
-    }
+      animal.statusChangeReason = req.body.statusChangeReason || "";
 
-    /* ---------------- PURCHASE DETAILS ---------------- */
-    if (animal.sourceOfAnimal === "purchased" && req.body.purchaseDetails) {
-      animal.purchaseDetails = {
-        price: req.body.purchaseDetails.price
-          ? parseFloat(req.body.purchaseDetails.price)
-          : animal.purchaseDetails?.price || null,
-        currency:
-          req.body.purchaseDetails.currency ||
-          animal.purchaseDetails?.currency ||
-          "INR",
-        seller:
-          req.body.purchaseDetails.seller ||
-          animal.purchaseDetails?.seller ||
-          "",
-        purchaseDate: req.body.purchaseDetails.purchaseDate
-          ? new Date(req.body.purchaseDetails.purchaseDate)
-          : animal.purchaseDetails?.purchaseDate || null,
-      };
-    } else if (animal.sourceOfAnimal !== "purchased") {
-      animal.purchaseDetails = null;
+      // Update isActive based on status
+      animal.isActive = req.body.status === "active";
     }
 
     /* ---------------- CHECKBOXES ---------------- */
-    animal.isActive = req.body.isActive === "on";
+    if (req.body.isActive !== undefined) {
+      animal.isActive = req.body.isActive === "on";
+    }
+
+    /* ---------------- UPDATE CURRENT OWNER ---------------- */
+    if (
+      req.body.farmer &&
+      req.body.farmer !== animal.currentOwner?.toString()
+    ) {
+      // Add to previous owners if exists
+      if (animal.currentOwner) {
+        animal.previousOwners = animal.previousOwners || [];
+        animal.previousOwners.push({
+          farmer: animal.currentOwner,
+          fromDate: animal.dateOfAcquisition || animal.createdAt,
+          toDate: new Date(),
+          transferReason: req.body.transferReason || "Ownership updated",
+        });
+      }
+
+      animal.currentOwner = req.body.farmer;
+    }
 
     /* ---------------- PHOTOS UPDATE ---------------- */
     const photoFields = ["front", "left", "right", "back"];
@@ -846,6 +1229,7 @@ module.exports.updateAnimal = async (req, res) => {
           animal.photos?.[side]?.public_id
         ) {
           try {
+            const cloudinary = require("../config/cloudinary");
             await cloudinary.uploader.destroy(animal.photos[side].public_id);
             animal.photos[side] = undefined;
           } catch (error) {
@@ -857,6 +1241,8 @@ module.exports.updateAnimal = async (req, res) => {
 
     // Handle new photo uploads
     if (req.files) {
+      const cloudinary = require("../config/cloudinary");
+
       for (const field of photoFields) {
         if (req.files[field]?.[0]) {
           // Delete old image if exists
@@ -871,7 +1257,7 @@ module.exports.updateAnimal = async (req, res) => {
           const file = req.files[field][0];
           animal.photos[field] = {
             url: file.path,
-            filename: file.filename,
+            filename: file.originalname,
             public_id: file.filename,
             uploadedAt: new Date(),
           };
@@ -879,30 +1265,11 @@ module.exports.updateAnimal = async (req, res) => {
       }
     }
 
-    /* ---------------- UPDATE CURRENT OWNER ---------------- */
-    if (
-      req.body.farmer &&
-      req.body.farmer !== animal.currentOwner?.toString()
-    ) {
-      // Add to previous owners
-      if (animal.currentOwner) {
-        animal.previousOwners = animal.previousOwners || [];
-        animal.previousOwners.push({
-          farmer: animal.currentOwner,
-          fromDate: animal.dateOfAcquisition || animal.createdAt,
-          toDate: new Date(),
-          transferReason: "Updated ownership",
-        });
-      }
-
-      animal.currentOwner = req.body.farmer;
-    }
-
     /* ---------------- SAVE UPDATES ---------------- */
     await animal.save();
 
-    // Update vaccination summary if needed
-    if (animal.vaccinationSummary?.lastVaccinationDate) {
+    // Update vaccination summary if there are vaccinations
+    if (animal.vaccinationSummary?.totalVaccinations > 0) {
       await animal.updateVaccinationSummary();
     }
 
@@ -920,14 +1287,14 @@ module.exports.updateAnimal = async (req, res) => {
     let errorMessage = "❌ Failed to update animal. Please try again.";
 
     if (error.code === 11000) {
-      if (error.keyPattern && error.keyPattern.tagNumber) {
+      if (error.keyPattern?.tagNumber) {
         errorMessage =
           "❌ Tag number already exists! Please use a different tag number.";
       }
     } else if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map((val) => {
-        return `${val.path}: ${val.message}`;
-      });
+      const messages = Object.values(error.errors).map(
+        (val) => `${val.path}: ${val.message}`,
+      );
       errorMessage = `❌ Validation Error:<br>${messages.join("<br>")}`;
     } else if (error.name === "CastError") {
       errorMessage = `❌ Invalid data type for field "${error.path}".`;

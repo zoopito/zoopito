@@ -48,6 +48,17 @@ const animalSchema = new Schema(
       uppercase: true,
     },
 
+    // NEW: Bulk registration tracking
+    registrationBatchId: {
+      type: String,
+      index: true,
+      description: "Group ID for bulk registration",
+    },
+    registrationBatchIndex: {
+      type: Number,
+      description: "Index within the bulk registration batch",
+    },
+
     // Physical Attributes
     age: {
       value: {
@@ -110,31 +121,17 @@ const animalSchema = new Schema(
       },
     },
 
-    // Pregnancy Status
+    // Pregnancy Status - SIMPLIFIED
     pregnancyStatus: {
       isPregnant: {
         type: Boolean,
         default: false,
       },
-      kitUsed: {
-        type: String,
-        enum: [
-          "ultrasound",
-          "blood_test",
-          "palpation",
-          "urine_test",
-          "milk_test",
-          "other",
-          null,
-        ],
-      },
+      kitUsed: String, // Removed enum restriction
       testDate: Date,
       confirmedDate: Date,
       expectedDeliveryDate: Date,
-      stage: {
-        type: String,
-        enum: ["early", "mid", "late", "full_term", null],
-      },
+      stage: String, // Removed enum restriction
       numberOfFetuses: {
         type: Number,
         min: 1,
@@ -151,46 +148,9 @@ const animalSchema = new Schema(
       },
     },
 
-    // Lactation Status
-    lactationStatus: {
-      isLactating: {
-        type: Boolean,
-        default: false,
-      },
-      lastCalvingDate: Date,
-      lactationNumber: {
-        type: Number,
-        min: 1,
-      },
-      daysInMilk: {
-        type: Number,
-        min: 0,
-      },
-      dailyYield: {
-        value: {
-          type: Number,
-          min: 0,
-        },
-        unit: {
-          type: String,
-          enum: ["liters", "kg", "ml", "gallons", null],
-        },
-      },
-      milkQuality: {
-        type: String,
-        enum: ["excellent", "good", "average", "poor", "not_tested", null],
-      },
-      milkingFrequency: {
-        type: String,
-        enum: ["1", "2", "3", "4", "machine", null],
-      },
-      lactationNotes: {
-        type: String,
-        trim: true,
-      },
-    },
+    // REMOVED: Lactation Status section completely as requested
 
-    // Health Status
+    // Health Status - SIMPLIFIED
     healthStatus: {
       currentStatus: {
         type: String,
@@ -205,7 +165,6 @@ const animalSchema = new Schema(
         default: "Healthy",
       },
       lastCheckupDate: Date,
-      nextCheckupDate: Date,
       healthNotes: {
         type: String,
         trim: true,
@@ -216,18 +175,10 @@ const animalSchema = new Schema(
         max: 5,
         default: 3,
       },
-      weight: {
-        value: Number,
-        unit: {
-          type: String,
-          enum: ["kg", "pounds", null],
-          default: "kg",
-        },
-        lastUpdated: Date,
-      },
+      // REMOVED: weight tracking, nextCheckupDate
     },
 
-    // Vaccination Summary (Reference to detailed vaccination records)
+    // Vaccination Summary - ENHANCED
     vaccinationSummary: {
       lastVaccinationDate: Date,
       nextVaccinationDate: Date,
@@ -241,64 +192,50 @@ const animalSchema = new Schema(
         type: Boolean,
         default: false,
       },
+      // NEW: Track individual vaccine status
+      vaccinesGiven: [
+        {
+          vaccine: {
+            type: Schema.Types.ObjectId,
+            ref: "Vaccine",
+          },
+          vaccineName: String,
+          lastDate: Date,
+          nextDue: Date,
+          status: {
+            type: String,
+            enum: ["up_to_date", "due_soon", "overdue", "not_vaccinated"],
+            default: "not_vaccinated",
+          },
+        },
+      ],
+      lastUpdated: Date,
     },
 
-    // Reproductive Status
+    // Reproductive Status - SIMPLIFIED
     reproductiveStatus: {
       type: String,
-      enum: [
-        "normal",
-        "in_heat",
-        "bred",
-        "open",
-        "sterile",
-        "castrated",
-        "not_applicable",
-      ],
       default: "normal",
     },
 
-    // Feeding & Management
+    // Feeding & Management - SIMPLIFIED
     feedingType: {
       type: String,
-      enum: [
-        "grazing",
-        "stall_feeding",
-        "mixed",
-        "concentrate",
-        "organic",
-        null,
-      ],
+      default: null,
     },
     housingType: {
       type: String,
-      enum: [
-        "free_stall",
-        "tie_stall",
-        "pasture",
-        "shelter",
-        "open_yard",
-        "other",
-        null,
-      ],
+      default: null,
     },
 
-    // Lifecycle & History
+    // Lifecycle & History - SIMPLIFIED
     dateOfBirth: Date,
     dateOfAcquisition: Date,
     sourceOfAnimal: {
       type: String,
-      enum: ["born_on_farm", "purchased", "gifted", "other"],
+      default: "born_on_farm",
     },
-    purchaseDetails: {
-      price: Number,
-      currency: {
-        type: String,
-        default: "INR",
-      },
-      seller: String,
-      purchaseDate: Date,
-    },
+    // REMOVED: purchaseDetails (not needed for bulk registration)
 
     // Medical History (Summary)
     medicalHistory: [
@@ -308,7 +245,7 @@ const animalSchema = new Schema(
         treatment: String,
         treatedBy: {
           type: Schema.Types.ObjectId,
-          ref: "Paravet",
+          ref: "User",
         },
         resolved: {
           type: Boolean,
@@ -318,20 +255,7 @@ const animalSchema = new Schema(
       },
     ],
 
-    // Breeding History
-    breedingHistory: [
-      {
-        matingDate: Date,
-        bullId: String,
-        bullBreed: String,
-        pregnancyConfirmed: Boolean,
-        confirmedDate: Date,
-        calvingDate: Date,
-        offspringCount: Number,
-        offspringGender: [String],
-        notes: String,
-      },
-    ],
+    // REMOVED: breedingHistory (can be added later if needed)
 
     // Status & Metadata
     isActive: {
@@ -359,36 +283,14 @@ const animalSchema = new Schema(
       trim: true,
     },
 
-    // Ownership & Audit Trail
+    // Ownership - SIMPLIFIED
     currentOwner: {
       type: Schema.Types.ObjectId,
       ref: "Farmer",
     },
-    previousOwners: [
-      {
-        farmer: {
-          type: Schema.Types.ObjectId,
-          ref: "Farmer",
-        },
-        fromDate: Date,
-        toDate: Date,
-        transferReason: String,
-      },
-    ],
+    // REMOVED: previousOwners array (not needed for bulk registration)
 
-    // Geo-tagging
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number], // [longitude, latitude]
-        index: "2dsphere",
-      },
-      address: String,
-    },
+    // REMOVED: Geo-tagging (not needed for bulk registration)
   },
   {
     timestamps: true,
@@ -397,20 +299,18 @@ const animalSchema = new Schema(
   },
 );
 
+// ================ VIRTUALS ================
+
 // Virtual for age in months
 animalSchema.virtual("ageInMonths").get(function () {
   if (!this.dateOfBirth) return null;
-
   const today = new Date();
   const birthDate = new Date(this.dateOfBirth);
   let months = (today.getFullYear() - birthDate.getFullYear()) * 12;
   months += today.getMonth() - birthDate.getMonth();
-
-  // Adjust if day of month hasn't been reached
   if (today.getDate() < birthDate.getDate()) {
     months--;
   }
-
   return months;
 });
 
@@ -422,28 +322,12 @@ animalSchema.virtual("pregnancyDurationInDays").get(function () {
   ) {
     return null;
   }
-
   const confirmed = new Date(this.pregnancyStatus.confirmedDate);
   const expected = new Date(this.pregnancyStatus.expectedDeliveryDate);
-  const diffTime = Math.abs(expected - confirmed);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays;
+  return Math.ceil((expected - confirmed) / (1000 * 60 * 60 * 24));
 });
 
-// Virtual for days since last calving
-animalSchema.virtual("daysSinceLastCalving").get(function () {
-  if (!this.lactationStatus.lastCalvingDate) return null;
-
-  const lastCalving = new Date(this.lactationStatus.lastCalvingDate);
-  const today = new Date();
-  const diffTime = Math.abs(today - lastCalving);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays;
-});
-
-// Virtual for vaccination status
+// Virtual for vaccination records
 animalSchema.virtual("vaccinations", {
   ref: "Vaccination",
   localField: "_id",
@@ -457,15 +341,16 @@ animalSchema.virtual("upcomingVaccinations", {
   foreignField: "animal",
   match: {
     nextDueDate: { $gte: new Date() },
-    status: { $ne: "Completed" },
+    status: "Administered",
   },
 });
+
+// ================ MIDDLEWARE ================
 
 // Pre-save middleware to generate uniqueAnimalId
 animalSchema.pre("save", async function (next) {
   if (!this.uniqueAnimalId) {
     try {
-      // Generate unique ID: ANI-YYYY-MM-XXXX
       const date = new Date();
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -475,7 +360,6 @@ animalSchema.pre("save", async function (next) {
           $lt: new Date(date.getFullYear(), date.getMonth() + 1, 1),
         },
       });
-
       const sequence = String(count + 1).padStart(4, "0");
       this.uniqueAnimalId = `ANI-${year}${month}-${sequence}`;
     } catch (error) {
@@ -487,7 +371,6 @@ animalSchema.pre("save", async function (next) {
   if (this.dateOfBirth && !this.age.value) {
     const birthDate = new Date(this.dateOfBirth);
     const today = new Date();
-
     let years = today.getFullYear() - birthDate.getFullYear();
     let months = today.getMonth() - birthDate.getMonth();
 
@@ -506,7 +389,17 @@ animalSchema.pre("save", async function (next) {
     }
   }
 
-  // Update vaccination summary
+  // Set current owner if not set
+  if (!this.currentOwner) {
+    this.currentOwner = this.farmer;
+  }
+
+  // Update status change date
+  if (this.isModified("status")) {
+    this.statusChangeDate = new Date();
+  }
+
+  // Update vaccination summary timestamp
   if (this.isModified("vaccinationSummary")) {
     this.vaccinationSummary.lastUpdated = new Date();
   }
@@ -514,58 +407,105 @@ animalSchema.pre("save", async function (next) {
   next();
 });
 
-// Pre-save middleware to update current owner
-animalSchema.pre("save", function (next) {
-  if (!this.currentOwner) {
-    this.currentOwner = this.farmer;
+// ================ INSTANCE METHODS ================
+
+/**
+ * Update vaccination summary with latest data
+ */
+animalSchema.methods.updateVaccinationSummary = async function () {
+  try {
+    const Vaccination = mongoose.model("Vaccination");
+
+    // Get all vaccinations for this animal
+    const vaccinations = await Vaccination.find({
+      animal: this._id,
+      status: "Administered",
+    }).sort({ dateAdministered: -1 });
+
+    if (vaccinations.length > 0) {
+      // Latest vaccination
+      const latest = vaccinations[0];
+
+      // Get all upcoming due dates
+      const upcomingVaccinations = vaccinations.filter((v) => v.nextDueDate);
+
+      // Find earliest next due date
+      let earliestNextDue = null;
+      if (upcomingVaccinations.length > 0) {
+        earliestNextDue = upcomingVaccinations.reduce((earliest, v) => {
+          return v.nextDueDate < earliest ? v.nextDueDate : earliest;
+        }, upcomingVaccinations[0].nextDueDate);
+      }
+
+      // Update summary
+      this.vaccinationSummary = {
+        lastVaccinationDate: latest.dateAdministered,
+        nextVaccinationDate: earliestNextDue,
+        lastVaccineType: latest.vaccineType,
+        totalVaccinations: vaccinations.length,
+        isUpToDate: earliestNextDue ? earliestNextDue > new Date() : false,
+        vaccinesGiven: this.vaccinationSummary?.vaccinesGiven || [],
+        lastUpdated: new Date(),
+      };
+
+      // Update individual vaccine status
+      const vaccineMap = new Map();
+      vaccinations.forEach((vaccination) => {
+        if (vaccination.vaccine) {
+          const key = vaccination.vaccine.toString();
+          const existing = vaccineMap.get(key);
+
+          if (!existing || existing.lastDate < vaccination.dateAdministered) {
+            let status = "not_vaccinated";
+            if (vaccination.nextDueDate) {
+              const today = new Date();
+              const thirtyDaysFromNow = new Date();
+              thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+              if (vaccination.nextDueDate < today) {
+                status = "overdue";
+              } else if (vaccination.nextDueDate <= thirtyDaysFromNow) {
+                status = "due_soon";
+              } else {
+                status = "up_to_date";
+              }
+            }
+
+            vaccineMap.set(key, {
+              vaccine: vaccination.vaccine,
+              vaccineName: vaccination.vaccineName,
+              lastDate: vaccination.dateAdministered,
+              nextDue: vaccination.nextDueDate,
+              status: status,
+            });
+          }
+        }
+      });
+
+      this.vaccinationSummary.vaccinesGiven = Array.from(vaccineMap.values());
+    } else {
+      // No vaccinations
+      this.vaccinationSummary = {
+        totalVaccinations: 0,
+        lastVaccinationDate: null,
+        nextVaccinationDate: null,
+        lastVaccineType: null,
+        isUpToDate: false,
+        vaccinesGiven: [],
+        lastUpdated: new Date(),
+      };
+    }
+
+    return this.save();
+  } catch (error) {
+    console.error("Error updating vaccination summary:", error);
+    throw error;
   }
-
-  // If status changed, update statusChangeDate
-  if (this.isModified("status")) {
-    this.statusChangeDate = new Date();
-  }
-
-  next();
-});
-
-// Indexes for efficient queries
-animalSchema.index({ farmer: 1, tagNumber: 1 });
-animalSchema.index({ uniqueAnimalId: 1 });
-animalSchema.index({ animalType: 1, gender: 1 });
-animalSchema.index({ "healthStatus.currentStatus": 1 });
-animalSchema.index({ "pregnancyStatus.isPregnant": 1 });
-animalSchema.index({ "lactationStatus.isLactating": 1 });
-animalSchema.index({ "vaccinationSummary.nextVaccinationDate": 1 });
-animalSchema.index({ status: 1, isActive: 1 });
-animalSchema.index({ createdAt: -1 });
-animalSchema.index({ "location.coordinates": "2dsphere" });
-
-// Static methods
-animalSchema.statics.findByFarmer = function (farmerId) {
-  return this.find({ farmer: farmerId }).sort({ createdAt: -1 });
 };
 
-animalSchema.statics.findPregnantAnimals = function () {
-  return this.find({ "pregnancyStatus.isPregnant": true });
-};
-
-animalSchema.statics.findLactatingAnimals = function () {
-  return this.find({ "lactationStatus.isLactating": true });
-};
-
-animalSchema.statics.findUpcomingVaccinations = function (daysThreshold = 30) {
-  const thresholdDate = new Date();
-  thresholdDate.setDate(thresholdDate.getDate() + daysThreshold);
-
-  return this.find({
-    "vaccinationSummary.nextVaccinationDate": {
-      $lte: thresholdDate,
-      $gte: new Date(),
-    },
-  });
-};
-
-// Instance methods
+/**
+ * Update health status
+ */
 animalSchema.methods.updateHealthStatus = function (newStatus, notes) {
   this.healthStatus.currentStatus = newStatus;
   this.healthStatus.lastCheckupDate = new Date();
@@ -575,6 +515,9 @@ animalSchema.methods.updateHealthStatus = function (newStatus, notes) {
   return this.save();
 };
 
+/**
+ * Add medical record
+ */
 animalSchema.methods.addMedicalRecord = function (record) {
   this.medicalHistory.push({
     date: new Date(),
@@ -583,32 +526,190 @@ animalSchema.methods.addMedicalRecord = function (record) {
   return this.save();
 };
 
-animalSchema.methods.addBreedingRecord = function (record) {
-  this.breedingHistory.push({
-    matingDate: new Date(),
-    ...record,
+/**
+ * Mark animal as deceased
+ */
+animalSchema.methods.markAsDeceased = function (reason, date) {
+  this.status = "deceased";
+  this.isActive = false;
+  this.statusChangeDate = date || new Date();
+  this.statusChangeReason = reason || "Unknown";
+  return this.save();
+};
+
+/**
+ * Transfer animal to new farmer
+ */
+animalSchema.methods.transferToFarmer = async function (newFarmerId, reason) {
+  const oldFarmerId = this.farmer;
+
+  // Update owner
+  this.farmer = newFarmerId;
+  this.currentOwner = newFarmerId;
+  this.status = "transferred";
+  this.statusChangeDate = new Date();
+  this.statusChangeReason = reason || "Ownership transfer";
+
+  await this.save();
+
+  // Update counts for both farmers
+  const Farmer = mongoose.model("Farmer");
+  await Farmer.findByIdAndUpdate(oldFarmerId, {
+    $inc: { "farmDetails.activeAnimals": -1 },
   });
-  return this.save();
+  await Farmer.findByIdAndUpdate(newFarmerId, {
+    $inc: { "farmDetails.activeAnimals": 1 },
+  });
+
+  return this;
 };
 
-animalSchema.methods.updateVaccinationSummary = async function () {
-  const Vaccination = mongoose.model("Vaccination");
-  const vaccinations = await Vaccination.find({ animal: this._id })
-    .sort({ dateAdministered: -1 })
-    .limit(1);
+// ================ STATIC METHODS ================
 
-  if (vaccinations.length > 0) {
-    const latest = vaccinations[0];
-    this.vaccinationSummary = {
-      lastVaccinationDate: latest.dateAdministered,
-      nextVaccinationDate: latest.nextDueDate,
-      lastVaccineType: latest.vaccineName,
-      totalVaccinations: await Vaccination.countDocuments({ animal: this._id }),
-      isUpToDate: new Date() <= latest.nextDueDate,
-    };
-  }
-
-  return this.save();
+/**
+ * Find animals by farmer
+ */
+animalSchema.statics.findByFarmer = function (farmerId) {
+  return this.find({ farmer: farmerId }).sort({ createdAt: -1 });
 };
+
+/**
+ * Find pregnant animals
+ */
+animalSchema.statics.findPregnant = function () {
+  return this.find({ "pregnancyStatus.isPregnant": true });
+};
+
+/**
+ * Find animals with upcoming vaccinations
+ */
+animalSchema.statics.findUpcomingVaccinations = function (daysThreshold = 30) {
+  const thresholdDate = new Date();
+  thresholdDate.setDate(thresholdDate.getDate() + daysThreshold);
+
+  return this.find({
+    "vaccinationSummary.nextVaccinationDate": {
+      $lte: thresholdDate,
+      $gte: new Date(),
+    },
+    isActive: true,
+  }).sort({ "vaccinationSummary.nextVaccinationDate": 1 });
+};
+
+/**
+ * Find animals with overdue vaccinations
+ */
+animalSchema.statics.findOverdueVaccinations = function () {
+  return this.find({
+    "vaccinationSummary.nextVaccinationDate": { $lt: new Date() },
+    "vaccinationSummary.isUpToDate": false,
+    isActive: true,
+  }).sort({ "vaccinationSummary.nextVaccinationDate": 1 });
+};
+
+/**
+ * Find animals by bulk registration batch
+ */
+animalSchema.statics.findByBatchId = function (batchId) {
+  return this.find({ registrationBatchId: batchId })
+    .populate("farmer", "name uniqueFarmerId")
+    .populate("registeredBy", "name")
+    .sort({ registrationBatchIndex: 1 });
+};
+
+/**
+ * Get registration statistics for today
+ */
+animalSchema.statics.getTodayStats = async function () {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const stats = await this.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: today },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        total: { $sum: 1 },
+        byType: { $push: "$animalType" },
+        pregnant: {
+          $sum: { $cond: ["$pregnancyStatus.isPregnant", 1, 0] },
+        },
+        batches: { $addToSet: "$registrationBatchId" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        total: 1,
+        pregnant: 1,
+        batchCount: { $size: "$batches" },
+        typeCounts: {
+          $reduce: {
+            input: "$byType",
+            initialValue: {},
+            in: {
+              $mergeObjects: [
+                "$$value",
+                {
+                  [String("$$this")]: {
+                    $add: [
+                      {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              { $objectToArray: "$$value" },
+                              {
+                                $indexOfArray: [
+                                  {
+                                    $map: {
+                                      input: { $objectToArray: "$$value" },
+                                      as: "item",
+                                      in: "$$item.k",
+                                    },
+                                  },
+                                  "$$this",
+                                ],
+                              },
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                      1,
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  ]);
+
+  return stats[0] || { total: 0, pregnant: 0, batchCount: 0, typeCounts: {} };
+};
+
+// ================ INDEXES ================
+
+// Optimized indexes for common queries
+animalSchema.index({ farmer: 1, isActive: 1, createdAt: -1 });
+animalSchema.index({ tagNumber: 1 }, { unique: true });
+animalSchema.index({ uniqueAnimalId: 1 }, { unique: true });
+animalSchema.index({ animalType: 1, gender: 1 });
+animalSchema.index({ "healthStatus.currentStatus": 1, isActive: 1 });
+animalSchema.index({ "pregnancyStatus.isPregnant": 1, isActive: 1 });
+animalSchema.index({
+  "vaccinationSummary.nextVaccinationDate": 1,
+  isActive: 1,
+});
+animalSchema.index({ "vaccinationSummary.isUpToDate": 1, isActive: 1 });
+animalSchema.index({ status: 1, isActive: 1 });
+animalSchema.index({ createdAt: -1 });
+animalSchema.index({ registrationBatchId: 1 }); // NEW: For bulk registration
 
 module.exports = mongoose.model("Animal", animalSchema);

@@ -124,6 +124,28 @@ router.get(
   isAdmin,
   animalController.createAnimalForm,
 );
+
+/**
+ * @route   POST /admin/animals/bulk
+ * @desc    Register multiple animals in bulk
+ * @access  Admin
+ */
+router.post(
+  "/animals/bulk",
+  upload.fields([
+    // Support up to 20 animals with 4 photos each
+    ...Array.from({ length: 20 }, (_, i) => [
+      { name: `animals[${i}][photos][front]`, maxCount: 1 },
+      { name: `animals[${i}][photos][left]`, maxCount: 1 },
+      { name: `animals[${i}][photos][right]`, maxCount: 1 },
+      { name: `animals[${i}][photos][back]`, maxCount: 1 },
+    ]).flat(),
+  ]),
+  isLoggedIn,
+  isAdmin,
+  animalController.bulkCreateAnimals,
+);
+
 router.post(
   "/animals",
   upload.fields([

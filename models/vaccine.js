@@ -1,4 +1,3 @@
-// models/Vaccine.js
 const mongoose = require("mongoose");
 
 const vaccineSchema = new mongoose.Schema(
@@ -9,6 +8,11 @@ const vaccineSchema = new mongoose.Schema(
       required: true,
       trim: true,
       unique: true,
+    },
+    vaccineName: {
+      // Alias for compatibility
+      type: String,
+      trim: true,
     },
     brand: {
       type: String,
@@ -52,9 +56,32 @@ const vaccineSchema = new mongoose.Schema(
           "Cat",
           "Horse",
           "All",
+          "Cow", // Added for compatibility
+          "Buffalo", // Added for compatibility
+          "Poultry", // Added for compatibility
         ],
       },
     ],
+
+    // NEW: Bulk registration support fields
+    defaultNextDueMonths: {
+      type: Number,
+      default: 12,
+      min: 1,
+      max: 60,
+      description: "Default months until next dose for bulk registration",
+    },
+    requiresBatchNumber: {
+      type: Boolean,
+      default: false,
+      description: "Whether batch number is required for this vaccine",
+    },
+    description: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+      description: "Short description for display in forms",
+    },
 
     // Administration Details
     administrationRoute: {
@@ -94,15 +121,15 @@ const vaccineSchema = new mongoose.Schema(
       default: true,
     },
 
-    // Timing Information (Default values - can be overridden by VaccineScheduleRule)
-    minimumAgeWeeks: Number, // Minimum age for first dose
-    boosterIntervalWeeks: Number, // Default booster interval
-    immunityDurationMonths: Number, // How long immunity lasts
+    // Timing Information
+    minimumAgeWeeks: Number,
+    boosterIntervalWeeks: Number,
+    immunityDurationMonths: Number,
 
     // Regulatory
     licenseNumber: String,
     approvedSpecies: [String],
-    withdrawalPeriodDays: Number, // Important for milk/meat
+    withdrawalPeriodDays: Number,
 
     // Status & Meta
     isActive: {
@@ -119,12 +146,35 @@ const vaccineSchema = new mongoose.Schema(
       ref: "User",
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
+
+// Pre-save middleware to set vaccineName
+vaccineSchema.pre("save", function (next) {
+  if (!this.vaccineName) {
+    this.vaccineName = this.name;
+  }
+  next();
+});
+
+// Virtual for display name
+vaccineSchema.virtual("displayName").get(function () {
+  return `${this.name} (${this.vaccineType})`;
+});
 
 // Indexes
 vaccineSchema.index({ name: 1, brand: 1 });
 vaccineSchema.index({ targetSpecies: 1, isActive: 1 });
-vaccineSchema.index({ diseaseTarget: "text", name: "text" });
+vaccineSchema.index({
+  diseaseTarget: "text",
+  name: "text",
+  description: "text",
+});
+vaccineSchema.index({ vaccineType: 1 });
+vaccineSchema.index({ defaultNextDueMonths: 1 }); // For bulk registration
 
 module.exports = mongoose.model("Vaccine", vaccineSchema);
