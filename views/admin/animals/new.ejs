@@ -134,8 +134,9 @@
 
             <!-- Name -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Animal Name</label>
-              <input type="text" name="animals[0][name]" placeholder="Enter animal name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">IsTaged</label>
+              <input type="checkbox" name="animals[0][isTaged]" class=" px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              
             </div>
 
             <!-- Tag Number -->
@@ -277,26 +278,7 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Add Another Animal Button (Only in Bulk Mode) -->
-    <% if (formType === 'bulk') { %>
-    <div class="mb-6">
-      <button type="button" id="addAnimalBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 dark:bg-green-700 dark:hover:bg-green-600 flex items-center justify-center">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-        </svg>
-        Add Another Animal
-      </button>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">
-        Current count: <span id="animalCount">1</span> animal(s)
-      </p>
-    </div>
-    <% } %>
-
-    <!-- Vaccination Section - All Vaccines from Database -->
-    <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
+        <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
       <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
         <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
@@ -417,6 +399,26 @@
         </div>
       </div>
     </div>
+      </div>
+    </div>
+
+    <!-- Add Another Animal Button (Only in Bulk Mode) -->
+    <% if (formType === 'bulk') { %>
+    <div class="mb-6">
+      <button type="button" id="addAnimalBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 dark:bg-green-700 dark:hover:bg-green-600 flex items-center justify-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Add Another Animal
+      </button>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">
+        Current count: <span id="animalCount">1</span> animal(s)
+      </p>
+    </div>
+    <% } %>
+
+    <!-- Vaccination Section - All Vaccines from Database -->
+    
 
     <!-- Other Common Information -->
     <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">

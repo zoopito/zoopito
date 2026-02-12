@@ -1,6 +1,20 @@
 {
-  "watch": ["app.js", "routes", "views"],
-  "ext": "js,ejs",
-  "ignore": ["public/css/output.css"],
-  "legacyWatch": true
+  "watch": [
+    "app.js",
+    "routes",
+    "controllers",
+    "models",
+    "views",
+    "config",
+    ".env"
+  ],
+  "ext": "js,ejs,json,env",
+  "ignore": [
+    "node_modules",
+    "public/css/output.css",
+    ".git"
+  ],
+  "delay": "200",
+  "legacyWatch": true,
+  "verbose": true
 }

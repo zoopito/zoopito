@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
-    "dev": "nodemon --legacy-watch app.js -e ejs, js, json, env",
+    "dev": "nodemon app.js",
     "tw": "tailwindcss -i ./public/css/tailwind.css -o ./public/css/output.css --watch"
   },
   "author": "Saurabh Mishra",

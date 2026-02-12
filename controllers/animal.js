@@ -271,11 +271,26 @@ module.exports.animalsIndexPage = async (req, res) => {
 module.exports.createAnimalForm = async (req, res) => {
   try {
     // Get all required data
-    const [farmers, salesAgents, vaccines] = await Promise.all([
-      Farmer.find({ isActive: true }).sort({ name: 1 }),
-      SalesTeam.find({ isActive: true }).populate("user").sort({ name: 1 }),
-      Vaccine.find({ isActive: true }).sort({ vaccineName: 1 }),
-    ]);
+    if (req.user.role === "SALES") {
+      const salesAgent = await SalesTeam.findOne({
+        user: req.user._id,
+      }).populate("user");
+      var [farmers, salesAgents, vaccines] = await Promise.all([
+        Farmer.find({
+          isActive: true,
+          "address.district": salesAgent.assignedAreas[0].district,
+        }).sort({ name: 1 }),
+
+        SalesTeam.find({ isActive: true }).populate("user").sort({ name: 1 }),
+        Vaccine.find({ isActive: true }).sort({ vaccineName: 1 }),
+      ]);
+    } else {
+      var [farmers, salesAgents, vaccines] = await Promise.all([
+        Farmer.find({ isActive: true }).sort({ name: 1 }),
+        SalesTeam.find({ isActive: true }).populate("user").sort({ name: 1 }),
+        Vaccine.find({ isActive: true }).sort({ vaccineName: 1 }),
+      ]);
+    }
 
     // Get form type from query parameter or default to 'single'
     const formType = req.query.type || "bulk"; // Changed from hardcoded "bulk"
@@ -286,12 +301,21 @@ module.exports.createAnimalForm = async (req, res) => {
     // Clear session form data after retrieving it
     delete req.session.formData;
 
+    let salesAgentsList = [];
+    if (req.user.role === "SALES") {
+      salesAgentsList = req.user
+        ? [{ _id: req.user._id, name: req.user.name }]
+        : [];
+    } else {
+      salesAgentsList = salesAgents.map((agent) => ({
+        _id: agent.user._id,
+        name: agent.user.name,
+      }));
+    }
+
     res.render("admin/animals/new", {
       farmers,
-      sales: salesAgents.map((agent) => ({
-        _id: agent.user._id, // Fixed: should be user._id not SalesTeam
-        name: agent.user.name,
-      })),
+      sales: salesAgentsList,
       vaccines,
       formType,
       formData,
