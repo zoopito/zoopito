@@ -139,16 +139,19 @@
             </div>
 
             <!-- Is Tagged -->
-            <div class="flex items-center mt-6">
-              <input type="checkbox" name="animals[0][isTagged]" id="isTagged-0" class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
-              <label for="isTagged-0" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Has Tag</label>
+            <div class="flex gap-2 mt-6">
+              <div class="flex items-center">
+                <input type="checkbox" name="animals[0][isTagged]" id="isTagged-0" class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+                <label for="isTagged-0" class="  flex ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Has Tagged</label>
+              </div>
+
+              <!-- Tag Number -->
+              <div class="flex hidden items-center" id="tagNumberContainer-0">
+                <label class="flex text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tag Number</label>
+                <input id="tagNumber-0" type="text" name="animals[0][tagNumber]" required placeholder="Enter tag number" class=" px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              </div>
             </div>
 
-            <!-- Tag Number -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tag Number *</label>
-              <input type="text" name="animals[0][tagNumber]" required placeholder="Enter tag number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-            </div>
 
             <!-- Date of Birth -->
             <div>
@@ -396,11 +399,11 @@
             <input type="date" 
                    name="animals[0][vaccinations][<%= vaccine._id %>][nextDueDate]" 
                    id="nextDueDate_0_<%= vaccine._id %>"
-                   class="next-due-date flex-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+                   class="next-due-date flex-1 w-full lg:w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
             
             <!-- Auto-calculate button (optional) -->
             <button type="button" 
-                    onclick="autoCalculateNextDue('0', '<%= vaccine._id %>', `<%= vaccine.boosterIntervalWeeks || 0 %>`)"
+                    onclick="autoCalculateNextDue(this)"
                     class="px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-300 rounded-lg text-sm transition"
                     title="Auto-calculate based on vaccination date">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -421,80 +424,7 @@
     </div>
 </div>
 
-<!-- Add this JavaScript at the bottom of your form or in a separate script tag -->
-<script>
-// Function to calculate next due date based on vaccination date and booster interval
-function calculateNextDueDate(input) {
-    const vaccinationDate = input.value;
-    const boosterWeeks = parseInt(input.dataset.boosterWeeks || 0);
-    const animalIndex = input.dataset.animalIndex;
-    const vaccineId = input.dataset.vaccineId;
-    
-    if (vaccinationDate && boosterWeeks > 0) {
-        // Create date from vaccination date
-        const date = new Date(vaccinationDate);
-        
-        // Add booster interval (weeks) to the date
-        date.setDate(date.getDate() + (boosterWeeks * 7));
-        
-        // Format as YYYY-MM-DD
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const nextDueDate = `${year}-${month}-${day}`;
-        
-        // Find the corresponding next due date input and set its value
-        const nextDueInput = document.querySelector(`#nextDueDate_${animalIndex}_${vaccineId}`);
-        if (nextDueInput) {
-            nextDueInput.value = nextDueDate;
-        }
-    }
-}
 
-// Alternative function with explicit parameters
-function autoCalculateNextDue(animalIndex, vaccineId, boosterWeeks) {
-    // Find the vaccination date input
-    const vaccineDateInput = document.querySelector(`input[name="animals[${animalIndex}][vaccinations][${vaccineId}][dateAdministered]"]`);
-    
-    if (vaccineDateInput && vaccineDateInput.value && boosterWeeks > 0) {
-        // Create date from vaccination date
-        const date = new Date(vaccineDateInput.value);
-        
-        // Add booster interval (weeks) to the date
-        date.setDate(date.getDate() + (boosterWeeks * 7));
-        
-        // Format as YYYY-MM-DD
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const nextDueDate = `${year}-${month}-${day}`;
-        
-        // Find and set the next due date input
-        const nextDueInput = document.getElementById(`nextDueDate_${animalIndex}_${vaccineId}`);
-        if (nextDueInput) {
-            nextDueInput.value = nextDueDate;
-            
-            // Optional: highlight the field briefly to show it was updated
-            nextDueInput.classList.add('bg-green-100', 'dark:bg-green-900/30');
-            setTimeout(() => {
-                nextDueInput.classList.remove('bg-green-100', 'dark:bg-green-900/30');
-            }, 1000);
-        }
-    } else if (!vaccineDateInput || !vaccineDateInput.value) {
-        alert('Please select a vaccination date first.');
-    }
-}
-
-// Initialize all vaccine date inputs with event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Add change event listeners to all vaccination date inputs
-    document.querySelectorAll('.vaccination-date').forEach(input => {
-        input.addEventListener('change', function() {
-            calculateNextDueDate(this);
-        });
-    });
-});
-</script>
 
 <!-- For bulk mode with dynamic animals, add this function to reinitialize event listeners -->
 <script>
@@ -716,6 +646,12 @@ function reinitializeVaccineDateListeners(container) {
     // Initialize vaccine checkboxes for first animal
     initializeVaccineCheckboxes(0);
     
+    // Initialize is tagged checkbox for first animal
+    initializeIsTaggedCheckbox(0);
+    
+    // Initialize vaccination date listeners for first animal
+    initializeVaccinationDateListeners(document.querySelector('.animal-entry'));
+    
     // Initialize common vaccination date toggle
     initializeCommonVaccinationDate();
     
@@ -731,6 +667,37 @@ function reinitializeVaccineDateListeners(container) {
     // Update animal count display
     updateAnimalCount();
   });
+
+  // ================ IS TAGGED CHECKBOX INITIALIZATION ================
+  
+  function initializeIsTaggedCheckbox(index) {
+    const isTaggedCheckbox = document.getElementById(`isTagged-${index}`);
+    const tagNumberInput = document.getElementById(`tagNumber-${index}`);
+    const tagNumberContainer = document.getElementById(`tagNumberContainer-${index}`);
+
+    if (isTaggedCheckbox && tagNumberInput && tagNumberContainer) {
+      isTaggedCheckbox.addEventListener('change', function () {
+        if (this.checked) {
+          tagNumberContainer.classList.remove('hidden');
+          tagNumberInput.required = true;
+        } else {
+          tagNumberContainer.classList.add('hidden');
+          tagNumberInput.required = false;
+          tagNumberInput.value = "";
+        }
+      });
+    }
+  }
+
+  // ================ VACCINATION DATE LISTENERS INITIALIZATION ================
+  
+  function initializeVaccinationDateListeners(container) {
+    container.querySelectorAll('.vaccination-date').forEach(input => {
+      input.addEventListener('change', function() {
+        calculateNextDueDate(this);
+      });
+    });
+  }
 
   // ================ ANIMAL ENTRY FUNCTIONS ================
   
@@ -1138,6 +1105,8 @@ function reinitializeVaccineDateListeners(container) {
     // Reinitialize event listeners for the new entry
     initializeAnimalEntry(template, newIndex);
     initializeVaccineCheckboxes(newIndex);
+    initializeIsTaggedCheckbox(newIndex);
+    initializeVaccinationDateListeners(template);
   });
 
   // ================ DATE OF BIRTH FUNCTIONS ================
@@ -1326,3 +1295,78 @@ function reinitializeVaccineDateListeners(container) {
     color: #059669;
   }
 </style>
+
+<!-- Add this JavaScript at the bottom of your form or in a separate script tag -->
+<script>
+// Function to calculate next due date based on vaccination date and booster interval
+function calculateNextDueDate(input) {
+    const vaccinationDate = input.value;
+    const boosterWeeks = parseInt(input.dataset.boosterWeeks || 0);
+    const animalIndex = input.dataset.animalIndex;
+    const vaccineId = input.dataset.vaccineId;
+    
+    if (vaccinationDate && boosterWeeks > 0) {
+        // Create date from vaccination date
+        const date = new Date(vaccinationDate);
+        
+        // Add booster interval (weeks) to the date
+        date.setDate(date.getDate() + (boosterWeeks * 7));
+        
+        // Format as YYYY-MM-DD
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const nextDueDate = `${year}-${month}-${day}`;
+        
+        // Find the corresponding next due date input using name attribute (more reliable)
+        const nextDueInput = document.querySelector(`input[name="animals[${animalIndex}][vaccinations][${vaccineId}][nextDueDate]"]`);
+        if (nextDueInput) {
+            nextDueInput.value = nextDueDate;
+        }
+    }
+}
+
+// Alternative function - finds animal index dynamically from button context
+function autoCalculateNextDue(button) {
+    // Find the parent vaccine details container
+    const vaccinationSection = button.closest('[class*="vaccine-details"]') || button.closest('.grid');
+    if (!vaccinationSection) return;
+    
+    // Get the vaccination date input
+    const vaccineDateInput = vaccinationSection.querySelector('.vaccination-date');
+    if (!vaccineDateInput || !vaccineDateInput.value) {
+        alert('Please select a vaccination date first.');
+        return;
+    }
+    
+    const boosterWeeks = parseInt(vaccineDateInput.dataset.boosterWeeks || 0);
+    
+    if (boosterWeeks > 0) {
+        // Create date from vaccination date
+        const date = new Date(vaccineDateInput.value);
+        
+        // Add booster interval (weeks) to the date
+        date.setDate(date.getDate() + (boosterWeeks * 7));
+        
+        // Format as YYYY-MM-DD
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const nextDueDate = `${year}-${month}-${day}`;
+        
+        // Find the next due date input in the same container
+        const nextDueInput = vaccinationSection.querySelector('.next-due-date');
+        if (nextDueInput) {
+            nextDueInput.value = nextDueDate;
+            
+            // Highlight the field briefly to show it was updated
+            nextDueInput.classList.add('bg-green-100', 'dark:bg-green-900/30');
+            setTimeout(() => {
+                nextDueInput.classList.remove('bg-green-100', 'dark:bg-green-900/30');
+            }, 1000);
+        }
+    }
+}
+
+
+</script>
