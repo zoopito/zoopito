@@ -14,7 +14,7 @@
       <div>
         <h3 class="font-semibold text-blue-800 dark:text-blue-300">Bulk Registration Mode</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          Fill common details once and register multiple animals with the same farmer, registration agent, and vaccination records.
+          Fill common details once and register multiple animals with the same farmer, registration agent.
           Use the "Add Another Animal" button to add more entries.
         </p>
       </div>
@@ -134,9 +134,14 @@
 
             <!-- Name -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">IsTaged</label>
-              <input type="checkbox" name="animals[0][isTaged]" class=" px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-              
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+              <input type="text" name="animals[0][name]" placeholder="Enter animal name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+
+            <!-- Is Tagged -->
+            <div class="flex items-center mt-6">
+              <input type="checkbox" name="animals[0][isTagged]" id="isTagged-0" class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+              <label for="isTagged-0" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Has Tag</label>
             </div>
 
             <!-- Tag Number -->
@@ -272,133 +277,282 @@
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Front Photo</label>
               <input type="file" name="animals[0][photos][front]" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
             </div>
-            <div>
+            <!-- <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Left Side Photo</label>
               <input type="file" name="animals[0][photos][left]" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
+            </div> -->
+            <!-- <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Right Side Photo</label>
+              <input type="file" name="animals[0][photos][right]" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
+            </div> -->
+            <!-- <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Back Photo</label>
+              <input type="file" name="animals[0][photos][back]" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
+            </div> -->
+          </div>
+        </div>
+
+        <!-- Vaccination Records Section - PER ANIMAL -->
+        <div class="mb-6 border-t pt-6 border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+              </svg>
+              Vaccination Records for Animal 1
+            </h3>
+            
+            <!-- Common for All Animals Checkbox -->
+            <!-- <div class="flex items-center">
+              <input type="checkbox" 
+                     id="commonVaccination-0" 
+                     class="common-vaccination-checkbox h-4 w-4 text-green-600 rounded border-gray-300 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+                     data-animal-index="0">
+              <label for="commonVaccination-0" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Common for All Animals
+              </label>
+            </div> -->
+          </div>
+          
+          <div class="space-y-6">
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Select vaccines administered to this specific animal. If "Common for All Animals" is checked, 
+                this vaccination record will be applied to all animals in this batch.
+              </p>
+              
+              <% if (vaccines && vaccines.length > 0) { %>
+                <div class="space-y-4" id="vaccinesContainer-0">
+                  <% vaccines.forEach((vaccine, index) => { %>
+                    <div class="vaccine-item border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
+                      <!-- Vaccine Header with Checkbox -->
+                      <div class="flex items-start mb-4">
+                        <input type="checkbox" 
+                               name="animals[0][vaccinations][<%= vaccine._id %>][administered]" 
+                               id="vaccine_0_<%= vaccine._id %>" 
+                               value="true"
+                               class="animal-vaccine-checkbox h-4 w-4 mt-1 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+                               data-vaccine-id="<%= vaccine._id %>"
+                               data-animal-index="0">
+                        <div class="ml-3 flex-1">
+                          <label for="vaccine_0_<%= vaccine._id %>" class="block text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                            <span class="font-semibold"><%= vaccine.vaccineName || vaccine.name %></span>
+                            <% if (vaccine.vaccineType) { %>
+                              <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">(<%= vaccine.vaccineType %>)</span>
+                            <% } %>
+                          </label>
+                          <% if (vaccine.diseaseTarget) { %>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Target: <%= vaccine.diseaseTarget %></p>
+                          <% } %>
+                          <% if (vaccine.manufacturer) { %>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Manufacturer: <%= vaccine.manufacturer %></p>
+                          <% } %>
+                          <% if (vaccine.recommendedSchedule) { %>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Schedule: <%= vaccine.recommendedSchedule %></p>
+                          <% } %>
+                        </div>
+                      </div>
+                      
+                      <!-- Vaccine Details (Hidden by default) -->
+                      <div id="vaccineDetails_0_<%= vaccine._id %>" class="vaccine-details hidden space-y-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <!-- Store vaccine metadata -->
+                        <input type="hidden" name="animals[0][vaccinations][<%= vaccine._id %>][vaccineId]" value="<%= vaccine._id %>">
+                        <input type="hidden" name="animals[0][vaccinations][<%= vaccine._id %>][vaccineName]" value="<%= vaccine.vaccineName || vaccine.name %>">
+                        <input type="hidden" name="animals[0][vaccinations][<%= vaccine._id %>][vaccineType]" value="<%= vaccine.vaccineType || '' %>">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Vaccination Date -->
+    <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Vaccination Date * <span class="text-xs text-gray-500">(Date administered)</span>
+        </label>
+        <input type="date" 
+               name="animals[0][vaccinations][<%= vaccine._id %>][dateAdministered]" 
+               class="vaccination-date w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"
+               max="<%= new Date().toISOString().split('T')[0] %>"
+               data-booster-weeks="<%= vaccine.boosterIntervalWeeks || 0 %>"
+               data-vaccine-id="<%= vaccine._id %>"
+               data-animal-index="0"
+               onchange="calculateNextDueDate(this)">
+    </div>
+    
+    <!-- Administered By -->
+    <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Administered By *
+        </label>
+        <input type="text" 
+               name="animals[0][vaccinations][<%= vaccine._id %>][administeredBy]" 
+               placeholder="Name of vet/paravet"
+               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+    </div>
+    
+    <!-- Next Due Date -->
+    <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Next Due Date <span class="text-xs text-gray-500">(When next dose is due)</span>
+        </label>
+        <div class="flex items-center space-x-2">
+            <input type="date" 
+                   name="animals[0][vaccinations][<%= vaccine._id %>][nextDueDate]" 
+                   id="nextDueDate_0_<%= vaccine._id %>"
+                   class="next-due-date flex-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            
+            <!-- Auto-calculate button (optional) -->
+            <button type="button" 
+                    onclick="autoCalculateNextDue('0', '<%= vaccine._id %>', `<%= vaccine.boosterIntervalWeeks || 0 %>`)"
+                    class="px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-300 rounded-lg text-sm transition"
+                    title="Auto-calculate based on vaccination date">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+            </button>
+        </div>
+        <% if (vaccine.boosterIntervalWeeks) { %>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <span class="inline-flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    Booster due after <%= vaccine.boosterIntervalWeeks %> week<%= vaccine.boosterIntervalWeeks > 1 ? 's' : '' %>
+                </span>
+            </p>
+        <% } %>
+    </div>
+</div>
+
+<!-- Add this JavaScript at the bottom of your form or in a separate script tag -->
+<script>
+// Function to calculate next due date based on vaccination date and booster interval
+function calculateNextDueDate(input) {
+    const vaccinationDate = input.value;
+    const boosterWeeks = parseInt(input.dataset.boosterWeeks || 0);
+    const animalIndex = input.dataset.animalIndex;
+    const vaccineId = input.dataset.vaccineId;
+    
+    if (vaccinationDate && boosterWeeks > 0) {
+        // Create date from vaccination date
+        const date = new Date(vaccinationDate);
+        
+        // Add booster interval (weeks) to the date
+        date.setDate(date.getDate() + (boosterWeeks * 7));
+        
+        // Format as YYYY-MM-DD
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const nextDueDate = `${year}-${month}-${day}`;
+        
+        // Find the corresponding next due date input and set its value
+        const nextDueInput = document.querySelector(`#nextDueDate_${animalIndex}_${vaccineId}`);
+        if (nextDueInput) {
+            nextDueInput.value = nextDueDate;
+        }
+    }
+}
+
+// Alternative function with explicit parameters
+function autoCalculateNextDue(animalIndex, vaccineId, boosterWeeks) {
+    // Find the vaccination date input
+    const vaccineDateInput = document.querySelector(`input[name="animals[${animalIndex}][vaccinations][${vaccineId}][dateAdministered]"]`);
+    
+    if (vaccineDateInput && vaccineDateInput.value && boosterWeeks > 0) {
+        // Create date from vaccination date
+        const date = new Date(vaccineDateInput.value);
+        
+        // Add booster interval (weeks) to the date
+        date.setDate(date.getDate() + (boosterWeeks * 7));
+        
+        // Format as YYYY-MM-DD
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const nextDueDate = `${year}-${month}-${day}`;
+        
+        // Find and set the next due date input
+        const nextDueInput = document.getElementById(`nextDueDate_${animalIndex}_${vaccineId}`);
+        if (nextDueInput) {
+            nextDueInput.value = nextDueDate;
+            
+            // Optional: highlight the field briefly to show it was updated
+            nextDueInput.classList.add('bg-green-100', 'dark:bg-green-900/30');
+            setTimeout(() => {
+                nextDueInput.classList.remove('bg-green-100', 'dark:bg-green-900/30');
+            }, 1000);
+        }
+    } else if (!vaccineDateInput || !vaccineDateInput.value) {
+        alert('Please select a vaccination date first.');
+    }
+}
+
+// Initialize all vaccine date inputs with event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Add change event listeners to all vaccination date inputs
+    document.querySelectorAll('.vaccination-date').forEach(input => {
+        input.addEventListener('change', function() {
+            calculateNextDueDate(this);
+        });
+    });
+});
+</script>
+
+<!-- For bulk mode with dynamic animals, add this function to reinitialize event listeners -->
+<script>
+// Call this after adding a new animal entry
+function reinitializeVaccineDateListeners(container) {
+    container.querySelectorAll('.vaccination-date').forEach(input => {
+        // Remove existing listeners to prevent duplicates (optional)
+        input.removeEventListener('change', calculateNextDueDate);
+        
+        // Add new listener
+        input.addEventListener('change', function() {
+            calculateNextDueDate(this);
+        });
+    });
+}
+
+// If you have a function that adds new animal entries, call reinitializeVaccineDateListeners
+// after adding the new HTML
+</script>
+                          
+                          <!-- Batch Number -->
+                          <!-- <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Batch/Lot Number
+                            </label>
+                            <input type="text" 
+                                   name="animals[0][vaccinations][<%= vaccine._id %>][batchNumber]" 
+                                   placeholder="Enter batch number"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+                          </div>
+                        </div> -->
+                        
+                        <!-- Notes -->
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Notes
+                          </label>
+                          <textarea name="animals[0][vaccinations][<%= vaccine._id %>][notes]" 
+                                    rows="2" 
+                                    placeholder="Any additional notes about this vaccination (e.g., reaction, location)"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  <% }); %>
+                </div>
+              <% } else { %>
+                <div class="text-center py-8">
+                  <svg class="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <p class="text-gray-500 dark:text-gray-400">No vaccines found in database.</p>
+                  <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Please add vaccines first to record vaccinations.</p>
+                </div>
+              <% } %>
             </div>
           </div>
         </div>
-        <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
-      <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
-        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
-        </svg>
-        Vaccination Records (Common for All Animals)
-      </h2>
-      
-      <div class="space-y-6">
-        <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Check the vaccines that have been administered to all animals. These records will be created for each animal.
-          </p>
-          
-          <% if (vaccines && vaccines.length > 0) { %>
-            <div class="space-y-4" id="vaccinesContainer">
-              <% vaccines.forEach((vaccine, index) => { %>
-                <div class="vaccine-item border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
-                  <!-- Vaccine Header with Checkbox -->
-                  <div class="flex items-start mb-4">
-                    <input type="checkbox" 
-                           name="vaccinations[<%= vaccine._id %>][administered]" 
-                           id="vaccine_<%= vaccine._id %>" 
-                           value="true"
-                           class="vaccine-checkbox h-4 w-4 mt-1 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-                           data-vaccine-id="<%= vaccine._id %>">
-                    <div class="ml-3 flex-1">
-                      <label for="vaccine_<%= vaccine._id %>" class="block text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-                        <span class="font-semibold"><%= vaccine.vaccineName || vaccine.name %></span>
-                        <% if (vaccine.vaccineType) { %>
-                          <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">(<%= vaccine.vaccineType %>)</span>
-                        <% } %>
-                      </label>
-                      <% if (vaccine.diseaseTarget) { %>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Target: <%= vaccine.diseaseTarget %></p>
-                      <% } %>
-                      <% if (vaccine.manufacturer) { %>
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Manufacturer: <%= vaccine.manufacturer %></p>
-                      <% } %>
-                      <% if (vaccine.description) { %>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= vaccine.description %></p>
-                      <% } %>
-                    </div>
-                  </div>
-                  
-                  <!-- Vaccine Details (Hidden by default) -->
-                  <div id="vaccineDetails_<%= vaccine._id %>" class="vaccine-details hidden space-y-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <!-- Store vaccine ID and name -->
-                    <input type="hidden" name="vaccinations[<%= vaccine._id %>][vaccineId]" value="<%= vaccine._id %>">
-                    <input type="hidden" name="vaccinations[<%= vaccine._id %>][vaccineName]" value="<%= vaccine.vaccineName || vaccine.name %>">
-                    <input type="hidden" name="vaccinations[<%= vaccine._id %>][vaccineType]" value="<%= vaccine.vaccineType || '' %>">
-                    
-                    <!-- Vaccination Date -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Vaccination Date *
-                      </label>
-                      <input type="date" 
-                             name="vaccinations[<%= vaccine._id %>][dateAdministered]" 
-                             class="vaccination-date w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"
-                             max="<%= new Date().toISOString().split('T')[0] %>">
-                    </div>
-                    
-                    <!-- Administered By -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Administered By *
-                      </label>
-                      <input type="text" 
-                             name="vaccinations[<%= vaccine._id %>][administeredBy]" 
-                             placeholder="Enter name of person who administered"
-                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-                    </div>
-                    
-                    <!-- Next Due Date (Optional) -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Next Due Date (Optional)
-                      </label>
-                      <input type="date" 
-                             name="vaccinations[<%= vaccine._id %>][nextDueDate]" 
-                             class="next-due-date w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-                    </div>
-                    
-                    <!-- Batch Number (Optional) -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Batch Number
-                      </label>
-                      <input type="text" 
-                             name="vaccinations[<%= vaccine._id %>][batchNumber]" 
-                             placeholder="Enter batch number"
-                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-                    </div>
-                    
-                    <!-- Notes -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Notes
-                      </label>
-                      <textarea name="vaccinations[<%= vaccine._id %>][notes]" 
-                                rows="2" 
-                                placeholder="Any additional notes about this vaccination..."
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"></textarea>
-                    </div>
-                  </div>
-                </div>
-              <% }); %>
-            </div>
-          <% } else { %>
-            <div class="text-center py-8">
-              <svg class="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <p class="text-gray-500 dark:text-gray-400">No vaccines found in database.</p>
-              <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Please add vaccines first to record vaccinations.</p>
-            </div>
-          <% } %>
-        </div>
-      </div>
-    </div>
       </div>
     </div>
 
@@ -412,13 +566,62 @@
         Add Another Animal
       </button>
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">
-        Current count: <span id="animalCount">1</span> animal(s)
+        Current count: <span id="animalCount">1</span> animal(s) (Max: 20)
       </p>
     </div>
     <% } %>
 
-    <!-- Vaccination Section - All Vaccines from Database -->
-    
+    <!-- Common Vaccination Date for All Animals -->
+    <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
+      <div class="flex items-start bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+        <div class="flex items-center h-5">
+          <input type="checkbox" 
+                 id="applyCommonVaccinationDate" 
+                 name="applyCommonVaccinationDate" 
+                 class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+        </div>
+        <div class="ml-3 flex-1">
+          <label for="applyCommonVaccinationDate" class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+            Add a Vaccination date for remaining vaccines for all animals in this batch (if applicable)
+          </label>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Dont click if all animals are vaccined on all available vaccines. Only click if you want to add a common vaccination date for all remaining vaccines that are not marked as administered for each animal. This will help you quickly set the same vaccination date for all those vaccines across all animals.
+          </p>
+        </div>
+      </div>
+      
+      <!-- <div id="commonVaccinationDateSection" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Common Vaccination Date *
+          </label>
+          <input type="date" 
+                 id="commonVaccinationDate" 
+                 name="commonVaccinationDate" 
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"
+                 max="<%= new Date().toISOString().split('T')[0] %>">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Common Next Due Date
+          </label>
+          <input type="date" 
+                 id="commonNextDueDate" 
+                 name="commonNextDueDate" 
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Common Administered By
+          </label>
+          <input type="text" 
+                 id="commonAdministeredBy" 
+                 name="commonAdministeredBy" 
+                 placeholder="Name of person who administered the vaccine"
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+        </div>
+      </div> -->
+    </div>
 
     <!-- Other Common Information -->
     <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
@@ -503,22 +706,24 @@
   // ================ GLOBAL VARIABLES ================
   let animalCount = 1;
   const maxAnimals = 20;
+  let commonVaccinationEnabled = false;
 
   // ================ DOM CONTENT LOADED ================
   document.addEventListener('DOMContentLoaded', function() {
     // Initialize first animal entry
     initializeAnimalEntry(document.querySelector('.animal-entry'), 0);
     
-    // Initialize vaccine checkboxes
-    initializeVaccineCheckboxes();
+    // Initialize vaccine checkboxes for first animal
+    initializeVaccineCheckboxes(0);
+    
+    // Initialize common vaccination date toggle
+    initializeCommonVaccinationDate();
+    
+    // Initialize common for all animals checkboxes
+    initializeCommonForAllCheckboxes();
     
     // Initialize date of birth calculation
     initializeDateOfBirthCalculation();
-    
-    // Initialize bulk actions
-    if (document.getElementById('addAnimalBtn')) {
-      addBulkVaccineControls();
-    }
     
     // Initialize form validation
     initializeFormValidation();
@@ -529,9 +734,6 @@
 
   // ================ ANIMAL ENTRY FUNCTIONS ================
   
-  /**
-   * Initialize pregnancy logic for each animal entry
-   */
   function initializeAnimalEntry(entry, index) {
     const animalTypeSelect = entry.querySelector('.animal-type-select');
     const ageValueInput = entry.querySelector('.age-value-input');
@@ -542,12 +744,8 @@
     const pregnancyCheckbox = document.getElementById(`isPregnant-${index}`);
     const pregnancyDetails = document.getElementById(`pregnancyDetails-${index}`);
 
-    // If elements don't exist, exit
     if (!pregnancySection) return;
 
-    /**
-     * Calculate age from date of birth
-     */
     function calculateAgeFromDOB() {
       if (!dateOfBirthInput || !dateOfBirthInput.value) return;
       
@@ -579,53 +777,43 @@
         ageUnitSelect.value = 'Days';
       }
       
-      // Trigger age change to update pregnancy section
       updatePregnancySection();
     }
 
-    /**
-     * Check if animal is adult based on age and type
-     */
     function isAdultAnimal() {
       const ageValue = parseFloat(ageValueInput?.value) || 0;
       const ageUnit = ageUnitSelect?.value;
       const animalType = animalTypeSelect?.value;
       const gender = genderSelect?.value;
 
-      // If no age, no animal type, or not female, can't be pregnant
       if (!ageValue || !ageUnit || !animalType || gender !== 'Female') {
         return false;
       }
 
-      // Convert age to months for comparison
       let ageInMonths = 0;
       if (ageUnit === 'Years') {
         ageInMonths = ageValue * 12;
       } else if (ageUnit === 'Months') {
         ageInMonths = ageValue;
       } else if (ageUnit === 'Days') {
-        ageInMonths = ageValue / 30.44; // Approximate
+        ageInMonths = ageValue / 30.44;
       }
 
-      // Adult thresholds by animal type (in months)
       const adultThresholds = {
-        'Cow': 18,      // 1.5 years
-        'Buffalo': 24,  // 2 years
-        'Goat': 8,      // 8 months
-        'Sheep': 8,     // 8 months
-        'Dog': 12,      // 1 year
-        'Cat': 8,       // 8 months
-        'Poultry': 5,   // 5 months
-        'Other': 12     // Default 1 year
+        'Cow': 18,
+        'Buffalo': 24,
+        'Goat': 8,
+        'Sheep': 8,
+        'Dog': 12,
+        'Cat': 8,
+        'Poultry': 5,
+        'Other': 12
       };
 
       const threshold = adultThresholds[animalType] || 12;
       return ageInMonths >= threshold;
     }
 
-    /**
-     * Update pregnancy section visibility based on adult status
-     */
     function updatePregnancySection() {
       if (isAdultAnimal()) {
         pregnancySection.classList.remove('hidden');
@@ -640,14 +828,12 @@
       }
     }
 
-    // Add event listeners for pregnancy logic
     if (animalTypeSelect) animalTypeSelect.addEventListener('change', updatePregnancySection);
     if (ageValueInput) ageValueInput.addEventListener('input', updatePregnancySection);
     if (ageUnitSelect) ageUnitSelect.addEventListener('change', updatePregnancySection);
     if (genderSelect) genderSelect.addEventListener('change', updatePregnancySection);
     if (dateOfBirthInput) dateOfBirthInput.addEventListener('change', calculateAgeFromDOB);
 
-    // Pregnancy checkbox toggle
     if (pregnancyCheckbox && pregnancyDetails) {
       pregnancyCheckbox.addEventListener('change', function() {
         if (this.checked) {
@@ -658,15 +844,192 @@
       });
     }
 
-    // Initialize on load
     updatePregnancySection();
+  }
+
+  // ================ VACCINE FUNCTIONS ================
+  
+  function initializeVaccineCheckboxes(animalIndex) {
+    const vaccineCheckboxes = document.querySelectorAll(`.animal-vaccine-checkbox[data-animal-index="${animalIndex}"]`);
+    
+    vaccineCheckboxes.forEach(checkbox => {
+      const vaccineId = checkbox.dataset.vaccineId;
+      const detailsDiv = document.getElementById(`vaccineDetails_${animalIndex}_${vaccineId}`);
+      
+      checkbox.addEventListener('change', function() {
+        if (this.checked && detailsDiv) {
+          detailsDiv.classList.remove('hidden');
+          
+          // Auto-set dates if common vaccination is enabled
+          if (commonVaccinationEnabled) {
+            const commonDate = document.getElementById('commonVaccinationDate').value;
+            const commonNextDue = document.getElementById('commonNextDueDate').value;
+            const commonAdministeredBy = document.getElementById('commonAdministeredBy').value;
+            
+            const dateInput = detailsDiv.querySelector('.vaccination-date');
+           // const nextDueInput = detailsDiv.querySelector('.next-due-date');
+            const administeredByInput = detailsDiv.querySelector('input[name*="[administeredBy]"]');
+            
+            if (dateInput && commonDate) dateInput.value = commonDate;
+           // if (nextDueInput && commonNextDue) nextDueInput.value = commonNextDue;
+            if (administeredByInput && commonAdministeredBy) administeredByInput.value = commonAdministeredBy;
+          } else {
+            // Set default dates if not already set
+            const dateInput = detailsDiv.querySelector('.vaccination-date');
+            if (dateInput && !dateInput.value) {
+              dateInput.value = new Date().toISOString().split('T')[0];
+            }
+            
+            //const nextDueInput = detailsDiv.querySelector('.next-due-date');
+           // if (nextDueInput && !nextDueInput.value) {
+           //   const nextDate = new Date();
+           //   nextDate.setFullYear(nextDate.getFullYear() + 1);
+          //    nextDueInput.value = nextDate.toISOString().split('T')[0];
+          //  }
+          }
+        } else if (detailsDiv) {
+          detailsDiv.classList.add('hidden');
+        }
+      });
+      
+      if (checkbox.checked && detailsDiv) {
+        detailsDiv.classList.remove('hidden');
+      }
+    });
+  }
+
+  // ================ COMMON FOR ALL ANIMALS CHECKBOX ================
+  
+  function initializeCommonForAllCheckboxes() {
+    document.querySelectorAll('.common-vaccination-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const animalIndex = this.dataset.animalIndex;
+        const isChecked = this.checked;
+        
+        if (isChecked) {
+          // Apply this animal's vaccinations to all other animals
+          const sourceVaccineCheckboxes = document.querySelectorAll(`.animal-vaccine-checkbox[data-animal-index="${animalIndex}"]:checked`);
+          
+          // Get all other animal entries
+          const animalEntries = document.querySelectorAll('.animal-entry');
+          
+          for (let i = 0; i < animalEntries.length; i++) {
+            if (i != animalIndex) {
+              sourceVaccineCheckboxes.forEach(sourceCheckbox => {
+                const vaccineId = sourceCheckbox.dataset.vaccineId;
+                const targetCheckbox = document.querySelector(`.animal-vaccine-checkbox[data-animal-index="${i}"][data-vaccine-id="${vaccineId}"]`);
+                
+                if (targetCheckbox) {
+                  targetCheckbox.checked = sourceCheckbox.checked;
+                  targetCheckbox.dispatchEvent(new Event('change'));
+                  
+                  // Copy vaccination details
+                  if (sourceCheckbox.checked) {
+                    const sourceDetails = document.getElementById(`vaccineDetails_${animalIndex}_${vaccineId}`);
+                    const targetDetails = document.getElementById(`vaccineDetails_${i}_${vaccineId}`);
+                    
+                    if (sourceDetails && targetDetails) {
+                      copyVaccinationDetails(sourceDetails, targetDetails);
+                    }
+                  }
+                }
+              });
+            }
+          }
+          
+          alert(`Vaccination records from Animal ${parseInt(animalIndex) + 1} applied to all other animals.`);
+        }
+      });
+    });
+  }
+
+  function copyVaccinationDetails(source, target) {
+    // Copy date
+    const sourceDate = source.querySelector('.vaccination-date');
+    const targetDate = target.querySelector('.vaccination-date');
+    if (sourceDate && targetDate) targetDate.value = sourceDate.value;
+    
+    // Copy next due date
+    const sourceNextDue = source.querySelector('.next-due-date');
+    const targetNextDue = target.querySelector('.next-due-date');
+    if (sourceNextDue && targetNextDue) targetNextDue.value = sourceNextDue.value;
+    
+    // Copy administered by
+    const sourceAdministeredBy = source.querySelector('input[name*="[administeredBy]"]');
+    const targetAdministeredBy = target.querySelector('input[name*="[administeredBy]"]');
+    if (sourceAdministeredBy && targetAdministeredBy) targetAdministeredBy.value = sourceAdministeredBy.value;
+    
+    // Copy batch number
+    const sourceBatch = source.querySelector('input[name*="[batchNumber]"]');
+    const targetBatch = target.querySelector('input[name*="[batchNumber]"]');
+    if (sourceBatch && targetBatch) targetBatch.value = sourceBatch.value;
+    
+    // Copy notes
+    const sourceNotes = source.querySelector('textarea');
+    const targetNotes = target.querySelector('textarea');
+    if (sourceNotes && targetNotes) targetNotes.value = sourceNotes.value;
+  }
+
+  // ================ COMMON VACCINATION DATE ================
+  
+  function initializeCommonVaccinationDate() {
+    const applyCommonCheckbox = document.getElementById('applyCommonVaccinationDate');
+    const commonDateSection = document.getElementById('commonVaccinationDateSection');
+    
+    if (applyCommonCheckbox && commonDateSection) {
+      applyCommonCheckbox.addEventListener('change', function() {
+        commonVaccinationEnabled = this.checked;
+        
+        if (this.checked) {
+          commonDateSection.classList.remove('hidden');
+        } else {
+          commonDateSection.classList.add('hidden');
+        }
+      });
+      
+      // When common dates are set, apply to all checked vaccines
+      const commonDate = document.getElementById('commonVaccinationDate');
+      const commonNextDue = document.getElementById('commonNextDueDate');
+      const commonAdministeredBy = document.getElementById('commonAdministeredBy');
+      
+      [commonDate, commonNextDue, commonAdministeredBy].forEach(input => {
+        if (input) {
+          input.addEventListener('change', function() {
+            if (commonVaccinationEnabled) {
+              applyCommonDatesToAllCheckedVaccines();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  function applyCommonDatesToAllCheckedVaccines() {
+    const commonDate = document.getElementById('commonVaccinationDate').value;
+    const commonNextDue = document.getElementById('commonNextDueDate').value;
+    const commonAdministeredBy = document.getElementById('commonAdministeredBy').value;
+    
+    if (!commonDate && !commonNextDue && !commonAdministeredBy) return;
+    
+    document.querySelectorAll('.animal-vaccine-checkbox:checked').forEach(checkbox => {
+      const animalIndex = checkbox.dataset.animalIndex;
+      const vaccineId = checkbox.dataset.vaccineId;
+      const detailsDiv = document.getElementById(`vaccineDetails_${animalIndex}_${vaccineId}`);
+      
+      if (detailsDiv) {
+        const dateInput = detailsDiv.querySelector('.vaccination-date');
+        const nextDueInput = detailsDiv.querySelector('.next-due-date');
+        const administeredByInput = detailsDiv.querySelector('input[name*="[administeredBy]"]');
+        
+        if (dateInput && commonDate) dateInput.value = commonDate;
+        if (nextDueInput && commonNextDue) nextDueInput.value = commonNextDue;
+        if (administeredByInput && commonAdministeredBy) administeredByInput.value = commonAdministeredBy;
+      }
+    });
   }
 
   // ================ ADD ANOTHER ANIMAL ================
   
-  /**
-   * Add another animal entry (for bulk mode)
-   */
   document.getElementById('addAnimalBtn')?.addEventListener('click', function() {
     if (animalCount >= maxAnimals) {
       alert(`Maximum ${maxAnimals} animals can be registered at once.`);
@@ -678,10 +1041,15 @@
 
     // Update all IDs and names
     template.querySelectorAll('[id]').forEach(el => {
-      if (el.id) el.id = el.id.replace(/\d+/, newIndex);
+      if (el.id) {
+        el.id = el.id.replace(/\d+/, newIndex);
+      }
     });
 
     template.querySelectorAll('[name]').forEach(el => {
+      if (el.name && el.name.includes('[0]')) {
+        el.name = el.name.replace('[0]', `[${newIndex}]`);
+      }
       if (el.name && el.name.includes('[0]')) {
         el.name = el.name.replace('[0]', `[${newIndex}]`);
       }
@@ -689,12 +1057,25 @@
 
     // Update labels for attribute
     template.querySelectorAll('[for]').forEach(el => {
-      if (el.htmlFor) el.htmlFor = el.htmlFor.replace(/\d+/, newIndex);
+      if (el.htmlFor) {
+        el.htmlFor = el.htmlFor.replace(/\d+/, newIndex);
+      }
+    });
+
+    // Update data attributes
+    template.querySelectorAll('[data-animal-index]').forEach(el => {
+      el.dataset.animalIndex = newIndex;
     });
 
     // Update heading
     const heading = template.querySelector('h2');
     if (heading) heading.textContent = `Animal ${newIndex + 1} Details`;
+
+    // Update vaccination section heading
+    const vaccHeading = template.querySelector('h3.flex.items-center');
+    if (vaccHeading) {
+      vaccHeading.innerHTML = vaccHeading.innerHTML.replace(/Animal \d+/, `Animal ${newIndex + 1}`);
+    }
 
     // Clear input values
     template.querySelectorAll('input[type="text"], input[type="number"], input[type="date"], textarea').forEach(el => {
@@ -703,7 +1084,9 @@
 
     // Reset selects to first option
     template.querySelectorAll('select').forEach(el => {
-      el.selectedIndex = 0;
+      if (el.name && (el.name.includes('animalType') || el.name.includes('gender') || el.name.includes('healthStatus'))) {
+        el.selectedIndex = 0;
+      }
     });
 
     // Reset checkboxes
@@ -721,6 +1104,11 @@
     if (pregnancyDetails) {
       pregnancyDetails.classList.add('hidden');
     }
+
+    // Hide all vaccine details
+    template.querySelectorAll('.vaccine-details').forEach(el => {
+      el.classList.add('hidden');
+    });
 
     // Add remove button
     const header = template.querySelector('.flex.justify-between');
@@ -749,97 +1137,11 @@
 
     // Reinitialize event listeners for the new entry
     initializeAnimalEntry(template, newIndex);
+    initializeVaccineCheckboxes(newIndex);
   });
-
-  // ================ VACCINE FUNCTIONS ================
-  
-  /**
-   * Initialize vaccine checkbox functionality
-   */
-  function initializeVaccineCheckboxes() {
-    const vaccineCheckboxes = document.querySelectorAll('.vaccine-checkbox');
-    
-    vaccineCheckboxes.forEach(checkbox => {
-      const vaccineId = checkbox.dataset.vaccineId;
-      const detailsDiv = document.getElementById(`vaccineDetails_${vaccineId}`);
-      
-      // Toggle details when checkbox is clicked
-      checkbox.addEventListener('change', function() {
-        if (this.checked && detailsDiv) {
-          detailsDiv.classList.remove('hidden');
-          
-          // Set default date to today
-          const dateInput = detailsDiv.querySelector('.vaccination-date');
-          if (dateInput && !dateInput.value) {
-            dateInput.value = new Date().toISOString().split('T')[0];
-          }
-          
-          // Set next due date to 1 year from today
-          const nextDueInput = detailsDiv.querySelector('.next-due-date');
-          if (nextDueInput && !nextDueInput.value) {
-            const nextDate = new Date();
-            nextDate.setFullYear(nextDate.getFullYear() + 1);
-            nextDueInput.value = nextDate.toISOString().split('T')[0];
-          }
-        } else if (detailsDiv) {
-          detailsDiv.classList.add('hidden');
-        }
-      });
-      
-      // Check if already checked (for form repopulation)
-      if (checkbox.checked && detailsDiv) {
-        detailsDiv.classList.remove('hidden');
-      }
-    });
-  }
-
-  /**
-   * Add bulk vaccine controls (Check All / Uncheck All)
-   */
-  function addBulkVaccineControls() {
-    const vaccineContainer = document.getElementById('vaccinesContainer');
-    if (!vaccineContainer || vaccineContainer.children.length === 0) return;
-    
-    // Check if controls already exist
-    if (document.getElementById('bulkVaccineControls')) return;
-    
-    const bulkControls = document.createElement('div');
-    bulkControls.id = 'bulkVaccineControls';
-    bulkControls.className = 'flex items-center justify-between mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg';
-    bulkControls.innerHTML = `
-      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Bulk Actions:</span>
-      <div class="space-x-2">
-        <button type="button" id="checkAllVaccines" class="text-sm px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-300 rounded transition">
-          Check All
-        </button>
-        <button type="button" id="uncheckAllVaccines" class="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300 rounded transition">
-          Uncheck All
-        </button>
-      </div>
-    `;
-    
-    vaccineContainer.parentElement.insertBefore(bulkControls, vaccineContainer);
-    
-    document.getElementById('checkAllVaccines').addEventListener('click', function() {
-      document.querySelectorAll('.vaccine-checkbox').forEach(cb => {
-        cb.checked = true;
-        cb.dispatchEvent(new Event('change'));
-      });
-    });
-    
-    document.getElementById('uncheckAllVaccines').addEventListener('click', function() {
-      document.querySelectorAll('.vaccine-checkbox').forEach(cb => {
-        cb.checked = false;
-        cb.dispatchEvent(new Event('change'));
-      });
-    });
-  }
 
   // ================ DATE OF BIRTH FUNCTIONS ================
   
-  /**
-   * Initialize date of birth calculation for all animal entries
-   */
   function initializeDateOfBirthCalculation() {
     document.querySelectorAll('.date-of-birth').forEach((dobInput, index) => {
       const entry = dobInput.closest('.animal-entry');
@@ -851,9 +1153,6 @@
     });
   }
 
-  /**
-   * Calculate age from date of birth for a specific entry
-   */
   function calculateAgeFromDOBForEntry(entry) {
     const dobInput = entry.querySelector('.date-of-birth');
     const ageValueInput = entry.querySelector('.age-value-input');
@@ -889,15 +1188,11 @@
       ageUnitSelect.value = 'Days';
     }
     
-    // Trigger change event to update pregnancy section
     ageValueInput.dispatchEvent(new Event('input'));
   }
 
   // ================ FORM VALIDATION ================
   
-  /**
-   * Initialize form validation
-   */
   function initializeFormValidation() {
     const form = document.querySelector('form');
     if (!form) return;
@@ -945,10 +1240,10 @@
           return;
         }
 
-        if (!tagNumber.value.trim()) {
+        if (!tagNumber || !tagNumber.value.trim()) {
           e.preventDefault();
           alert(`Please enter tag number for Animal ${i + 1}.`);
-          tagNumber.focus();
+          if (tagNumber) tagNumber.focus();
           return;
         }
 
@@ -961,11 +1256,12 @@
       }
 
       // Validate vaccines that are checked
-      const checkedVaccines = document.querySelectorAll('.vaccine-checkbox:checked');
+      const checkedVaccines = document.querySelectorAll('.animal-vaccine-checkbox:checked');
       for (let i = 0; i < checkedVaccines.length; i++) {
         const checkbox = checkedVaccines[i];
+        const animalIndex = checkbox.dataset.animalIndex;
         const vaccineId = checkbox.dataset.vaccineId;
-        const detailsDiv = document.getElementById(`vaccineDetails_${vaccineId}`);
+        const detailsDiv = document.getElementById(`vaccineDetails_${animalIndex}_${vaccineId}`);
         
         if (detailsDiv) {
           const dateInput = detailsDiv.querySelector('.vaccination-date');
@@ -973,14 +1269,14 @@
           
           if (dateInput && !dateInput.value) {
             e.preventDefault();
-            alert(`Please enter vaccination date for the selected vaccine.`);
+            alert(`Please enter vaccination date for the selected vaccine in Animal ${parseInt(animalIndex) + 1}.`);
             dateInput.focus();
             return;
           }
           
           if (administeredByInput && !administeredByInput.value.trim()) {
             e.preventDefault();
-            alert(`Please enter who administered the vaccine.`);
+            alert(`Please enter who administered the vaccine for Animal ${parseInt(animalIndex) + 1}.`);
             administeredByInput.focus();
             return;
           }
@@ -998,61 +1294,35 @@
 
   // ================ UTILITY FUNCTIONS ================
   
-  /**
-   * Update animal count display
-   */
   function updateAnimalCount() {
     const countElement = document.getElementById('animalCount');
     if (countElement) {
       countElement.textContent = animalCount;
     }
   }
-
-  // ================ RESPONSIVE LAYOUT ================
-  
-  /**
-   * Responsive layout for smaller screens
-   */
-  window.addEventListener('resize', function() {
-    const animalEntries = document.querySelectorAll('.animal-entry');
-    animalEntries.forEach(entry => {
-      const grids = entry.querySelectorAll('.grid');
-      grids.forEach(grid => {
-        if (window.innerWidth < 768) {
-          if (grid.classList.contains('md:grid-cols-2')) {
-            grid.classList.remove('md:grid-cols-2');
-            grid.classList.add('md:grid-cols-1');
-          }
-        } else {
-          if (grid.classList.contains('md:grid-cols-1')) {
-            grid.classList.remove('md:grid-cols-1');
-            grid.classList.add('md:grid-cols-2');
-          }
-        }
-      });
-    });
-  });
 </script>
 
 <style>
-  /* Loading spinner animation */
   @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
+  
   .animate-spin {
     animation: spin 1s linear infinite;
   }
   
-  /* Smooth transitions */
   .vaccine-details,
   .pregnancy-details,
   .pregnancy-section {
     transition: all 0.3s ease-in-out;
   }
   
-  /* Custom file input styling */
   input[type="file"]::file-selector-button {
     transition: background-color 0.2s ease;
+  }
+  
+  .common-vaccination-checkbox:checked + label {
+    color: #059669;
   }
 </style>
