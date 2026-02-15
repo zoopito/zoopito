@@ -169,20 +169,20 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="grid ">
             <% const sides = [
-              { name: 'front', label: 'Front View', icon: '👁️' },
-              { name: 'left', label: 'Left Side', icon: '⬅️' },
-              { name: 'right', label: 'Right Side', icon: '➡️' },
-              { name: 'back', label: 'Back View', icon: '📋' }
+              { name: 'front', label: 'Front View'},
+             // { name: 'left', label: 'Left Side', icon: '⬅️' },
+             // { name: 'right', label: 'Right Side', icon: '➡️' },
+             // { name: 'back', label: 'Back View', icon: '📋' }
             ]; %>
             
             <% sides.forEach(side => { %>
-              <div class="group relative bg-gray-50 dark:bg-gray-700/50 rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300">
+              <div class=" relative bg-gray-50 dark:bg-gray-700/50 rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300">
                 <% if (animal.photos[side.name]?.url) { %>
                   <img src="<%= animal.photos[side.name].url %>" 
                        alt="<%= side.label %>" 
-                       class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110">
+                       class="w-full sm:h-60 md:h-80 lg:h-100 object-cover transition-transform duration-300 group-hover:scale-110">
                   <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
                   <a href="<%= animal.photos[side.name].url %>" 
                      target="_blank" 
@@ -612,7 +612,7 @@
           </div>
 
           <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
-            <a href="/farmer/<%= animal.farmer?._id %>" 
+            <a href="/<%= currUser && currUser.role ? currUser.role.toLowerCase() : '' %>/farmers/<%= animal.farmer?._id %>" 
                class="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg shadow-green-500/25">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
