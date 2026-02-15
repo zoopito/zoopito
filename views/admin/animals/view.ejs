@@ -406,62 +406,72 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Status</label>
                     <p class="text-gray-900 dark:text-white font-semibold">
-                      <%= animal.pregnancyStatus?.isPregnant ? 'Pregnant' : 'Not Pregnant' %>
+                      <span class="px-2 py-1 rounded-full <%= animal.pregnancyStatus?.isPregnant ? 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' %>">
+                        <%= animal.pregnancyStatus?.isPregnant ? 'Pregnant' : 'Not Pregnant' %>
+                      </span>
                       <% if (animal.pregnancyStatus?.isPregnant && pregnancyDuration) { %>
                         <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">
-                          (<%= pregnancyDuration %> days)
+                          (<%= pregnancyDuration %> days confirmed)
                         </span>
                       <% } %>
                     </p>
                   </div>
                   <% if (animal.pregnancyStatus?.isPregnant) { %>
                     <div>
-                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Expected Delivery</label>
-                      <p class="text-gray-900 dark:text-white font-semibold"><%= helpers.formatDate(animal.pregnancyStatus?.expectedDeliveryDate) %></p>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Stage</label>
-                      <p class="text-gray-900 dark:text-white font-semibold"><%= animal.pregnancyStatus?.stage ? animal.pregnancyStatus.stage.replace('_', ' ').toUpperCase() : 'N/A' %></p>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Number of Fetuses</label>
-                      <p class="text-gray-900 dark:text-white font-semibold"><%= animal.pregnancyStatus?.numberOfFetuses || 'N/A' %></p>
-                    </div>
-                  <% } %>
-                </div>
-
-                <!-- Lactation Status -->
-                <div class="space-y-4">
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Lactation Status</h4>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Status</label>
-                    <p class="text-gray-900 dark:text-white font-semibold">
-                      <%= animal.lactationStatus?.isLactating ? 'Lactating' : 'Not Lactating' %>
-                      <% if (daysSinceCalving) { %>
-                        <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">
-                          (<%= daysSinceCalving %> days since calving)
-                        </span>
-                      <% } %>
-                    </p>
-                  </div>
-                  <% if (animal.lactationStatus?.isLactating) { %>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Daily Yield</label>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Pregnancy Stage</label>
                       <p class="text-gray-900 dark:text-white font-semibold">
-                        <% if (animal.lactationStatus?.dailyYield?.value) { %>
-                          <%= animal.lactationStatus.dailyYield.value %> <%= animal.lactationStatus.dailyYield.unit || 'units' %>
-                        <% } else { %>
-                          N/A
+                        <%= animal.pregnancyStatus?.stage ? animal.pregnancyStatus.stage.replace(/_/g, ' ').toUpperCase() : 'Not Specified' %>
+                      </p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Expected Delivery</label>
+                      <p class="text-gray-900 dark:text-white font-semibold">
+                        <%= helpers.formatDate(animal.pregnancyStatus?.expectedDeliveryDate) %>
+                        <% if (daysUntilDelivery !== null) { %>
+                          <span class="text-sm <%= daysUntilDelivery > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400' %> ml-2">
+                            (<%= daysUntilDelivery > 0 ? daysUntilDelivery + ' days remaining' : 'OVERDUE' %>)
+                          </span>
                         <% } %>
                       </p>
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Milk Quality</label>
-                      <p class="text-gray-900 dark:text-white font-semibold"><%= animal.lactationStatus?.milkQuality ? animal.lactationStatus.milkQuality.replace('_', ' ').toUpperCase() : 'N/A' %></p>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Number of Fetuses</label>
+                      <p class="text-gray-900 dark:text-white font-semibold"><%= animal.pregnancyStatus?.numberOfFetuses || 'Not specified' %></p>
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Milking Frequency</label>
-                      <p class="text-gray-900 dark:text-white font-semibold"><%= animal.lactationStatus?.milkingFrequency ? animal.lactationStatus.milkingFrequency.replace('_', ' ').toUpperCase() : 'N/A' %></p>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Previous Pregnancies</label>
+                      <p class="text-gray-900 dark:text-white font-semibold"><%= animal.pregnancyStatus?.previousPregnancies || 0 %></p>
+                    </div>
+                  <% } %>
+                </div>
+
+                <!-- Pregnancy Confirmation Details -->
+                <div class="space-y-4">
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmation Details</h4>
+                  <% if (animal.pregnancyStatus?.isPregnant) { %>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Test Date</label>
+                      <p class="text-gray-900 dark:text-white font-semibold"><%= helpers.formatDate(animal.pregnancyStatus?.testDate) %></p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Confirmation Date</label>
+                      <p class="text-gray-900 dark:text-white font-semibold"><%= helpers.formatDate(animal.pregnancyStatus?.confirmedDate) %></p>
+                    </div>
+                    <% if (animal.pregnancyStatus?.kitUsed) { %>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Test Kit/Method</label>
+                        <p class="text-gray-900 dark:text-white font-semibold"><%= animal.pregnancyStatus.kitUsed %></p>
+                      </div>
+                    <% } %>
+                    <% if (animal.pregnancyStatus?.pregnancyNotes) { %>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Pregnancy Notes</label>
+                        <p class="text-gray-900 dark:text-white text-sm"><%= animal.pregnancyStatus.pregnancyNotes %></p>
+                      </div>
+                    <% } %>
+                  <% } else { %>
+                    <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <p>Animal is not pregnant</p>
                     </div>
                   <% } %>
                 </div>

@@ -4,6 +4,7 @@ const Animal = require("../models/animal");
 const Paravet = require("../models/paravet");
 const Servise = require("../models/services");
 const Vaccine = require("../models/vaccine");
+const Vaccination = require("../models/vaccination");
 const SalesTeam = require("../models/salesteam");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
@@ -357,7 +358,10 @@ async function createSingleAnimal(req, res) {
     await newAnimal.save();
 
     // Create vaccination records if provided
-    if (req.body.vaccinations) {
+    if (req.body.animals && req.body.animals[0]?.vaccinations) {
+      await createVaccinationRecords(req, newAnimal, null, 0);
+    } else if (req.body.vaccinations) {
+      // Fallback for old format
       await createVaccinationRecords(req, newAnimal);
     }
 
@@ -373,9 +377,6 @@ async function createSingleAnimal(req, res) {
 
 // Bulk animal registration
 async function createBulkAnimals(req, res) {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const animalsData = [];
     const createdAnimals = [];
@@ -385,7 +386,7 @@ async function createBulkAnimals(req, res) {
     for (let i = 0; i < req.body.animals.length; i++) {
       try {
         const animalData = await prepareAnimalData(req, i);
-        animalsData.push(animalData);
+        animalsData.push({ animalData, index: i });
       } catch (error) {
         errors.push({
           index: i + 1,
@@ -397,9 +398,6 @@ async function createBulkAnimals(req, res) {
 
     // If any preparation errors, abort
     if (errors.length > 0) {
-      await session.abortTransaction();
-      session.endSession();
-
       req.flash(
         "error",
         `Failed to prepare ${errors.length} animal(s). Please check the data.`,
@@ -419,35 +417,65 @@ async function createBulkAnimals(req, res) {
       );
     }
 
-    // Create all animals in transaction
-    for (const animalData of animalsData) {
-      const newAnimal = new Animal(animalData);
-      await newAnimal.save({ session });
-      createdAnimals.push(newAnimal);
+    // Create all animals without transaction
+    for (const { animalData, index } of animalsData) {
+      try {
+        const newAnimal = new Animal(animalData);
+        await newAnimal.save();
+        createdAnimals.push(newAnimal);
 
-      // Create vaccination records if applicable
-      if (req.body.vaccinations) {
-        await createVaccinationRecords(req, newAnimal, session);
+        // Create vaccination records if applicable
+        if (req.body.animals[index]?.vaccinations) {
+          await createVaccinationRecords(req, newAnimal, null, index);
+        }
+      } catch (animalError) {
+        console.error(`Error saving animal ${index}:`, animalError);
+        // If one animal fails, continue with others
+        errors.push({
+          index: index + 1,
+          error: animalError.message,
+          tagNumber: animalsData[index]?.animalData?.tagNumber || "Unknown",
+        });
       }
     }
 
     // Update farmer's animal count
-    await updateFarmerAnimalCount(
-      req.body.farmer,
-      createdAnimals.length,
-      session,
-    );
+    if (createdAnimals.length > 0) {
+      await updateFarmerAnimalCount(
+        req.body.farmer,
+        createdAnimals.length,
+        null,
+      );
+    }
 
-    // Commit transaction
-    await session.commitTransaction();
-    session.endSession();
+    // If some animals failed to save
+    if (errors.length > 0) {
+      const successCount = createdAnimals.length;
+      const failureCount = errors.length;
+      req.flash(
+        "warning",
+        `${successCount} animal(s) registered successfully, but ${failureCount} failed.`,
+      );
+      if (failureCount <= 3) {
+        errors.forEach((err) => {
+          req.flash(
+            "error",
+            `Animal ${err.index} (Tag: ${err.tagNumber}): ${err.error}`,
+          );
+        });
+      }
+    }
 
-    // Send success response
-    sendSuccessResponse(req, res, createdAnimals, "bulk");
+    // Send success response if at least one animal was created
+    if (createdAnimals.length > 0) {
+      sendSuccessResponse(req, res, createdAnimals, "bulk");
+    } else {
+      req.flash("error", "Failed to register any animals. Please try again.");
+      res.redirect(`/${req.user.role.toLowerCase()}/animals/new?type=bulk`);
+    }
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    throw error;
+    console.error("Error in bulk animal registration:", error);
+    handleError(error, req, res);
   }
 }
 
@@ -456,10 +484,6 @@ async function prepareAnimalData(req, index) {
   const animalInput = req.body.animals ? req.body.animals[index] : req.body;
 
   // Basic validation
-  if (!animalInput.tagNumber) {
-    throw new Error("Tag number is required");
-  }
-
   if (!animalInput.animalType) {
     throw new Error("Animal type is required");
   }
@@ -472,12 +496,27 @@ async function prepareAnimalData(req, index) {
     throw new Error("Health status is required");
   }
 
-  // Check if tag number already exists
-  const existingAnimal = await Animal.findOne({
-    tagNumber: animalInput.tagNumber.toUpperCase(),
-  });
-  if (existingAnimal) {
-    throw new Error(`Tag number ${animalInput.tagNumber} already exists`);
+  // Handle tag number only if isTagged is checked
+  let tagNumber = null;
+  if (animalInput.isTagged === "on" || animalInput.isTagged === true) {
+    if (!animalInput.tagNumber) {
+      throw new Error("Tag number is required when 'Has Tagged' is checked");
+    }
+
+    tagNumber = animalInput.tagNumber.toUpperCase();
+
+    // Check if tag number already exists
+    const existingAnimal = await Animal.findOne({
+      tagNumber: tagNumber,
+    });
+    if (existingAnimal) {
+      throw new Error(`Tag number ${animalInput.tagNumber} already exists`);
+    }
+  } else {
+    // Generate a unique tag number if not provided
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000);
+    tagNumber = `AUTO-${timestamp}-${random}`.substring(0, 50);
   }
 
   // Prepare base data
@@ -488,11 +527,11 @@ async function prepareAnimalData(req, index) {
     breed: animalInput.breed || null,
     age: {
       value: animalInput?.age?.value ? Number(animalInput.age.value) : null,
-      unit: animalInput?.age?.unit || null,
+      unit: animalInput?.age?.unit || "Months",
     },
     gender: animalInput.gender,
     name: animalInput.name || null,
-    tagNumber: animalInput.tagNumber.toUpperCase(),
+    tagNumber: tagNumber,
     healthStatus: {
       currentStatus: animalInput.healthStatus || "Healthy",
       lastCheckupDate: new Date(),
@@ -523,31 +562,35 @@ async function prepareAnimalData(req, index) {
   };
 
   // Handle pregnancy status (only for adult female animals)
-  if (animalInput.pregnancyStatus?.isPregnant === "on") {
+  if (
+    animalInput.pregnancyStatus?.isPregnant === "on" ||
+    animalInput.pregnancyStatus?.isPregnant === true
+  ) {
     animalData.pregnancyStatus = {
       isPregnant: true,
-      kitUsed: animalInput.pregnancyStatus.kitUsed || null,
-      testDate: animalInput.pregnancyStatus.testDate
+      kitUsed: animalInput.pregnancyStatus?.kitUsed || null,
+      testDate: animalInput.pregnancyStatus?.testDate
         ? new Date(animalInput.pregnancyStatus.testDate)
         : null,
-      confirmedDate: animalInput.pregnancyStatus.confirmedDate
+      confirmedDate: animalInput.pregnancyStatus?.confirmedDate
         ? new Date(animalInput.pregnancyStatus.confirmedDate)
         : null,
-      expectedDeliveryDate: animalInput.pregnancyStatus.expectedDeliveryDate
+      expectedDeliveryDate: animalInput.pregnancyStatus?.expectedDeliveryDate
         ? new Date(animalInput.pregnancyStatus.expectedDeliveryDate)
         : null,
-      stage: animalInput.pregnancyStatus.stage || null,
-      numberOfFetuses: animalInput.pregnancyStatus.numberOfFetuses
+      stage: animalInput.pregnancyStatus?.stage || null,
+      numberOfFetuses: animalInput.pregnancyStatus?.numberOfFetuses
         ? Number(animalInput.pregnancyStatus.numberOfFetuses)
         : null,
-      previousPregnancies: animalInput.pregnancyStatus.previousPregnancies
+      previousPregnancies: animalInput.pregnancyStatus?.previousPregnancies
         ? Number(animalInput.pregnancyStatus.previousPregnancies)
         : 0,
-      pregnancyNotes: animalInput.pregnancyStatus.notes || "",
+      pregnancyNotes: animalInput.pregnancyStatus?.notes || "",
     };
   } else {
     animalData.pregnancyStatus = {
       isPregnant: false,
+      kitUsed: null,
       testDate: null,
       confirmedDate: null,
       expectedDeliveryDate: null,
@@ -558,26 +601,15 @@ async function prepareAnimalData(req, index) {
     };
   }
 
-  // Handle photos
-  if (req.files && req.files[`animals[${index}][photos]`]) {
-    const photos = req.files[`animals[${index}][photos]`];
-    for (const field in photos) {
-      if (photos[field]?.[0]) {
-        const file = photos[field][0];
-        animalData.photos[field] = {
-          url: file.path,
-          filename: file.originalname,
-          public_id: file.filename,
-          uploadedAt: new Date(),
-        };
-      }
-    }
-  } else if (req.files && req.files[`animals[0][photos]`]) {
-    // Handle case when files might be in different structure
-    const photos = req.files[`animals[0][photos]`];
-    for (const field in photos) {
-      if (photos[field]?.[0]) {
-        const file = photos[field][0];
+  // Handle photos with proper field naming
+  const photoFields = ["front", "left", "right", "back"];
+
+  // Try to get files for this specific animal
+  if (req.files) {
+    for (const field of photoFields) {
+      const fileKey = `animals[${index}][photos][${field}]`;
+      if (req.files[fileKey] && req.files[fileKey][0]) {
+        const file = req.files[fileKey][0];
         animalData.photos[field] = {
           url: file.path,
           filename: file.originalname,
@@ -592,16 +624,29 @@ async function prepareAnimalData(req, index) {
 }
 
 // Create vaccination records
-async function createVaccinationRecords(req, animal, session = null) {
+async function createVaccinationRecords(
+  req,
+  animal,
+  session = null,
+  animalIndex = 0,
+) {
   try {
-    if (!req.body.vaccinations) return [];
+    // Get vaccinations for this specific animal
+    const animalVaccinations = req.body.animals
+      ? req.body.animals[animalIndex]?.vaccinations
+      : req.body.vaccinations;
+
+    if (!animalVaccinations || Object.keys(animalVaccinations).length === 0) {
+      return [];
+    }
 
     const vaccinationRecords = [];
 
-    for (const [vaccineId, vaccineData] of Object.entries(
-      req.body.vaccinations,
-    )) {
-      if (vaccineData.administered === "true") {
+    for (const [vaccineId, vaccineData] of Object.entries(animalVaccinations)) {
+      if (
+        vaccineData.administered === "true" ||
+        vaccineData.administered === true
+      ) {
         // Get vaccine details from database
         const vaccine = await Vaccine.findById(vaccineId);
         if (!vaccine) {
@@ -631,7 +676,10 @@ async function createVaccinationRecords(req, animal, session = null) {
           dateAdministered: new Date(vaccineData.dateAdministered),
           nextDueDate: vaccineData.nextDueDate
             ? new Date(vaccineData.nextDueDate)
-            : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year default
+            : calculateNextDueDate(
+                vaccineData.dateAdministered,
+                vaccine.boosterIntervalWeeks,
+              ),
           administeredBy: vaccineData.administeredBy,
           notes: vaccineData.notes || "",
           status: "Administered",
@@ -644,17 +692,30 @@ async function createVaccinationRecords(req, animal, session = null) {
         const saveOptions = session ? { session } : {};
         await vaccinationRecord.save(saveOptions);
         vaccinationRecords.push(vaccinationRecord);
+
+        // Update animal's vaccination summary
+        animal.vaccinationSummary.vaccinesGiven.push({
+          vaccine: vaccine._id,
+          vaccineName: vaccine.vaccineName || vaccine.name,
+          lastDate: new Date(vaccineData.dateAdministered),
+          nextDue: vaccinationRecord.nextDueDate,
+          status:
+            vaccinationRecord.nextDueDate > new Date()
+              ? "up_to_date"
+              : "overdue",
+        });
       }
     }
 
-    // Update animal's vaccination summary
+    // Update animal's vaccination summary if records were created
     if (vaccinationRecords.length > 0) {
       const latestVaccination = vaccinationRecords.sort(
         (a, b) => new Date(b.dateAdministered) - new Date(a.dateAdministered),
       )[0];
 
-      // Update vaccination summary
-      animal.vaccinationSummary.totalVaccinations = vaccinationRecords.length;
+      animal.vaccinationSummary.totalVaccinations =
+        (animal.vaccinationSummary.totalVaccinations || 0) +
+        vaccinationRecords.length;
       animal.vaccinationSummary.lastVaccinationDate =
         latestVaccination.dateAdministered;
       animal.vaccinationSummary.lastVaccineType = latestVaccination.vaccineType;
@@ -672,28 +733,7 @@ async function createVaccinationRecords(req, animal, session = null) {
         animal.vaccinationSummary.isUpToDate = earliestDueDate > new Date();
       }
 
-      // Update vaccinesGiven array
-      const vaccineMap = new Map();
-      vaccinationRecords.forEach((vaccination) => {
-        if (vaccination.vaccine) {
-          const key = vaccination.vaccine.toString();
-          if (
-            !vaccineMap.has(key) ||
-            vaccineMap.get(key).lastDate < vaccination.dateAdministered
-          ) {
-            vaccineMap.set(key, {
-              vaccine: vaccination.vaccine,
-              vaccineName: vaccination.vaccineName,
-              lastDate: vaccination.dateAdministered,
-              nextDue: vaccination.nextDueDate,
-              status:
-                vaccination.nextDueDate > new Date() ? "up_to_date" : "overdue",
-            });
-          }
-        }
-      });
-
-      animal.vaccinationSummary.vaccinesGiven = Array.from(vaccineMap.values());
+      animal.vaccinationSummary.lastUpdated = new Date();
 
       const saveOptions = session ? { session } : {};
       await animal.save(saveOptions);
@@ -704,6 +744,19 @@ async function createVaccinationRecords(req, animal, session = null) {
     console.error("Error creating vaccination records:", error);
     throw error;
   }
+}
+
+// Helper function to calculate next due date
+function calculateNextDueDate(administeredDate, boosterIntervalWeeks) {
+  if (!boosterIntervalWeeks || boosterIntervalWeeks === 0) {
+    // Default to 1 year if no interval specified
+    return new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  }
+
+  const daysToAdd = boosterIntervalWeeks * 7;
+  return new Date(
+    new Date(administeredDate).getTime() + daysToAdd * 24 * 60 * 60 * 1000,
+  );
 }
 
 // Update farmer animal count
@@ -855,6 +908,7 @@ module.exports.viewAnimal = async (req, res) => {
 
     // Calculate pregnancy duration if pregnant
     let pregnancyDuration = null;
+    let daysUntilDelivery = null;
     if (
       animal.pregnancyStatus?.isPregnant &&
       animal.pregnancyStatus?.confirmedDate
@@ -863,6 +917,20 @@ module.exports.viewAnimal = async (req, res) => {
       const confirmedDate = new Date(animal.pregnancyStatus.confirmedDate);
       const diffTime = Math.abs(today - confirmedDate);
       pregnancyDuration = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    // Calculate days until expected delivery
+    if (
+      animal.pregnancyStatus?.isPregnant &&
+      animal.pregnancyStatus?.expectedDeliveryDate
+    ) {
+      const today = new Date();
+      const expectedDelivery = new Date(
+        animal.pregnancyStatus.expectedDeliveryDate,
+      );
+      daysUntilDelivery = Math.ceil(
+        (expectedDelivery - today) / (1000 * 60 * 60 * 24),
+      );
     }
 
     // Get upcoming vaccinations
@@ -949,6 +1017,7 @@ module.exports.viewAnimal = async (req, res) => {
       otherAnimals,
       ageInMonths,
       pregnancyDuration,
+      daysUntilDelivery,
       batchInfo,
       title: `Animal Details - ${animal.uniqueAnimalId || animal.tagNumber}`,
       helpers: {
