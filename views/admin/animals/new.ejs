@@ -677,6 +677,7 @@ function reinitializeVaccineDateListeners(container) {
 
     if (isTaggedCheckbox && tagNumberInput && tagNumberContainer) {
       isTaggedCheckbox.addEventListener('change', function () {
+        isTaggedCheckbox.required = false;
         if (this.checked) {
           tagNumberContainer.classList.remove('hidden');
           tagNumberInput.required = true;
