@@ -1223,42 +1223,72 @@ module.exports.updateAnimal = async (req, res) => {
 
     /* ---------------- AGE ---------------- */
     if (req.body.age) {
+      // Handle age as a nested object
+      const ageValue = req.body.age.value
+        ? parseFloat(req.body.age.value)
+        : animal.age?.value;
+      const ageUnit = ["Days", "Months", "Years"].includes(req.body.age.unit)
+        ? req.body.age.unit
+        : animal.age?.unit || "Months";
+
       animal.age = {
-        value: req.body.age.value
-          ? parseFloat(req.body.age.value)
-          : animal.age?.value,
-        unit: ["Days", "Months", "Years"].includes(req.body.age.unit)
-          ? req.body.age.unit
-          : animal.age?.unit || "Months",
+        value: ageValue,
+        unit: ageUnit,
       };
     }
 
-    /* ---------------- PREGNANCY STATUS (SIMPLIFIED) ---------------- */
+    /* ---------------- PREGNANCY STATUS ---------------- */
+    // Initialize pregnancyStatus if it doesn't exist
+    if (!animal.pregnancyStatus) {
+      animal.pregnancyStatus = {};
+    }
+
+    // Handle pregnancy checkbox
     if (req.body.pregnancyStatus) {
-      animal.pregnancyStatus = {
-        isPregnant: req.body.pregnancyStatus.isPregnant === "on",
-        kitUsed: req.body.pregnancyStatus.kitUsed || null,
-        testDate: req.body.pregnancyStatus.testDate
+      animal.pregnancyStatus.isPregnant =
+        req.body.pregnancyStatus.isPregnant === "on";
+
+      // Only update other fields if checkbox is checked or if they're provided
+      if (animal.pregnancyStatus.isPregnant) {
+        animal.pregnancyStatus.kitUsed =
+          req.body.pregnancyStatus.kitUsed || null;
+        animal.pregnancyStatus.testDate = req.body.pregnancyStatus.testDate
           ? new Date(req.body.pregnancyStatus.testDate)
-          : null,
-        confirmedDate: req.body.pregnancyStatus.confirmedDate
+          : null;
+        animal.pregnancyStatus.confirmedDate = req.body.pregnancyStatus
+          .confirmedDate
           ? new Date(req.body.pregnancyStatus.confirmedDate)
-          : null,
-        expectedDeliveryDate: req.body.pregnancyStatus.expectedDeliveryDate
+          : null;
+        animal.pregnancyStatus.expectedDeliveryDate = req.body.pregnancyStatus
+          .expectedDeliveryDate
           ? new Date(req.body.pregnancyStatus.expectedDeliveryDate)
-          : null,
-        stage: req.body.pregnancyStatus.stage || null,
-        numberOfFetuses: req.body.pregnancyStatus.numberOfFetuses
+          : null;
+        animal.pregnancyStatus.stage = req.body.pregnancyStatus.stage || null;
+        animal.pregnancyStatus.numberOfFetuses = req.body.pregnancyStatus
+          .numberOfFetuses
           ? parseInt(req.body.pregnancyStatus.numberOfFetuses)
-          : null,
-        previousPregnancies: req.body.pregnancyStatus.previousPregnancies
+          : null;
+        animal.pregnancyStatus.previousPregnancies = req.body.pregnancyStatus
+          .previousPregnancies
           ? parseInt(req.body.pregnancyStatus.previousPregnancies)
-          : 0,
-        pregnancyNotes: req.body.pregnancyStatus.notes || "",
-      };
+          : 0;
+        animal.pregnancyStatus.pregnancyNotes =
+          req.body.pregnancyStatus.pregnancyNotes || "";
+      } else {
+        // If not pregnant, reset pregnancy fields
+        animal.pregnancyStatus = {
+          isPregnant: false,
+          previousPregnancies: animal.pregnancyStatus?.previousPregnancies || 0,
+        };
+      }
     }
 
-    /* ---------------- HEALTH STATUS (SIMPLIFIED) ---------------- */
+    /* ---------------- HEALTH STATUS ---------------- */
+    // Initialize healthStatus if it doesn't exist
+    if (!animal.healthStatus) {
+      animal.healthStatus = {};
+    }
+
     const validHealthStatuses = [
       "Healthy",
       "Sick",
@@ -1288,7 +1318,38 @@ module.exports.updateAnimal = async (req, res) => {
       animal.healthStatus.healthNotes = req.body.healthNotes;
     }
 
-    /* ---------------- REPRODUCTIVE STATUS (SIMPLIFIED) ---------------- */
+    /* ---------------- VACCINATION SUMMARY ---------------- */
+    // Initialize vaccinationSummary if it doesn't exist
+    if (!animal.vaccinationSummary) {
+      animal.vaccinationSummary = {
+        totalVaccinations: 0,
+        isUpToDate: false,
+        vaccinesGiven: [],
+      };
+    }
+
+    if (req.body.vaccinationSummary) {
+      if (req.body.vaccinationSummary.lastVaccinationDate) {
+        animal.vaccinationSummary.lastVaccinationDate = new Date(
+          req.body.vaccinationSummary.lastVaccinationDate,
+        );
+      }
+      if (req.body.vaccinationSummary.nextVaccinationDate) {
+        animal.vaccinationSummary.nextVaccinationDate = new Date(
+          req.body.vaccinationSummary.nextVaccinationDate,
+        );
+      }
+      if (req.body.vaccinationSummary.lastVaccineType) {
+        animal.vaccinationSummary.lastVaccineType =
+          req.body.vaccinationSummary.lastVaccineType;
+      }
+      if (req.body.vaccinationSummary.isUpToDate !== undefined) {
+        animal.vaccinationSummary.isUpToDate =
+          req.body.vaccinationSummary.isUpToDate === "on";
+      }
+    }
+
+    /* ---------------- REPRODUCTIVE STATUS ---------------- */
     const validReproductiveStatuses = [
       "normal",
       "in_heat",
@@ -1304,9 +1365,13 @@ module.exports.updateAnimal = async (req, res) => {
       animal.reproductiveStatus = req.body.reproductiveStatus;
     }
 
-    /* ---------------- MANAGEMENT FIELDS (SIMPLIFIED) ---------------- */
-    animal.feedingType = req.body.feedingType || null;
-    animal.housingType = req.body.housingType || null;
+    /* ---------------- MANAGEMENT FIELDS ---------------- */
+    if (req.body.feedingType !== undefined) {
+      animal.feedingType = req.body.feedingType || null;
+    }
+    if (req.body.housingType !== undefined) {
+      animal.housingType = req.body.housingType || null;
+    }
 
     /* ---------------- STATUS & OWNERSHIP ---------------- */
     const validStatuses = [
@@ -1335,15 +1400,18 @@ module.exports.updateAnimal = async (req, res) => {
       req.body.farmer &&
       req.body.farmer !== animal.currentOwner?.toString()
     ) {
-      // Add to previous owners if exists
+      // Add to previous owners if exists (field exists in schema?)
       if (animal.currentOwner) {
-        animal.previousOwners = animal.previousOwners || [];
-        animal.previousOwners.push({
-          farmer: animal.currentOwner,
-          fromDate: animal.dateOfAcquisition || animal.createdAt,
-          toDate: new Date(),
-          transferReason: req.body.transferReason || "Ownership updated",
-        });
+        // Check if previousOwners exists in schema before using
+        if (animal.previousOwners) {
+          animal.previousOwners = animal.previousOwners || [];
+          animal.previousOwners.push({
+            farmer: animal.currentOwner,
+            fromDate: animal.dateOfAcquisition || animal.createdAt,
+            toDate: new Date(),
+            transferReason: req.body.transferReason || "Ownership updated",
+          });
+        }
       }
 
       animal.currentOwner = req.body.farmer;
@@ -1351,6 +1419,11 @@ module.exports.updateAnimal = async (req, res) => {
 
     /* ---------------- PHOTOS UPDATE ---------------- */
     const photoFields = ["front", "left", "right", "back"];
+
+    // Initialize photos object if it doesn't exist
+    if (!animal.photos) {
+      animal.photos = {};
+    }
 
     // Handle photo deletion
     if (req.body.deletePhotos) {
@@ -1372,7 +1445,7 @@ module.exports.updateAnimal = async (req, res) => {
 
     // Handle new photo uploads
     if (req.files) {
-      const cloudinary = require("../config/cloudinary");
+      const cloudinary = require("../Cloudconfig.js");
 
       for (const field of photoFields) {
         if (req.files[field]?.[0]) {
@@ -1413,7 +1486,12 @@ module.exports.updateAnimal = async (req, res) => {
     res.redirect(`/${role}/animals/${animal._id}`);
   } catch (error) {
     console.error("Update animal error:", error);
-    console.error("Request body:", req.body);
+    console.error("Request body:", JSON.stringify(req.body, null, 2));
+
+    // Log specific validation errors
+    if (error.name === "ValidationError") {
+      console.error("Validation errors:", error.errors);
+    }
 
     let errorMessage = "❌ Failed to update animal. Please try again.";
 
@@ -1421,6 +1499,8 @@ module.exports.updateAnimal = async (req, res) => {
       if (error.keyPattern?.tagNumber) {
         errorMessage =
           "❌ Tag number already exists! Please use a different tag number.";
+      } else if (error.keyPattern?.uniqueAnimalId) {
+        errorMessage = "❌ Unique Animal ID already exists! Please try again.";
       }
     } else if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map(
@@ -1429,6 +1509,8 @@ module.exports.updateAnimal = async (req, res) => {
       errorMessage = `❌ Validation Error:<br>${messages.join("<br>")}`;
     } else if (error.name === "CastError") {
       errorMessage = `❌ Invalid data type for field "${error.path}".`;
+    } else if (error.message) {
+      errorMessage = `❌ ${error.message}`;
     }
 
     req.flash("error", errorMessage);
