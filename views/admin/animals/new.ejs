@@ -1167,6 +1167,29 @@ function reinitializeVaccineDateListeners(container) {
     if (!form) return;
     
     form.addEventListener('submit', function(e) {
+      // Debug: Log all form data
+      const formData = new FormData(form);
+      console.log('========== FORM SUBMISSION DEBUG ==========');
+      console.log('All form entries:');
+      for (let [key, value] of formData.entries()) {
+        if (key.includes('vaccinations')) {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
+      
+      // Check all checked vaccines
+      const checkedVaccines = document.querySelectorAll('.animal-vaccine-checkbox:checked');
+      console.log('Checked vaccines count:', checkedVaccines.length);
+      checkedVaccines.forEach((checkbox, index) => {
+        console.log(`Vaccine ${index}:`, {
+          animalIndex: checkbox.dataset.animalIndex,
+          vaccineId: checkbox.dataset.vaccineId,
+          name: checkbox.name,
+          value: checkbox.value
+        });
+      });
+      console.log('==========================================');
+
       // Check if farmer is selected
       const farmerSelect = document.getElementById('farmer');
       if (!farmerSelect.value) {
@@ -1193,6 +1216,7 @@ function reinitializeVaccineDateListeners(container) {
         const animalType = entry.querySelector('.animal-type-select');
         const gender = entry.querySelector('.gender-select');
         const tagNumber = entry.querySelector('input[name*="tagNumber"]');
+        const isTaggedCheckbox = entry.querySelector('input[name*="isTagged"]');
         const healthStatus = entry.querySelector('select[name*="healthStatus"]');
 
         if (!animalType.value) {
@@ -1209,11 +1233,14 @@ function reinitializeVaccineDateListeners(container) {
           return;
         }
 
-        if (!tagNumber || !tagNumber.value.trim()) {
-          e.preventDefault();
-          alert(`Please enter tag number for Animal ${i + 1}.`);
-          if (tagNumber) tagNumber.focus();
-          return;
+        // Only require tagNumber if isTagged checkbox is checked
+        if (isTaggedCheckbox && isTaggedCheckbox.checked) {
+          if (!tagNumber || !tagNumber.value.trim()) {
+            e.preventDefault();
+            alert(`Please enter tag number for Animal ${i + 1}.`);
+            if (tagNumber) tagNumber.focus();
+            return;
+          }
         }
 
         if (!healthStatus.value) {
@@ -1225,29 +1252,30 @@ function reinitializeVaccineDateListeners(container) {
       }
 
       // Validate vaccines that are checked
-      const checkedVaccines = document.querySelectorAll('.animal-vaccine-checkbox:checked');
-      for (let i = 0; i < checkedVaccines.length; i++) {
-        const checkbox = checkedVaccines[i];
-        const animalIndex = checkbox.dataset.animalIndex;
-        const vaccineId = checkbox.dataset.vaccineId;
-        const detailsDiv = document.getElementById(`vaccineDetails_${animalIndex}_${vaccineId}`);
-        
-        if (detailsDiv) {
-          const dateInput = detailsDiv.querySelector('.vaccination-date');
-          const administeredByInput = detailsDiv.querySelector('input[name*="[administeredBy]"]');
+      if (checkedVaccines.length > 0) {
+        for (let i = 0; i < checkedVaccines.length; i++) {
+          const checkbox = checkedVaccines[i];
+          const animalIndex = checkbox.dataset.animalIndex;
+          const vaccineId = checkbox.dataset.vaccineId;
+          const detailsDiv = document.getElementById(`vaccineDetails_${animalIndex}_${vaccineId}`);
           
-          if (dateInput && !dateInput.value) {
-            e.preventDefault();
-            alert(`Please enter vaccination date for the selected vaccine in Animal ${parseInt(animalIndex) + 1}.`);
-            dateInput.focus();
-            return;
-          }
-          
-          if (administeredByInput && !administeredByInput.value.trim()) {
-            e.preventDefault();
-            alert(`Please enter who administered the vaccine for Animal ${parseInt(animalIndex) + 1}.`);
-            administeredByInput.focus();
-            return;
+          if (detailsDiv) {
+            const dateInput = detailsDiv.querySelector('.vaccination-date');
+            const administeredByInput = detailsDiv.querySelector('input[name*="[administeredBy]"]');
+            
+            if (!dateInput || !dateInput.value) {
+              e.preventDefault();
+              alert(`Please enter vaccination date for the selected vaccine in Animal ${parseInt(animalIndex) + 1}.`);
+              dateInput?.focus();
+              return;
+            }
+            
+            if (!administeredByInput || !administeredByInput.value.trim()) {
+              e.preventDefault();
+              alert(`Please enter who administered the vaccine for Animal ${parseInt(animalIndex) + 1}.`);
+              administeredByInput?.focus();
+              return;
+            }
           }
         }
       }

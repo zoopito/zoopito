@@ -36,10 +36,11 @@ const animalSchema = new Schema(
     },
     tagNumber: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
       trim: true,
       uppercase: true,
+      sparse: true,
     },
     uniqueAnimalId: {
       type: String,
@@ -354,14 +355,23 @@ animalSchema.pre("save", async function (next) {
       const date = new Date();
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
-      const count = await mongoose.model("Animal").countDocuments({
-        createdAt: {
-          $gte: new Date(date.getFullYear(), date.getMonth(), 1),
-          $lt: new Date(date.getFullYear(), date.getMonth() + 1, 1),
-        },
-      });
-      const sequence = String(count + 1).padStart(4, "0");
-      this.uniqueAnimalId = `ANI-${year}${month}-${sequence}`;
+
+      // Keep incrementing sequence until we find a unique ID
+      let sequence = 1;
+      let uniqueId = `ANI-${year}${month}-${String(sequence).padStart(4, "0")}`;
+      let exists = await mongoose
+        .model("Animal")
+        .findOne({ uniqueAnimalId: uniqueId });
+
+      while (exists) {
+        sequence++;
+        uniqueId = `ANI-${year}${month}-${String(sequence).padStart(4, "0")}`;
+        exists = await mongoose
+          .model("Animal")
+          .findOne({ uniqueAnimalId: uniqueId });
+      }
+
+      this.uniqueAnimalId = uniqueId;
     } catch (error) {
       return next(error);
     }
@@ -698,7 +708,7 @@ animalSchema.statics.getTodayStats = async function () {
 
 // Optimized indexes for common queries
 animalSchema.index({ farmer: 1, isActive: 1, createdAt: -1 });
-animalSchema.index({ tagNumber: 1 }, { unique: true });
+animalSchema.index({ tagNumber: 1 }, { unique: true, sparse: true });
 animalSchema.index({ uniqueAnimalId: 1 }, { unique: true });
 animalSchema.index({ animalType: 1, gender: 1 });
 animalSchema.index({ "healthStatus.currentStatus": 1, isActive: 1 });

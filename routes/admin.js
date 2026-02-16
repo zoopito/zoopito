@@ -196,6 +196,14 @@ router.delete(
   animalController.deleteAnimal,
 );
 
+// Bulk animal routes
+router.post(
+  "/animals/bulk/delete",
+  isLoggedIn,
+  isAdmin,
+  animalController.bulkDeleteAnimals,
+);
+
 // Status routes
 router.post(
   "/animal/:id/deactivate",

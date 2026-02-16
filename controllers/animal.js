@@ -378,6 +378,18 @@ async function createSingleAnimal(req, res) {
 // Bulk animal registration
 async function createBulkAnimals(req, res) {
   try {
+    console.log("========== BULK ANIMAL REGISTRATION DEBUG ==========");
+    console.log("Request body animals count:", req.body.animals?.length);
+
+    // Log vaccine data for first animal to debug
+    if (req.body.animals && req.body.animals[0]) {
+      console.log(
+        "First animal vaccinations keys:",
+        Object.keys(req.body.animals[0]?.vaccinations || {}),
+      );
+    }
+    console.log("====================================================");
+
     const animalsData = [];
     const createdAnimals = [];
     const errors = [];
@@ -637,74 +649,96 @@ async function createVaccinationRecords(
       : req.body.vaccinations;
 
     if (!animalVaccinations || Object.keys(animalVaccinations).length === 0) {
+      console.log(
+        `No vaccinations for animal ${animalIndex}, skipping vaccination records.`,
+      );
       return [];
     }
 
     const vaccinationRecords = [];
+    const vaccinationKeys = Object.keys(animalVaccinations);
+    console.log(
+      `Processing ${vaccinationKeys.length} vaccination entries for animal ${animalIndex}`,
+    );
 
-    for (const [vaccineId, vaccineData] of Object.entries(animalVaccinations)) {
-      if (
+    for (const vaccineId of vaccinationKeys) {
+      const vaccineData = animalVaccinations[vaccineId];
+
+      // Check if this vaccine was administered
+      const isAdministered =
         vaccineData.administered === "true" ||
-        vaccineData.administered === true
-      ) {
-        // Get vaccine details from database
-        const vaccine = await Vaccine.findById(vaccineId);
-        if (!vaccine) {
-          console.warn(`Vaccine with ID ${vaccineId} not found`);
-          continue;
-        }
+        vaccineData.administered === true ||
+        vaccineData.administered === "on";
 
-        // Validate required fields
-        if (!vaccineData.dateAdministered) {
-          throw new Error(
-            `Vaccination date is required for ${vaccine.vaccineName}`,
-          );
-        }
+      console.log(
+        `Vaccine ${vaccineId} - Administered: ${isAdministered}, Data:`,
+        vaccineData,
+      );
 
-        if (!vaccineData.administeredBy) {
-          throw new Error(
-            `Administered by is required for ${vaccine.vaccineName}`,
-          );
-        }
-
-        const vaccinationRecord = new Vaccination({
-          farmer: animal.farmer,
-          animal: animal._id,
-          vaccine: vaccine._id,
-          vaccineName: vaccine.vaccineName || vaccine.name,
-          vaccineType: vaccine.vaccineType,
-          dateAdministered: new Date(vaccineData.dateAdministered),
-          nextDueDate: vaccineData.nextDueDate
-            ? new Date(vaccineData.nextDueDate)
-            : calculateNextDueDate(
-                vaccineData.dateAdministered,
-                vaccine.boosterIntervalWeeks,
-              ),
-          administeredBy: vaccineData.administeredBy,
-          notes: vaccineData.notes || "",
-          status: "Administered",
-          batchNumber: vaccineData.batchNumber || null,
-          dosageAmount: vaccine.standardDosage || null,
-          dosageUnit: vaccine.dosageUnit || "ml",
-          createdBy: req.user._id,
-        });
-
-        const saveOptions = session ? { session } : {};
-        await vaccinationRecord.save(saveOptions);
-        vaccinationRecords.push(vaccinationRecord);
-
-        // Update animal's vaccination summary
-        animal.vaccinationSummary.vaccinesGiven.push({
-          vaccine: vaccine._id,
-          vaccineName: vaccine.vaccineName || vaccine.name,
-          lastDate: new Date(vaccineData.dateAdministered),
-          nextDue: vaccinationRecord.nextDueDate,
-          status:
-            vaccinationRecord.nextDueDate > new Date()
-              ? "up_to_date"
-              : "overdue",
-        });
+      if (!isAdministered) {
+        console.log(`Vaccine ${vaccineId} not administered, skipping.`);
+        continue;
       }
+
+      // Get vaccine details from database
+      const vaccine = await Vaccine.findById(vaccineId);
+      if (!vaccine) {
+        console.warn(`Vaccine with ID ${vaccineId} not found`);
+        continue;
+      }
+
+      // Validate required fields
+      if (!vaccineData.dateAdministered) {
+        throw new Error(
+          `Vaccination date is required for ${vaccine.vaccineName}`,
+        );
+      }
+
+      if (!vaccineData.administeredBy) {
+        throw new Error(
+          `Administered by is required for ${vaccine.vaccineName}`,
+        );
+      }
+
+      const vaccinationRecord = new Vaccination({
+        farmer: animal.farmer,
+        animal: animal._id,
+        vaccine: vaccine._id,
+        vaccineName: vaccine.vaccineName || vaccine.name,
+        vaccineType: vaccine.vaccineType,
+        dateAdministered: new Date(vaccineData.dateAdministered),
+        nextDueDate: vaccineData.nextDueDate
+          ? new Date(vaccineData.nextDueDate)
+          : calculateNextDueDate(
+              vaccineData.dateAdministered,
+              vaccine.boosterIntervalWeeks,
+            ),
+        administeredBy: vaccineData.administeredBy,
+        notes: vaccineData.notes || "",
+        status: "Administered",
+        batchNumber: vaccineData.batchNumber || null,
+        dosageAmount: vaccine.standardDosage || null,
+        dosageUnit: vaccine.dosageUnit || "ml",
+        createdBy: req.user._id,
+      });
+
+      const saveOptions = session ? { session } : {};
+      await vaccinationRecord.save(saveOptions);
+      vaccinationRecords.push(vaccinationRecord);
+
+      console.log(
+        `Vaccination record created for vaccine ${vaccine.vaccineName}`,
+      );
+
+      // Update animal's vaccination summary
+      animal.vaccinationSummary.vaccinesGiven.push({
+        vaccine: vaccine._id,
+        vaccineName: vaccine.vaccineName || vaccine.name,
+        lastDate: new Date(vaccineData.dateAdministered),
+        nextDue: vaccinationRecord.nextDueDate,
+        status:
+          vaccinationRecord.nextDueDate > new Date() ? "up_to_date" : "overdue",
+      });
     }
 
     // Update animal's vaccination summary if records were created
@@ -737,6 +771,10 @@ async function createVaccinationRecords(
 
       const saveOptions = session ? { session } : {};
       await animal.save(saveOptions);
+
+      console.log(
+        `Updated vaccination summary for animal: ${vaccinationRecords.length} records`,
+      );
     }
 
     return vaccinationRecords;
@@ -1410,8 +1448,10 @@ module.exports.deleteAnimal = async (req, res) => {
     // Find the animal
     const animal = await Animal.findById(id);
     if (!animal) {
-      req.flash("error", "❌ Animal not found.");
-      return res.redirect(`/${req.user.role.toLowerCase()}/animals`);
+      return res.status(404).json({
+        success: false,
+        message: "Animal not found.",
+      });
     }
 
     // Check if animal has related records (optional safety check)
@@ -1419,11 +1459,10 @@ module.exports.deleteAnimal = async (req, res) => {
     const vaccinationCount = await Vaccination.countDocuments({ animal: id });
 
     if (vaccinationCount > 0) {
-      req.flash(
-        "warning",
-        `⚠️ This animal has ${vaccinationCount} vaccination records. Please delete them first or contact administrator.`,
-      );
-      return res.redirect(`/${req.user.role.toLowerCase()}/animals/${id}`);
+      return res.status(400).json({
+        success: false,
+        message: `This animal has ${vaccinationCount} vaccination records. Please delete them first or contact administrator.`,
+      });
     }
 
     // Delete photos from cloudinary
@@ -1441,15 +1480,95 @@ module.exports.deleteAnimal = async (req, res) => {
     // Delete the animal
     await Animal.findByIdAndDelete(id);
 
-    req.flash(
-      "success",
-      `✅ Animal "${animal.name || animal.tagNumber}" has been permanently deleted.`,
-    );
-    res.redirect(`/${req.user.role.toLowerCase()}/animals`);
+    // Return JSON response for AJAX request
+    return res.json({
+      success: true,
+      message: `Animal "${animal.name || animal.tagNumber}" has been permanently deleted.`,
+      redirectUrl: `/${req.user.role.toLowerCase()}/animals`,
+    });
   } catch (error) {
     console.error("Delete animal error:", error);
-    req.flash("error", "❌ Failed to delete animal. Please try again.");
-    res.redirect(`/${req.user.role.toLowerCase()}/animals`);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete animal. Please try again.",
+    });
+  }
+};
+
+module.exports.bulkDeleteAnimals = async (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    // Validate input
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No animals selected for deletion.",
+      });
+    }
+
+    // Convert string IDs to MongoDB ObjectIds
+    const animalIds = ids.map((id) => new mongoose.Types.ObjectId(id));
+
+    // Find all animals to delete
+    const animals = await Animal.find({ _id: { $in: animalIds } });
+
+    if (animals.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No animals found to delete.",
+      });
+    }
+
+    // Check for vaccination records
+    const Vaccination = require("../models/vaccination");
+    const vaccinationCounts = await Vaccination.aggregate([
+      { $match: { animal: { $in: animalIds } } },
+      { $group: { _id: "$animal", count: { $sum: 1 } } },
+    ]);
+
+    const animalsWithVaccinations = vaccinationCounts.map((v) =>
+      v._id.toString(),
+    );
+
+    if (animalsWithVaccinations.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Some animals have vaccination records and cannot be deleted. Please delete vaccination records first.",
+        blockedCount: animalsWithVaccinations.length,
+      });
+    }
+
+    // Delete photos from cloudinary for each animal
+    for (const animal of animals) {
+      const photoFields = ["front", "left", "right", "back"];
+      for (const field of photoFields) {
+        if (animal.photos?.[field]?.public_id) {
+          try {
+            await cloudinary.uploader.destroy(animal.photos[field].public_id);
+          } catch (error) {
+            console.error(`Error deleting ${field} photo:`, error);
+          }
+        }
+      }
+    }
+
+    // Delete all animals
+    const result = await Animal.deleteMany({ _id: { $in: animalIds } });
+
+    return res.json({
+      success: true,
+      message: `${result.deletedCount} animal(s) deleted successfully.`,
+      deleted: result.deletedCount,
+      redirectUrl: `/${req.user.role.toLowerCase()}/animals`,
+    });
+  } catch (error) {
+    console.error("Bulk delete animals error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete animals. Please try again.",
+    });
   }
 };
 

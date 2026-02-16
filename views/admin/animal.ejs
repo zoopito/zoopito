@@ -773,16 +773,16 @@
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          animalIds: selectedIds
+          ids: selectedIds
         })
       })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          alert(`${data.deleted} animals deleted successfully!`);
-          window.location.reload();
+          alert(data.message || 'Animals deleted successfully!');
+          window.location.href = data.redirectUrl || `/<%= currUser.role.toLowerCase() %>/animals`;
         } else {
-          alert('Failed to delete animals: ' + data.message);
+          alert(data.message || 'Failed to delete animals. Please try again.');
         }
       })
       .catch(err => {
@@ -791,6 +791,7 @@
       });
     }
   }
+ 
 
   // ================ SINGLE ANIMAL ACTIONS ================
 
@@ -829,14 +830,16 @@
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          window.location.reload();
+          // Show success message then redirect
+          alert(data.message || 'Animal deleted successfully');
+          window.location.href = data.redirectUrl || `/<%= currUser.role.toLowerCase() %>/animals`;
         } else {
-          alert('Failed to delete animal.');
+          alert(data.message || 'Failed to delete animal.');
         }
       })
       .catch(err => {
         console.error('Error:', err);
-        alert('Failed to delete animal.');
+        alert('Failed to delete animal. Please try again.');
       });
     }
   }
