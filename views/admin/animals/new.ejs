@@ -681,10 +681,12 @@ function reinitializeVaccineDateListeners(container) {
         if (this.checked) {
           tagNumberContainer.classList.remove('hidden');
           tagNumberInput.required = true;
+          isTaggedCheckbox.required = false;
         } else {
           tagNumberContainer.classList.add('hidden');
           tagNumberInput.required = false;
           tagNumberInput.value = "";
+          isTaggedCheckbox.required = false;
         }
       });
     }

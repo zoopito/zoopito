@@ -1,0 +1,407 @@
+<% layout("/layouts/boilerplate", {
+    title: 'Batch Vaccination Details - Zoopito',
+    description: 'View batch vaccination records',
+    pageStyles: `
+        .batch-gradient {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
+        }
+        
+        .batch-card {
+            transition: all 0.3s ease;
+        }
+        
+        .batch-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-badge {
+            transition: all 0.2s ease;
+        }
+        
+        .status-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            body {
+                background: white;
+            }
+            .batch-card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    `
+}) -%}
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 batch-gradient">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                        <i class="fas fa-layer-group mr-3 text-purple-500"></i>
+                        Batch Vaccination Details
+                    </h1>
+                    <nav class="flex mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <a href="/admin/dashboard" class="hover:text-blue-600 dark:hover:text-blue-400">Dashboard</a>
+                        <span class="mx-2">/</span>
+                        <a href="/admin/vaccinations" class="hover:text-blue-600 dark:hover:text-blue-400">Vaccinations</a>
+                        <span class="mx-2">/</span>
+                        <span class="text-gray-700 dark:text-gray-300">Batch</span>
+                    </nav>
+                </div>
+                
+                <div class="flex space-x-3 no-print">
+                    <button onclick="exportBatch()" 
+                            class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center transition-all duration-200">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export
+                    </button>
+                    <button onclick="window.print()" 
+                            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center transition-all duration-200">
+                        <i class="fas fa-print mr-2"></i>
+                        Print
+                    </button>
+                    <a href="/admin/vaccinations" 
+                       class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg flex items-center transition-all duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch Info Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6 batch-card">
+            <div class="px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-500">
+                <h2 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Batch Information
+                </h2>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 block">Batch ID</span>
+                        <span class="text-sm font-mono text-gray-900 dark:text-white break-all">
+                            <%= batchId %>
+                        </span>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 block">Total Records</span>
+                        <span class="text-2xl font-bold text-gray-900 dark:text-white">
+                            <%= vaccinations.length %>
+                        </span>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 block">Date</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">
+                            <%= new Date(vaccinations[0].createdAt).toLocaleDateString() %>
+                        </span>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 block">Created By</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">
+                            <%= vaccinations[0].createdBy ? vaccinations[0].createdBy.name : 'Unknown' %>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 no-print">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 batch-card">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                        <i class="fas fa-syringe text-blue-600 dark:text-blue-400 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= vaccinations.length %></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 batch-card">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+                        <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Verified</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                            <%= vaccinations.filter(v => v.verificationStatus === 'Verified').length %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 batch-card">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
+                        <i class="fas fa-clock text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Pending</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                            <%= vaccinations.filter(v => v.verificationStatus === 'Pending').length %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 batch-card">
+                <div class="flex items-center">
+                    <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Overdue</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                            <%= vaccinations.filter(v => v.isOverdue).length %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden batch-card">
+            <div class="px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-500">
+                <h2 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-list mr-2"></i>
+                    Vaccination Records
+                </h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                #
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Farmer
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Animal
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Vaccine
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Date
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Next Due
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Dose
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Batch
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Verification
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider no-print">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <% vaccinations.forEach((vac, index) => { %>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    <%= index + 1 %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                        <%= vac.farmer.name %>
+                                    </div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        <%= vac.farmer.village %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                        <%= vac.animal.name %>
+                                    </div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        Tag: <%= vac.animal.tagId %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-white">
+                                        <%= vac.vaccine.name %>
+                                    </div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        <%= vac.vaccine.brand %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    <%= vac.dateAdministered.toLocaleDateString() %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-sm text-gray-900 dark:text-white">
+                                        <%= vac.nextDueDate ? vac.nextDueDate.toLocaleDateString() : 'N/A' %>
+                                    </span>
+                                    <% if (vac.isOverdue) { %>
+                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                            Overdue
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    <%= vac.doseNumber %>/<%= vac.totalDosesRequired %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    <%= vac.batchNumber || 'N/A' %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <% if (vac.status === 'Administered' || vac.status === 'Completed') { %>
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                            <%= vac.status %>
+                                        </span>
+                                    <% } else if (vac.status === 'Scheduled') { %>
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                            <%= vac.status %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                            <%= vac.status %>
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <% if (vac.verificationStatus === 'Verified') { %>
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                            Verified
+                                        </span>
+                                    <% } else if (vac.verificationStatus === 'Pending') { %>
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                            Pending
+                                        </span>
+                                    <% } else { %>
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                            Rejected
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium no-print">
+                                    <a href="/admin/vaccinations/<%= vac._id %>" 
+                                       class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3"
+                                       title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Table Footer -->
+            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                        Showing <span class="font-medium"><%= vaccinations.length %></span> records
+                    </p>
+                    <div class="flex space-x-2 no-print">
+                        <button onclick="verifyAll()" 
+                                class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm rounded-lg flex items-center transition-all duration-200">
+                            <i class="fas fa-check-double mr-1"></i>
+                            Verify All Pending
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch Summary Cards (for print) -->
+        <div class="print-only hidden">
+            <div class="mt-8">
+                <h3 class="text-lg font-bold mb-4">Batch Summary</h3>
+                <table class="w-full border-collapse">
+                    <tr>
+                        <td class="border p-2">Total Records</td>
+                        <td class="border p-2"><%= vaccinations.length %></td>
+                    </tr>
+                    <tr>
+                        <td class="border p-2">Verified</td>
+                        <td class="border p-2"><%= vaccinations.filter(v => v.verificationStatus === 'Verified').length %></td>
+                    </tr>
+                    <tr>
+                        <td class="border p-2">Pending</td>
+                        <td class="border p-2"><%= vaccinations.filter(v => v.verificationStatus === 'Pending').length %></td>
+                    </tr>
+                    <tr>
+                        <td class="border p-2">Rejected</td>
+                        <td class="border p-2"><%= vaccinations.filter(v => v.verificationStatus === 'Rejected').length %></td>
+                    </tr>
+                    <tr>
+                        <td class="border p-2">Overdue</td>
+                        <td class="border p-2"><%= vaccinations.filter(v => v.isOverdue).length %></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Batch Actions -->
+        <div class="mt-6 flex justify-end space-x-4 no-print">
+            <a href="/admin/vaccinations/new?batch=true" 
+               class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium rounded-lg flex items-center transition-all duration-200">
+                <i class="fas fa-plus mr-2"></i>
+                New Batch Registration
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function exportBatch() {
+        // Implement export functionality
+        window.location.href = `/admin/vaccinations/batch/<%= batchId %>/export`;
+    }
+    
+    function verifyAll() {
+        const pendingCount = `<%= vaccinations.filter(v => v.verificationStatus === 'Pending').length %>`;
+        
+        if (pendingCount === 0) {
+            alert('No pending records to verify');
+            return;
+        }
+        
+        if (confirm(`Verify all ${pendingCount} pending records in this batch?`)) {
+            // You can implement batch verification here
+            // This would typically be an API call
+            alert('Batch verification feature coming soon');
+        }
+    }
+    
+    // Print handling
+    window.onbeforeprint = function() {
+        document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.print-only').forEach(el => el.style.display = 'block');
+    };
+    
+    window.onafterprint = function() {
+        document.querySelectorAll('.no-print').forEach(el => el.style.display = '');
+        document.querySelectorAll('.print-only').forEach(el => el.style.display = 'none');
+    };
+</script>

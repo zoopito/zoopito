@@ -287,6 +287,9 @@ router.get(
   vaccinationController.vaccinationindex,
 );
 
+//
+// Admin Settings and User Management
+
 router.get("/settings", isLoggedIn, isAdmin, adminController.adminSettingPage);
 router.get(
   "/settings/newadmin",

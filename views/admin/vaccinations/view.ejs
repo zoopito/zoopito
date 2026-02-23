@@ -1,0 +1,746 @@
+<% layout("/layouts/boilerplate", {
+    title: 'Vaccination Details - Zoopito',
+    description: 'View livestock vaccination record details',
+    pageStyles: `
+        .view-gradient {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
+        }
+        
+        .detail-card {
+            transition: all 0.3s ease;
+        }
+        
+        .detail-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-badge {
+            transition: all 0.2s ease;
+        }
+        
+        .status-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .info-row {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.75rem 0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .dark .info-row {
+            border-bottom-color: #374151;
+        }
+    `
+}) -%>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 view-gradient">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header with Breadcrumb -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                        <i class="fas fa-syringe mr-3 text-blue-500"></i>
+                        Vaccination Details
+                    </h1>
+                    <nav class="flex mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <a href="/vaccinations" class="hover:text-blue-600 dark:hover:text-blue-400">Dashboard</a>
+                        <span class="mx-2">/</span>
+                        <a href="/vaccination" class="hover:text-blue-600 dark:hover:text-blue-400">Vaccinations</a>
+                        <span class="mx-2">/</span>
+                        <span class="text-gray-700 dark:text-gray-300">View</span>
+                    </nav>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <a href="/vaccination/<%= vaccination._id %>/edit" 
+                       class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg flex items-center transition-all duration-200">
+                        <i class="fas fa-edit mr-2"></i>
+                        Edit
+                    </a>
+                    <button onclick="deleteVaccination('<%= vaccination._id %>')" 
+                            class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center transition-all duration-200">
+                        <i class="fas fa-trash mr-2"></i>
+                        Delete
+                    </button>
+                    <a href="/vaccination" 
+                       class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg flex items-center transition-all duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Badges -->
+        <div class="mb-6 flex flex-wrap gap-2">
+            <% if (vaccination.status === 'Administered' || vaccination.status === 'Completed') { %>
+                <span class="px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium flex items-center status-badge">
+                    <i class="fas fa-check-circle mr-2"></i> <%= vaccination.status %>
+                </span>
+            <% } else if (vaccination.status === 'Scheduled') { %>
+                <span class="px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium flex items-center status-badge">
+                    <i class="fas fa-calendar mr-2"></i> <%= vaccination.status %>
+                </span>
+            <% } else if (vaccination.status === 'Missed') { %>
+                <span class="px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-sm font-medium flex items-center status-badge">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> <%= vaccination.status %>
+                </span>
+            <% } else if (vaccination.status === 'Cancelled') { %>
+                <span class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 rounded-full text-sm font-medium flex items-center status-badge">
+                    <i class="fas fa-ban mr-2"></i> <%= vaccination.status %>
+                </span>
+            <% } else if (vaccination.status === 'Adverse Reaction') { %>
+                <span class="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full text-sm font-medium flex items-center status-badge">
+                    <i class="fas fa-exclamation-circle mr-2"></i> <%= vaccination.status %>
+                </span>
+            <% } %>
+
+            <% if (vaccination.verificationStatus === 'Verified') { %>
+                <span class="px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium flex items-center status-badge">
+                    <i class="fas fa-check-circle mr-2"></i> Verified
+                </span>
+            <% } else if (vaccination.verificationStatus === 'Pending') { %>
+                <span class="px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-sm font-medium flex items-center status-badge">
+                    <i class="fas fa-clock mr-2"></i> Pending Verification
+                </span>
+            <% } else if (vaccination.verificationStatus === 'Rejected') { %>
+                <span class="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full text-sm font-medium flex items-center status-badge">
+                    <i class="fas fa-times-circle mr-2"></i> Rejected
+                </span>
+            <% } %>
+
+            <% if (vaccination.isOverdue) { %>
+                <span class="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full text-sm font-medium flex items-center status-badge">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Overdue
+                </span>
+            <% } %>
+
+            <% if (vaccination.source === 'bulk_registration') { %>
+                <a href="/vaccination/batch/<%= vaccination.registrationBatchId %>" 
+                   class="px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-sm font-medium flex items-center hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-all duration-200">
+                    <i class="fas fa-layer-group mr-2"></i>
+                    Batch Registration
+                </a>
+            <% } %>
+        </div>
+
+        <!-- Main Information Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column - Basic Info -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Basic Information Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden detail-card">
+                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Basic Information
+                        </h2>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Farmer Info -->
+                            <div class="space-y-3">
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    <i class="fas fa-user mr-1"></i> Farmer Details
+                                </h3>
+                                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                        <%= vaccination.farmer.name %>
+                                    </p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        <i class="fas fa-map-marker-alt mr-1"></i> <%= vaccination.farmer.village %>
+                                    </p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        <i class="fas fa-id-card mr-1"></i> ID: <%= vaccination.farmer.uniqueFarmerId %>
+                                    </p>
+                                    <% if (vaccination.farmer.phone) { %>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                            <i class="fas fa-phone mr-1"></i> <%= vaccination.farmer.phone %>
+                                        </p>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Animal Info -->
+                            <div class="space-y-3">
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    <i class="fas fa-paw mr-1"></i> Animal Details
+                                </h3>
+                                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                        <%= vaccination.animal.name %>
+                                    </p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        <i class="fas fa-tag mr-1"></i> Tag: <%= vaccination.animal.tagId %>
+                                    </p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        <i class="fas fa-id-card mr-1"></i> ID: <%= vaccination.animal.uniqueAnimalId %>
+                                    </p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        <span class="inline-block bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded text-xs">
+                                            <%= vaccination.animal.species %>
+                                        </span>
+                                        <span class="inline-block bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 px-2 py-0.5 rounded text-xs ml-1">
+                                            <%= vaccination.animal.gender %>
+                                        </span>
+                                    </p>
+                                    <% if (vaccination.animal.dateOfBirth) { %>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                            <i class="fas fa-birthday-cake mr-1"></i> 
+                                            Age: <%= Math.floor((new Date() - new Date(vaccination.animal.dateOfBirth)) / (1000 * 60 * 60 * 24 * 365)) %> years
+                                        </p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vaccine Information Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden detail-card">
+                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-flask mr-2"></i>
+                            Vaccine Information
+                        </h2>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Vaccine Name</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.vaccine.name %>
+                                    </p>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Brand</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.vaccine.brand %>
+                                    </p>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Disease Target</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.vaccine.diseaseTarget %>
+                                    </p>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Vaccine Type</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.vaccineType %>
+                                    </p>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Batch Number</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.batchNumber || 'N/A' %>
+                                    </p>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Expiry Date</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <% if (vaccination.expiryDate) { %>
+                                            <%= vaccination.expiryDate.toLocaleDateString() %>
+                                            <% if (new Date(vaccination.expiryDate) < new Date()) { %>
+                                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                                    Expired
+                                                </span>
+                                            <% } %>
+                                        <% } else { %>
+                                            N/A
+                                        <% } %>
+                                    </p>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Dose Information</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        Dose <%= vaccination.doseNumber %> of <%= vaccination.totalDosesRequired %>
+                                        <% if (vaccination.isSeriesComplete) { %>
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                                Series Complete
+                                            </span>
+                                        <% } %>
+                                    </p>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Dosage</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.dosageAmount || 'N/A' %> <%= vaccination.dosageUnit || '' %>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Administration Details Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden detail-card">
+                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-syringe mr-2"></i>
+                            Administration Details
+                        </h2>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Date Administered</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.dateAdministered.toLocaleDateString() %>
+                                        <span class="ml-2 text-sm text-gray-500">
+                                            (<%= vaccination.daysSinceAdministered %> days ago)
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Next Due Date</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.nextDueDate ? vaccination.nextDueDate.toLocaleDateString() : 'N/A' %>
+                                        <% if (vaccination.daysUntilDue !== null) { %>
+                                            <% if (vaccination.daysUntilDue < 0) { %>
+                                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                                    <%= Math.abs(vaccination.daysUntilDue) %> days overdue
+                                                </span>
+                                            <% } else if (vaccination.daysUntilDue <= 7) { %>
+                                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                                    Due in <%= vaccination.daysUntilDue %> days
+                                                </span>
+                                            <% } else { %>
+                                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                                    Due in <%= vaccination.daysUntilDue %> days
+                                                </span>
+                                            <% } %>
+                                        <% } %>
+                                    </p>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Administration Method</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.administrationMethod %>
+                                    </p>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Injection Site</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.injectionSite %>
+                                    </p>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Administered By</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.administeredBy %>
+                                    </p>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Verified By</span>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">
+                                        <%= vaccination.verifiedBy ? vaccination.verifiedBy.name : 'Not verified' %>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Animal Condition Card (if data exists) -->
+                <% if (vaccination.animalCondition && Object.keys(vaccination.animalCondition).some(key => vaccination.animalCondition[key] && key !== '_id')) { %>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden detail-card">
+                        <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+                            <h2 class="text-lg font-semibold text-white flex items-center">
+                                <i class="fas fa-heartbeat mr-2"></i>
+                                Animal Condition at Vaccination
+                            </h2>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <% if (vaccination.animalCondition.temperature) { %>
+                                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 block">Temperature</span>
+                                        <span class="text-lg font-semibold text-gray-900 dark:text-white">
+                                            <%= vaccination.animalCondition.temperature %>°C
+                                        </span>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (vaccination.animalCondition.weight) { %>
+                                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 block">Weight</span>
+                                        <span class="text-lg font-semibold text-gray-900 dark:text-white">
+                                            <%= vaccination.animalCondition.weight %> kg
+                                        </span>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (vaccination.animalCondition.bodyConditionScore) { %>
+                                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 block">Body Score</span>
+                                        <span class="text-lg font-semibold text-gray-900 dark:text-white">
+                                            <%= vaccination.animalCondition.bodyConditionScore %>/5
+                                        </span>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (vaccination.animalCondition.isPregnant) { %>
+                                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 block">Status</span>
+                                        <span class="text-lg font-semibold text-pink-600 dark:text-pink-400">
+                                            <i class="fas fa-fetus"></i> Pregnant
+                                        </span>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (vaccination.animalCondition.isLactating) { %>
+                                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 block">Status</span>
+                                        <span class="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                                            <i class="fas fa-baby"></i> Lactating
+                                        </span>
+                                    </div>
+                                <% } %>
+                            </div>
+                            
+                            <% if (vaccination.animalCondition.healthNotes) { %>
+                                <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 block mb-1">Health Notes</span>
+                                    <p class="text-sm text-gray-900 dark:text-white">
+                                        <%= vaccination.animalCondition.healthNotes %>
+                                    </p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Adverse Reactions (if any) -->
+                <% if (vaccination.hadAdverseReaction) { %>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-red-200 dark:border-red-800 overflow-hidden detail-card">
+                        <div class="px-6 py-4 bg-gradient-to-r from-red-500 to-orange-500">
+                            <h2 class="text-lg font-semibold text-white flex items-center">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Adverse Reaction Reported
+                            </h2>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="flex-shrink-0">
+                                    <% if (vaccination.reactionSeverity === 'Mild') { %>
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                            Mild
+                                        </span>
+                                    <% } else if (vaccination.reactionSeverity === 'Moderate') { %>
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
+                                            Moderate
+                                        </span>
+                                    <% } else if (vaccination.reactionSeverity === 'Severe') { %>
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                            Severe
+                                        </span>
+                                    <% } %>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-gray-900 dark:text-white">
+                                        <%= vaccination.adverseReactionDetails %>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Notes -->
+                <% if (vaccination.notes) { %>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden detail-card">
+                        <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+                            <h2 class="text-lg font-semibold text-white flex items-center">
+                                <i class="fas fa-sticky-note mr-2"></i>
+                                Notes
+                            </h2>
+                        </div>
+                        
+                        <div class="p-6">
+                            <p class="text-gray-900 dark:text-white whitespace-pre-line">
+                                <%= vaccination.notes %>
+                            </p>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Follow-up Instructions -->
+                <% if (vaccination.followUpInstructions) { %>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-blue-200 dark:border-blue-800 overflow-hidden detail-card">
+                        <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-cyan-500">
+                            <h2 class="text-lg font-semibold text-white flex items-center">
+                                <i class="fas fa-clipboard-list mr-2"></i>
+                                Follow-up Instructions
+                            </h2>
+                        </div>
+                        
+                        <div class="p-6">
+                            <p class="text-gray-900 dark:text-white whitespace-pre-line">
+                                <%= vaccination.followUpInstructions %>
+                            </p>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Audit Trail -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50">
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-history mr-2"></i>
+                            Audit Trail
+                        </h3>
+                    </div>
+                    <div class="p-4 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                        <p>
+                            <i class="fas fa-user-circle mr-1"></i>
+                            Created by <%= vaccination.createdBy ? vaccination.createdBy.name : 'Unknown' %> 
+                            on <%= vaccination.createdAt.toLocaleString() %>
+                        </p>
+                        <% if (vaccination.updatedBy) { %>
+                            <p>
+                                <i class="fas fa-edit mr-1"></i>
+                                Last updated by <%= vaccination.updatedBy.name %> 
+                                on <%= vaccination.updatedAt.toLocaleString() %>
+                            </p>
+                        <% } %>
+                        <% if (vaccination.verifiedBy) { %>
+                            <p>
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Verified by <%= vaccination.verifiedBy.name %> 
+                                on <%= vaccination.updatedAt.toLocaleString() %>
+                            </p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Summary & Actions -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Quick Summary Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden detail-card">
+                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-chart-pie mr-2"></i>
+                            Quick Summary
+                        </h2>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Vaccination ID</span>
+                                <span class="text-sm font-mono text-gray-900 dark:text-white">
+                                    <%= vaccination._id.toString().substring(0, 8) %>...
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Animal ID</span>
+                                <span class="text-sm font-mono text-gray-900 dark:text-white">
+                                    <%= vaccination.animal.uniqueAnimalId %>
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Farmer ID</span>
+                                <span class="text-sm font-mono text-gray-900 dark:text-white">
+                                    <%= vaccination.farmer.uniqueFarmerId %>
+                                </span>
+                            </div>
+                            <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Days since</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                    <%= vaccination.daysSinceAdministered %> days
+                                </span>
+                            </div>
+                            <% if (vaccination.daysUntilDue !== null) { %>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Days until due</span>
+                                    <span class="text-sm font-medium <%= vaccination.daysUntilDue < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' %>">
+                                        <%= Math.abs(vaccination.daysUntilDue) %> days
+                                    </span>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Actions -->
+                <% if (vaccination.verificationStatus === 'Pending' && user.role === 'admin') { %>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-yellow-200 dark:border-yellow-800 overflow-hidden detail-card">
+                        <div class="px-6 py-4 bg-gradient-to-r from-yellow-500 to-orange-500">
+                            <h2 class="text-lg font-semibold text-white flex items-center">
+                                <i class="fas fa-clipboard-check mr-2"></i>
+                                Verification Required
+                            </h2>
+                        </div>
+                        
+                        <div class="p-6 space-y-4">
+                            <form action="/vaccination/<%= vaccination._id %>/verify?_method=PATCH" method="POST">
+                                <input type="hidden" name="verificationStatus" value="Verified">
+                                <button type="submit" 
+                                        class="w-full mb-3 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center justify-center transition-all duration-200">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    Verify Record
+                                </button>
+                            </form>
+                            
+                            <button type="button" 
+                                    onclick="openRejectModal()"
+                                    class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition-all duration-200">
+                                <i class="fas fa-times-circle mr-2"></i>
+                                Reject Record
+                            </button>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Previous Vaccinations -->
+                <% if (previousVaccinations && previousVaccinations.length > 0) { %>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden detail-card">
+                        <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+                            <h2 class="text-lg font-semibold text-white flex items-center">
+                                <i class="fas fa-history mr-2"></i>
+                                Previous Vaccinations
+                            </h2>
+                        </div>
+                        
+                        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <% previousVaccinations.forEach(prev => { %>
+                                <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                <%= prev.dateAdministered.toLocaleDateString() %>
+                                            </p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                Dose <%= prev.doseNumber %> of <%= prev.totalDosesRequired %>
+                                            </p>
+                                            <% if (prev.batchNumber) { %>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                    Batch: <%= prev.batchNumber %>
+                                                </p>
+                                            <% } %>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
+                                                <%= prev.status === 'Administered' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 
+                                                   'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' %>">
+                                                <%= prev.status %>
+                                            </span>
+                                            <a href="/vaccination/<%= prev._id %>" 
+                                               class="block mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline">
+                                                View <i class="fas fa-arrow-right ml-1"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                    Reject Vaccination Record
+                </h3>
+                <button onclick="closeRejectModal()" class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form action="/vaccination/<%= vaccination._id %>/verify?_method=PATCH" method="POST">
+                <input type="hidden" name="verificationStatus" value="Rejected">
+                
+                <div class="mb-4">
+                    <label for="verificationNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Reason for Rejection <span class="text-red-500">*</span>
+                    </label>
+                    <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 
+                                  rounded-lg bg-gray-50 dark:bg-gray-700 
+                                  text-gray-900 dark:text-white
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              id="verificationNotes" 
+                              name="verificationNotes" 
+                              rows="3" 
+                              required></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button"
+                            onclick="closeRejectModal()"
+                            class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200">
+                        Reject Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Form (hidden) -->
+<form id="deleteForm" method="POST" style="display: none;">
+    <input type="hidden" name="_method" value="DELETE">
+</form>
+
+<script>
+    function deleteVaccination(id) {
+        if (confirm('Are you sure you want to delete this vaccination record? This action cannot be undone.')) {
+            const form = document.getElementById('deleteForm');
+            form.action = `/vaccination/${id}`;
+            form.submit();
+        }
+    }
+    
+    function openRejectModal() {
+        document.getElementById('rejectModal').classList.remove('hidden');
+    }
+    
+    function closeRejectModal() {
+        document.getElementById('rejectModal').classList.add('hidden');
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('rejectModal');
+        if (event.target === modal) {
+            closeRejectModal();
+        }
+    }
+    
+    // Handle ESC key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeRejectModal();
+        }
+    });
+</script>
