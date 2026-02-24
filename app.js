@@ -146,8 +146,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const VERIFY_TOKEN =
-  "EAAaLuHPZBjZAIBQxrZA9XFKhTo5kStnHRaV1LJdUkBPlnorrwYncZC6CS9WpnYPPTxCdisJXWsk6cDC9PcLEIYeoUqXgHGJXC7RTBS7FK8pVygiwnNycTbrZBnhyMGgM9yJURD9H0PN2VRMASiZBc2P2HvPqGbZBlZCo3abzTR0cGCR1vIi3PQSOyCrmvPe4ncqaMUUVVsrES2G8zTREKZBDytZAqKQs4prI10gZBgnMy9CzNH9r8FTugPX";
+const VERIFY_TOKEN = "myVerifyToken123qetx3mxk";
 
 app.get("/webhook", (req, res) => {
   console.log("Query:", req.query);
