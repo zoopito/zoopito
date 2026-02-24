@@ -146,6 +146,29 @@ app.use((req, res, next) => {
   next();
 });
 
+const VERIFY_TOKEN =
+  "EAAaLuHPZBjZAIBQxrZA9XFKhTo5kStnHRaV1LJdUkBPlnorrwYncZC6CS9WpnYPPTxCdisJXWsk6cDC9PcLEIYeoUqXgHGJXC7RTBS7FK8pVygiwnNycTbrZBnhyMGgM9yJURD9H0PN2VRMASiZBc2P2HvPqGbZBlZCo3abzTR0cGCR1vIi3PQSOyCrmvPe4ncqaMUUVVsrES2G8zTREKZBDytZAqKQs4prI10gZBgnMy9CzNH9r8FTugPX";
+
+app.get("/webhook", (req, res) => {
+  console.log("Query:", req.query);
+
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+
+  console.log("Mode:", mode);
+  console.log("Token:", token);
+  console.log("Expected:", VERIFY_TOKEN);
+
+  if (mode === "subscribe" && token === VERIFY_TOKEN) {
+    console.log("Webhook verified");
+    res.status(200).send(challenge);
+  } else {
+    console.log("Verification failed");
+    res.sendStatus(403);
+  }
+});
+
 app.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] }),
