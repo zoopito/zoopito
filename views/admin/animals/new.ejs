@@ -675,21 +675,25 @@ function reinitializeVaccineDateListeners(container) {
     const tagNumberInput = document.getElementById(`tagNumber-${index}`);
     const tagNumberContainer = document.getElementById(`tagNumberContainer-${index}`);
 
-    if (isTaggedCheckbox && tagNumberInput && tagNumberContainer) {
-      isTaggedCheckbox.addEventListener('change', function () {
-        isTaggedCheckbox.required = false;
-        if (this.checked) {
-          tagNumberContainer.classList.remove('hidden');
-          tagNumberInput.required = true;
-          isTaggedCheckbox.required = false;
-        } else {
-          tagNumberContainer.classList.add('hidden');
-          tagNumberInput.required = false;
-          tagNumberInput.value = "";
-          isTaggedCheckbox.required = false;
-        }
-      });
+    if (!isTaggedCheckbox || !tagNumberInput || !tagNumberContainer) return;
+
+  function updateState() {
+    if (isTaggedCheckbox.checked) {
+      tagNumberContainer.classList.remove('hidden');
+      tagNumberInput.required = true;
+    } else {
+      tagNumberContainer.classList.add('hidden');
+      tagNumberInput.required = false;
+      tagNumberInput.value = "";
     }
+  }
+
+  // Run once on page load
+  updateState();
+
+  // Run on change
+  isTaggedCheckbox.addEventListener('change', updateState);
+    
   }
 
   // ================ VACCINATION DATE LISTENERS INITIALIZATION ================
