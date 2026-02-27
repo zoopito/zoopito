@@ -338,11 +338,11 @@ exports.toggleActive = async (req, res) => {
     vaccine.updatedBy = req.user._id;
     await vaccine.save();
 
-    res.json({
-      success: true,
-      isActive: vaccine.isActive,
-      message: `Vaccine ${vaccine.isActive ? "activated" : "deactivated"} successfully`,
-    });
+    req.flash(
+      "success",
+      `Vaccine ${vaccine.isActive ? "activated" : "deactivated"} successfully`,
+    );
+    res.redirect("/vaccines");
   } catch (error) {
     console.error(error);
     res

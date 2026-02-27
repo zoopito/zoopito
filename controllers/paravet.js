@@ -64,6 +64,11 @@ module.exports.createParavet = async (req, res) => {
 
     if (existingUser) {
       finalUser = existingUser;
+      // ✅ Update role if not already PARAVET
+      if (finalUser.role !== "PARAVET") {
+        finalUser.role = "PARAVET";
+        await finalUser.save();
+      }
     } else {
       // 2️⃣ Create new user
       const newUser = new User({
@@ -182,6 +187,7 @@ module.exports.updateParavet = async (req, res) => {
     // ✅ Update User
     await User.findByIdAndUpdate(existingParavet.user, {
       name: user.name,
+      role: "PARAVET",
       email: user.email,
       mobile: user.mobile,
     });
