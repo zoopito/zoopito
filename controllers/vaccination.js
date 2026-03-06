@@ -262,7 +262,7 @@ exports.renderNewForm = async (req, res) => {
 
     if (!paravet) {
       req.flash("error", "Paravet profile not found");
-      return res.redirect("/admin/vaccinations");
+      return res.redirect("/vaccination");
     }
 
     // Get farmers from assigned areas
@@ -525,7 +525,7 @@ exports.renderPaymentPage = async (req, res) => {
 
     if (!pendingPayment) {
       req.flash("error", "No pending payment found");
-      return res.redirect("/admin/vaccinations");
+      return res.redirect("/vaccination");
     }
 
     // Generate UPI QR code data
@@ -548,7 +548,7 @@ exports.renderPaymentPage = async (req, res) => {
   } catch (error) {
     console.error("Error rendering payment page:", error);
     req.flash("error", "Error loading payment page");
-    res.redirect("/admin/vaccinations");
+    res.redirect("/vaccination");
   }
 };
 
@@ -597,14 +597,14 @@ exports.verifyPayment = async (req, res) => {
     );
 
     if (pendingPayment.batchId.startsWith("BATCH_")) {
-      res.redirect(`/admin/vaccinations/batch/${pendingPayment.batchId}`);
+      res.redirect(`/vaccination/batch/${pendingPayment.batchId}`);
     } else {
-      res.redirect(`/admin/vaccinations/${pendingPayment.batchId}`);
+      res.redirect(`/vaccination/${pendingPayment.batchId}`);
     }
   } catch (error) {
     console.error("Error verifying payment:", error);
     req.flash("error", error.message || "Error processing payment");
-    res.redirect("/admin/vaccinations/payment");
+    res.redirect("/vaccination/payment");
   }
 };
 // ================ ADMIN VERIFY PAYMENT ================
@@ -651,7 +651,7 @@ exports.adminVerifyPayment = async (req, res) => {
       });
     }
 
-    res.redirect(`/admin/vaccinations/${id}`);
+    res.redirect(`/vaccination/${id}`);
   } catch (error) {
     console.error("Error verifying payment:", error);
 
@@ -663,7 +663,7 @@ exports.adminVerifyPayment = async (req, res) => {
     }
 
     req.flash("error", "Error verifying payment");
-    res.redirect(`/admin/vaccinations/${req.params.id}`);
+    res.redirect(`/vaccination/${req.params.id}`);
   }
 };
 
@@ -705,7 +705,7 @@ exports.viewPendingPayments = async (req, res) => {
   } catch (error) {
     console.error("Error viewing pending payments:", error);
     req.flash("error", "Error loading pending payments");
-    res.redirect("/admin/vaccinations");
+    res.redirect("/vaccination");
   }
 };
 
@@ -721,7 +721,7 @@ exports.renderEditForm = async (req, res) => {
 
     if (!vaccination) {
       req.flash("error", "Vaccination record not found");
-      return res.redirect("/admin/vaccinations");
+      return res.redirect("/vaccination");
     }
 
     const vaccines = await Vaccine.find({ isActive: true })
@@ -738,7 +738,7 @@ exports.renderEditForm = async (req, res) => {
   } catch (error) {
     console.error("Error rendering edit form:", error);
     req.flash("error", "Error loading edit form");
-    res.redirect("/admin/vaccinations");
+    res.redirect("/vaccination");
   }
 };
 
@@ -798,15 +798,15 @@ exports.updateVaccination = async (req, res) => {
 
     if (!vaccination) {
       req.flash("error", "Vaccination record not found");
-      return res.redirect("/admin/vaccinations");
+      return res.redirect("/vaccination");
     }
 
     req.flash("success", "Vaccination record updated successfully");
-    res.redirect(`/admin/vaccinations/${vaccinationId}`);
+    res.redirect(`/vaccination/${vaccinationId}`);
   } catch (error) {
     console.error("Error updating vaccination:", error);
     req.flash("error", "Error updating vaccination record");
-    res.redirect(`/admin/vaccinations/${req.params.id}/edit`);
+    res.redirect(`/vaccination/${req.params.id}/edit`);
   }
 };
 
@@ -819,7 +819,7 @@ exports.viewVaccination = async (req, res) => {
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       req.flash("error", "Invalid vaccination ID");
-      return res.redirect("/admin/vaccinations");
+      return res.redirect("/vaccination");
     }
 
     const vaccination = await Vaccination.findById(id)
@@ -835,7 +835,7 @@ exports.viewVaccination = async (req, res) => {
 
     if (!vaccination) {
       req.flash("error", "Vaccination record not found");
-      return res.redirect("/admin/vaccinations");
+      return res.redirect("/vaccination");
     }
 
     const previousVaccinations = await Vaccination.find({
@@ -858,7 +858,7 @@ exports.viewVaccination = async (req, res) => {
   } catch (error) {
     console.error("Error viewing vaccination:", error);
     req.flash("error", "Error loading vaccination details");
-    res.redirect("/admin/vaccinations");
+    res.redirect("/vaccination");
   }
 };
 // ================ VERIFY STATUS ================
@@ -897,7 +897,7 @@ exports.verifyStatus = async (req, res) => {
       });
     }
 
-    res.redirect(`/admin/vaccinations/${id}`);
+    res.redirect(`/vaccination/${id}`);
   } catch (error) {
     console.error("Error verifying vaccination:", error);
 
@@ -909,7 +909,7 @@ exports.verifyStatus = async (req, res) => {
     }
 
     req.flash("error", "Error updating verification status");
-    res.redirect(`/admin/vaccinations/${req.params.id}`);
+    res.redirect(`/vaccination/${req.params.id}`);
   }
 };
 
@@ -953,7 +953,7 @@ exports.deleteVaccination = async (req, res) => {
       });
     }
 
-    res.redirect("/admin/vaccinations");
+    res.redirect("/vaccination");
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -966,7 +966,7 @@ exports.deleteVaccination = async (req, res) => {
     }
 
     req.flash("error", "Error deleting vaccination record");
-    res.redirect("/admin/vaccinations");
+    res.redirect("/vaccination");
   }
 };
 
@@ -986,7 +986,7 @@ exports.viewBatch = async (req, res) => {
 
     if (!vaccinations.length) {
       req.flash("error", "Batch not found");
-      return res.redirect("/admin/vaccinations");
+      return res.redirect("/vaccination");
     }
 
     res.render("admin/vaccinations/batch", {
@@ -999,7 +999,7 @@ exports.viewBatch = async (req, res) => {
   } catch (error) {
     console.error("Error viewing batch:", error);
     req.flash("error", "Error loading batch details");
-    res.redirect("/admin/vaccinations");
+    res.redirect("/vaccination");
   }
 };
 
