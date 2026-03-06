@@ -241,9 +241,20 @@ module.exports.viewSalesMember = async (req, res) => {
       return res.redirect("/admin/salesteam");
     }
 
+    const totalOnboardedFarmers = await Farmer.countDocuments({
+      registeredBy: salesMember.user._id,
+    });
+
+    const totalOnboardedAnimals = await Animal.countDocuments({
+      registeredBy: salesMember.user._id,
+    });
+    console.log(totalOnboardedAnimals, "and", totalOnboardedFarmers);
+
     res.render("admin/salesteam/details.ejs", {
       User: req.user,
       salesMember,
+      totalOnboardedFarmers,
+      totalOnboardedAnimals,
     });
   } catch (error) {
     console.error(error);

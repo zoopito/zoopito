@@ -347,6 +347,64 @@
       </div>
     </div>
 
+    <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
+  
+  <div class="flex items-start gap-3 mb-6">
+    <div class="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+      <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-3 0-4 1.5-4 3s1 2 4 3 4 1.5 4 3-1 3-4 3m0-12V4m0 16v-2"/>
+      </svg>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+        Price Information
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Enter the purchase price, the price printed on the vaccine, and the final charge collected from the farmer.
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Actual Price -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Actual Price (₹)
+      </label>
+      <input type="number" name="actualPrice" value="<%= vaccine ? vaccine.actualPrice : '' %>"
+        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        placeholder="e.g., 45">
+      <p class="text-xs text-gray-500 mt-1">Purchase cost paid for the vaccine.</p>
+    </div>
+
+    <!-- Written Price -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Written Price (₹)
+      </label>
+      <input type="number" name="writtenPrice" value="<%= vaccine ? vaccine.writtenPrice : '' %>"
+        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        placeholder="e.g., 60">
+      <p class="text-xs text-gray-500 mt-1">Price printed on the vaccine packaging.</p>
+    </div>
+
+    <!-- Vaccine Charge -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Vaccine Charge (₹)
+      </label>
+      <input type="number" name="vaccineCharge" value="<%= vaccine ? vaccine.vaccineCharge : '' %>"
+        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        placeholder="e.g., 70">
+      <p class="text-xs text-gray-500 mt-1">Final amount charged from the farmer.</p>
+    </div>
+
+  </div>
+
+</div>
+
     <!-- Notes Section -->
     <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
       <div class="flex items-center gap-3 mb-6">

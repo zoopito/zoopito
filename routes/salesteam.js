@@ -80,6 +80,22 @@ router.post(
   animalController.createAnimal,
 );
 
+router.post(
+  "/animals/bulk",
+  upload.fields([
+    // Support up to 20 animals with 4 photos each
+    ...Array.from({ length: 20 }, (_, i) => [
+      { name: `animals[${i}][photos][front]`, maxCount: 1 },
+      { name: `animals[${i}][photos][left]`, maxCount: 1 },
+      { name: `animals[${i}][photos][right]`, maxCount: 1 },
+      { name: `animals[${i}][photos][back]`, maxCount: 1 },
+    ]).flat(),
+  ]),
+  isLoggedIn,
+  isSales,
+  animalController.bulkCreateAnimals,
+);
+
 router
   .route("/animals/:id")
   .get(isLoggedIn, isSales, animalController.viewAnimal)
@@ -94,6 +110,7 @@ router
     isSales,
     animalController.updateAnimal,
   );
+
 router.get(
   "/animals/:id/edit",
   isLoggedIn,

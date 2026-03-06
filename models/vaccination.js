@@ -1,3 +1,4 @@
+// models/vaccination.js
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
@@ -20,8 +21,6 @@ const vaccinationSchema = new Schema(
       ref: "Vaccine",
       required: true,
     },
-
-    // REMOVED: vaccineScheduleRule - not needed for bulk registration
 
     // Simplified fields for bulk registration
     vaccineName: {
@@ -55,7 +54,7 @@ const vaccinationSchema = new Schema(
       default: 1,
     },
 
-    // Administration details - simplified
+    // Administration details
     administrationMethod: {
       type: String,
       enum: ["Injection", "Oral", "Nasal", "Topical", "Other"],
@@ -75,11 +74,11 @@ const vaccinationSchema = new Schema(
     dosageAmount: Number,
     dosageUnit: {
       type: String,
-      enum: ["ml", "cc", "mg", "IU", "drops", "tablets", "Other"],
+      enum: ["ml", "cc", "mg", "IU", "drops", "drop", "tablets", "Other"],
       default: "ml",
     },
 
-    // Timing - simplified
+    // Timing
     dateAdministered: {
       type: Date,
       required: true,
@@ -89,9 +88,9 @@ const vaccinationSchema = new Schema(
       type: Date,
     },
 
-    // Personnel - simplified (String for bulk registration)
+    // Personnel
     administeredBy: {
-      type: String, // Changed from ObjectId to String for bulk registration
+      type: String,
       required: true,
       trim: true,
     },
@@ -100,7 +99,7 @@ const vaccinationSchema = new Schema(
       ref: "User",
     },
 
-    // Animal condition at time of vaccination (optional)
+    // Animal condition
     animalCondition: {
       temperature: Number,
       weight: Number,
@@ -133,6 +132,52 @@ const vaccinationSchema = new Schema(
     },
     followUpInstructions: String,
 
+    // Payment Information - NEW
+    payment: {
+      vaccinePrice: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
+      serviceCharge: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      totalAmount: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
+      paymentStatus: {
+        type: String,
+        enum: ["Pending", "Completed", "Failed", "Refunded", "Verified"],
+        default: "Pending",
+      },
+      paymentMethod: {
+        type: String,
+        enum: ["UPI", "Cash", "Bank Transfer", "Card", "Other"],
+        default: "UPI",
+      },
+      paymentDate: Date,
+      utrNumber: {
+        type: String,
+        trim: true,
+        uppercase: true,
+      },
+      paymentVerifiedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+      paymentVerifiedAt: Date,
+      paymentNotes: String,
+      receiptNumber: {
+        type: String,
+        unique: true,
+        sparse: true,
+      },
+    },
+
     // Status & Workflow
     status: {
       type: String,
@@ -143,8 +188,10 @@ const vaccinationSchema = new Schema(
         "Missed",
         "Cancelled",
         "Adverse Reaction",
+        "Payment Pending", // NEW
+        "Payment Verified", // NEW
       ],
-      default: "Administered",
+      default: "Payment Pending",
     },
     verificationStatus: {
       type: String,
@@ -153,7 +200,7 @@ const vaccinationSchema = new Schema(
     },
     verificationNotes: String,
 
-    // NEW: Bulk registration tracking
+    // Bulk registration tracking
     source: {
       type: String,
       enum: ["bulk_registration", "manual_entry", "schedule", "import"],
@@ -163,11 +210,17 @@ const vaccinationSchema = new Schema(
     registrationBatchId: {
       type: String,
       index: true,
-      description: "Group ID for bulk registration",
     },
     registrationBatchIndex: {
       type: Number,
-      description: "Index within the bulk registration batch",
+    },
+    isBulkRegistration: {
+      type: Boolean,
+      default: false,
+    },
+    bulkAnimalCount: {
+      type: Number,
+      min: 1,
     },
 
     // Audit trail
@@ -195,31 +248,35 @@ const vaccinationSchema = new Schema(
   },
 );
 
-// ================ VIRTUALS ================
-
-// Virtual for checking if vaccination is overdue
-vaccinationSchema.virtual("isOverdue").get(function () {
-  if (!this.nextDueDate || this.status !== "Administered") return false;
-  return this.nextDueDate < new Date();
+// Virtual for formatted receipt number
+vaccinationSchema.virtual("formattedReceiptNumber").get(function () {
+  if (this.payment?.receiptNumber) {
+    return this.payment.receiptNumber;
+  }
+  return `RCP-${this._id.toString().slice(-8).toUpperCase()}`;
 });
 
-// Virtual for days until/since due
-vaccinationSchema.virtual("daysUntilDue").get(function () {
-  if (!this.nextDueDate) return null;
-  const diff = this.nextDueDate - new Date();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
-});
-
-// Virtual for vaccination age in days
-vaccinationSchema.virtual("daysSinceAdministered").get(function () {
-  const diff = new Date() - this.dateAdministered;
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
-});
-
-// ================ MIDDLEWARE ================
-
-// Pre-save middleware to calculate nextDueDate if not provided
+// Pre-save middleware to generate receipt number
 vaccinationSchema.pre("save", async function (next) {
+  // Generate receipt number if payment is completed
+  if (
+    this.payment?.paymentStatus === "Completed" &&
+    !this.payment.receiptNumber
+  ) {
+    const date = new Date();
+    const year = date.getFullYear().toString().slice(-2);
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const count = await mongoose.model("Vaccination").countDocuments({
+      "payment.paymentStatus": "Completed",
+      createdAt: {
+        $gte: new Date(date.getFullYear(), date.getMonth(), 1),
+        $lt: new Date(date.getFullYear(), date.getMonth() + 1, 1),
+      },
+    });
+    const serial = (count + 1).toString().padStart(4, "0");
+    this.payment.receiptNumber = `RCP-${year}${month}-${serial}`;
+  }
+
   // Calculate nextDueDate if not provided
   if (!this.nextDueDate) {
     try {
@@ -235,13 +292,11 @@ vaccinationSchema.pre("save", async function (next) {
         nextDue.setDate(nextDue.getDate() + vaccine.boosterIntervalWeeks * 7);
         this.nextDueDate = nextDue;
       } else {
-        // Default: 1 year
         const nextDue = new Date(this.dateAdministered);
         nextDue.setFullYear(nextDue.getFullYear() + 1);
         this.nextDueDate = nextDue;
       }
     } catch (error) {
-      // Default to 1 year if vaccine not found
       const nextDue = new Date(this.dateAdministered);
       nextDue.setFullYear(nextDue.getFullYear() + 1);
       this.nextDueDate = nextDue;
@@ -257,181 +312,35 @@ vaccinationSchema.pre("save", async function (next) {
   next();
 });
 
-// ================ STATIC METHODS ================
-
-// Find vaccinations by registration batch
-vaccinationSchema.statics.findByRegistrationBatch = function (batchId) {
-  return this.find({ registrationBatchId: batchId })
-    .populate("animal", "tagNumber name uniqueAnimalId")
-    .populate("farmer", "name uniqueFarmerId")
-    .populate("vaccine", "name vaccineType")
-    .sort({ dateAdministered: -1 });
+// Static methods
+vaccinationSchema.statics.findByPaymentStatus = function (status) {
+  return this.find({ "payment.paymentStatus": status })
+    .populate("farmer", "name phone village")
+    .populate("animal", "name tagId species")
+    .populate("vaccine", "name brand")
+    .sort({ createdAt: -1 });
 };
 
-// Create bulk vaccinations
-vaccinationSchema.statics.createBulkVaccinations = async function (
-  vaccinationsData,
+vaccinationSchema.statics.verifyPayment = async function (
+  vaccinationId,
   userId,
 ) {
-  const batchId = `BATCH_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const vaccination = await this.findById(vaccinationId);
+  if (!vaccination) throw new Error("Vaccination not found");
 
-  const vaccinations = vaccinationsData.map((data, index) => ({
-    ...data,
-    source: "bulk_registration",
-    registrationBatchId: batchId,
-    registrationBatchIndex: index,
-    createdBy: userId,
-    status: "Administered",
-  }));
+  vaccination.payment.paymentStatus = "Verified";
+  vaccination.payment.paymentVerifiedBy = userId;
+  vaccination.payment.paymentVerifiedAt = new Date();
+  vaccination.status = "Administered";
+  vaccination.verificationStatus = "Verified";
 
-  return this.insertMany(vaccinations);
+  return vaccination.save();
 };
 
-// Find upcoming due vaccinations
-vaccinationSchema.statics.findUpcomingDue = function (daysThreshold = 7) {
-  const thresholdDate = new Date();
-  thresholdDate.setDate(thresholdDate.getDate() + daysThreshold);
-
-  return this.find({
-    nextDueDate: {
-      $lte: thresholdDate,
-      $gte: new Date(),
-    },
-    status: "Administered",
-    isSeriesComplete: false,
-  })
-    .populate("animal", "tagNumber name")
-    .populate("farmer", "name")
-    .populate("vaccine", "name")
-    .sort({ nextDueDate: 1 });
-};
-
-// Find overdue vaccinations
-vaccinationSchema.statics.findOverdue = function () {
-  return this.find({
-    nextDueDate: { $lt: new Date() },
-    status: "Administered",
-    isSeriesComplete: false,
-  })
-    .populate("animal", "tagNumber name")
-    .populate("farmer", "name")
-    .populate("vaccine", "name")
-    .sort({ nextDueDate: 1 });
-};
-
-// Get vaccination statistics for a farmer
-vaccinationSchema.statics.getFarmerStats = async function (farmerId) {
-  const stats = await this.aggregate([
-    { $match: { farmer: mongoose.Types.ObjectId(farmerId) } },
-    {
-      $group: {
-        _id: null,
-        totalVaccinations: { $sum: 1 },
-        uniqueAnimals: { $addToSet: "$animal" },
-        overdueCount: {
-          $sum: {
-            $cond: [
-              {
-                $and: [
-                  { $lt: ["$nextDueDate", new Date()] },
-                  { $eq: ["$status", "Administered"] },
-                ],
-              },
-              1,
-              0,
-            ],
-          },
-        },
-        upcomingCount: {
-          $sum: {
-            $cond: [
-              {
-                $and: [
-                  { $gte: ["$nextDueDate", new Date()] },
-                  {
-                    $lte: [
-                      "$nextDueDate",
-                      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                    ],
-                  },
-                ],
-              },
-              1,
-              0,
-            ],
-          },
-        },
-      },
-    },
-    {
-      $project: {
-        totalVaccinations: 1,
-        uniqueAnimalCount: { $size: "$uniqueAnimals" },
-        overdueCount: 1,
-        upcomingCount: 1,
-      },
-    },
-  ]);
-
-  return (
-    stats[0] || {
-      totalVaccinations: 0,
-      uniqueAnimalCount: 0,
-      overdueCount: 0,
-      upcomingCount: 0,
-    }
-  );
-};
-
-// ================ INSTANCE METHODS ================
-
-// Method to mark as missed
-vaccinationSchema.methods.markAsMissed = function (reason) {
-  this.status = "Missed";
-  this.notes = this.notes
-    ? `${this.notes}\nMissed: ${reason}`
-    : `Missed: ${reason}`;
-  return this.save();
-};
-
-// Method to mark as administered
-vaccinationSchema.methods.markAsAdministered = function (data) {
-  this.status = "Administered";
-  this.dateAdministered = data.dateAdministered || new Date();
-  this.administeredBy = data.administeredBy || this.administeredBy;
-  this.batchNumber = data.batchNumber || this.batchNumber;
-  this.notes = data.notes || this.notes;
-  return this.save();
-};
-
-// Method to reschedule
-vaccinationSchema.methods.reschedule = function (newDueDate, reason) {
-  this.nextDueDate = new Date(newDueDate);
-  this.status = "Scheduled";
-  this.notes = this.notes
-    ? `${this.notes}\nRescheduled: ${reason}`
-    : `Rescheduled: ${reason}`;
-  return this.save();
-};
-
-// ================ INDEXES ================
-
-// Compound indexes for efficient queries
-vaccinationSchema.index({ farmer: 1, nextDueDate: 1, status: 1 });
-vaccinationSchema.index({ animal: 1, dateAdministered: -1 });
-vaccinationSchema.index({ vaccine: 1, dateAdministered: -1 });
-vaccinationSchema.index({ administeredBy: 1, dateAdministered: -1 });
-vaccinationSchema.index({ registrationBatchId: 1 });
-vaccinationSchema.index({ source: 1, createdAt: -1 });
-vaccinationSchema.index({ status: 1, nextDueDate: 1 });
-vaccinationSchema.index({ batchNumber: 1, vaccine: 1 });
-
-// Text index for search
-vaccinationSchema.index({
-  notes: "text",
-  batchNumber: "text",
-  adverseReactionDetails: "text",
-  vaccineName: "text",
-});
+// Indexes
+vaccinationSchema.index({ "payment.paymentStatus": 1, createdAt: -1 });
+vaccinationSchema.index({ "payment.utrNumber": 1 });
+vaccinationSchema.index({ "payment.receiptNumber": 1 });
+vaccinationSchema.index({ status: 1, "payment.paymentStatus": 1 });
 
 module.exports = mongoose.model("Vaccination", vaccinationSchema);

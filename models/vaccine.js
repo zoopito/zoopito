@@ -131,6 +131,21 @@ const vaccineSchema = new mongoose.Schema(
     approvedSpecies: [String],
     withdrawalPeriodDays: Number,
 
+    actualPrice: {
+      type: Number, // purchase payment for paravet
+      default: 0,
+    },
+
+    writtenPrice: {
+      type: Number, // written price on vaccine
+      default: 0,
+    },
+
+    vaccineCharge: {
+      type: Number, // charge taken from farmer
+      default: 0,
+    },
+
     // Status & Meta
     isActive: {
       type: Boolean,

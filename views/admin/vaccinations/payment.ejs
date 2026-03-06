@@ -1,0 +1,307 @@
+<% layout("/layouts/boilerplate", {
+    title: 'Complete Payment - Zoopito',
+    description: 'Complete payment for vaccination services',
+    pageStyles: `
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            display: inline-block;
+        }
+        .payment-summary {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+        .dark .payment-summary {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+    `
+}) -%>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                <i class="fas fa-credit-card mr-3 text-blue-500"></i>
+                Complete Payment
+            </h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">
+                Please complete the payment to finalize the vaccination records
+            </p>
+        </div>
+
+        <!-- Payment Summary Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+                <h2 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-receipt mr-2"></i>
+                    Payment Summary
+                </h2>
+            </div>
+            
+            <div class="p-6 payment-summary">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-gray-600 dark:text-gray-400">Service:</span>
+                        <span class="font-medium text-gray-900 dark:text-white">
+                            Vaccination for <%= payment.animalCount %> animal(s)
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-gray-600 dark:text-gray-400">Vaccine:</span>
+                        <span class="font-medium text-gray-900 dark:text-white">
+                            <%= payment.vaccineName %>
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-gray-600 dark:text-gray-400">Farmer:</span>
+                        <span class="font-medium text-gray-900 dark:text-white">
+                            <%= payment.farmerName %>
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 mt-2 bg-blue-50 dark:bg-blue-900/20 px-4 rounded-lg">
+                        <span class="text-lg font-bold text-gray-800 dark:text-white">Total Amount:</span>
+                        <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">₹<%= payment.totalAmount %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Instructions Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+                <h2 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-qrcode mr-2"></i>
+                    Scan & Pay
+                </h2>
+            </div>
+            
+            <div class="p-6">
+                <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+                    <!-- QR Code -->
+                    <div class="qr-container shadow-lg">
+                        <div id="qrcode" class="w-64 h-64"></div>
+                    </div>
+                    
+                    <!-- UPI Details -->
+                    <div class="space-y-4">
+                        <div class="text-center md:text-left">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                <i class="fas fa-mobile-alt mr-2 text-blue-500"></i>
+                                UPI ID
+                            </h3>
+                            <p class="text-xl font-mono bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg">
+                                <%= upiId %>
+                            </p>
+                        </div>
+                        
+                        <div class="text-center md:text-left">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                <i class="fas fa-user mr-2 text-blue-500"></i>
+                                Payee Name
+                            </h3>
+                            <p class="text-lg"><%= payeeName %></p>
+                        </div>
+                        
+                        <div class="text-center md:text-left">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                <i class="fas fa-rupee-sign mr-2 text-blue-500"></i>
+                                Amount
+                            </h3>
+                            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">₹<%= payment.totalAmount %></p>
+                        </div>
+                        
+                        <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                            <p class="text-sm text-yellow-800 dark:text-yellow-300">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                After payment, please enter the UTR number below to verify your payment.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UTR Submission Form -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+                <h2 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Verify Payment
+                </h2>
+            </div>
+            
+            <div class="p-6">
+                <form action="/admin/vaccinations/payment/verify" method="POST" id="paymentForm" class="space-y-6">
+                    <!-- UTR Number -->
+                    <div>
+                        <label for="utrNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-hashtag mr-2 text-gray-500"></i>
+                            UTR Number <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 
+                                      rounded-lg bg-gray-50 dark:bg-gray-700 
+                                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                      transition duration-200 input-focus"
+                               id="utrNumber" 
+                               name="utrNumber" 
+                               required
+                               pattern="[A-Za-z0-9]{10,30}"
+                               title="Please enter a valid UTR number (10-30 alphanumeric characters)"
+                               placeholder="Enter UTR number from your payment">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            UTR number is the reference number from your UPI transaction
+                        </p>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div>
+                        <label for="paymentMethod" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-credit-card mr-2 text-gray-500"></i>
+                            Payment Method
+                        </label>
+                        <div class="relative">
+                            <select class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 
+                                       rounded-lg bg-gray-50 dark:bg-gray-700 
+                                       text-gray-900 dark:text-white
+                                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                       transition duration-200 input-focus"
+                                    id="paymentMethod" 
+                                    name="paymentMethod">
+                                <option value="UPI">UPI (PhonePe/Google Pay/Paytm)</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="Card">Debit/Credit Card</option>
+                                <option value="Cash">Cash</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-sticky-note mr-2 text-gray-500"></i>
+                            Additional Notes (Optional)
+                        </label>
+                        <textarea class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 
+                                      rounded-lg bg-gray-50 dark:bg-gray-700 
+                                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                      transition duration-200 input-focus"
+                                  id="notes" 
+                                  name="notes" 
+                                  rows="3"
+                                  placeholder="Any additional information about the payment..."></textarea>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex items-center justify-end space-x-4 pt-6">
+                        <a href="/admin/vaccinations" 
+                           class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 
+                                  hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 
+                                  focus:ring-blue-500 transition-all duration-200">
+                            <i class="fas fa-times mr-2"></i>
+                            Cancel
+                        </a>
+                        <button type="submit"
+                                id="submitButton"
+                                class="px-8 py-3 bg-gradient-to-r from-blue-500 to-green-500 
+                                       hover:from-blue-600 hover:to-green-600
+                                       text-white font-medium rounded-lg
+                                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
+                                       transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+                                       flex items-center">
+                            <span id="buttonText" class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Submit for Verification
+                            </span>
+                            <span id="loadingSpinner" class="hidden">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>
+                                Processing...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="mt-8 text-sm text-gray-500 dark:text-gray-400">
+            <p class="flex items-center mb-2">
+                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                Payment will be verified by our team within 24 hours
+            </p>
+            <p class="flex items-center mb-2">
+                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                You will receive a confirmation once payment is verified
+            </p>
+            <p class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                Vaccination records will be marked as completed after verification
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Generate QR Code
+        const upiUrl = '<%= upiUrl %>';
+        QRCode.toCanvas(document.createElement('canvas'), upiUrl, {
+            width: 250,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#ffffff'
+            }
+        }, function(error, canvas) {
+            if (error) {
+                console.error(error);
+                $('#qrcode').html('<p class="text-red-500">Error generating QR code</p>');
+            } else {
+                $('#qrcode').html(canvas);
+            }
+        });
+
+        // Form submission
+        $('#paymentForm').on('submit', function(e) {
+            const utrNumber = $('#utrNumber').val();
+            
+            // Validate UTR format
+            if (!/^[A-Za-z0-9]{10,30}$/.test(utrNumber)) {
+                e.preventDefault();
+                showError('Please enter a valid UTR number (10-30 alphanumeric characters)');
+                return;
+            }
+            
+            // Show loading
+            $('#buttonText').addClass('hidden');
+            $('#loadingSpinner').removeClass('hidden');
+            $('#submitButton').prop('disabled', true);
+        });
+    });
+
+    function showError(message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'fixed top-4 right-4 z-50 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 shadow-lg';
+        alertDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                <p class="text-sm text-red-700 dark:text-red-300">${message}</p>
+            </div>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+</script>

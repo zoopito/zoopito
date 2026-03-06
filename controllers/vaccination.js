@@ -8,6 +8,7 @@ const Vaccine = require("../models/vaccine");
 const Vaccination = require("../models/vaccination");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
+const salesteam = require("../models/salesteam");
 
 // controllers/vaccinationController.js
 exports.vaccinationindex = async (req, res) => {
@@ -246,43 +247,65 @@ async function getVaccinationStats() {
   };
 }
 
-// controllers/vaccinationController.js (add these new methods)
+// controllers/vaccinationController.js
 
 // ================ RENDER NEW FORM ================
 exports.renderNewForm = async (req, res) => {
   try {
     const { animalId, farmerId, batch } = req.query;
+    const userId = req.user._id;
 
-    // Get all active vaccines for dropdown
+    // Get paravet details with assigned areas
+    const paravet = await Paravet.findOne({ user: userId }).populate(
+      "assignedAreas",
+    );
+
+    if (!paravet) {
+      req.flash("error", "Paravet profile not found");
+      return res.redirect("/admin/vaccinations");
+    }
+
+    // Get farmers from assigned areas
+    const districts = paravet.assignedAreas.map((area) => area.district);
+    const villages = paravet.assignedAreas
+      .map((area) => area.village)
+      .filter(Boolean);
+
+    let farmerQuery = { isActive: true };
+
+    // Build query based on assigned areas
+    if (villages.length > 0) {
+      farmerQuery["address.village"] = { $in: villages };
+    } else if (districts.length > 0) {
+      farmerQuery["address.district"] = { $in: districts };
+    }
+
+    const farmers = await Farmer.find(farmerQuery)
+      .select("name address.village uniqueFarmerId phone")
+      .sort({ name: 1 });
+
+    // Get all active vaccines with pricing
     const vaccines = await Vaccine.find({ isActive: true })
       .select(
-        "name brand vaccineType diseaseTarget defaultNextDueMonths dosageUnit standardDosage administrationRoute",
+        "name brand vaccineType diseaseTarget defaultNextDueMonths dosageUnit standardDosage administrationRoute vaccineCharge actualPrice writtenPrice description",
       )
       .sort({ name: 1 });
 
-    // Get farmers for dropdown (if not pre-selected)
-    let farmers = [];
-    if (!farmerId) {
-      farmers = await Farmer.find({ isActive: true })
-        .select("name village uniqueFarmerId")
+    // Get animals for pre-selected farmer
+    let animals = [];
+    if (farmerId) {
+      animals = await Animal.find({
+        farmer: farmerId,
+        isActive: true,
+      })
+        .select("name tagId species uniqueAnimalId")
         .sort({ name: 1 });
     }
-
-    // Get animals for dropdown
-    let query = { isActive: true };
-    if (animalId) query._id = animalId;
-    if (farmerId) query.farmer = farmerId;
-
-    const animals = await Animal.find(query)
-      .select("name tagId species uniqueAnimalId")
-      .populate("farmer", "name")
-      .sort({ name: 1 });
 
     // If batch registration, get pre-selected data
     let batchData = null;
     if (batch === "true" && req.session.bulkVaccinationData) {
       batchData = req.session.bulkVaccinationData;
-      // Clear from session after retrieving
       delete req.session.bulkVaccinationData;
     }
 
@@ -295,123 +318,118 @@ exports.renderNewForm = async (req, res) => {
       batchData,
       preSelectedAnimal: animalId,
       preSelectedFarmer: farmerId,
+      paravet,
       user: req.user,
     });
   } catch (error) {
     console.error("Error rendering new form:", error);
     req.flash("error", "Error loading form");
-    res.redirect("/admin/vaccinations");
+    res.redirect("/vaccination");
   }
 };
 
 // ================ ADD NEW VACCINATION ================
 exports.addVaccination = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const vaccinationData = req.body;
     const userId = req.user._id;
 
-    // Handle single or multiple vaccinations
-    let vaccinations = [];
+    const paravet = await Paravet.findOne({ user: userId });
 
-    if (vaccinationData.isBulk && vaccinationData.animals) {
-      // Bulk registration for multiple animals
-      const animals = Array.isArray(vaccinationData.animals)
-        ? vaccinationData.animals
-        : [vaccinationData.animals];
+    let selectedAnimals = [];
 
-      const batchId = `BATCH_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (Array.isArray(vaccinationData.animals)) {
+      selectedAnimals = vaccinationData.animals;
+    } else if (typeof vaccinationData.animals === "string") {
+      selectedAnimals = vaccinationData.animals.split(",");
+    }
 
-      for (let i = 0; i < animals.length; i++) {
-        const animal = await Animal.findById(animals[i]).session(session);
-        if (!animal) continue;
+    if (selectedAnimals.length === 0) {
+      throw new Error("No animals selected");
+    }
 
-        vaccinations.push({
-          farmer: animal.farmer,
-          animal: animal._id,
-          vaccine: vaccinationData.vaccine,
-          vaccineName: vaccinationData.vaccineName,
-          vaccineType: vaccinationData.vaccineType,
-          batchNumber: vaccinationData.batchNumber,
-          expiryDate: vaccinationData.expiryDate,
-          doseNumber: vaccinationData.doseNumber || 1,
-          totalDosesRequired: vaccinationData.totalDosesRequired || 1,
-          administrationMethod: vaccinationData.administrationMethod,
-          injectionSite: vaccinationData.injectionSite,
-          dosageAmount: vaccinationData.dosageAmount,
-          dosageUnit: vaccinationData.dosageUnit,
-          dateAdministered: vaccinationData.dateAdministered || new Date(),
-          nextDueDate: vaccinationData.nextDueDate,
-          administeredBy: vaccinationData.administeredBy || req.user.name,
-          verifiedBy: userId,
-          animalCondition: {
-            temperature: vaccinationData.temperature,
-            weight: vaccinationData.weight,
-            bodyConditionScore: vaccinationData.bodyConditionScore,
-            isPregnant: vaccinationData.isPregnant,
-            isLactating: vaccinationData.isLactating,
-            healthNotes: vaccinationData.healthNotes,
-          },
-          notes: vaccinationData.notes,
-          status: "Administered",
-          verificationStatus: "Verified",
-          source: "bulk_registration",
-          registrationBatchId: batchId,
-          registrationBatchIndex: i,
-          createdBy: userId,
-        });
-      }
-    } else {
-      // Single vaccination
-      vaccinations.push({
-        farmer: vaccinationData.farmer,
-        animal: vaccinationData.animal,
-        vaccine: vaccinationData.vaccine,
-        vaccineName: vaccinationData.vaccineName,
-        vaccineType: vaccinationData.vaccineType,
+    const vaccine = await Vaccine.findById(vaccinationData.vaccine);
+    if (!vaccine) {
+      throw new Error("Vaccine not found");
+    }
+
+    const vaccinePrice = vaccine.vaccineCharge || 0;
+    const serviceCharge = paravet?.serviceCharge || 50;
+    const totalPerAnimal = vaccinePrice + serviceCharge;
+    const totalAmount = totalPerAnimal * selectedAnimals.length;
+
+    const batchId = `BATCH_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    const vaccinations = [];
+
+    for (let i = 0; i < selectedAnimals.length; i++) {
+      const animal = await Animal.findById(selectedAnimals[i]);
+      if (!animal) continue;
+
+      const vaccination = {
+        farmer: animal.farmer,
+        animal: animal._id,
+        vaccine: vaccine._id,
+        vaccineName: vaccine.name,
+        vaccineType: vaccine.vaccineType,
         batchNumber: vaccinationData.batchNumber,
         expiryDate: vaccinationData.expiryDate,
         doseNumber: vaccinationData.doseNumber || 1,
         totalDosesRequired: vaccinationData.totalDosesRequired || 1,
-        administrationMethod: vaccinationData.administrationMethod,
-        injectionSite: vaccinationData.injectionSite,
-        dosageAmount: vaccinationData.dosageAmount,
-        dosageUnit: vaccinationData.dosageUnit,
+        administrationMethod:
+          vaccinationData.administrationMethod || "Injection",
+        injectionSite: vaccinationData.injectionSite || "Subcutaneous",
+        dosageAmount: vaccinationData.dosageAmount || vaccine.standardDosage,
+        dosageUnit: vaccinationData.dosageUnit || vaccine.dosageUnit || "ml",
         dateAdministered: vaccinationData.dateAdministered || new Date(),
         nextDueDate: vaccinationData.nextDueDate,
-        administeredBy: vaccinationData.administeredBy || req.user.name,
+        administeredBy: req.user.name,
         verifiedBy: userId,
+
+        payment: {
+          vaccinePrice: vaccinePrice,
+          serviceCharge: serviceCharge,
+          totalAmount: totalPerAnimal,
+          paymentStatus: "Pending",
+          paymentMethod: vaccinationData.paymentMethod || "UPI",
+          paymentDate: new Date(),
+        },
+
         animalCondition: {
           temperature: vaccinationData.temperature,
           weight: vaccinationData.weight,
           bodyConditionScore: vaccinationData.bodyConditionScore,
-          isPregnant: vaccinationData.isPregnant,
-          isLactating: vaccinationData.isLactating,
+          isPregnant: vaccinationData.isPregnant === "on",
+          isLactating: vaccinationData.isLactating === "on",
           healthNotes: vaccinationData.healthNotes,
         },
+
         hadAdverseReaction: vaccinationData.hadAdverseReaction === "on",
         adverseReactionDetails: vaccinationData.adverseReactionDetails,
         reactionSeverity: vaccinationData.reactionSeverity,
         notes: vaccinationData.notes,
         followUpInstructions: vaccinationData.followUpInstructions,
-        status: "Administered",
-        verificationStatus: "Verified",
-        source: vaccinationData.source || "manual_entry",
+
+        status: "Payment Pending",
+        verificationStatus: "Pending",
+
+        source:
+          selectedAnimals.length > 1 ? "bulk_registration" : "manual_entry",
+
+        registrationBatchId: selectedAnimals.length > 1 ? batchId : undefined,
+
+        registrationBatchIndex: i,
+        isBulkRegistration: selectedAnimals.length > 1,
+        bulkAnimalCount: selectedAnimals.length,
+
         createdBy: userId,
-      });
+      };
+
+      vaccinations.push(vaccination);
     }
 
-    // Save all vaccinations
-    const savedVaccinations = await Vaccination.insertMany(vaccinations, {
-      session,
-    });
+    const savedVaccinations = await Vaccination.insertMany(vaccinations);
 
-    await session.commitTransaction();
-    session.endSession();
-
-    // Update animal's last vaccination date
     for (const vac of savedVaccinations) {
       await Animal.findByIdAndUpdate(vac.animal, {
         lastVaccinationDate: vac.dateAdministered,
@@ -419,28 +437,281 @@ exports.addVaccination = async (req, res) => {
       });
     }
 
+    req.session.pendingPayment = {
+      batchId:
+        selectedAnimals.length > 1
+          ? batchId
+          : savedVaccinations[0]._id.toString(),
+
+      totalAmount: totalAmount,
+      animalCount: selectedAnimals.length,
+      vaccineName: vaccine.name,
+      farmerName: (await Farmer.findById(vaccinations[0].farmer)).name,
+    };
+
     req.flash(
       "success",
-      `${savedVaccinations.length} vaccination record(s) saved successfully`,
+      `${savedVaccinations.length} vaccination record(s) created. Please complete payment.`,
     );
 
-    if (savedVaccinations.length > 1) {
-      res.redirect(
-        `/admin/vaccinations/batch/${savedVaccinations[0].registrationBatchId}`,
-      );
-    } else {
-      res.redirect(`/admin/vaccinations/${savedVaccinations[0]._id}`);
-    }
+    res.redirect("/vaccination/payment");
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     console.error("Error saving vaccination:", error);
-    req.flash("error", "Error saving vaccination record");
-    res.redirect("/admin/vaccinations/new");
+    req.flash("error", error.message || "Error saving vaccination record");
+    res.redirect("/vaccination/new");
+  }
+};
+// ================ GET ANIMALS BY FARMER (AJAX) ================
+exports.getAnimalsByFarmer = async (req, res) => {
+  console.log("animal fetch controller called ");
+  try {
+    const { farmerId } = req.params;
+
+    const animals = await Animal.find({
+      farmer: farmerId,
+      isActive: true,
+    }).select("name tagId species uniqueAnimalId");
+
+    res.json({ success: true, animals });
+  } catch (error) {
+    console.error("Error fetching animals:", error);
+    res.status(500).json({ success: false, message: "Error fetching animals" });
   }
 };
 
-// ================ RENDER EDIT FORM ================
+// ================ GET VACCINE PRICE (AJAX) ================
+exports.getVaccinePrice = async (req, res) => {
+  try {
+    const { vaccineId } = req.params;
+
+    const vaccine = await Vaccine.findById(vaccineId).select(
+      "name vaccineCharge actualPrice writtenPrice description",
+    );
+
+    if (!vaccine) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Vaccine not found" });
+    }
+
+    // Get paravet service charge
+    const paravet = await Paravet.findOne({ user: req.user._id });
+    const serviceCharge = paravet?.serviceCharge || 50;
+
+    res.json({
+      success: true,
+      vaccine: {
+        name: vaccine.name,
+        vaccineCharge: vaccine.vaccineCharge || 0,
+        actualPrice: vaccine.actualPrice || 0,
+        writtenPrice: vaccine.writtenPrice || 0,
+        description: vaccine.description,
+      },
+      serviceCharge,
+      totalPerAnimal: (vaccine.vaccineCharge || 0) + serviceCharge,
+    });
+  } catch (error) {
+    console.error("Error fetching vaccine price:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching vaccine price" });
+  }
+};
+
+// ================ RENDER PAYMENT PAGE ================
+exports.renderPaymentPage = async (req, res) => {
+  try {
+    const pendingPayment = req.session.pendingPayment;
+
+    if (!pendingPayment) {
+      req.flash("error", "No pending payment found");
+      return res.redirect("/admin/vaccinations");
+    }
+
+    // Generate UPI QR code data
+    const upiId = process.env.UPI_ID || "paravet@okhdfcbank"; // Configure in .env
+    const payeeName = process.env.PAYEE_NAME || "Zoopito Paravet Services";
+    const amount = pendingPayment.totalAmount;
+
+    // Create UPI payment URI
+    const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(`Vaccination payment for ${pendingPayment.animalCount} animal(s)`)}`;
+
+    res.render("admin/vaccinations/payment.ejs", {
+      title: "Complete Payment",
+      farmName: "abcd",
+      payment: pendingPayment,
+      upiId,
+      payeeName,
+      upiUrl,
+      user: req.user,
+    });
+  } catch (error) {
+    console.error("Error rendering payment page:", error);
+    req.flash("error", "Error loading payment page");
+    res.redirect("/admin/vaccinations");
+  }
+};
+
+// ================ VERIFY PAYMENT (User submits UTR) ================
+exports.verifyPayment = async (req, res) => {
+  try {
+    const { utrNumber, paymentMethod, notes } = req.body;
+    const pendingPayment = req.session.pendingPayment;
+
+    if (!pendingPayment) {
+      throw new Error("No pending payment found");
+    }
+
+    let vaccinations;
+
+    if (pendingPayment.batchId.startsWith("BATCH_")) {
+      vaccinations = await Vaccination.find({
+        registrationBatchId: pendingPayment.batchId,
+      });
+    } else {
+      vaccinations = await Vaccination.find({
+        _id: pendingPayment.batchId,
+      });
+    }
+
+    if (vaccinations.length === 0) {
+      throw new Error("Vaccination records not found");
+    }
+
+    for (const vaccination of vaccinations) {
+      vaccination.payment.utrNumber = utrNumber;
+      vaccination.payment.paymentMethod = paymentMethod || "UPI";
+      vaccination.payment.paymentNotes = notes;
+      vaccination.payment.paymentDate = new Date();
+      vaccination.payment.paymentStatus = "Completed";
+      vaccination.status = "Payment Verified";
+
+      await vaccination.save();
+    }
+
+    delete req.session.pendingPayment;
+
+    req.flash(
+      "success",
+      "Payment details submitted successfully. Admin will verify your payment shortly.",
+    );
+
+    if (pendingPayment.batchId.startsWith("BATCH_")) {
+      res.redirect(`/admin/vaccinations/batch/${pendingPayment.batchId}`);
+    } else {
+      res.redirect(`/admin/vaccinations/${pendingPayment.batchId}`);
+    }
+  } catch (error) {
+    console.error("Error verifying payment:", error);
+    req.flash("error", error.message || "Error processing payment");
+    res.redirect("/admin/vaccinations/payment");
+  }
+};
+// ================ ADMIN VERIFY PAYMENT ================
+exports.adminVerifyPayment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { verificationStatus, verificationNotes } = req.body;
+
+    const vaccination = await Vaccination.findById(id);
+
+    if (!vaccination) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Record not found" });
+    }
+
+    if (verificationStatus === "Verified") {
+      vaccination.payment.paymentStatus = "Verified";
+      vaccination.payment.paymentVerifiedBy = req.user._id;
+      vaccination.payment.paymentVerifiedAt = new Date();
+      vaccination.status = "Administered";
+      vaccination.verificationStatus = "Verified";
+    } else if (verificationStatus === "Rejected") {
+      vaccination.payment.paymentStatus = "Failed";
+      vaccination.status = "Payment Pending";
+      vaccination.verificationStatus = "Rejected";
+    }
+
+    vaccination.verificationNotes = verificationNotes;
+    vaccination.updatedBy = req.user._id;
+
+    await vaccination.save();
+
+    req.flash(
+      "success",
+      `Payment ${verificationStatus.toLowerCase()} successfully`,
+    );
+
+    if (req.xhr || req.headers.accept.indexOf("json") > -1) {
+      return res.json({
+        success: true,
+        message: `Payment ${verificationStatus.toLowerCase()} successfully`,
+        paymentStatus: vaccination.payment.paymentStatus,
+      });
+    }
+
+    res.redirect(`/admin/vaccinations/${id}`);
+  } catch (error) {
+    console.error("Error verifying payment:", error);
+
+    if (req.xhr || req.headers.accept.indexOf("json") > -1) {
+      return res.status(500).json({
+        success: false,
+        message: "Error verifying payment",
+      });
+    }
+
+    req.flash("error", "Error verifying payment");
+    res.redirect(`/admin/vaccinations/${req.params.id}`);
+  }
+};
+
+// ================ VIEW PENDING PAYMENTS (Admin) ================
+exports.viewPendingPayments = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const [vaccinations, total] = await Promise.all([
+      Vaccination.find({
+        "payment.paymentStatus": "Completed",
+        verificationStatus: "Pending",
+      })
+        .populate("farmer", "name phone village")
+        .populate("animal", "name tagId species")
+        .populate("vaccine", "name brand")
+        .populate("createdBy", "name")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Vaccination.countDocuments({
+        "payment.paymentStatus": "Completed",
+        verificationStatus: "Pending",
+      }),
+    ]);
+
+    res.render("admin/vaccinations/pending-payments", {
+      title: "Pending Payment Verifications",
+      farmName: "abcd",
+      vaccinations,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      user: req.user,
+    });
+  } catch (error) {
+    console.error("Error viewing pending payments:", error);
+    req.flash("error", "Error loading pending payments");
+    res.redirect("/admin/vaccinations");
+  }
+};
+
+//--------------------------------------//
+//----------- render edit for --------------
+//-------------------------------------------//
 exports.renderEditForm = async (req, res) => {
   try {
     const vaccination = await Vaccination.findById(req.params.id)
@@ -540,9 +811,18 @@ exports.updateVaccination = async (req, res) => {
 };
 
 // ================ VIEW VACCINATION DETAILS ================
+//const mongoose = require("mongoose");
+
 exports.viewVaccination = async (req, res) => {
   try {
-    const vaccination = await Vaccination.findById(req.params.id)
+    const id = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      req.flash("error", "Invalid vaccination ID");
+      return res.redirect("/admin/vaccinations");
+    }
+
+    const vaccination = await Vaccination.findById(id)
       .populate(
         "animal",
         "name tagId species gender dateOfBirth uniqueAnimalId",
@@ -558,7 +838,6 @@ exports.viewVaccination = async (req, res) => {
       return res.redirect("/admin/vaccinations");
     }
 
-    // Get previous vaccinations for this animal with same vaccine
     const previousVaccinations = await Vaccination.find({
       animal: vaccination.animal._id,
       vaccine: vaccination.vaccine?._id,
@@ -582,7 +861,6 @@ exports.viewVaccination = async (req, res) => {
     res.redirect("/admin/vaccinations");
   }
 };
-
 // ================ VERIFY STATUS ================
 exports.verifyStatus = async (req, res) => {
   try {
@@ -624,12 +902,10 @@ exports.verifyStatus = async (req, res) => {
     console.error("Error verifying vaccination:", error);
 
     if (req.xhr || req.headers.accept.indexOf("json") > -1) {
-      return res
-        .status(500)
-        .json({
-          success: false,
-          message: "Error updating verification status",
-        });
+      return res.status(500).json({
+        success: false,
+        message: "Error updating verification status",
+      });
     }
 
     req.flash("error", "Error updating verification status");

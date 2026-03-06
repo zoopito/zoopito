@@ -146,7 +146,27 @@
                class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/admin/paravets') ? active : inactive %> nav-link-hover">
               <i class="fas fa-currUsers mr-2"></i>Paravets
             </a>
-          <% } else{ %>
+          <% } else if(currUser.role === "PARAVET") { %>
+            <a href="/paravet/dashboard" 
+            class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/paravet/dashboard') ? active : inactive %> nav-link-hover">
+          <i class="fas fa-dashboard mr-2"></i>Dashboard
+          </a>
+
+            <a href="/paravet/farmers" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/paravet/farmers') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-currUsers mr-2"></i>Farmers
+            </a>
+            
+            <a href="/paravet/animals" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/paravet/animals') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-paw mr-2"></i>Animals
+            </a>
+            <a href="/paravet/vaccination-history" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/paravet/vaccination-history') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-history mr-2"></i>Vaccination History
+            </a>
+
+            <% } else{ %>
             <a href="/services" 
              class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/services' ? active : inactive %> nav-link-hover">
             <i class="fas fa-concierge-bell mr-2"></i>Services
