@@ -6,6 +6,7 @@ const formerController = require("../controllers/farmer.js");
 const paravetController = require("../controllers/paravet.js");
 const animalController = require("../controllers/animal.js");
 const vaccinationController = require("../controllers/vaccination.js");
+const taskController = require("../controllers/taskScheduller.js");
 const othersController = require("../controllers/others.js");
 const multer = require("multer");
 
@@ -14,6 +15,8 @@ const upload = multer({ storage });
 
 // ================= STATIC ROUTES =================
 router.get("/new", vaccinationController.renderNewForm);
+
+router.get("/schedule", taskController.renderSchedulePage);
 
 // ================= PAYMENT ROUTES =================
 router.get("/payment", vaccinationController.renderPaymentPage);
@@ -58,5 +61,32 @@ router.delete("/:id", vaccinationController.deleteVaccination);
 
 // ================= VIEW SINGLE (ALWAYS LAST) =================
 router.get("/:id", vaccinationController.viewVaccination);
+
+//................................//
+// task schedulling routes
+//..................................//
+
+// API endpoints for schedule page
+router.get("/api/pending-vaccinations", taskController.getPendingVaccinations);
+router.get("/api/area-stats", taskController.getAreaStats);
+router.get(
+  "/api/farmer-vaccinations/:farmerId",
+  taskController.getFarmerVaccinations,
+);
+router.get("/api/paravet-assignments", taskController.getParavetAssignments);
+
+// Assignment routes
+router.post("/api/assign-paravet", taskController.assignParavetToVaccinations);
+router.post("/api/bulk-assign", taskController.bulkAssignParavets);
+router.post("/api/schedule-date", taskController.scheduleDate);
+
+// Update vaccination status
+router.patch(
+  "/api/vaccination/:id/status",
+  taskController.updateVaccinationStatus,
+);
+
+// Export schedule
+router.get("/export/schedule", taskController.exportSchedule);
 
 module.exports = router;

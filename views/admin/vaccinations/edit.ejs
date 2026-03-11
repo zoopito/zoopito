@@ -51,7 +51,7 @@
                 </div>
                 
                 <% if (vaccination.source === 'bulk_registration') { %>
-                    <a href="/admin/vaccinations/batch/<%= vaccination.registrationBatchId %>" 
+                    <a href="/vaccination/batch/<%= vaccination.registrationBatchId %>" 
                        class="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-4 py-2 rounded-lg flex items-center hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all duration-200">
                         <i class="fas fa-layer-group mr-2"></i>
                         <span class="font-medium">View Batch</span>
@@ -106,7 +106,7 @@
         </div>
 
         <!-- Main Form -->
-        <form action="/admin/vaccinations/<%= vaccination._id %>?_method=PUT" method="POST" id="vaccinationForm" class="space-y-6">
+        <form action="/vaccination/<%= vaccination._id %>?_method=PUT" method="POST" id="vaccinationForm" class="space-y-6">
             <!-- Animal and Farmer Information (Read-only) -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden card-hover">
                 <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
@@ -779,7 +779,7 @@
 
             <!-- Form Actions -->
             <div class="flex items-center justify-end space-x-4 pt-6">
-                <a href="/admin/vaccinations/<%= vaccination._id %>" 
+                <a href="/vaccination/<%= vaccination._id %>" 
                    class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 
                           hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 
                           focus:ring-blue-500 transition-all duration-200">
@@ -832,7 +832,7 @@
             const adminDate = $('#dateAdministered').val();
             
             if (vaccineId && adminDate && !$('#nextDueDate').val()) {
-                $.post('/admin/vaccinations/calculate-next-due', {
+                $.post('/vaccination/calculate-next-due', {
                     vaccineId: vaccineId,
                     dateAdministered: adminDate
                 })
