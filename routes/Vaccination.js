@@ -77,7 +77,13 @@ router.get("/api/paravet-assignments", taskController.getParavetAssignments);
 
 // Assignment routes
 router.post("/api/assign-paravet", taskController.assignParavetToVaccinations);
+router.get("/api/vaccination/:id", taskController.getVaccination);
+router.get(
+  "/api/animal/:animalId/history",
+  taskController.getVaccinationHistory,
+);
 router.post("/api/bulk-assign", taskController.bulkAssignParavets);
+router.post("/api/bulk-complete", taskController.bulkCompleteVaccinations);
 router.post("/api/schedule-date", taskController.scheduleDate);
 
 // Update vaccination status
@@ -85,6 +91,12 @@ router.patch(
   "/api/vaccination/:id/status",
   taskController.updateVaccinationStatus,
 );
+
+// Delete vaccination
+//router.delete("/api/vaccination/:id", vaccinationController.deleteVaccination);
+
+// Delete vaccination
+router.delete("/api/vaccination/:id", taskController.deleteVaccination);
 
 // Export schedule
 router.get("/export/schedule", taskController.exportSchedule);

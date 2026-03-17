@@ -10,7 +10,7 @@
 
   <!-- Form -->
   <div class="bg-white rounded-lg shadow p-6">
-    <form action="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>/health" method="POST">
+    <form action="/<%= currUser.role.toLowerCase() %>/animal/<%= animal._id %>/health" method="POST">
       
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700 mb-2">Condition/Diagnosis *</label>
@@ -46,7 +46,7 @@
       </div>
 
       <div class="flex justify-end gap-3">
-        <a href="/<%= currUser.role.toLowerCase() %>/animals/<%= animal._id %>/health" class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50">
+        <a href="/<%= currUser.role.toLowerCase() %>/animal/<%= animal._id %>/health" class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50">
           Cancel
         </a>
         <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">

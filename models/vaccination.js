@@ -193,6 +193,10 @@ const vaccinationSchema = new Schema(
       ],
       default: "Payment Pending",
     },
+    scheduledDate: {
+      type: Date,
+      index: true,
+    },
     verificationStatus: {
       type: String,
       enum: ["Pending", "Verified", "Rejected"],
