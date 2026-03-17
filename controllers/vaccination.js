@@ -260,8 +260,11 @@ exports.renderNewForm = async (req, res) => {
       "assignedAreas",
     );
 
-    if (!paravet) {
-      req.flash("error", "Paravet profile not found");
+    const admin = await User.findOne({ _id: userId, role: "ADMIN" });
+
+    // ✅ FIXED CONDITION
+    if (!paravet && !admin) {
+      req.flash("error", "Access denied");
       return res.redirect("/vaccination");
     }
 
