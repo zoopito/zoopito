@@ -293,6 +293,16 @@ module.exports.createAnimalForm = async (req, res) => {
       ]);
     }
 
+    vaccines = vaccines.map((v) => {
+      const vaccine = v.toObject();
+
+      if (!vaccine.boosterIntervalWeeks || vaccine.boosterIntervalWeeks === 0) {
+        vaccine.boosterIntervalWeeks = vaccine.immunityDurationMonths * 4;
+      }
+
+      return vaccine;
+    });
+
     // Get form type from query parameter or default to 'single'
     const formType = req.query.type || "bulk"; // Changed from hardcoded "bulk"
 

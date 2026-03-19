@@ -326,6 +326,7 @@ module.exports.toggleFarmerStatus = async (req, res) => {
 
 module.exports.deleteFarmer = async (req, res) => {
   const role = req.user.role.toLowerCase();
+
   try {
     const { id } = req.params;
 
@@ -337,25 +338,25 @@ module.exports.deleteFarmer = async (req, res) => {
       });
     }
 
-    // 1️⃣ Delete linked FARMER user (role-based safety)
-    await User.findOneAndDelete({
-      mobile: farmer.mobileNumber,
-      role: "FARMER",
-    });
+    // ❌ Hard delete hata diya
+    // await Farmer.findByIdAndDelete(id);
 
-    // 2️⃣ OPTIONAL: delete farmer photo from cloudinary
-    /*
-    if (farmer.photo?.public_id) {
-      await cloudinary.uploader.destroy(farmer.photo.public_id);
-    }
-    */
+    // ✅ Soft delete
+    farmer.isActive = false;
+    await farmer.save();
 
-    // 3️⃣ Delete farmer document
-    await Farmer.findByIdAndDelete(id);
+    // ❗ OPTIONAL: linked user bhi deactivate karo instead of delete
+    await User.findOneAndUpdate(
+      {
+        mobile: farmer.mobileNumber,
+        role: "FARMER",
+      },
+      { isActive: false },
+    );
 
     res.json({
       success: true,
-      message: "Farmer and linked user deleted successfully",
+      message: "Farmer deactivated successfully",
     });
   } catch (error) {
     console.error("Delete farmer error:", error);

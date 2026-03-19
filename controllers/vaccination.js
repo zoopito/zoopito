@@ -266,6 +266,7 @@ exports.renderNewForm = async (req, res) => {
     if (!paravet && !admin) {
       req.flash("error", "Access denied");
       return res.redirect("/vaccination");
+    } else if (admin) {
     }
 
     // Get farmers from assigned areas
