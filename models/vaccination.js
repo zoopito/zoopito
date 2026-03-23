@@ -74,7 +74,7 @@ const vaccinationSchema = new Schema(
     dosageAmount: Number,
     dosageUnit: {
       type: String,
-      enum: ["ml", "cc", "mg", "IU", "drops", "drop", "tablets", "Other"],
+      enum: ["ml", "cc", "dose", "mg", "IU", "drops", "drop", "tablets", "tablet", "Other"],
       default: "ml",
     },
 
@@ -136,7 +136,7 @@ const vaccinationSchema = new Schema(
     payment: {
       vaccinePrice: {
         type: Number,
-        required: true,
+        // required: true,
         min: 0,
       },
       serviceCharge: {
@@ -146,7 +146,7 @@ const vaccinationSchema = new Schema(
       },
       totalAmount: {
         type: Number,
-        required: true,
+       // required: true,
         min: 0,
       },
       paymentStatus: {

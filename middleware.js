@@ -44,6 +44,14 @@ module.exports.isSales = (req, res, next) => {
   next();
 };
 
+module.exports.isParavet = (req, res, next) => {
+  if (req.user.role !== "PARAVET") {
+    req.flash("error", "You do not have permission to access this page.");
+    return res.redirect("/");
+  }
+  next();
+};
+
 module.exports.isVerified = async (req, res, next) => {
   const { email } = req.body; // 👍 extract only email
 

@@ -1,0 +1,439 @@
+<% layout("layouts/boilerplate", {
+    title: `Payment - ₹${payment.amount}`,
+    description: 'Complete your payment for animal registration',
+    pageStyles: `
+        .qr-code-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 1rem;
+            display: inline-block;
+        }
+        .payment-status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-completed { background-color: #d1fae5; color: #065f46; }
+        .status-failed { background-color: #fee2e2; color: #991b1b; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    `
+}) -%>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8 text-center">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg mb-4">
+                <i class="fas fa-qrcode text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                Complete Your Payment
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                Scan QR code or use UPI ID to complete the payment
+            </p>
+        </div>
+
+        <!-- Payment Summary Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-6">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <i class="fas fa-receipt mr-2"></i>
+                    Payment Summary
+                </h2>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Payment Details -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm text-gray-500 dark:text-gray-400">Payment ID</label>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white font-mono">
+                                <%= payment.transactionId %>
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm text-gray-500 dark:text-gray-400">Amount</label>
+                            <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                                ₹<%= payment.amount.toLocaleString() %>
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm text-gray-500 dark:text-gray-400">Status</label>
+                            <div>
+                                <span class="payment-status-badge status-<%= payment.paymentStatus %>">
+                                    <%= payment.paymentStatus.toUpperCase() %>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm text-gray-500 dark:text-gray-400">Description</label>
+                            <p class="text-gray-900 dark:text-white">
+                                <%= payment.description %>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Animal Details -->
+                    <div>
+                        <label class="text-sm text-gray-500 dark:text-gray-400 mb-2 block">Animals Registered</label>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 max-h-48 overflow-y-auto">
+                            <% payment.animalIds.forEach((animal, index) => { %>
+                                <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-600 last:border-0">
+                                    <div>
+                                        <p class="font-medium text-gray-900 dark:text-white">
+                                            <%= animal.name || animal.tagNumber || `Animal ${index + 1}` %>
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            <%= animal.animalType %> • <%= animal.uniqueAnimalId %>
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                            ₹<%= (payment.amount / payment.animalIds.length).toFixed(2) %>
+                                        </p>
+                                    </div>
+                                </div>
+                            <% }) %>
+                            <div class="flex items-center justify-between pt-2 mt-2 border-t-2 border-gray-300 dark:border-gray-600">
+                                <span class="font-bold text-gray-900 dark:text-white">Total</span>
+                                <span class="font-bold text-gray-900 dark:text-white">₹<%= payment.amount.toLocaleString() %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <% if (payment.paymentStatus === 'pending') { %>
+        <!-- Payment Options -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- QR Code Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="bg-gradient-to-r from-green-600 to-teal-600 px-6 py-4">
+                    <h2 class="text-xl font-bold text-white flex items-center">
+                        <i class="fas fa-qrcode mr-2"></i>
+                        Scan QR Code
+                    </h2>
+                </div>
+                
+                <div class="p-6 text-center">
+                    <div class="qr-code-container inline-block mb-4">
+                        <div id="qrcode" class="flex justify-center"></div>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Or use UPI ID:</p>
+                        <div class="flex items-center justify-center space-x-2">
+                            <code class="text-lg font-mono font-bold text-gray-900 dark:text-white"><%= upiId %></code>
+                            <button onclick="copyUPI()" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button onclick="window.open('<%= upiIntent %>', '_blank')" 
+                                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>Pay with UPI App</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Verification Form -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4">
+                    <h2 class="text-xl font-bold text-white flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Verify Payment
+                    </h2>
+                </div>
+                
+                <div class="p-6">
+                    <div class="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-yellow-600 dark:text-yellow-400 mt-1 mr-3"></i>
+                            <p class="text-sm text-yellow-800 dark:text-yellow-300">
+                                After making the payment, please fill the UTR/Transaction ID below to verify your payment.
+                                Your animal plans will be activated immediately after verification.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <form id="paymentVerificationForm" onsubmit="verifyPayment(event)">
+                        <input type="hidden" name="paymentId" value="<%= payment._id %>">
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                UTR / Transaction ID <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="utrNumber" 
+                                   name="utrNumber" 
+                                   required
+                                   placeholder="Enter UTR number from your payment app"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Example: 123456789012
+                            </p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Paid Amount <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" 
+                                   id="paidAmount" 
+                                   name="paidAmount" 
+                                   required
+                                   value="<%= payment.amount %>"
+                                   step="0.01"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Payment Date
+                            </label>
+                            <input type="date" 
+                                   id="paymentDate" 
+                                   name="paymentDate" 
+                                   value="<%= new Date().toISOString().split('T')[0] %>"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Notes (Optional)
+                            </label>
+                            <textarea id="notes" 
+                                      name="notes" 
+                                      rows="3"
+                                      placeholder="Any additional information about the payment..."
+                                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"></textarea>
+                        </div>
+                        
+                        <button type="submit" 
+                                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Verify Payment & Activate Plans</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <% } else if (payment.paymentStatus === 'completed') { %>
+        <!-- Success Message -->
+        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-8 text-center">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full mb-4">
+                <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-green-800 dark:text-green-300 mb-2">
+                Payment Verified Successfully!
+            </h2>
+            <p class="text-green-700 dark:text-green-400 mb-4">
+                Your payment of ₹<%= payment.amount.toLocaleString() %> has been verified.
+                Plans have been activated for <%= payment.animalIds.length %> animal(s).
+            </p>
+            <div class="flex justify-center space-x-4">
+                <a href="/<%= currUser.role.toLowerCase() %>/animals" 
+                   class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Go to Animals
+                </a>
+                <a href="/<%= currUser.role.toLowerCase() %>/payments/<%= payment._id %>/invoice" 
+                   class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition">
+                    <i class="fas fa-download mr-2"></i>
+                    Download Invoice
+                </a>
+            </div>
+        </div>
+        <% } %>
+        
+        <!-- Help Section -->
+        <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6">
+            <div class="flex items-start">
+                <i class="fas fa-headset text-blue-600 dark:text-blue-400 text-xl mt-1 mr-4"></i>
+                <div>
+                    <h3 class="font-semibold text-gray-900 dark:text-white mb-1">Need Help?</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        If you face any issues with payment, please contact our support team at 
+                        <a href="mailto:support@zoopito.com" class="text-blue-600 dark:text-blue-400 hover:underline">support@zoopito.com</a>
+                        or call us at +91-XXXXXXXXXX
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs2-fix/qrcode.min.js"></script>
+
+<script>
+    // Generate QR Code
+    new QRCode(document.getElementById("qrcode"), {
+        text: "<%= upiIntent %>",
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    
+    // Copy UPI ID to clipboard
+    function copyUPI() {
+        const upiId = "<%= upiId %>";
+        navigator.clipboard.writeText(upiId).then(() => {
+            showToast('UPI ID copied to clipboard!', 'success');
+        }).catch(() => {
+            showToast('Failed to copy UPI ID', 'error');
+        });
+    }
+    
+    // Verify payment
+    async function verifyPayment(event) {
+        event.preventDefault();
+        
+        const utrNumber = document.getElementById('utrNumber').value;
+        const paidAmount = document.getElementById('paidAmount').value;
+        const paymentDate = document.getElementById('paymentDate').value;
+        const notes = document.getElementById('notes').value;
+        
+        if (!utrNumber) {
+            showToast('Please enter UTR/Transaction ID', 'error');
+            return;
+        }
+        
+        if (!paidAmount || parseFloat(paidAmount) <= 0) {
+            showToast('Please enter valid paid amount', 'error');
+            return;
+        }
+        
+        // Show loading
+        const submitBtn = event.submitter;
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="flex items-center justify-center"><svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Verifying...</span>';
+        
+        try {
+            const response = await fetch(`/admin/animals/api/payments/<%= payment._id %>/verify`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    utrNumber,
+                    paidAmount: parseFloat(paidAmount),
+                    paymentDate,
+                    notes
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirectUrl;
+                }, 2000);
+            } else {
+                showToast(data.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        } catch (error) {
+            console.error('Error verifying payment:', error);
+            showToast('Failed to verify payment. Please try again.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
+    
+    // Toast notification
+    function showToast(message, type = 'info') {
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+        
+        const colors = {
+            success: 'bg-green-50 border-green-500 text-green-800',
+            error: 'bg-red-50 border-red-500 text-red-800',
+            warning: 'bg-yellow-50 border-yellow-500 text-yellow-800',
+            info: 'bg-blue-50 border-blue-500 text-blue-800'
+        };
+        
+        const toastId = 'toast-' + Date.now();
+        const toast = `
+            <div id="${toastId}" class="${colors[type]} border-l-4 p-4 rounded-lg shadow-lg flex items-center justify-between animate-slide-in max-w-md mb-2">
+                <div class="flex items-center space-x-3">
+                    <i class="fas ${icons[type]} text-lg"></i>
+                    <span>${message}</span>
+                </div>
+                <button onclick="$('#${toastId}').remove()" class="ml-4 text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        const container = $('#toastContainer');
+        if (container.length === 0) {
+            $('body').append('<div id="toastContainer" class="fixed top-4 right-4 z-50"></div>');
+        }
+        
+        $('#toastContainer').append(toast);
+        
+        setTimeout(() => {
+            $(`#${toastId}`).fadeOut(300, function() {
+                $(this).remove();
+            });
+        }, 5000);
+    }
+</script>
+
+<style>
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    .animate-slide-in {
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>

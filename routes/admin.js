@@ -280,6 +280,12 @@ router.get(
   animalController.generateAnimalReport,
 );
 
+// Payment routes
+router.get('/animals/payment/:paymentId', isLoggedIn, isAdmin, animalController.showPaymentPage);
+router.post('/animals/api/payments/:paymentId/verify', isLoggedIn, isAdmin, animalController.verifyPayment);
+router.get('/animals/api/payments/:paymentId/status', isLoggedIn, isAdmin, animalController.getPaymentStatus);
+router.put('/animals/api/payments/:paymentId', isLoggedIn, isAdmin, animalController.updatePaymentStatus);
+
 router.get(
   "/vaccinations",
   isLoggedIn,

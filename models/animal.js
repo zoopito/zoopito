@@ -48,7 +48,62 @@ const animalSchema = new Schema(
       trim: true,
       uppercase: true,
     },
-
+     // Plan Information
+    plan: {
+        type: {
+        type: String,
+        enum: ['none', 'basic', 'premium', 'custom'],
+        default: 'none'
+    },
+    name: {
+        type: String,
+        enum: ['None', 'No Plan', 'Basic Plan (₹599/year)', 'Premium Plan (₹999/year)', 'Custom Plan', 'Basic Plan', 'Premium Plan'],
+        default: 'None'
+    },
+    price: {
+        type: Number,
+        default: 0
+    },
+        startDate: {
+            type: Date,
+            default: null
+        },
+        endDate: {
+            type: Date,
+            default: null
+        },
+        status: {
+            type: String,
+            enum: ['active', 'expired', 'pending', 'cancelled'],
+            default: 'pending'
+        },
+        features: {
+            type: [String],
+            default: []
+        },
+        paymentId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Payment',
+            default: null
+        },
+        autoRenew: {
+            type: Boolean,
+            default: false
+        }
+    },
+    
+    // Plan History
+    planHistory: [{
+        planType: String,
+        planName: String,
+        price: Number,
+        startDate: Date,
+        endDate: Date,
+        status: String,
+        changedAt: Date,
+        changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        reason: String
+    }],
     // NEW: Bulk registration tracking
     registrationBatchId: {
       type: String,
@@ -704,6 +759,33 @@ animalSchema.statics.getTodayStats = async function () {
   return stats[0] || { total: 0, pregnant: 0, batchCount: 0, typeCounts: {} };
 };
 
+
+// Add this method to your Animal schema
+animalSchema.methods.activatePlan = async function(planType, price, durationYears = 1, userId = null, reason = '') {
+    const now = new Date();
+    const endDate = new Date();
+    endDate.setFullYear(endDate.getFullYear() + durationYears);
+    
+    if (!this.plan) {
+        this.plan = {};
+    }
+    
+    this.plan.type = planType;
+    this.plan.price = price;
+    this.plan.startDate = now;
+    this.plan.endDate = endDate;
+    this.plan.status = 'active';
+    
+    const PLAN_NAMES = {
+        basic: 'Basic Plan',
+        premium: 'Premium Plan',
+        custom: 'Custom Plan'
+    };
+    this.plan.name = PLAN_NAMES[planType] || 'No Plan';
+    
+    await this.save();
+    return this;
+};
 // ================ INDEXES ================
 
 // Optimized indexes for common queries

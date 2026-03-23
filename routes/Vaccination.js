@@ -46,6 +46,8 @@ router.post("/", vaccinationController.addVaccination);
 
 // ================= UPDATE =================
 router.put("/:id", vaccinationController.updateVaccination);
+// ================= DELETE =================
+router.delete("/:id", vaccinationController.deleteVaccination);
 
 // ================= VERIFY =================
 router.patch("/:id/verify", vaccinationController.verifyStatus);
@@ -56,8 +58,6 @@ router.post("/:id/verify-payment", vaccinationController.adminVerifyPayment);
 // ================= EDIT =================
 router.get("/:id/edit", vaccinationController.renderEditForm);
 
-// ================= DELETE =================
-router.delete("/:id", vaccinationController.deleteVaccination);
 
 // ================= VIEW SINGLE (ALWAYS LAST) =================
 router.get("/:id", vaccinationController.viewVaccination);

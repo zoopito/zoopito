@@ -30,7 +30,7 @@ const VaccineRouter = require("./routes/vaccine.js");
 const vaccinationRouter = require("./routes/Vaccination.js");
 // const animalRouter = require("./routes/animal.js");
 // const farmerRouter = require("./routes/farmer.js");
-// const paravetRouter = require("./routes/paravet.js");
+const paravetRouter = require("./routes/paravet.js");
 // const serviceRouter = require("./routes/service.js");
 
 const salesteamRouter = require("./routes/salesteam.js");
@@ -196,7 +196,7 @@ app.use("/admin", adminRouter);
 app.use("/vaccination", vaccinationRouter);
 // app.use("/animals", animalRouter);
 // app.use("/farmers", farmerRouter);
-// app.use("/paravets", paravetRouter);
+app.use("/paravet", paravetRouter);
 // app.use("/services", serviceRouter);
 app.use("/sales", salesteamRouter);
 

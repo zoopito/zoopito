@@ -6,6 +6,7 @@ const Servise = require("../models/services");
 const Vaccine = require("../models/vaccine");
 const Vaccination = require("../models/vaccination");
 const SalesTeam = require("../models/salesteam");
+const Payment = require('../models/payment');
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { cloudinary, storage } = require("../Cloudconfig.js");
@@ -324,12 +325,20 @@ module.exports.createAnimalForm = async (req, res) => {
       }));
     }
 
+    // Get plan types for selection
+        const planTypes = [
+            { value: 'none', name: 'No Plan', price: 0, description: 'Basic animal registration without any plan benefits' },
+            { value: 'basic', name: 'Basic Plan', price: 599, description: 'Basic vaccination coverage, quarterly health checkups, emergency phone support, digital health records' },
+            { value: 'premium', name: 'Premium Plan', price: 999, description: 'Comprehensive vaccination coverage, monthly health checkups, 24/7 emergency support, priority scheduling, free deworming, nutrition consultation' }
+        ];
+
     res.render("admin/animals/new", {
       farmers,
       sales: salesAgentsList,
       vaccines,
       formType,
       formData,
+      planTypes,
       currUser: req.user,
     });
   } catch (error) {
@@ -342,7 +351,7 @@ module.exports.createAnimalForm = async (req, res) => {
 
 module.exports.createAnimal = async (req, res) => {
   try {
-    const { farmer, registeredBy, applyVaccinationToAll, vaccination } =
+    const { farmer, registeredBy, applyVaccinationToAll, vaccination, selectedPlan, planPaymentMethod } =
       req.body;
 
     // Handle single animal registration
@@ -359,28 +368,69 @@ module.exports.createAnimal = async (req, res) => {
 };
 
 // Single animal registration
+// Single animal registration - UPDATED with plan support
 async function createSingleAnimal(req, res) {
   try {
+    const animalInput = req.body; // For single animal, data is in req.body directly
     const animalData = await prepareAnimalData(req, 0);
+
+    // Handle plan for single animal
+    let selectedPlan = null;
+    let planDetails = null;
+    
+    // Check if plan was selected from form
+    if (animalInput.selectedPlan && animalInput.selectedPlan !== 'none') {
+      planDetails = getPlanDetails(animalInput.selectedPlan);
+      if (planDetails && planDetails.price > 0) {
+        selectedPlan = animalInput.selectedPlan;
+        animalData.plan = {
+          type: animalInput.selectedPlan,
+          name: planDetails.name,
+          price: planDetails.price,
+          status: 'pending',
+          features: planDetails.features
+        };
+      }
+    }
 
     // Save animal to DB
     const newAnimal = new Animal(animalData);
     await newAnimal.save();
 
     // Create vaccination records if provided
-    if (req.body.animals && req.body.animals[0]?.vaccinations) {
+    if (req.body.vaccinations) {
       await createVaccinationRecords(req, newAnimal, null, 0);
-    } else if (req.body.vaccinations) {
-      // Fallback for old format
-      await createVaccinationRecords(req, newAnimal);
     }
 
     // Update farmer's animal count
     await updateFarmerAnimalCount(animalData.farmer);
 
+    // Handle payment if plan was selected
+    let payment = null;
+    if (selectedPlan && planDetails && planDetails.price > 0) {
+      // Get payment method - FIX: Check from form data
+      const paymentMethod = animalInput.planPaymentMethod || 'pending';
+      
+      payment = await createPlanPayment(
+        req, 
+        [newAnimal], 
+        planDetails, 
+        paymentMethod
+      );
+      
+      // If online payment, redirect to payment page
+      if (payment && paymentMethod === 'online') {
+        console.log(`Redirecting to payment page for payment ID: ${payment._id}`);
+        req.flash('info', 'Please complete the payment to activate your plan.');
+        return res.redirect(`/${req.user.role.toLowerCase()}/animals/payment/${payment._id}`);
+      }
+    }
+
     // Send success response
-    sendSuccessResponse(req, res, newAnimal, "single");
+    sendSuccessResponse(req, res, newAnimal, "single", payment ? [payment] : []);
+    
   } catch (error) {
+    console.error("Error in createSingleAnimal:", error);
     throw error;
   }
 }
@@ -390,24 +440,64 @@ async function createBulkAnimals(req, res) {
   try {
     console.log("========== BULK ANIMAL REGISTRATION DEBUG ==========");
     console.log("Request body animals count:", req.body.animals?.length);
-
-    // Log vaccine data for first animal to debug
-    if (req.body.animals && req.body.animals[0]) {
-      console.log(
-        "First animal vaccinations keys:",
-        Object.keys(req.body.animals[0]?.vaccinations || {}),
-      );
+    
+    if (!req.body.animals || !Array.isArray(req.body.animals) || req.body.animals.length === 0) {
+      console.log("No animals array found, treating as single animal registration");
+      return await createSingleAnimal(req, res);
     }
-    console.log("====================================================");
 
     const animalsData = [];
     const createdAnimals = [];
     const errors = [];
-
+    
+    // Track if any animal has a paid plan
+    let hasPaidPlan = false;
+    let combinedPlanDetails = null;
+    let totalPlanAmount = 0;
+    let paymentMethods = new Set();
+    
     // Prepare data for each animal
     for (let i = 0; i < req.body.animals.length; i++) {
       try {
+        const animalInput = req.body.animals[i];
         const animalData = await prepareAnimalData(req, i);
+
+        // Add plan information to animal data
+        if (animalInput.selectedPlan && animalInput.selectedPlan !== 'none') {
+          const planDetails = getPlanDetails(animalInput.selectedPlan);
+          if (planDetails && planDetails.price > 0) {
+            hasPaidPlan = true;
+            totalPlanAmount += planDetails.price;
+            paymentMethods.add(animalInput.planPaymentMethod || 'pending');
+            
+            // Store the highest plan or combine them
+            if (!combinedPlanDetails) {
+              combinedPlanDetails = {
+                name: `Combined Plan (${req.body.animals.length} animals)`,
+                price: 0,
+                features: []
+              };
+            }
+            
+            animalData.plan = {
+              type: animalInput.selectedPlan,
+              name: planDetails.name,
+              price: planDetails.price,
+              status: 'pending',
+              features: planDetails.features
+            };
+          }
+        } else {
+          // No plan selected
+          animalData.plan = {
+            type: 'none',
+            name: 'No Plan',
+            price: 0,
+            status: 'active',
+            features: []
+          };
+        }
+
         animalsData.push({ animalData, index: i });
       } catch (error) {
         errors.push({
@@ -420,26 +510,12 @@ async function createBulkAnimals(req, res) {
 
     // If any preparation errors, abort
     if (errors.length > 0) {
-      req.flash(
-        "error",
-        `Failed to prepare ${errors.length} animal(s). Please check the data.`,
-      );
-      if (errors.length <= 3) {
-        errors.forEach((err) => {
-          req.flash(
-            "error",
-            `Animal ${err.index} (Tag: ${err.tagNumber}): ${err.error}`,
-          );
-        });
-      }
-
+      req.flash("error", `Failed to prepare ${errors.length} animal(s). Please check the data.`);
       req.session.formData = req.body;
-      return res.redirect(
-        `/${req.user.role.toLowerCase()}/animals/new?type=bulk`,
-      );
+      return res.redirect(`/${req.user.role.toLowerCase()}/animals/new?type=bulk`);
     }
 
-    // Create all animals without transaction
+    // Create all animals
     for (const { animalData, index } of animalsData) {
       try {
         const newAnimal = new Animal(animalData);
@@ -452,7 +528,6 @@ async function createBulkAnimals(req, res) {
         }
       } catch (animalError) {
         console.error(`Error saving animal ${index}:`, animalError);
-        // If one animal fails, continue with others
         errors.push({
           index: index + 1,
           error: animalError.message,
@@ -462,35 +537,50 @@ async function createBulkAnimals(req, res) {
     }
 
     // Update farmer's animal count
-    if (createdAnimals.length > 0) {
-      await updateFarmerAnimalCount(
-        req.body.farmer,
-        createdAnimals.length,
-        null,
+    if (createdAnimals.length > 0 && req.body.farmer) {
+      await updateFarmerAnimalCount(req.body.farmer, createdAnimals.length);
+    }
+
+    // Create a SINGLE combined payment for all animals with paid plans
+    let combinedPayment = null;
+    if (hasPaidPlan && totalPlanAmount > 0) {
+      // Determine payment method - use the first one (or combine logic)
+      const paymentMethod = Array.from(paymentMethods)[0] || 'pending';
+      
+      // Create combined plan details
+      const combinedPlan = {
+        name: `Combined Plan - ${createdAnimals.filter(a => a.plan && a.plan.price > 0).length} animals`,
+        price: totalPlanAmount,
+        features: ['Multiple animal registration']
+      };
+      
+      console.log(`Creating combined payment: ₹${totalPlanAmount} for ${createdAnimals.length} animals`);
+      
+      combinedPayment = await createCombinedPayment(
+        req, 
+        createdAnimals, 
+        combinedPlan, 
+        paymentMethod
       );
+      
+      // If online payment, redirect to payment page
+      if (combinedPayment && paymentMethod === 'online') {
+        console.log(`🚀 Redirecting to combined payment page for payment ID: ${combinedPayment._id}`);
+        req.flash('info', `Total payment of ₹${totalPlanAmount} for ${createdAnimals.length} animal(s) pending.`);
+        return res.redirect(`/${req.user.role.toLowerCase()}/animals/payment/${combinedPayment._id}`);
+      }
     }
 
     // If some animals failed to save
     if (errors.length > 0) {
       const successCount = createdAnimals.length;
       const failureCount = errors.length;
-      req.flash(
-        "warning",
-        `${successCount} animal(s) registered successfully, but ${failureCount} failed.`,
-      );
-      if (failureCount <= 3) {
-        errors.forEach((err) => {
-          req.flash(
-            "error",
-            `Animal ${err.index} (Tag: ${err.tagNumber}): ${err.error}`,
-          );
-        });
-      }
+      req.flash("warning", `${successCount} animal(s) registered successfully, but ${failureCount} failed.`);
     }
 
-    // Send success response if at least one animal was created
+    // Send success response
     if (createdAnimals.length > 0) {
-      sendSuccessResponse(req, res, createdAnimals, "bulk");
+      sendSuccessResponse(req, res, createdAnimals, "bulk", combinedPayment ? [combinedPayment] : []);
     } else {
       req.flash("error", "Failed to register any animals. Please try again.");
       res.redirect(`/${req.user.role.toLowerCase()}/animals/new?type=bulk`);
@@ -500,6 +590,340 @@ async function createBulkAnimals(req, res) {
     handleError(error, req, res);
   }
 }
+async function createCombinedPayment(req, animals, planDetails, paymentMethod) {
+  try {
+    if (!animals || animals.length === 0) {
+      console.error("No animals provided for payment creation");
+      return null;
+    }
+    
+    const totalAmount = planDetails.price;
+    const isBulk = animals.length > 1;
+    const paymentTypeValue = isBulk ? 'bulk_registration' : 'single_registration';
+    
+    console.log(`Creating combined payment: ₹${totalAmount} for ${animals.length} animals, type: ${paymentTypeValue}, method: ${paymentMethod}`);
+    
+    const payment = new Payment({
+      farmerId: req.body.farmer,
+      animalIds: animals.map(a => a._id),
+      paymentType: paymentTypeValue,
+      amount: totalAmount,
+      paymentMethod: paymentMethod || 'pending',
+      paymentStatus: paymentMethod === 'cash' ? 'completed' : 'pending',
+      description: `Bulk registration of ${animals.length} animals with combined plans (${animals.filter(a => a.plan && a.plan.price > 0).length} paid plans)`,
+      metadata: {
+        planType: planDetails.name,
+        planDuration: 1,
+        startDate: new Date(),
+        endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        animalCount: animals.length,
+        animalsWithPlans: animals.filter(a => a.plan && a.plan.price > 0).map(a => ({
+          id: a._id,
+          name: a.name || a.tagNumber,
+          planType: a.plan?.type,
+          planPrice: a.plan?.price
+        }))
+      },
+      createdBy: req.user._id
+    });
+    
+    await payment.save();
+    console.log(`✅ Combined payment created with ID: ${payment._id}`);
+    
+    // If payment method is cash, mark as completed immediately
+    if (paymentMethod === 'cash') {
+      payment.paymentStatus = 'completed';
+      payment.paidAmount = totalAmount;
+      payment.paidDate = new Date();
+      payment.verifiedBy = req.user._id;
+      payment.verifiedAt = new Date();
+      await payment.save();
+      console.log(`💰 Cash payment ${payment._id} marked as completed`);
+      
+      // Activate plans for all animals with plans
+      for (const animal of animals) {
+        if (animal.plan && animal.plan.price > 0) {
+          if (animal.plan) {
+            animal.plan.status = 'active';
+            animal.plan.activatedAt = new Date();
+            animal.plan.activatedBy = req.user._id;
+            animal.plan.expiresAt = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
+            await animal.save();
+            console.log(`✅ Plan activated for animal ${animal._id} (${animal.plan.type})`);
+          }
+        }
+      }
+    }
+    
+    return payment;
+  } catch (error) {
+    console.error('❌ Error creating combined payment:', error);
+    return null;
+  }
+}
+
+// Helper function to get plan details
+function getPlanDetails(planType) {
+    const plans = {
+        none: { name: 'No Plan', price: 0, features: [] },
+        basic: { name: 'Basic Plan', price: 599, features: ['Basic vaccination coverage', 'Quarterly health checkups', 'Emergency phone support', 'Digital health records'] },
+        premium: { name: 'Premium Plan', price: 999, features: ['Comprehensive vaccination coverage', 'Monthly health checkups', '24/7 emergency support', 'Digital health records', 'Priority scheduling', 'Free deworming (quarterly)', 'Nutrition consultation'] }
+    };
+    return plans[planType] || plans.none;
+}
+
+// Create plan payment
+// In your createPlanPayment function
+async function createPlanPayment(req, animals, planDetails, paymentMethod) {
+  try {
+    if (!animals || animals.length === 0) {
+      console.error("No animals provided for payment creation");
+      return null;
+    }
+    
+    const totalAmount = planDetails.price * animals.length;
+    const isBulk = animals.length > 1;
+    
+    // Explicitly set paymentType to match enum
+    const paymentTypeValue = isBulk ? 'bulk_registration' : 'single_registration';
+    
+    console.log(`Creating payment: ${totalAmount} for ${animals.length} animals, type: ${paymentTypeValue}, method: ${paymentMethod}`);
+    
+    const payment = new Payment({
+      farmerId: req.body.farmer,
+      animalIds: animals.map(a => a._id),
+      paymentType: paymentTypeValue,  // Use the value that matches enum
+      amount: totalAmount,
+      paymentMethod: paymentMethod || 'pending',
+      paymentStatus: paymentMethod === 'cash' ? 'completed' : 'pending', // FIX: Cash should be 'completed'
+      description: `${isBulk ? 'Bulk' : 'Single'} registration of ${animals.length} animal(s) with ${planDetails.name}`,
+      metadata: {
+        planType: planDetails.name,
+        planDuration: 1,
+        startDate: new Date(),
+        endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        animalCount: animals.length
+      },
+      createdBy: req.user._id
+    });
+    
+    await payment.save();
+    console.log(`Payment created with ID: ${payment._id}`);
+    
+    // If payment method is cash, mark as completed immediately
+    if (paymentMethod === 'cash') {
+      payment.paymentStatus = 'completed';
+      payment.paidAmount = totalAmount;
+      payment.paidDate = new Date();
+      payment.verifiedBy = req.user._id;
+      payment.verifiedAt = new Date();
+      await payment.save();
+      console.log(`Cash payment ${payment._id} marked as completed`);
+      
+      // Activate plans for all animals
+      for (const animal of animals) {
+        const planType = planDetails.name.toLowerCase().includes('basic') ? 'basic' : 
+                         planDetails.name.toLowerCase().includes('premium') ? 'premium' : 'custom';
+        
+        if (animal.plan) {
+          animal.plan.status = 'active';
+          animal.plan.activatedAt = new Date();
+          animal.plan.activatedBy = req.user._id;
+          animal.plan.expiresAt = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
+          await animal.save();
+        }
+      }
+    }
+    
+    return payment;
+  } catch (error) {
+    console.error('Error creating plan payment:', error);
+    console.error('Error details:', error.errors);
+    return null;
+  }
+}
+
+// Payment page
+module.exports.showPaymentPage = async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        
+        const payment = await Payment.findById(paymentId)
+            .populate('farmerId', 'name mobileNumber uniqueFarmerId address')
+            .populate('animalIds', 'name tagNumber uniqueAnimalId animalType')
+            .populate('createdBy', 'name');
+        
+        if (!payment) {
+            req.flash('error', 'Payment not found');
+            return res.redirect(`/${req.user.role.toLowerCase()}/animals`);
+        }
+        
+        // Generate QR code data (you can use a library like qrcode)
+        const upiId = 'zoopito@okhdfcbank'; // Your UPI ID
+        const upiIntent = `upi://pay?pa=${upiId}&pn=Zoopito&am=${payment.amount}&tn=Payment for ${payment.paymentType}&cu=INR`;
+        
+        res.render('admin/animals/payment.ejs', {
+            payment,
+            upiIntent,
+            upiId,
+            title: `Payment - ₹${payment.amount}`,
+            currUser: req.user
+        });
+    } catch (error) {
+        console.error('Error showing payment page:', error);
+        req.flash('error', 'Unable to load payment page');
+        res.redirect(`/${req.user.role.toLowerCase()}/animals`);
+    }
+};
+
+// Verify payment
+module.exports.verifyPayment = async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        const { utrNumber, paidAmount, paymentDate, notes } = req.body;
+        
+        const payment = await Payment.findById(paymentId)
+            .populate('animalIds');
+        
+        if (!payment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Payment not found'
+            });
+        }
+        
+        if (payment.paymentStatus === 'completed') {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment already verified'
+            });
+        }
+        
+        // Update payment
+        payment.utrNumber = utrNumber;
+        payment.paidAmount = paidAmount || payment.amount;
+        payment.paidDate = paymentDate ? new Date(paymentDate) : new Date();
+        payment.paymentStatus = 'completed';
+        payment.paymentMethod = 'online';
+        payment.verifiedBy = req.user._id;
+        payment.verifiedAt = new Date();
+        payment.notes = notes || '';
+        
+        await payment.save();
+        
+        // Activate plans for all animals
+        const planType = payment.metadata.planType;
+        const planPrice = payment.amount / payment.animalIds.length;
+        
+        for (const animal of payment.animalIds) {
+            await animal.activatePlan(
+                planType.toLowerCase().includes('basic') ? 'basic' : 
+                planType.toLowerCase().includes('premium') ? 'premium' : 'custom',
+                planPrice,
+                1,
+                req.user._id,
+                `Plan activated after payment verification (UTR: ${utrNumber})`
+            );
+        }
+        
+        req.flash('success', `Payment verified successfully! Plans activated for ${payment.animalIds.length} animal(s).`);
+        
+        res.json({
+            success: true,
+            message: 'Payment verified successfully',
+            redirectUrl: `/${req.user.role.toLowerCase()}/animals`
+        });
+        
+    } catch (error) {
+        console.error('Error verifying payment:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to verify payment'
+        });
+    }
+};
+
+// Get payment status
+module.exports.getPaymentStatus = async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        
+        const payment = await Payment.findById(paymentId)
+            .select('paymentStatus amount utrNumber paidAmount paidDate paymentMethod');
+        
+        if (!payment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Payment not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: payment
+        });
+    } catch (error) {
+        console.error('Error getting payment status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get payment status'
+        });
+    }
+};
+
+// Update payment status manually (for admin)
+module.exports.updatePaymentStatus = async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        const { paymentStatus, utrNumber, notes } = req.body;
+        
+        const payment = await Payment.findById(paymentId);
+        
+        if (!payment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Payment not found'
+            });
+        }
+        
+        payment.paymentStatus = paymentStatus;
+        if (utrNumber) payment.utrNumber = utrNumber;
+        if (notes) payment.notes = notes;
+        
+        if (paymentStatus === 'completed') {
+            payment.verifiedBy = req.user._id;
+            payment.verifiedAt = new Date();
+            payment.paidDate = new Date();
+            
+            // Activate plans if completed
+            const animals = await Animal.find({ _id: { $in: payment.animalIds } });
+            
+            const planPrice = payment.amount / animals.length;
+            const planType = payment.metadata.planType;
+            
+            for (const animal of animals) {
+                await animal.activatePlan(
+                    planType.toLowerCase().includes('basic') ? 'basic' : 
+                    planType.toLowerCase().includes('premium') ? 'premium' : 'custom',
+                    planPrice,
+                    1,
+                    req.user._id,
+                    `Plan activated (Manual verification - ${paymentStatus})`
+                );
+            }
+        }
+        
+        await payment.save();
+        
+        req.flash('success', `Payment status updated to ${paymentStatus}`);
+        res.redirect(`/${req.user.role.toLowerCase()}/payments/${paymentId}`);
+        
+    } catch (error) {
+        console.error('Error updating payment status:', error);
+        req.flash('error', 'Failed to update payment status');
+        res.redirect(`/${req.user.role.toLowerCase()}/payments`);
+    }
+};
 
 // Prepare animal data
 async function prepareAnimalData(req, index) {
@@ -609,6 +1033,29 @@ async function prepareAnimalData(req, index) {
         : 0,
       pregnancyNotes: animalInput.pregnancyStatus?.notes || "",
     };
+
+    // Add this inside prepareAnimalData function, after pregnancy status handling
+  // Handle plan selection
+  if (animalInput.selectedPlan && animalInput.selectedPlan !== 'none') {
+    const planDetails = getPlanDetails(animalInput.selectedPlan);
+    if (planDetails && planDetails.price > 0) {
+      animalData.plan = {
+        type: animalInput.selectedPlan,
+        name: planDetails.name,
+        price: planDetails.price,
+        status: 'pending',
+        features: planDetails.features
+      };
+    }
+  } else {
+    animalData.plan = {
+      type: 'none',
+      name: 'No Plan',
+      price: 0,
+      status: 'active',
+      features: []
+    };
+  }
   } else {
     animalData.pregnancyStatus = {
       isPregnant: false,
@@ -681,8 +1128,7 @@ async function createVaccinationRecords(
         vaccineData.administered === "on";
 
       console.log(
-        `Vaccine ${vaccineId} - Administered: ${isAdministered}, Data:`,
-        vaccineData,
+        `Vaccine ${vaccineId} - Administered: ${isAdministered}`,
       );
 
       if (!isAdministered) {
@@ -710,6 +1156,20 @@ async function createVaccinationRecords(
         );
       }
 
+      // Calculate next due date
+      let nextDueDate = null;
+      if (vaccineData.nextDueDate) {
+        nextDueDate = new Date(vaccineData.nextDueDate);
+      } else if (vaccine.boosterIntervalWeeks) {
+        nextDueDate = calculateNextDueDate(
+          vaccineData.dateAdministered,
+          vaccine.boosterIntervalWeeks
+        );
+      } else {
+        // Default to 1 year if no interval specified
+        nextDueDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      }
+
       const vaccinationRecord = new Vaccination({
         farmer: animal.farmer,
         animal: animal._id,
@@ -717,18 +1177,13 @@ async function createVaccinationRecords(
         vaccineName: vaccine.vaccineName || vaccine.name,
         vaccineType: vaccine.vaccineType,
         dateAdministered: new Date(vaccineData.dateAdministered),
-        nextDueDate: vaccineData.nextDueDate
-          ? new Date(vaccineData.nextDueDate)
-          : calculateNextDueDate(
-              vaccineData.dateAdministered,
-              vaccine.boosterIntervalWeeks,
-            ),
+        nextDueDate: nextDueDate,
         administeredBy: vaccineData.administeredBy,
         notes: vaccineData.notes || "",
         status: "Administered",
         batchNumber: vaccineData.batchNumber || null,
-        dosageAmount: vaccine.standardDosage || null,
-        dosageUnit: vaccine.dosageUnit || "ml",
+        dosageAmount: vaccineData.dosageAmount || vaccine.standardDosage || 1,
+        dosageUnit: vaccineData.dosageUnit || vaccine.dosageUnit || "ml", // FIX: Use proper default
         createdBy: req.user._id,
       });
 
@@ -741,13 +1196,20 @@ async function createVaccinationRecords(
       );
 
       // Update animal's vaccination summary
+      if (!animal.vaccinationSummary) {
+        animal.vaccinationSummary = {
+          totalVaccinations: 0,
+          vaccinesGiven: [],
+          isUpToDate: false,
+        };
+      }
+      
       animal.vaccinationSummary.vaccinesGiven.push({
         vaccine: vaccine._id,
         vaccineName: vaccine.vaccineName || vaccine.name,
         lastDate: new Date(vaccineData.dateAdministered),
-        nextDue: vaccinationRecord.nextDueDate,
-        status:
-          vaccinationRecord.nextDueDate > new Date() ? "up_to_date" : "overdue",
+        nextDue: nextDueDate,
+        status: nextDueDate > new Date() ? "up_to_date" : "overdue",
       });
     }
 
@@ -757,11 +1219,9 @@ async function createVaccinationRecords(
         (a, b) => new Date(b.dateAdministered) - new Date(a.dateAdministered),
       )[0];
 
-      animal.vaccinationSummary.totalVaccinations =
-        (animal.vaccinationSummary.totalVaccinations || 0) +
-        vaccinationRecords.length;
-      animal.vaccinationSummary.lastVaccinationDate =
-        latestVaccination.dateAdministered;
+      animal.vaccinationSummary.totalVaccinations = 
+        (animal.vaccinationSummary.totalVaccinations || 0) + vaccinationRecords.length;
+      animal.vaccinationSummary.lastVaccinationDate = latestVaccination.dateAdministered;
       animal.vaccinationSummary.lastVaccineType = latestVaccination.vaccineType;
 
       // Find earliest next due date
@@ -826,26 +1286,31 @@ async function updateFarmerAnimalCount(farmerId, count = 1, session = null) {
 }
 
 // Send success response
-function sendSuccessResponse(req, res, animals, type) {
+function sendSuccessResponse(req, res, animals, type, payments = []) {
   const isSingle = type === "single";
   const animal = isSingle ? animals : animals[0];
   const count = isSingle ? 1 : animals.length;
+  
+  // Check if there are pending online payments
+  const hasOnlinePayments = payments && payments.some(p => 
+    p && p.paymentMethod === 'online' && p.paymentStatus === 'pending'
+  );
+  
+  console.log(`sendSuccessResponse - hasOnlinePayments: ${hasOnlinePayments}, payments length: ${payments?.length}`);
 
   // Send notifications
-  if (animal.pregnancyStatus?.isPregnant) {
+  if (animal && animal.pregnancyStatus?.isPregnant) {
     req.flash(
       "primary",
       `Pregnant animal registered! Expected delivery: ${
         animal.pregnancyStatus.expectedDeliveryDate
-          ? new Date(
-              animal.pregnancyStatus.expectedDeliveryDate,
-            ).toLocaleDateString()
+          ? new Date(animal.pregnancyStatus.expectedDeliveryDate).toLocaleDateString()
           : "Not specified"
       }`,
     );
   }
 
-  if (animal.healthStatus.currentStatus !== "Healthy") {
+  if (animal && animal.healthStatus?.currentStatus !== "Healthy") {
     req.flash(
       "warning",
       `Animal registered with health status: ${animal.healthStatus.currentStatus}. Requires attention.`,
@@ -853,15 +1318,25 @@ function sendSuccessResponse(req, res, animals, type) {
   }
 
   const names = isSingle
-    ? `"${animal.name || animal.tagNumber}"`
+    ? `"${animal?.name || animal?.tagNumber}"`
     : `${count} animals`;
 
-  req.flash(
-    "success",
-    `${names} registered successfully! ${isSingle ? `ID: ${animal.uniqueAnimalId}` : ""}`,
-  );
+  if (hasOnlinePayments) {
+    req.flash(
+      "info",
+      `${names} registered! Please complete the payment to activate plans.`,
+    );
+    // IMPORTANT: Don't redirect here - let the calling function handle the redirect
+    // The calling function should already have redirected to payment page
+    return;
+  } else {
+    req.flash(
+      "success",
+      `${names} registered successfully! ${isSingle ? `ID: ${animal?.uniqueAnimalId}` : ""}`,
+    );
+  }
 
-  // Redirect based on registration type
+  // Redirect based on registration type (only for non-payment cases)
   const role = req.user.role.toLowerCase();
   if (isSingle) {
     res.redirect(`/${role}/animals/${animal._id}`);

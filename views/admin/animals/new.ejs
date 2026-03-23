@@ -66,425 +66,413 @@
     </div>
 
     <!-- Animal Entry Sections -->
-    <div id="animalEntries">
-      <!-- First Animal Entry -->
-      <div class="animal-entry border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-              <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-            </svg>
-            Animal 1 Details
-          </h2>
+    <!-- Inside the animalEntries div, where you loop through animals -->
+<div id="animalEntries">
+  <% for(let animalIdx = 0; animalIdx < (formData && formData.animals ? formData.animals.length : 1); animalIdx++) { %>
+    <div class="animal-entry border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+          </svg>
+          Animal <%= animalIdx + 1 %> Details
+        </h2>
+      </div>
+      
+      <!-- Basic Information Section -->
+      <div class="mb-6">
+        <h3 class="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300">Basic Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <!-- Animal Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Animal Type *</label>
+            <select name="animals[<%= animalIdx %>][animalType]" required class="animal-type-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              <option value="">Select Type</option>
+              <option value="Cow">Cow</option>
+              <option value="Buffalo">Buffalo</option>
+              <option value="Goat">Goat</option>
+              <option value="Sheep">Sheep</option>
+              <option value="Dog">Dog</option>
+              <option value="Cat">Cat</option>
+              <option value="Poultry">Poultry</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <!-- Breed -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Breed</label>
+            <input type="text" name="animals[<%= animalIdx %>][breed]" placeholder="Enter breed" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+
+          <!-- Age -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Age</label>
+              <input type="number" name="animals[<%= animalIdx %>][age][value]" min="0" placeholder="Value" class="age-value-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unit</label>
+              <select name="animals[<%= animalIdx %>][age][unit]" class="age-unit-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+                <option value="Days">Days</option>
+                <option value="Months">Months</option>
+                <option value="Years" selected>Years</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Gender -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gender *</label>
+            <select name="animals[<%= animalIdx %>][gender]" required class="gender-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Unknown">Unknown</option>
+            </select>
+          </div>
+
+          <!-- Is Tagged -->
+          <div class="flex gap-2 mt-6">
+            <div class="flex items-center">
+              <input type="checkbox" name="animals[<%= animalIdx %>][isTagged]" id="isTagged-<%= animalIdx %>" class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+              <label for="isTagged-<%= animalIdx %>" class="flex ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Has Tagged</label>
+            </div>
+
+            <!-- Tag Number -->
+            <div class="flex hidden items-center" id="tagNumberContainer-<%= animalIdx %>">
+              <label class="flex text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tag Number</label>
+              <input id="tagNumber-<%= animalIdx %>" type="text" name="animals[<%= animalIdx %>][tagNumber]" placeholder="Enter tag number" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+          </div>
+
+          <!-- Date of Birth -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Birth</label>
+            <input type="date" name="animals[<%= animalIdx %>][dateOfBirth]" class="date-of-birth w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          </div>
+
+          <!-- Health Status -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Health Status *</label>
+            <select name="animals[<%= animalIdx %>][healthStatus]" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              <option value="">Select Status</option>
+              <option value="Healthy">Healthy</option>
+              <option value="Sick">Sick</option>
+              <option value="Under Treatment">Under Treatment</option>
+              <option value="Recovered">Recovered</option>
+              <option value="Quarantined">Quarantined</option>
+              <option value="Chronic Condition">Chronic Condition</option>
+            </select>
+          </div>
+
+          <!-- Body Condition Score -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Body Condition Score (1-5)</label>
+            <select name="animals[<%= animalIdx %>][bodyConditionScore]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+              <option value="3">3 (Ideal)</option>
+              <option value="1">1 (Poor)</option>
+              <option value="2">2 (Thin)</option>
+              <option value="4">4 (Fleshy)</option>
+              <option value="5">5 (Obese)</option>
+            </select>
+          </div>
         </div>
+      </div>
+
+      <!-- PLAN SELECTION SECTION - FIXED WITH CORRECT INDEX -->
+      <div class="mb-6 border-t pt-6 border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300 flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+            <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/>
+          </svg>
+          Select Plan for This Animal
+        </h3>
         
-        <!-- Basic Information -->
-        <div class="mb-6">
-          <h3 class="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300">Basic Information</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <!-- Animal Type -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Animal Type *</label>
-              <select name="animals[0][animalType]" required class="animal-type-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-                <option value="">Select Type</option>
-                <option value="Cow">Cow</option>
-                <option value="Buffalo">Buffalo</option>
-                <option value="Goat">Goat</option>
-                <option value="Sheep">Sheep</option>
-                <option value="Dog">Dog</option>
-                <option value="Cat">Cat</option>
-                <option value="Poultry">Poultry</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <!-- Breed -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Breed</label>
-              <input type="text" name="animals[0][breed]" placeholder="Enter breed" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-            </div>
-
-            <!-- Age -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Age</label>
-                <input type="number" name="animals[0][age][value]" min="0" placeholder="Value" class="age-value-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unit</label>
-                <select name="animals[0][age][unit]" class="age-unit-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-                  <option value="Days">Days</option>
-                  <option value="Months">Months</option>
-                  <option value="Years" selected>Years</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Gender -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gender *</label>
-              <select name="animals[0][gender]" required class="gender-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Unknown">Unknown</option>
-              </select>
-            </div>
-
-            <!-- Name -->
-            <!-- <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-              <input type="text" name="animals[0][name]" placeholder="Enter animal name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-            </div> -->
-
-            <!-- Is Tagged -->
-            <div class="flex gap-2 mt-6">
-              <div class="flex items-center">
-                <input type="checkbox" name="animals[0][isTagged]" id="isTagged-0" class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
-                <label for="isTagged-0" class="  flex ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Has Tagged</label>
-              </div>
-
-              <!-- Tag Number -->
-              <div class="flex hidden items-center" id="tagNumberContainer-0">
-                <label class="flex text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tag Number</label>
-                <input id="tagNumber-0" type="text" name="animals[0][tagNumber]" required placeholder="Enter tag number" class=" px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-              </div>
-            </div>
-
-
-            <!-- Date of Birth -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Birth</label>
-              <input type="date" name="animals[0][dateOfBirth]" class="date-of-birth w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-            </div>
-
-            <!-- Health Status -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Health Status *</label>
-              <select name="animals[0][healthStatus]" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-                <option value="">Select Status</option>
-                <option value="Healthy">Healthy</option>
-                <option value="Sick">Sick</option>
-                <option value="Under Treatment">Under Treatment</option>
-                <option value="Recovered">Recovered</option>
-                <option value="Quarantined">Quarantined</option>
-                <option value="Chronic Condition">Chronic Condition</option>
-              </select>
-            </div>
-
-            <!-- Body Condition Score -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Body Condition Score (1-5)</label>
-              <select name="animals[0][bodyConditionScore]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-                <option value="3">3 (Ideal)</option>
-                <option value="1">1 (Poor)</option>
-                <option value="2">2 (Thin)</option>
-                <option value="4">4 (Fleshy)</option>
-                <option value="5">5 (Obese)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pregnancy Status Section - Only shows for Adult Female Animals -->
-        <div id="pregnancySection-0" class="pregnancy-section hidden mb-6 border-t pt-6 border-gray-200 dark:border-gray-700">
-          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
-            <div class="flex items-start">
-              <svg class="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-              </svg>
-              <p class="text-sm text-purple-700 dark:text-purple-300">
-                <span class="font-medium">Adult Female Animal:</span> Pregnancy information can be recorded below.
-              </p>
-            </div>
-          </div>
-
-          <h3 class="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300 flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
-            </svg>
-            Pregnancy Status (Manual Entry)
-          </h3>
-          
-          <div class="space-y-4">
-            <!-- Pregnancy Check -->
-            <div class="flex items-center mb-4">
-              <input type="checkbox" name="animals[0][pregnancyStatus][isPregnant]" id="isPregnant-0" class="pregnancy-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
-              <label for="isPregnant-0" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Is Pregnant</label>
-            </div>
-
-            <!-- Pregnancy Details -->
-            <div id="pregnancyDetails-0" class="pregnancy-details hidden space-y-4 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-              <!-- Test Date -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Test Date</label>
-                <input type="date" name="animals[0][pregnancyStatus][testDate]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-              </div>
-
-              <!-- Confirmation Date -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirmed Date</label>
-                <input type="date" name="animals[0][pregnancyStatus][confirmedDate]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-              </div>
-
-              <!-- Expected Delivery Date -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expected Delivery Date</label>
-                <input type="date" name="animals[0][pregnancyStatus][expectedDeliveryDate]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-              </div>
-
-              <!-- Pregnancy Stage -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregnancy Stage</label>
-                <select name="animals[0][pregnancyStatus][stage]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-                  <option value="">Select Stage</option>
-                  <option value="early">Early (0-3 months)</option>
-                  <option value="mid">Mid (3-6 months)</option>
-                  <option value="late">Late (6-9 months)</option>
-                  <option value="full_term">Full Term</option>
-                </select>
-              </div>
-
-              <!-- Number of Fetuses -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of Fetuses</label>
-                <input type="number" name="animals[0][pregnancyStatus][numberOfFetuses]" min="1" max="10" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-              </div>
-
-              <!-- Previous Pregnancies -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Previous Pregnancies</label>
-                <input type="number" name="animals[0][pregnancyStatus][previousPregnancies]" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-              </div>
-
-              <!-- Notes -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregnancy Notes</label>
-                <textarea name="animals[0][pregnancyStatus][notes]" rows="2" placeholder="Any additional notes about pregnancy..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Photos Section -->
-        <div class="mb-6 border-t pt-6 border-gray-200 dark:border-gray-700">
-          <h3 class="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300 flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
-            </svg>
-            Animal Photos
-          </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Front Photo</label>
-              <input type="file" name="animals[0][photos][front]" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
-            </div>
-            <!-- <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Left Side Photo</label>
-              <input type="file" name="animals[0][photos][left]" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
-            </div> -->
-            <!-- <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Right Side Photo</label>
-              <input type="file" name="animals[0][photos][right]" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
-            </div> -->
-            <!-- <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Back Photo</label>
-              <input type="file" name="animals[0][photos][back]" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
-            </div> -->
-          </div>
-        </div>
-
-        <!-- Vaccination Records Section - PER ANIMAL -->
-        <div class="mb-6 border-t pt-6 border-gray-200 dark:border-gray-700">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-center">
-              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
-              </svg>
-              Vaccination Records for Animal 1
-            </h3>
-            
-            <!-- Common for All Animals Checkbox -->
-            <!-- <div class="flex items-center">
-              <input type="checkbox" 
-                     id="commonVaccination-0" 
-                     class="common-vaccination-checkbox h-4 w-4 text-green-600 rounded border-gray-300 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
-                     data-animal-index="0">
-              <label for="commonVaccination-0" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Common for All Animals
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <% planTypes.forEach(plan => { %>
+            <div class="relative">
+              <input type="radio" 
+                     name="animals[<%= animalIdx %>][selectedPlan]" 
+                     id="plan_<%= animalIdx %>_<%= plan.value %>" 
+                     value="<%= plan.value %>"
+                     class="hidden peer animal-plan-radio"
+                     data-animal-index="<%= animalIdx %>"
+                     <%= plan.value === 'none' ? 'checked' : '' %>>
+              <label for="plan_<%= animalIdx %>_<%= plan.value %>" 
+                     class="block p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer transition-all peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 hover:shadow-lg">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-semibold text-gray-900 dark:text-white"><%= plan.name %></span>
+                  <% if (plan.price > 0) { %>
+                    <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">₹<%= plan.price %></span>
+                  <% } else { %>
+                    <span class="text-sm text-green-600 dark:text-green-400">Free</span>
+                  <% } %>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3"><%= plan.description %></p>
+                <% if (plan.price > 0) { %>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-calendar-alt mr-1"></i>
+                    Valid for 1 year
+                  </div>
+                <% } %>
               </label>
-            </div> -->
-          </div>
-          
-          <div class="space-y-6">
-            <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Select vaccines administered to this specific animal. If "Common for All Animals" is checked, 
-                this vaccination record will be applied to all animals in this batch.
-              </p>
-              
-              <% if (vaccines && vaccines.length > 0) { %>
-                <div class="space-y-4" id="vaccinesContainer-0">
-                  <% vaccines.forEach((vaccine, index) => { %>
-                    <div class="vaccine-item border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
-                      <!-- Vaccine Header with Checkbox -->
-                      <div class="flex items-start mb-4">
-                        <input type="checkbox" 
-                               name="animals[0][vaccinations][<%= vaccine._id %>][administered]" 
-                               id="vaccine_0_<%= vaccine._id %>" 
-                               value="true"
-                               class="animal-vaccine-checkbox h-4 w-4 mt-1 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-                               data-vaccine-id="<%= vaccine._id %>"
-                               data-animal-index="0">
-                        <div class="ml-3 flex-1">
-                          <label for="vaccine_0_<%= vaccine._id %>" class="block text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-                            <span class="font-semibold"><%= vaccine.vaccineName || vaccine.name %></span>
-                            <% if (vaccine.vaccineType) { %>
-                              <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">(<%= vaccine.vaccineType %>)</span>
-                            <% } %>
-                          </label>
-                          <% if (vaccine.diseaseTarget) { %>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Target: <%= vaccine.diseaseTarget %></p>
-                          <% } %>
-                          <% if (vaccine.manufacturer) { %>
-                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Manufacturer: <%= vaccine.manufacturer %></p>
-                          <% } %>
-                          <% if (vaccine.recommendedSchedule) { %>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Schedule: <%= vaccine.recommendedSchedule %></p>
-                          <% } %>
-                        </div>
-                      </div>
-                      
-                      <!-- Vaccine Details (Hidden by default) -->
-                      <div id="vaccineDetails_0_<%= vaccine._id %>" class="vaccine-details hidden space-y-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                        <!-- Store vaccine metadata -->
-                        <input type="hidden" name="animals[0][vaccinations][<%= vaccine._id %>][vaccineId]" value="<%= vaccine._id %>">
-                        <input type="hidden" name="animals[0][vaccinations][<%= vaccine._id %>][vaccineName]" value="<%= vaccine.vaccineName || vaccine.name %>">
-                        <input type="hidden" name="animals[0][vaccinations][<%= vaccine._id %>][vaccineType]" value="<%= vaccine.vaccineType || '' %>">
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <!-- Vaccination Date -->
-    <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Vaccination Date * <span class="text-xs text-gray-500">(Date administered)</span>
-        </label>
-        <input type="date" 
-               name="animals[0][vaccinations][<%= vaccine._id %>][dateAdministered]" 
-               class="vaccination-date w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"
-               max="<%= new Date().toISOString().split('T')[0] %>"
-               data-booster-weeks="<%= vaccine.boosterIntervalWeeks || 0 %>"
-               data-vaccine-id="<%= vaccine._id %>"
-               data-animal-index="0"
-               onchange="calculateNextDueDate(this)">
-    </div>
-    
-    <!-- Administered By -->
-    <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Administered By *
-        </label>
-        <input type="text" 
-               name="animals[0][vaccinations][<%= vaccine._id %>][administeredBy]" 
-               placeholder="Name of vet/paravet"
-               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-    </div>
-    
-    <!-- Next Due Date -->
-    <div class="md:col-span-2">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Next Due Date <span class="text-xs text-gray-500">(When next dose is due)</span>
-        </label>
-        <div class="flex items-center space-x-2">
-            <input type="date" 
-                   name="animals[0][vaccinations][<%= vaccine._id %>][nextDueDate]" 
-                   id="nextDueDate_0_<%= vaccine._id %>"
-                   class="next-due-date flex-1 w-full lg:w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-            
-            <!-- Auto-calculate button (optional) -->
-            <button type="button" 
-                    onclick="autoCalculateNextDue(this)"
-                    class="px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-300 rounded-lg text-sm transition"
-                    title="Auto-calculate based on vaccination date">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                </svg>
-            </button>
+            </div>
+          <% }) %>
         </div>
-        <% if (vaccine.boosterIntervalWeeks) { %>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <span class="inline-flex items-center">
-                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                    </svg>
-                    Booster due after <%= vaccine.boosterIntervalWeeks %> week<%= vaccine.boosterIntervalWeeks > 1 ? 's' : '' %>
-                </span>
-            </p>
-        <% } %>
-    </div>
-</div>
-
-
-
-<!-- For bulk mode with dynamic animals, add this function to reinitialize event listeners -->
-<script>
-// Call this after adding a new animal entry
-function reinitializeVaccineDateListeners(container) {
-    container.querySelectorAll('.vaccination-date').forEach(input => {
-        // Remove existing listeners to prevent duplicates (optional)
-        input.removeEventListener('change', calculateNextDueDate);
         
-        // Add new listener
-        input.addEventListener('change', function() {
-            calculateNextDueDate(this);
-        });
-    });
-}
-
-// If you have a function that adds new animal entries, call reinitializeVaccineDateListeners
-// after adding the new HTML
-</script>
-                          
-                          <!-- Batch Number -->
-                          <!-- <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Batch/Lot Number
-                            </label>
-                            <input type="text" 
-                                   name="animals[0][vaccinations][<%= vaccine._id %>][batchNumber]" 
-                                   placeholder="Enter batch number"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-                          </div>
-                        </div> -->
-                        
-                        <!-- Notes -->
-                        <div>
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Notes
-                          </label>
-                          <textarea name="animals[0][vaccinations][<%= vaccine._id %>][notes]" 
-                                    rows="2" 
-                                    placeholder="Any additional notes about this vaccination (e.g., reaction, location)"
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"></textarea>
-                        </div>
-                      </div>
-                    </div>
-                  <% }); %>
-                </div>
-              <% } else { %>
-                <div class="text-center py-8">
-                  <svg class="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  <p class="text-gray-500 dark:text-gray-400">No vaccines found in database.</p>
-                  <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Please add vaccines first to record vaccinations.</p>
-                </div>
-              <% } %>
+        <!-- Payment Method Selection for this animal -->
+        <div id="paymentMethodSection_<%= animalIdx %>" class="hidden mt-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Payment Method for This Animal *
+          </label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <input type="radio" 
+                     name="animals[<%= animalIdx %>][planPaymentMethod]" 
+                     id="paymentOnline_<%= animalIdx %>" 
+                     value="online" 
+                     class="mr-2 animal-payment-method">
+              <label for="paymentOnline_<%= animalIdx %>" class="text-gray-700 dark:text-gray-300">
+                <i class="fas fa-mobile-alt text-green-600 mr-1"></i>
+                Online Payment (UPI/Card)
+              </label>
+              <p class="text-xs text-gray-500 dark:text-gray-400 ml-6 mt-1">
+                Pay online using UPI, credit/debit card, or net banking
+              </p>
+            </div>
+            <div>
+              <input type="radio" 
+                     name="animals[<%= animalIdx %>][planPaymentMethod]" 
+                     id="paymentCash_<%= animalIdx %>" 
+                     value="cash" 
+                     class="mr-2 animal-payment-method">
+              <label for="paymentCash_<%= animalIdx %>" class="text-gray-700 dark:text-gray-300">
+                <i class="fas fa-money-bill-wave text-green-600 mr-1"></i>
+                Cash Payment
+              </label>
+              <p class="text-xs text-gray-500 dark:text-gray-400 ml-6 mt-1">
+                Pay in cash at the time of registration
+              </p>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Pregnancy Status Section -->
+      <div id="pregnancySection-<%= animalIdx %>" class="pregnancy-section hidden mb-6 border-t pt-6 border-gray-200 dark:border-gray-700">
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+          <div class="flex items-start">
+            <svg class="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <p class="text-sm text-purple-700 dark:text-purple-300">
+              <span class="font-medium">Adult Female Animal:</span> Pregnancy information can be recorded below.
+            </p>
+          </div>
+        </div>
+
+        <h3 class="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300 flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+          </svg>
+          Pregnancy Status (Manual Entry)
+        </h3>
+        
+        <div class="space-y-4">
+          <div class="flex items-center mb-4">
+            <input type="checkbox" name="animals[<%= animalIdx %>][pregnancyStatus][isPregnant]" id="isPregnant-<%= animalIdx %>" class="pregnancy-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+            <label for="isPregnant-<%= animalIdx %>" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Is Pregnant</label>
+          </div>
+
+          <div id="pregnancyDetails-<%= animalIdx %>" class="pregnancy-details hidden space-y-4 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Test Date</label>
+              <input type="date" name="animals[<%= animalIdx %>][pregnancyStatus][testDate]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirmed Date</label>
+              <input type="date" name="animals[<%= animalIdx %>][pregnancyStatus][confirmedDate]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expected Delivery Date</label>
+              <input type="date" name="animals[<%= animalIdx %>][pregnancyStatus][expectedDeliveryDate]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregnancy Stage</label>
+              <select name="animals[<%= animalIdx %>][pregnancyStatus][stage]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+                <option value="">Select Stage</option>
+                <option value="early">Early (0-3 months)</option>
+                <option value="mid">Mid (3-6 months)</option>
+                <option value="late">Late (6-9 months)</option>
+                <option value="full_term">Full Term</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of Fetuses</label>
+              <input type="number" name="animals[<%= animalIdx %>][pregnancyStatus][numberOfFetuses]" min="1" max="10" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Previous Pregnancies</label>
+              <input type="number" name="animals[<%= animalIdx %>][pregnancyStatus][previousPregnancies]" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregnancy Notes</label>
+              <textarea name="animals[<%= animalIdx %>][pregnancyStatus][notes]" rows="2" placeholder="Any additional notes about pregnancy..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Photos Section -->
+      <div class="mb-6 border-t pt-6 border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300 flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+          </svg>
+          Animal Photos
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Front Photo</label>
+            <input type="file" name="animals[<%= animalIdx %>][photos][front]" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300 transition">
+          </div>
+        </div>
+      </div>
+
+      <!-- Vaccination Records Section -->
+      <div class="mb-6 border-t pt-6 border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+            </svg>
+            Vaccination Records for Animal <%= animalIdx + 1 %>
+          </h3>
+        </div>
+        
+        <div class="space-y-6">
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Select vaccines administered to this specific animal.
+            </p>
+            
+            <% if (vaccines && vaccines.length > 0) { %>
+              <div class="space-y-4" id="vaccinesContainer-<%= animalIdx %>">
+                <% vaccines.forEach((vaccine, vaccineIdx) => { %>
+                  <div class="vaccine-item border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
+                    <div class="flex items-start mb-4">
+                      <input type="checkbox" 
+                             name="animals[<%= animalIdx %>][vaccinations][<%= vaccine._id %>][administered]" 
+                             id="vaccine_<%= animalIdx %>_<%= vaccine._id %>" 
+                             value="true"
+                             class="animal-vaccine-checkbox h-4 w-4 mt-1 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+                             data-vaccine-id="<%= vaccine._id %>"
+                             data-animal-index="<%= animalIdx %>">
+                      <div class="ml-3 flex-1">
+                        <label for="vaccine_<%= animalIdx %>_<%= vaccine._id %>" class="block text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                          <span class="font-semibold"><%= vaccine.vaccineName || vaccine.name %></span>
+                          <% if (vaccine.vaccineType) { %>
+                            <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">(<%= vaccine.vaccineType %>)</span>
+                          <% } %>
+                        </label>
+                        <% if (vaccine.diseaseTarget) { %>
+                          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Target: <%= vaccine.diseaseTarget %></p>
+                        <% } %>
+                      </div>
+                    </div>
+                    
+                    <div id="vaccineDetails_<%= animalIdx %>_<%= vaccine._id %>" class="vaccine-details hidden space-y-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                      <input type="hidden" name="animals[<%= animalIdx %>][vaccinations][<%= vaccine._id %>][vaccineId]" value="<%= vaccine._id %>">
+                      <input type="hidden" name="animals[<%= animalIdx %>][vaccinations][<%= vaccine._id %>][vaccineName]" value="<%= vaccine.vaccineName || vaccine.name %>">
+                      
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Vaccination Date * <span class="text-xs text-gray-500">(Date administered)</span>
+                          </label>
+                          <input type="date" 
+                                 name="animals[<%= animalIdx %>][vaccinations][<%= vaccine._id %>][dateAdministered]" 
+                                 class="vaccination-date w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"
+                                 max="<%= new Date().toISOString().split('T')[0] %>"
+                                 data-booster-weeks="<%= vaccine.boosterIntervalWeeks || 0 %>"
+                                 data-vaccine-id="<%= vaccine._id %>"
+                                 data-animal-index="<%= animalIdx %>"
+                                 onchange="calculateNextDueDate(this)">
+                        </div>
+                        
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Administered By *
+                          </label>
+                          <input type="text" 
+                                 name="animals[<%= animalIdx %>][vaccinations][<%= vaccine._id %>][administeredBy]" 
+                                 placeholder="Name of vet/paravet"
+                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Next Due Date <span class="text-xs text-gray-500">(When next dose is due)</span>
+                          </label>
+                          <div class="flex items-center space-x-2">
+                            <input type="date" 
+                                   name="animals[<%= animalIdx %>][vaccinations][<%= vaccine._id %>][nextDueDate]" 
+                                   id="nextDueDate_<%= animalIdx %>_<%= vaccine._id %>"
+                                   class="next-due-date flex-1 w-full lg:w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+                            
+                            <button type="button" 
+                                    onclick="autoCalculateNextDue(this)"
+                                    class="px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-300 rounded-lg text-sm transition"
+                                    title="Auto-calculate based on vaccination date">
+                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                              </svg>
+                            </button>
+                          </div>
+                          <% if (vaccine.boosterIntervalWeeks) { %>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <span class="inline-flex items-center">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                </svg>
+                                Booster due after <%= vaccine.boosterIntervalWeeks %> week<%= vaccine.boosterIntervalWeeks > 1 ? 's' : '' %>
+                              </span>
+                            </p>
+                          <% } %>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Notes
+                        </label>
+                        <textarea name="animals[<%= animalIdx %>][vaccinations][<%= vaccine._id %>][notes]" 
+                                  rows="2" 
+                                  placeholder="Any additional notes about this vaccination (e.g., reaction, location)"
+                                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <div class="text-center py-8">
+                <svg class="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-gray-500 dark:text-gray-400">No vaccines found in database.</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Please add vaccines first to record vaccinations.</p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
     </div>
+  <% } %>
+</div>
 
     <!-- Add Another Animal Button (Only in Bulk Mode) -->
     <% if (formType === 'bulk') { %>
@@ -664,9 +652,56 @@ function reinitializeVaccineDateListeners(container) {
     // Initialize form validation
     initializeFormValidation();
     
+    // Initialize plan selection for existing animals
+    const animalEntries = document.querySelectorAll('.animal-entry');
+    animalEntries.forEach((entry, index) => {
+      initializePlanSelection(entry, index);
+    });
+    
     // Update animal count display
     updateAnimalCount();
   });
+
+  // ================ PLAN SELECTION INITIALIZATION ================
+  
+  function initializePlanSelection(entry, animalIndex) {
+    const planRadios = entry.querySelectorAll(`input[name="animals[${animalIndex}][selectedPlan]"]`);
+    const paymentMethodSection = document.getElementById(`paymentMethodSection_${animalIndex}`);
+    
+    if (!planRadios.length) return;
+    
+    planRadios.forEach(radio => {
+      // Remove existing listener to avoid duplicates
+      radio.removeEventListener('change', handlePlanChange);
+      radio.addEventListener('change', handlePlanChange);
+    });
+    
+    function handlePlanChange() {
+      if (paymentMethodSection) {
+        if (this.value !== 'none') {
+          paymentMethodSection.classList.remove('hidden');
+          // Add required attribute to payment method radios
+          const paymentMethods = entry.querySelectorAll(`input[name="animals[${animalIndex}][planPaymentMethod]"]`);
+          paymentMethods.forEach(input => {
+            input.required = true;
+          });
+        } else {
+          paymentMethodSection.classList.add('hidden');
+          const paymentMethods = entry.querySelectorAll(`input[name="animals[${animalIndex}][planPaymentMethod]"]`);
+          paymentMethods.forEach(input => {
+            input.required = false;
+            input.checked = false;
+          });
+        }
+      }
+    }
+    
+    // Trigger initial state
+    const checkedPlan = entry.querySelector(`input[name="animals[${animalIndex}][selectedPlan]"]:checked`);
+    if (checkedPlan && checkedPlan.value !== 'none' && paymentMethodSection) {
+      paymentMethodSection.classList.remove('hidden');
+    }
+  }
 
   // ================ IS TAGGED CHECKBOX INITIALIZATION ================
   
@@ -677,23 +712,22 @@ function reinitializeVaccineDateListeners(container) {
 
     if (!isTaggedCheckbox || !tagNumberInput || !tagNumberContainer) return;
 
-  function updateState() {
-    if (isTaggedCheckbox.checked) {
-      tagNumberContainer.classList.remove('hidden');
-      tagNumberInput.required = true;
-    } else {
-      tagNumberContainer.classList.add('hidden');
-      tagNumberInput.required = false;
-      tagNumberInput.value = "";
+    function updateState() {
+      if (isTaggedCheckbox.checked) {
+        tagNumberContainer.classList.remove('hidden');
+        tagNumberInput.required = true;
+      } else {
+        tagNumberContainer.classList.add('hidden');
+        tagNumberInput.required = false;
+        tagNumberInput.value = "";
+      }
     }
-  }
 
-  // Run once on page load
-  updateState();
+    // Run once on page load
+    updateState();
 
-  // Run on change
-  isTaggedCheckbox.addEventListener('change', updateState);
-    
+    // Run on change
+    isTaggedCheckbox.addEventListener('change', updateState);
   }
 
   // ================ VACCINATION DATE LISTENERS INITIALIZATION ================
@@ -841,11 +875,9 @@ function reinitializeVaccineDateListeners(container) {
             const commonAdministeredBy = document.getElementById('commonAdministeredBy').value;
             
             const dateInput = detailsDiv.querySelector('.vaccination-date');
-           // const nextDueInput = detailsDiv.querySelector('.next-due-date');
             const administeredByInput = detailsDiv.querySelector('input[name*="[administeredBy]"]');
             
             if (dateInput && commonDate) dateInput.value = commonDate;
-           // if (nextDueInput && commonNextDue) nextDueInput.value = commonNextDue;
             if (administeredByInput && commonAdministeredBy) administeredByInput.value = commonAdministeredBy;
           } else {
             // Set default dates if not already set
@@ -853,13 +885,6 @@ function reinitializeVaccineDateListeners(container) {
             if (dateInput && !dateInput.value) {
               dateInput.value = new Date().toISOString().split('T')[0];
             }
-            
-            //const nextDueInput = detailsDiv.querySelector('.next-due-date');
-           // if (nextDueInput && !nextDueInput.value) {
-           //   const nextDate = new Date();
-           //   nextDate.setFullYear(nextDate.getFullYear() + 1);
-          //    nextDueInput.value = nextDate.toISOString().split('T')[0];
-          //  }
           }
         } else if (detailsDiv) {
           detailsDiv.classList.add('hidden');
@@ -1024,9 +1049,6 @@ function reinitializeVaccineDateListeners(container) {
       if (el.name && el.name.includes('[0]')) {
         el.name = el.name.replace('[0]', `[${newIndex}]`);
       }
-      if (el.name && el.name.includes('[0]')) {
-        el.name = el.name.replace('[0]', `[${newIndex}]`);
-      }
     });
 
     // Update labels for attribute
@@ -1068,6 +1090,13 @@ function reinitializeVaccineDateListeners(container) {
       el.checked = false;
     });
 
+    // Reset plan selection to "none"
+    const nonePlanRadio = template.querySelector(`input[name="animals[${newIndex}][selectedPlan]"][value="none"]`);
+    if (nonePlanRadio) {
+      nonePlanRadio.checked = true;
+      nonePlanRadio.dispatchEvent(new Event('change'));
+    }
+
     // Hide pregnancy section and details
     const pregnancySection = template.querySelector('.pregnancy-section');
     if (pregnancySection) {
@@ -1084,12 +1113,18 @@ function reinitializeVaccineDateListeners(container) {
       el.classList.add('hidden');
     });
 
-    // Add remove button
+    // Hide payment method section
+    const paymentMethodSection = template.querySelector(`#paymentMethodSection_${newIndex}`);
+    if (paymentMethodSection) {
+      paymentMethodSection.classList.add('hidden');
+    }
+
+    // Add remove button if not exists
     const header = template.querySelector('.flex.justify-between');
-    if (header) {
+    if (header && !header.querySelector('.remove-animal-btn')) {
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
-      removeBtn.className = 'bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900 dark:hover:bg-red-800 dark:text-red-300 text-sm font-medium py-1 px-3 rounded-lg transition flex items-center';
+      removeBtn.className = 'remove-animal-btn bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900 dark:hover:bg-red-800 dark:text-red-300 text-sm font-medium py-1 px-3 rounded-lg transition flex items-center';
       removeBtn.innerHTML = `
         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -1100,6 +1135,7 @@ function reinitializeVaccineDateListeners(container) {
         template.remove();
         animalCount--;
         updateAnimalCount();
+        reindexAnimals();
       });
       header.appendChild(removeBtn);
     }
@@ -1114,7 +1150,52 @@ function reinitializeVaccineDateListeners(container) {
     initializeVaccineCheckboxes(newIndex);
     initializeIsTaggedCheckbox(newIndex);
     initializeVaccinationDateListeners(template);
+    initializePlanSelection(template, newIndex);
   });
+
+  // Function to re-index all animals (to maintain proper order after removal)
+  function reindexAnimals() {
+    const entries = document.querySelectorAll('.animal-entry');
+    entries.forEach((entry, idx) => {
+      // Update all names
+      entry.querySelectorAll('[name]').forEach(el => {
+        if (el.name) {
+          el.name = el.name.replace(/animals\[\d+\]/, `animals[${idx}]`);
+        }
+      });
+      
+      // Update all IDs
+      entry.querySelectorAll('[id]').forEach(el => {
+        if (el.id) {
+          el.id = el.id.replace(/\d+/, idx);
+        }
+      });
+      
+      // Update all for attributes
+      entry.querySelectorAll('[for]').forEach(el => {
+        if (el.htmlFor) {
+          el.htmlFor = el.htmlFor.replace(/\d+/, idx);
+        }
+      });
+      
+      // Update data attributes
+      entry.querySelectorAll('[data-animal-index]').forEach(el => {
+        el.dataset.animalIndex = idx;
+      });
+      
+      // Update heading
+      const heading = entry.querySelector('h2');
+      if (heading) {
+        heading.textContent = `Animal ${idx + 1} Details`;
+      }
+      
+      // Update vaccination section heading
+      const vaccHeading = entry.querySelector('h3.flex.items-center');
+      if (vaccHeading) {
+        vaccHeading.innerHTML = vaccHeading.innerHTML.replace(/Animal \d+/, `Animal ${idx + 1}`);
+      }
+    });
+  }
 
   // ================ DATE OF BIRTH FUNCTIONS ================
   
@@ -1179,7 +1260,7 @@ function reinitializeVaccineDateListeners(container) {
       console.log('========== FORM SUBMISSION DEBUG ==========');
       console.log('All form entries:');
       for (let [key, value] of formData.entries()) {
-        if (key.includes('vaccinations')) {
+        if (key.includes('vaccinations') || key.includes('selectedPlan') || key.includes('planPaymentMethod')) {
           console.log(`  ${key}: ${value}`);
         }
       }
@@ -1187,16 +1268,7 @@ function reinitializeVaccineDateListeners(container) {
       // Check all checked vaccines
       const checkedVaccines = document.querySelectorAll('.animal-vaccine-checkbox:checked');
       console.log('Checked vaccines count:', checkedVaccines.length);
-      checkedVaccines.forEach((checkbox, index) => {
-        console.log(`Vaccine ${index}:`, {
-          animalIndex: checkbox.dataset.animalIndex,
-          vaccineId: checkbox.dataset.vaccineId,
-          name: checkbox.name,
-          value: checkbox.value
-        });
-      });
-      console.log('==========================================');
-
+      
       // Check if farmer is selected
       const farmerSelect = document.getElementById('farmer');
       if (!farmerSelect.value) {
@@ -1217,6 +1289,9 @@ function reinitializeVaccineDateListeners(container) {
 
       // Validate each animal entry
       const animalEntries = document.querySelectorAll('.animal-entry');
+      let totalPaidPlans = 0;
+      let animalsWithPaidPlans = [];
+      
       for (let i = 0; i < animalEntries.length; i++) {
         const entry = animalEntries[i];
         
@@ -1254,6 +1329,37 @@ function reinitializeVaccineDateListeners(container) {
           e.preventDefault();
           alert(`Please select health status for Animal ${i + 1}.`);
           healthStatus.focus();
+          return;
+        }
+        
+        // Validate plan selection
+        const selectedPlan = entry.querySelector(`input[name="animals[${i}][selectedPlan]"]:checked`);
+        if (selectedPlan && selectedPlan.value !== 'none') {
+          totalPaidPlans++;
+          animalsWithPaidPlans.push({
+            index: i + 1,
+            planType: selectedPlan.value,
+            animalName: entry.querySelector('input[name*="name"]')?.value || `Animal ${i + 1}`
+          });
+          
+          // Check if payment method is selected for paid plans
+          const paymentMethod = entry.querySelector(`input[name="animals[${i}][planPaymentMethod]"]:checked`);
+          if (!paymentMethod) {
+            e.preventDefault();
+            alert(`Please select a payment method for ${animalsWithPaidPlans[animalsWithPaidPlans.length - 1].animalName} with ${selectedPlan.value === 'basic' ? 'Basic Plan (₹599)' : 'Premium Plan (₹999)'}.`);
+            return;
+          }
+        }
+      }
+
+      // If there are paid plans, show summary
+      if (totalPaidPlans > 0) {
+        const totalAmount = totalPaidPlans === 1 ? 
+          (animalsWithPaidPlans[0].planType === 'basic' ? 599 : 999) :
+          animalsWithPaidPlans.reduce((sum, animal) => sum + (animal.planType === 'basic' ? 599 : 999), 0);
+        
+        if (!confirm(`You have selected ${totalPaidPlans} animal(s) with paid plans.\nTotal amount: ₹${totalAmount}\n\nDo you want to proceed?`)) {
+          e.preventDefault();
           return;
         }
       }
@@ -1402,6 +1508,4 @@ function autoCalculateNextDue(button) {
         }
     }
 }
-
-
 </script>
