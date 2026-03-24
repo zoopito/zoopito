@@ -1,113 +1,136 @@
 <% layout("layouts/boilerplate") %>
 
-<div class="max-w-5xl mx-auto px-4 py-6">
-
+<div class="max-w-5xl mx-auto px-4 py-6 dark:bg-gray-900 min-h-screen">
   <!-- HEADER -->
   <div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Add New Paravet</h1>
-    <p class="text-sm text-gray-500">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Add New Paravet</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400">
       Admin can create a new user or assign an existing user as Paravet
     </p>
   </div>
 
-  <div class="bg-white rounded-lg shadow p-6">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 
     <form action="/admin/paravets" method="POST" class="space-y-8">
 
       <!-- USER DETAILS -->
       <div>
-        <h3 class="text-lg font-semibold text-gray-700 mb-4">
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">
           User Details
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <div>
-            <label class="block text-sm font-medium mb-1">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Full Name <span class="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="user[name]"
+              name="userData[name]"
               required
               placeholder="Enter full name"
-              class="w-full rounded-md border px-3 py-2 text-sm"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Email <span class="text-red-500">*</span>
             </label>
             <input
               type="email"
-              name="user[email]"
+              name="userData[email]"
               required
               placeholder="Enter email address"
-              class="w-full rounded-md border px-3 py-2 text-sm"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Mobile Number <span class="text-red-500">*</span>
             </label>
             <input
               type="tel"
-              name="user[mobile]"
+              name="userData[mobile]"
               maxlength="10"
               required
               placeholder="10 digit mobile number"
-              class="w-full rounded-md border px-3 py-2 text-sm"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
-
-          <!-- <div>
-            <label class="block text-sm font-medium mb-1">
-              Password
-              <span class="text-xs text-gray-400">(only if new user)</span>
-            </label>
-            <input
-              type="password"
-              name="user[password]"
-              placeholder="Set temporary password"
-              class="w-full rounded-md border px-3 py-2 text-sm"
-            />
-          </div> -->
 
         </div>
       </div>
 
       <!-- PARAVET DETAILS -->
       <div>
-        <h3 class="text-lg font-semibold text-gray-700 mb-4">
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">
           Paravet Details
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <div>
-            <label class="block text-sm font-medium mb-1">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Qualification <span class="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="paravet[qualification]"
+              name="paravetData[qualification]"
               required
               placeholder="Diploma / Degree"
-              class="w-full rounded-md border px-3 py-2 text-sm"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               License Number
             </label>
             <input
               type="text"
-              name="paravet[licenseNumber]"
+              name="paravetData[licenseNumber]"
               placeholder="Unique license number"
-              class="w-full rounded-md border px-3 py-2 text-sm"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Specialization
+            </label>
+            <input
+              type="text"
+              name="paravetData[specialization]"
+              placeholder="e.g., Large Animal Medicine"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Years of Experience
+            </label>
+            <input
+              type="number"
+              name="paravetData[experience]"
+              placeholder="Years"
+              min="0"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Registration Number
+            </label>
+            <input
+              type="text"
+              name="paravetData[registrationNumber]"
+              placeholder="VCI Registration No."
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
 
@@ -115,31 +138,97 @@
       </div>
 
       <!-- ASSIGNED AREA -->
-      <div class="border rounded-md p-4">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3">
+      <div class="border border-gray-200 dark:border-gray-700 rounded-md p-4">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
           Assigned Area
         </h3>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input name="paravet[assignedAreas][0][village]" placeholder="Village" class="border px-3 py-2 rounded-md text-sm"/>
-          <input name="paravet[assignedAreas][0][taluka]" placeholder="Taluka" class="border px-3 py-2 rounded-md text-sm"/>
-          <input name="paravet[assignedAreas][0][district]" placeholder="District" class="border px-3 py-2 rounded-md text-sm"/>
-          <input name="paravet[assignedAreas][0][state]" placeholder="State" class="border px-3 py-2 rounded-md text-sm"/>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+              Village
+            </label>
+            <input 
+              name="paravetData[assignedAreas][0][village]" 
+              placeholder="Village name" 
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+              Taluka
+            </label>
+            <input 
+              name="paravetData[assignedAreas][0][taluka]" 
+              placeholder="Taluka" 
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+              District
+            </label>
+            <input 
+              name="paravetData[assignedAreas][0][district]" 
+              placeholder="District" 
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+              State
+            </label>
+            <input 
+              name="paravetData[assignedAreas][0][state]" 
+              placeholder="State" 
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
         </div>
       </div>
 
+      <!-- ADD MORE AREAS BUTTON -->
+      <div class="text-right">
+        <button 
+          type="button" 
+          onclick="addMoreAreas()" 
+          class="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium flex items-center gap-1 ml-auto"
+        >
+          <i class="fas fa-plus-circle"></i>
+          Add More Areas
+        </button>
+      </div>
+
+      <!-- Additional Areas Container -->
+      <div id="additionalAreasContainer"></div>
+
       <!-- STATUS -->
       <div class="flex items-center gap-3">
-        <input type="checkbox" name="paravet[isActive]" checked />
-        <span class="text-sm text-gray-700">Mark as Active</span>
+        <input 
+          type="checkbox" 
+          name="paravetData[isActive]" 
+          id="isActive" 
+          checked
+          class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-gray-600 rounded"
+        />
+        <label for="isActive" class="text-sm text-gray-700 dark:text-gray-300">
+          Mark as Active (paravet can login and perform duties)
+        </label>
       </div>
 
       <!-- ACTIONS -->
-      <div class="flex gap-3">
-        <button class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+      <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button 
+          type="submit" 
+          class="px-6 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-md hover:from-green-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all"
+        >
+          <i class="fas fa-save mr-2"></i>
           Save Paravet
         </button>
-        <a href="/admin/paravets" class="px-6 py-2 bg-gray-200 rounded-md">
+        <a 
+          href="/admin/paravets" 
+          class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+        >
           Cancel
         </a>
       </div>
@@ -147,3 +236,131 @@
     </form>
   </div>
 </div>
+
+<script>
+let areaIndex = 1;
+
+function addMoreAreas() {
+  const container = document.getElementById('additionalAreasContainer');
+  const newArea = `
+    <div class="border border-gray-200 dark:border-gray-700 rounded-md p-4 mt-4 relative" id="area-${areaIndex}">
+      <button 
+        type="button" 
+        onclick="removeArea(${areaIndex})" 
+        class="absolute top-2 right-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+      >
+        <i class="fas fa-times-circle"></i>
+      </button>
+      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+        Additional Area ${areaIndex + 1}
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+            Village
+          </label>
+          <input 
+            name="paravetData[assignedAreas][${areaIndex}][village]" 
+            placeholder="Village name" 
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+            Taluka
+          </label>
+          <input 
+            name="paravetData[assignedAreas][${areaIndex}][taluka]" 
+            placeholder="Taluka" 
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+            District
+          </label>
+          <input 
+            name="paravetData[assignedAreas][${areaIndex}][district]" 
+            placeholder="District" 
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+            State
+          </label>
+          <input 
+            name="paravetData[assignedAreas][${areaIndex}][state]" 
+            placeholder="State" 
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+    </div>
+  `;
+  container.insertAdjacentHTML('beforeend', newArea);
+  areaIndex++;
+}
+
+function removeArea(index) {
+  const areaDiv = document.getElementById(`area-${index}`);
+  if (areaDiv) {
+    areaDiv.remove();
+  }
+}
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+  const name = document.querySelector('input[name="userData[name]"]').value.trim();
+  const email = document.querySelector('input[name="userData[email]"]').value.trim();
+  const mobile = document.querySelector('input[name="userData[mobile]"]').value.trim();
+  const qualification = document.querySelector('input[name="paravetData[qualification]"]').value.trim();
+  
+  if (!name) {
+    e.preventDefault();
+    alert('Please enter the paravet name');
+    return false;
+  }
+  
+  if (!email) {
+    e.preventDefault();
+    alert('Please enter email address');
+    return false;
+  }
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    e.preventDefault();
+    alert('Please enter a valid email address');
+    return false;
+  }
+  
+  if (!mobile) {
+    e.preventDefault();
+    alert('Please enter mobile number');
+    return false;
+  }
+  
+  const mobileRegex = /^[0-9]{10}$/;
+  if (!mobileRegex.test(mobile)) {
+    e.preventDefault();
+    alert('Please enter a valid 10-digit mobile number');
+    return false;
+  }
+  
+  if (!qualification) {
+    e.preventDefault();
+    alert('Please enter qualification');
+    return false;
+  }
+  
+  return true;
+});
+</script>
+
+<style>
+/* Smooth transitions for dark mode */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+</style>

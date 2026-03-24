@@ -60,7 +60,8 @@ module.exports.homePage = async (req, res, next) => {
         farmersCount,
         animalsCount,
       });
-    } else {
+    }
+    else {
       const [
         totalUsers,
         totalFarmers,

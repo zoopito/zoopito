@@ -35,4 +35,5 @@ router.get("/verify-email", userController.renderVerifyEmailForm);
 router.post("/verify/:id", userController.verifyEmail);
 router.get("/profile", userController.profile);
 
+
 module.exports = router;

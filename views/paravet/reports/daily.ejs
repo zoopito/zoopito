@@ -1,0 +1,246 @@
+<% layout("layouts/boilerplate", { 
+    title: 'Daily Report - Zoopito Paravet',
+    pageStyles: `
+        .report-card { background: white; border-radius: 1rem; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+        .report-header { padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); border-radius: 1rem 1rem 0 0; }
+        .stat-box { text-align: center; padding: 1rem; border-radius: 0.5rem; background: #f9fafb; }
+        .stat-value { font-size: 1.875rem; font-weight: 700; color: #1f2937; }
+        .stat-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+        .vaccination-row { transition: all 0.2s ease; }
+        .vaccination-row:hover { background-color: #f9fafb; transform: translateX(5px); }
+        .print-btn { transition: all 0.2s ease; }
+        .print-btn:hover { transform: scale(1.05); }
+        @media print {
+            .no-print { display: none; }
+            .print-area { margin: 0; padding: 0; }
+            .report-card { box-shadow: none; border: 1px solid #e5e7eb; }
+        }
+    `
+}) %>
+
+<div class="py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header with Date Picker -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Daily Report</h1>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">View your daily vaccination activities and earnings</p>
+            </div>
+            <div class="flex space-x-3 mt-4 sm:mt-0">
+                <div class="relative">
+                    <input type="date" id="datePicker" value="<%= reportDate ? moment(reportDate).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD') %>" 
+                           class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                <button onclick="printReport()" class="print-btn bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+                    <i class="fas fa-print mr-2"></i>Print
+                </button>
+                <button onclick="exportToExcel()" class="print-btn bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-file-excel mr-2"></i>Export
+                </button>
+            </div>
+        </div>
+
+        <!-- Date Navigation -->
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="changeDate(-1)" class="flex items-center text-gray-600 hover:text-gray-800">
+                <i class="fas fa-chevron-left mr-1"></i> Previous Day
+            </button>
+            <div class="text-center">
+                <h2 class="text-xl font-bold text-gray-900"><%= reportDate %></h2>
+                <p class="text-sm text-gray-500"><%= moment(reportDate).format('dddd') %></p>
+            </div>
+            <button onclick="changeDate(1)" class="flex items-center text-gray-600 hover:text-gray-800">
+                Next Day <i class="fas fa-chevron-right ml-1"></i>
+            </button>
+        </div>
+
+        <div class="print-area">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="report-card">
+                    <div class="p-4 text-center">
+                        <div class="text-3xl font-bold text-blue-600"><%= summary.total %></div>
+                        <div class="text-sm text-gray-600 mt-1">Total Vaccinations</div>
+                    </div>
+                </div>
+                <div class="report-card">
+                    <div class="p-4 text-center">
+                        <div class="text-3xl font-bold text-green-600">₹<%= summary.totalEarnings.toLocaleString() %></div>
+                        <div class="text-sm text-gray-600 mt-1">Total Earnings</div>
+                    </div>
+                </div>
+                <div class="report-card">
+                    <div class="p-4 text-center">
+                        <div class="text-3xl font-bold text-purple-600">
+                            <%= Object.keys(summary.byFarmer).length %>
+                        </div>
+                        <div class="text-sm text-gray-600 mt-1">Farmers Served</div>
+                    </div>
+                </div>
+                <div class="report-card">
+                    <div class="p-4 text-center">
+                        <div class="text-3xl font-bold text-orange-600">
+                            <%= Object.keys(summary.byVaccine).length %>
+                        </div>
+                        <div class="text-sm text-gray-600 mt-1">Vaccine Types</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Breakdown -->
+            <div class="report-card mb-6">
+                <div class="report-header">
+                    <h3 class="text-lg font-medium text-gray-900">Payment Summary</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="stat-box">
+                            <div class="stat-value text-green-600">₹<%= summary.paymentBreakdown.cash.toLocaleString() %></div>
+                            <div class="stat-label">Cash Payments</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value text-blue-600">₹<%= summary.paymentBreakdown.online.toLocaleString() %></div>
+                            <div class="stat-label">Online Payments</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value text-yellow-600">₹<%= summary.paymentBreakdown.pending.toLocaleString() %></div>
+                            <div class="stat-label">Pending Payments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vaccination Details Table -->
+            <div class="report-card">
+                <div class="report-header flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Vaccination Details</h3>
+                    <span class="text-sm text-gray-500"><%= vaccinations.length %> records</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Farmer</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Animal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vaccine</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <% if (vaccinations.length > 0) { %>
+                                <% vaccinations.forEach(vac => { %>
+                                    <tr class="vaccination-row">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <%= moment(vac.dateAdministered).format('h:mm A') %>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900"><%= vac.farmer?.name %></div>
+                                            <div class="text-xs text-gray-500"><%= vac.farmer?.mobileNumber %></div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-900"><%= vac.animal?.name %></div>
+                                            <div class="text-xs text-gray-500"><%= vac.animal?.tagNumber %></div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-900"><%= vac.vaccine?.name %></div>
+                                            <div class="text-xs text-gray-500">Batch: <%= vac.batchNumber || 'N/A' %></div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            ₹<%= vac.payment?.totalAmount || vac.vaccine?.price || 0 %>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 text-xs rounded-full <%= vac.payment?.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %>">
+                                                <%= vac.payment?.status === 'Paid' ? 'Paid' : 'Pending' %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                        <i class="fas fa-syringe text-4xl mb-3 text-gray-400"></i>
+                                        <p>No vaccinations performed on this day</p>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Summary by Farmer -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3 class="text-lg font-medium text-gray-900">Summary by Farmer</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-3">
+                            <% if (Object.keys(summary.byFarmer).length > 0) { %>
+                                <% Object.entries(summary.byFarmer).forEach(([farmer, count]) => { %>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-700"><%= farmer %></span>
+                                        <span class="font-semibold text-blue-600"><%= count %> vaccines</span>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <p class="text-gray-500 text-center">No data available</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3 class="text-lg font-medium text-gray-900">Summary by Vaccine</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-3">
+                            <% if (Object.keys(summary.byVaccine).length > 0) { %>
+                                <% Object.entries(summary.byVaccine).forEach(([vaccine, count]) => { %>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-700"><%= vaccine %></span>
+                                        <span class="font-semibold text-green-600"><%= count %> doses</span>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <p class="text-gray-500 text-center">No data available</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function changeDate(days) {
+    const currentDate = document.getElementById('datePicker').value;
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + days);
+    const formattedDate = newDate.toISOString().split('T')[0];
+    window.location.href = `/paravet/reports/daily?date=${formattedDate}`;
+}
+
+document.getElementById('datePicker').addEventListener('change', function() {
+    window.location.href = `/paravet/reports/daily?date=${this.value}`;
+});
+
+function printReport() {
+    window.print();
+}
+
+function exportToExcel() {
+    const table = document.querySelector('table');
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.table_to_sheet(table);
+    XLSX.utils.book_append_sheet(wb, ws, 'Daily Report');
+    XLSX.writeFile(wb, `daily_report_<%= moment(reportDate).format('YYYY-MM-DD') %>.xlsx`);
+}
+</script>
+
+<!-- Include SheetJS for Excel export -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>

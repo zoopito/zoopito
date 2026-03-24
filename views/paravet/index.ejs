@@ -1,0 +1,291 @@
+<% layout("layouts/admin-layout", { 
+    title: 'Manage Paravets - Zoopito Admin',
+    pageStyles: `
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .status-active { background-color: #dcfce7; color: #166534; }
+        .status-inactive { background-color: #fee2e2; color: #991b1b; }
+        .table-row:hover { background-color: #f9fafb; transition: all 0.2s; }
+    `
+}) %>
+
+<div class="py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Paravet Management</h1>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Manage veterinary professionals and their assignments</p>
+            </div>
+            <a href="/admin/paravets/new" 
+               class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-blue-700 transition flex items-center">
+                <i class="fas fa-plus mr-2"></i>
+                Add New Paravet
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Paravets</p>
+                        <p class="text-2xl font-bold text-gray-900"><%= paravets.length %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-md text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Active</p>
+                        <p class="text-2xl font-bold text-green-600">
+                            <%= paravets.filter(p => p.isActive).length %>
+                        </p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Inactive</p>
+                        <p class="text-2xl font-bold text-red-600">
+                            <%= paravets.filter(p => !p.isActive).length %>
+                        </p>
+                    </div>
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-ban text-red-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Assigned Farmers</p>
+                        <p class="text-2xl font-bold text-purple-600">
+                            <%= paravets.reduce((sum, p) => sum + (p.assignedFarmers?.length || 0), 0) %>
+                        </p>
+                    </div>
+                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-tractor text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
+            <div class="flex flex-wrap gap-4">
+                <div class="flex-1 min-w-[200px]">
+                    <input type="text" id="searchInput" placeholder="Search by name, email, or license..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+                <button onclick="resetFilters()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    <i class="fas fa-redo mr-2"></i>Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Paravets Table -->
+        <div class="bg-white dark:bg-gray-800 shadow overflow-hidden rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paravet</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qualification</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned Areas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="paravetTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <% paravets.forEach(paravet => { %>
+                        <tr class="table-row hover:bg-gray-50 dark:hover:bg-gray-700" data-status="<%= paravet.isActive ? 'active' : 'inactive' %>">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center text-white font-bold">
+                                            <%= paravet.user.name.charAt(0).toUpperCase() %>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                            <%= paravet.user.name %>
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            ID: <%= paravet.employeeCode || 'N/A' %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900 dark:text-white"><%= paravet.user.email %></div>
+                                <div class="text-sm text-gray-500"><%= paravet.user.mobile || 'N/A' %></div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900"><%= paravet.qualification || 'N/A' %></div>
+                                <div class="text-xs text-gray-500">License: <%= paravet.licenseNumber || 'N/A' %></div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">
+                                    <% if (paravet.assignedAreas && paravet.assignedAreas.length > 0) { %>
+                                        <%= paravet.assignedAreas.map(a => a.village || a.taluka).join(', ') %>
+                                    <% } else { %>
+                                        <span class="text-gray-400">Not Assigned</span>
+                                    <% } %>
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    Farmers: <%= paravet.assignedFarmers?.length || 0 %>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="status-badge <%= paravet.isActive ? 'status-active' : 'status-inactive' %>">
+                                    <%= paravet.isActive ? 'Active' : 'Inactive' %>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    <a href="/admin/paravets/<%= paravet._id %>" 
+                                       class="text-blue-600 hover:text-blue-900" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/admin/paravets/<%= paravet._id %>/edit" 
+                                       class="text-green-600 hover:text-green-900" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button onclick="toggleStatus('<%= paravet._id %>', '<%= paravet.isActive ? 'deactivate' : 'activate' %>')" 
+                                            class="<%= paravet.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900' %>" 
+                                            title="<%= paravet.isActive ? 'Deactivate' : 'Activate' %>">
+                                        <i class="fas <%= paravet.isActive ? 'fa-ban' : 'fa-check-circle' %>"></i>
+                                    </button>
+                                    <button onclick="deleteParavet('<%= paravet._id %>')" 
+                                            class="text-red-600 hover:text-red-900" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            
+            <% if (paravets.length === 0) { %>
+                <div class="text-center py-12">
+                    <i class="fas fa-user-md text-4xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-500">No paravets found</p>
+                    <a href="/admin/paravets/new" class="mt-3 inline-block text-green-600 hover:text-green-700">
+                        Add your first paravet
+                    </a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleStatus(id, action) {
+    Swal.fire({
+        title: `${action === 'activate' ? 'Activate' : 'Deactivate'} Paravet?`,
+        text: `Are you sure you want to ${action} this paravet?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: action === 'activate' ? '#10b981' : '#ef4444',
+        confirmButtonText: `Yes, ${action}`,
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/paravets/${id}/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Success!', `Paravet ${action}d successfully.`, 'success')
+                        .then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error!', data.message || 'Something went wrong', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Network error occurred', 'error');
+            });
+        }
+    });
+}
+
+function deleteParavet(id) {
+    Swal.fire({
+        title: 'Delete Paravet?',
+        text: 'This action cannot be undone. All data associated with this paravet will be permanently deleted.',
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Yes, delete',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/paravets/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Deleted!', 'Paravet has been deleted.', 'success')
+                        .then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error!', data.message || 'Something went wrong', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Network error occurred', 'error');
+            });
+        }
+    });
+}
+
+// Search functionality
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    filterTable();
+});
+
+document.getElementById('statusFilter').addEventListener('change', function() {
+    filterTable();
+});
+
+function filterTable() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('#paravetTableBody tr');
+    
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        const matchesSearch = text.includes(searchTerm);
+        const matchesStatus = statusFilter === 'all' || row.dataset.status === statusFilter;
+        
+        row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+    });
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = 'all';
+    filterTable();
+}
+</script>

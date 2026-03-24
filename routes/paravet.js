@@ -219,16 +219,16 @@ router.get("/api/farmer-list", paravetController.getFarmerList);
 
 // Farmer visit routes
 router.get("/farmer/:farmerId/animals", paravetController.getFarmerAnimals);
-router.post("/visit/start", paravetController.startVisit);
-router.post("/visit/complete", paravetController.completeVisit);
+//router.post("/visit/start", paravetController.startVisit);
+//router.post("/visit/complete", paravetController.completeVisit);
 
 // Vaccination routes for paravet
 router.get("/vaccination/pending", paravetController.getPendingVaccinations);
 router.post("/vaccination/:id/perform", paravetController.performVaccination);
-router.post(
-  "/vaccination/bulk-perform",
-  paravetController.bulkPerformVaccinations,
-);
+// router.post(
+//   "/vaccination/bulk-perform",
+//   paravetController.bulkPerformVaccinations,
+// );
 
 // Reports
 router.get("/reports/daily", paravetController.getDailyReport);
