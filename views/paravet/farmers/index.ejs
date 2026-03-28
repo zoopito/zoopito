@@ -1,0 +1,245 @@
+<% layout("layouts/boilerplate", {
+    title: 'My Farmers - Zoopito',
+    description: 'Manage your assigned farmers',
+    pageStyles: `
+        .farmer-card {
+            transition: all 0.3s ease;
+        }
+        .farmer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-active { background-color: #d1fae5; color: #065f46; }
+        .status-inactive { background-color: #fee2e2; color: #991b1b; }
+        .search-input:focus {
+            outline: none;
+            ring: 2px solid #3b82f6;
+        }
+    `
+}) -%>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Farmers</h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">Manage and track your assigned farmers</p>
+                </div>
+                <div class="mt-4 sm:mt-0">
+                    <button onclick="window.location.href='/paravet/farmers/map'" 
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-map-marker-alt mr-2"></i>View Map
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="Search by name, mobile, or ID..." 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                </div>
+                <select id="filterStatus" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700">
+                    <option value="all">All Farmers</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total Farmers</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= farmers.length %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Active Farmers</p>
+                        <p class="text-2xl font-bold text-green-600"><%= farmers.filter(f => f.isActive !== false).length %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Pending Visits</p>
+                        <p class="text-2xl font-bold text-orange-600"><%= farmers.reduce((sum, f) => sum + (f.pendingCount || 0), 0) %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-clock text-orange-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farmers Grid -->
+        <div id="farmersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% farmers.forEach(farmer => { %>
+                <div class="farmer-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden cursor-pointer" onclick="viewFarmer('<%= farmer._id %>')">
+                    <div class="p-5">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                    <%= farmer.name.charAt(0).toUpperCase() %>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="font-semibold text-gray-900 dark:text-white"><%= farmer.name %></h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400"><%= farmer.uniqueFarmerId || 'ID: ' + farmer._id.slice(-6) %></p>
+                                </div>
+                            </div>
+                            <span class="status-badge <%= farmer.isActive !== false ? 'status-active' : 'status-inactive' %>">
+                                <%= farmer.isActive !== false ? 'Active' : 'Inactive' %>
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-phone w-5"></i>
+                                <span><%= farmer.mobileNumber || 'N/A' %></span>
+                            </div>
+                            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-map-marker-alt w-5"></i>
+                                <span><%= farmer.address?.village || farmer.address?.city || 'Location not set' %></span>
+                            </div>
+                            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-paw w-5"></i>
+                                <span><%= farmer.totalAnimals || 0 %> animals</span>
+                            </div>
+                            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-syringe w-5"></i>
+                                <span><%= farmer.pendingCount || 0 %> pending vaccinations</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between">
+                            <div class="text-xs text-gray-500">
+                                <i class="far fa-calendar-alt mr-1"></i>
+                                Last visit: <%= farmer.lastVisit ? moment(farmer.lastVisit).format('DD MMM YYYY') : 'Never' %>
+                            </div>
+                            <button onclick="event.stopPropagation(); startVisit('<%= farmer._id %>')" 
+                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                <i class="fas fa-play mr-1"></i>Start Visit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+
+        <!-- Empty State -->
+        <% if (farmers.length === 0) { %>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+                <i class="fas fa-users-slash text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Farmers Assigned</h3>
+                <p class="text-gray-600 dark:text-gray-400">You haven't been assigned any farmers yet.</p>
+                <p class="text-gray-500 dark:text-gray-500 text-sm mt-2">Contact your admin for assignments.</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function viewFarmer(farmerId) {
+    window.location.href = `/paravet/farmer/${farmerId}/animals`;
+}
+
+function startVisit(farmerId) {
+    Swal.fire({
+        title: 'Start Visit?',
+        text: 'Begin visit with this farmer?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3b82f6',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, start now!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/paravet/visit/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ farmerId, purpose: 'routine' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Visit Started!',
+                        text: 'Redirecting to farmer details...',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = `/paravet/farmer/${farmerId}/animals`;
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to start visit'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Network error. Please try again.'
+                });
+            });
+        }
+    });
+}
+
+// Search functionality
+document.getElementById('searchInput').addEventListener('input', filterFarmers);
+document.getElementById('filterStatus').addEventListener('change', filterFarmers);
+
+function filterFarmers() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('filterStatus').value;
+    const cards = document.querySelectorAll('.farmer-card');
+    
+    cards.forEach(card => {
+        const name = card.querySelector('h3')?.innerText.toLowerCase() || '';
+        const mobile = card.querySelector('.fa-phone')?.parentElement?.innerText.toLowerCase() || '';
+        const status = card.querySelector('.status-badge')?.innerText.toLowerCase() || '';
+        
+        let matchesSearch = name.includes(searchTerm) || mobile.includes(searchTerm);
+        let matchesStatus = statusFilter === 'all' || status === statusFilter;
+        
+        if (matchesSearch && matchesStatus) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+</script>

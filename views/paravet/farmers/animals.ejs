@@ -1,0 +1,239 @@
+<% layout("layouts/boilerplate", {
+    title: `${farmer.name} - Animals`,
+    description: 'View and manage farmer animals',
+    pageStyles: `
+        .animal-card {
+            transition: all 0.3s ease;
+        }
+        .animal-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+        .vaccine-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .vaccine-pending { background-color: #fef3c7; color: #92400e; }
+        .vaccine-completed { background-color: #d1fae5; color: #065f46; }
+        .health-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-good { background-color: #10b981; }
+        .status-warning { background-color: #f59e0b; }
+        .status-critical { background-color: #ef4444; }
+    `
+}) -%>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Farmer Info Header -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="bg-gradient-to-r from-blue-600 to-green-600 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white"><%= farmer.name %></h1>
+                        <p class="text-blue-100 mt-1"><%= farmer.address?.village || farmer.address?.city || 'Location not set' %></p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="startVisit()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-white transition">
+                            <i class="fas fa-play mr-2"></i>Start Visit
+                        </button>
+                        <button onclick="window.location.href='/paravet/farmer-list'" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-white transition">
+                            <i class="fas fa-arrow-left mr-2"></i>Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Mobile</p>
+                        <p class="font-medium"><%= farmer.mobileNumber || 'N/A' %></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total Animals</p>
+                        <p class="font-medium"><%= animals.length %></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Last Visit</p>
+                        <p class="font-medium"><%= farmer.lastVisit ? moment(farmer.lastVisit).format('DD MMM YYYY') : 'Never' %></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Farmer ID</p>
+                        <p class="font-medium"><%= farmer.uniqueFarmerId || farmer._id.slice(-6) %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animals Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% animals.forEach(animal => { %>
+                <div class="animal-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                    <div class="relative">
+                        <div class="h-32 bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
+                            <i class="fas fa-paw text-white text-5xl"></i>
+                        </div>
+                        <div class="absolute top-2 right-2">
+                            <span class="health-status status-<%= animal.healthStatus || 'good' %>"></span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white"><%= animal.name %></h3>
+                            <span class="text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"><%= animal.tagNumber %></span>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm mb-4">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Type:</span>
+                                <span class="font-medium"><%= animal.animalType %></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Breed:</span>
+                                <span class="font-medium"><%= animal.breed || 'Unknown' %></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Age:</span>
+                                <span class="font-medium"><%= animal.age %> years</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Gender:</span>
+                                <span class="font-medium"><%= animal.gender || 'Not specified' %></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Vaccination Summary -->
+                        <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-2">
+                            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Vaccination Status</p>
+                            <div class="flex flex-wrap gap-2">
+                                <% if (animal.pendingVaccinations && animal.pendingVaccinations.length > 0) { %>
+                                    <% animal.pendingVaccinations.slice(0, 2).forEach(vac => { %>
+                                        <span class="vaccine-badge vaccine-pending">
+                                            <i class="fas fa-clock mr-1"></i><%= vac.vaccine?.name %>
+                                        </span>
+                                    <% }); %>
+                                    <% if (animal.pendingVaccinations.length > 2) { %>
+                                        <span class="vaccine-badge vaccine-pending">+<%= animal.pendingVaccinations.length - 2 %> more</span>
+                                    <% } %>
+                                <% } else { %>
+                                    <span class="vaccine-badge vaccine-completed">
+                                        <i class="fas fa-check mr-1"></i>Up to date
+                                    </span>
+                                <% } %>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500">
+                                <i class="fas fa-syringe mr-1"></i>
+                                <%= animal.completedCount || 0 %> vaccinations completed
+                            </div>
+                            <% if (animal.lastVaccination) { %>
+                                <div class="mt-1 text-xs text-gray-500">
+                                    <i class="far fa-calendar-alt mr-1"></i>
+                                    Last: <%= animal.lastVaccination.vaccine?.name %> on <%= moment(animal.lastVaccination.dateAdministered).format('DD MMM YYYY') %>
+                                </div>
+                            <% } %>
+                        </div>
+                        
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="viewVaccinations('<%= animal._id %>')" 
+                                    class="flex-1 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition text-sm">
+                                <i class="fas fa-history mr-1"></i>History
+                            </button>
+                            <button onclick="startVaccination('<%= animal._id %>', '<%= animal.name %>')" 
+                                    class="flex-1 bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition text-sm">
+                                <i class="fas fa-syringe mr-1"></i>Vaccinate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+
+        <!-- Empty State -->
+        <% if (animals.length === 0) { %>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+                <i class="fas fa-paw text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Animals Added</h3>
+                <p class="text-gray-600 dark:text-gray-400">This farmer hasn't added any animals yet.</p>
+                <button onclick="window.location.href='/paravet/farmer-list'" 
+                        class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    Back to Farmers
+                </button>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function startVisit() {
+    Swal.fire({
+        title: 'Start Visit?',
+        text: 'Begin visit with <%= farmer.name %>?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3b82f6',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, start now!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/paravet/visit/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ farmerId: '<%= farmer._id %>', purpose: 'routine' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Visit Started!',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to start visit'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Network error. Please try again.'
+                });
+            });
+        }
+    });
+}
+
+function viewVaccinations(animalId) {
+    window.location.href = `/paravet/animal/${animalId}/vaccinations`;
+}
+
+function startVaccination(animalId, animalName) {
+    Swal.fire({
+        title: 'Start Vaccination',
+        text: `Start vaccination for ${animalName}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, proceed'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = `/paravet/vaccination/new?animal=${animalId}&farmer=<%= farmer._id %>`;
+        }
+    });
+}
+</script>

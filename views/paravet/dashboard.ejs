@@ -2,96 +2,109 @@
     title: 'Paravet Dashboard - Zoopito',
     description: 'Manage your vaccinations and schedules',
     pageStyles: `
-        .stat-card { transition: all 0.3s ease; }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
-        .progress-bar { transition: width 0.5s ease; }
-        .schedule-item { transition: all 0.2s ease; }
-        .schedule-item:hover { background-color: #f9fafb; transform: translateX(5px); }
-        .status-badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .stat-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .schedule-item {
+            transition: all 0.2s ease;
+        }
+        .schedule-item:hover {
+            background-color: #f9fafb;
+            transform: translateX(5px);
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
         .status-upcoming { background-color: #dbeafe; color: #1e40af; }
         .status-today { background-color: #fef3c7; color: #92400e; animation: pulse 2s infinite; }
         .status-overdue { background-color: #fee2e2; color: #991b1b; }
-        @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.7 } }
-        .quick-action-btn { transition: all 0.2s ease; }
-        .quick-action-btn:hover { transform: scale(1.05); }
+        .status-completed { background-color: #d1fae5; color: #065f46; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .quick-action-btn {
+            transition: all 0.2s ease;
+        }
+        .quick-action-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     `
 }) -%>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <!-- Top Navigation -->
-    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                        <i class="fas fa-user-md text-blue-600 mr-2"></i>
-                        Paravet Dashboard
-                    </h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <span class="text-sm text-gray-600 dark:text-gray-300">
-                        <i class="fas fa-map-marker-alt mr-1"></i>
-                        <%= paravet.assignedAreas?.[0]?.village || 'Area not assigned' %>
-                    </span>
-                    <div class="relative">
-                        <button onclick="toggleNotifications()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-                            <i class="fas fa-bell text-gray-600 dark:text-gray-300"></i>
-                            <span class="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                                <%= stats.pendingVaccinations %>
-                            </span>
-                        </button>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <img src="<%= user.avatar || '/images/default-avatar.png' %>" 
-                             class="h-8 w-8 rounded-full border-2 border-blue-500">
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <%= user.name %>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Welcome Banner -->
-        <div class="bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl shadow-xl p-6 mb-8 text-white">
-            <div class="flex items-center justify-between">
+        <div class="bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl shadow-lg p-6 mb-8 text-white">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
                 <div>
                     <h2 class="text-2xl font-bold mb-2">Welcome back, <%= user.name %>! 👋</h2>
                     <p class="text-blue-100"><%= moment().format('dddd, DD MMMM YYYY') %></p>
                 </div>
-                <div class="flex space-x-3">
-                    <a href="/paravet/reports/daily" 
-                       class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg flex items-center">
-                        <i class="fas fa-file-alt mr-2"></i>
-                        Daily Report
-                    </a>
-                    <a href="/paravet/tasks" 
-                       class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg flex items-center">
-                        <i class="fas fa-tasks mr-2"></i>
-                        My Tasks
-                    </a>
+                <div class="flex space-x-3 mt-4 sm:mt-0">
+                    <button onclick="window.location.href='/paravet/reports/daily'" 
+                            class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-file-alt mr-2"></i>Daily Report
+                    </button>
+                    <button onclick="window.location.href='/paravet/tasks'" 
+                            class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-tasks mr-2"></i>My Tasks
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Today's Schedule -->
             <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-blue-500">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Today's Schedule</p>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.todaySchedules %></p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.todaySchedules || 0 %></p>
                     </div>
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-calendar-day text-blue-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-calendar-day text-blue-600 dark:text-blue-400 text-xl"></i>
                     </div>
                 </div>
                 <div class="mt-3 flex items-center text-sm">
-                    <span class="text-green-600 font-semibold"><%= stats.completedToday %></span>
-                    <span class="text-gray-500 ml-1">completed</span>
+                    <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                    <span class="text-gray-600 dark:text-gray-400"><%= stats.completedToday || 0 %> completed</span>
                 </div>
             </div>
 
@@ -100,15 +113,15 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Pending</p>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.pendingVaccinations %></p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.pendingVaccinations || 0 %></p>
                     </div>
-                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-clock text-yellow-600 dark:text-yellow-400 text-xl"></i>
                     </div>
                 </div>
                 <div class="mt-3 flex items-center text-sm">
-                    <span class="text-red-600 font-semibold"><%= stats.upcomingSchedules %></span>
-                    <span class="text-gray-500 ml-1">due this week</span>
+                    <i class="fas fa-calendar-week text-orange-500 mr-1"></i>
+                    <span class="text-gray-600 dark:text-gray-400"><%= stats.upcomingSchedules || 0 %> due this week</span>
                 </div>
             </div>
 
@@ -117,15 +130,15 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">My Farmers</p>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.totalFarmers %></p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.totalFarmers || 0 %></p>
                     </div>
-                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-users text-green-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-users text-green-600 dark:text-green-400 text-xl"></i>
                     </div>
                 </div>
                 <div class="mt-3 flex items-center text-sm">
-                    <span class="text-blue-600 font-semibold"><%= stats.totalAnimals %></span>
-                    <span class="text-gray-500 ml-1">total animals</span>
+                    <i class="fas fa-paw text-blue-500 mr-1"></i>
+                    <span class="text-gray-600 dark:text-gray-400"><%= stats.totalAnimals || 0 %> total animals</span>
                 </div>
             </div>
 
@@ -134,57 +147,72 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Total Earnings</p>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white">₹<%= stats.totalEarnings.toLocaleString() %></p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">₹<%= (stats.totalEarnings || 0).toLocaleString() %></p>
                     </div>
-                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-rupee-sign text-purple-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-rupee-sign text-purple-600 dark:text-purple-400 text-xl"></i>
                     </div>
                 </div>
                 <div class="mt-3 flex items-center text-sm">
-                    <span class="text-green-600 font-semibold"><%= stats.totalCompleted %></span>
-                    <span class="text-gray-500 ml-1">total vaccinations</span>
+                    <i class="fas fa-syringe text-green-500 mr-1"></i>
+                    <span class="text-gray-600 dark:text-gray-400"><%= stats.totalCompleted || 0 %> vaccinations</span>
                 </div>
             </div>
         </div>
 
         <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <button onclick="startVisit()" class="quick-action-btn bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-4 flex items-center justify-between">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <button onclick="openStartVisitModal()" 
+                    class="quick-action-btn bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-4 flex items-center justify-between shadow-md">
                 <div class="flex items-center">
                     <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mr-3">
                         <i class="fas fa-play text-white"></i>
                     </div>
-                    <div class="text-left">
+                    <div>
                         <h3 class="font-semibold">Start Visit</h3>
-                        <p class="text-sm text-blue-100">Begin farmer visit</p>
+                        <p class="text-xs text-blue-100">Begin farmer visit</p>
                     </div>
                 </div>
                 <i class="fas fa-arrow-right"></i>
             </button>
 
             <button onclick="window.location.href='/paravet/vaccination/pending'" 
-                    class="quick-action-btn bg-green-600 hover:bg-green-700 text-white rounded-xl p-4 flex items-center justify-between">
+                    class="quick-action-btn bg-green-600 hover:bg-green-700 text-white rounded-xl p-4 flex items-center justify-between shadow-md">
                 <div class="flex items-center">
                     <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mr-3">
                         <i class="fas fa-syringe text-white"></i>
                     </div>
-                    <div class="text-left">
-                        <h3 class="font-semibold">Pending Vaccinations</h3>
-                        <p class="text-sm text-green-100"><%= stats.pendingVaccinations %> pending</p>
+                    <div>
+                        <h3 class="font-semibold">Vaccinations</h3>
+                        <p class="text-xs text-green-100"><%= stats.pendingVaccinations || 0 %> pending</p>
                     </div>
                 </div>
                 <i class="fas fa-arrow-right"></i>
             </button>
 
             <button onclick="window.location.href='/paravet/farmer-list'" 
-                    class="quick-action-btn bg-purple-600 hover:bg-purple-700 text-white rounded-xl p-4 flex items-center justify-between">
+                    class="quick-action-btn bg-purple-600 hover:bg-purple-700 text-white rounded-xl p-4 flex items-center justify-between shadow-md">
                 <div class="flex items-center">
                     <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mr-3">
                         <i class="fas fa-list text-white"></i>
                     </div>
-                    <div class="text-left">
-                        <h3 class="font-semibold">My Farmers</h3>
-                        <p class="text-sm text-purple-100"><%= stats.totalFarmers %> farmers</p>
+                    <div>
+                        <h3 class="font-semibold">Farmers List</h3>
+                        <p class="text-xs text-purple-100"><%= stats.totalFarmers || 0 %> farmers</p>
+                    </div>
+                </div>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+
+            <button onclick="window.location.href='/paravet/tasks'" 
+                    class="quick-action-btn bg-orange-600 hover:bg-orange-700 text-white rounded-xl p-4 flex items-center justify-between shadow-md">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-tasks text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">My Tasks</h3>
+                        <p class="text-xs text-orange-100">View all tasks</p>
                     </div>
                 </div>
                 <i class="fas fa-arrow-right"></i>
@@ -192,70 +220,69 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column - Upcoming Schedule -->
+            <!-- Left Column - Schedule -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Today's Schedule Card -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white flex justify-between items-center">
+                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
                         <h3 class="font-semibold flex items-center">
                             <i class="fas fa-calendar-alt mr-2"></i>
                             Today's Schedule
+                            <span class="ml-2 text-sm bg-white/20 px-2 py-1 rounded-full"><%= stats.todaySchedules || 0 %> appointments</span>
                         </h3>
-                        <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
-                            <%= stats.todaySchedules %> appointments
-                        </span>
                     </div>
                     
-                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
-                        <% if (upcomingSchedules && upcomingSchedules.length > 0) { %>
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[400px] overflow-y-auto">
+                        <% if (upcomingSchedules && upcomingSchedules.filter(s => moment(s.scheduledDate).isSame(moment(), 'day')).length > 0) { %>
                             <% upcomingSchedules.filter(s => moment(s.scheduledDate).isSame(moment(), 'day')).forEach(schedule => { %>
-                                <div class="schedule-item p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <div class="schedule-item p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="viewScheduleDetails('<%= schedule._id %>', '<%= schedule.farmer?.name %>', '<%= schedule.animal?.name %>', '<%= schedule.vaccine?.name %>', '<%= moment(schedule.scheduledDate).format('h:mm A') %>', '<%= schedule.farmer?.address?.village %>')">
                                     <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-paw text-blue-600"></i>
+                                        <div class="flex items-center space-x-3 flex-1">
+                                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-paw text-blue-600 dark:text-blue-400"></i>
                                             </div>
-                                            <div>
+                                            <div class="flex-1">
                                                 <h4 class="font-medium text-gray-900 dark:text-white">
-                                                    <%= schedule.animal?.name || 'Unnamed' %> 
+                                                    <%= schedule.animal?.name || 'Unnamed Animal' %>
                                                     <span class="text-sm text-gray-500">(<%= schedule.animal?.tagNumber || 'No Tag' %>)</span>
                                                 </h4>
                                                 <p class="text-sm text-gray-500 dark:text-gray-400">
                                                     <i class="fas fa-user mr-1"></i><%= schedule.farmer?.name %>
                                                 </p>
-                                                <p class="text-xs text-gray-400">
-                                                    <i class="fas fa-map-marker-alt mr-1"></i><%= schedule.farmer?.address?.village %>
-                                                </p>
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <span class="text-xs text-gray-400">
+                                                        <i class="fas fa-map-marker-alt mr-1"></i><%= schedule.farmer?.address?.village || 'Location' %>
+                                                    </span>
+                                                    <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
+                                                        <%= schedule.vaccine?.name %>
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="text-right">
-                                            <span class="status-badge status-today">
+                                        <div class="text-right ml-3">
+                                            <div class="status-badge status-today">
+                                                <i class="fas fa-clock mr-1"></i>
                                                 <%= moment(schedule.scheduledDate).format('h:mm A') %>
-                                            </span>
-                                            <button onclick="startVaccination('<%= schedule._id %>')" 
-                                                    class="mt-2 text-sm bg-green-100 text-green-700 px-3 py-1 rounded-lg hover:bg-green-200">
+                                            </div>
+                                            <button onclick="event.stopPropagation(); window.location.href='/paravet/vaccination/<%= schedule._id %>/perform'" 
+                                                    class="mt-2 text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg transition">
                                                 Start
                                             </button>
                                         </div>
-                                    </div>
-                                    <div class="mt-2 flex items-center text-xs text-gray-500">
-                                        <i class="fas fa-syringe mr-1"></i><%= schedule.vaccine?.name %> |
-                                        <i class="fas fa-tag ml-2 mr-1"></i>Dose <%= schedule.doseNumber %>/<%= schedule.totalDosesRequired %>
                                     </div>
                                 </div>
                             <% }); %>
                         <% } else { %>
                             <div class="p-8 text-center text-gray-500">
-                                <i class="fas fa-calendar-check text-4xl mb-3 text-gray-400"></i>
+                                <i class="fas fa-calendar-check text-5xl mb-3 text-gray-400"></i>
                                 <p>No schedules for today</p>
-                                <p class="text-sm mt-2">Enjoy your day!</p>
+                                <p class="text-sm mt-2">Enjoy your day! 🎉</p>
                             </div>
                         <% } %>
                     </div>
                     
-                    <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700">
+                    <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50">
                         <a href="/paravet/tasks" class="text-sm text-blue-600 hover:text-blue-800 flex items-center">
-                            <i class="fas fa-calendar-week mr-1"></i>
                             View all schedules
                             <i class="fas fa-arrow-right ml-2 text-xs"></i>
                         </a>
@@ -264,14 +291,14 @@
 
                 <!-- This Week's Schedule -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                    <div class="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white flex justify-between items-center">
+                    <div class="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white">
                         <h3 class="font-semibold flex items-center">
                             <i class="fas fa-calendar-week mr-2"></i>
-                            This Week
+                            This Week's Schedule
                         </h3>
                     </div>
                     
-                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[400px] overflow-y-auto">
                         <% if (upcomingSchedules && upcomingSchedules.length > 0) { %>
                             <% 
                             const groupedByDay = {};
@@ -282,18 +309,22 @@
                             });
                             %>
                             <% Object.entries(groupedByDay).forEach(([day, schedules]) => { %>
-                                <div class="p-4">
-                                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"><%= day %></h4>
+                                <div class="p-4 border-b border-gray-100 dark:border-gray-700">
+                                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        <i class="fas fa-calendar-day mr-2 text-green-500"></i>
+                                        <%= day %>
+                                        <span class="ml-2 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded"><%= schedules.length %> visits</span>
+                                    </h4>
                                     <% schedules.forEach(schedule => { %>
-                                        <div class="ml-4 mb-2 p-2 hover:bg-gray-50 rounded-lg">
+                                        <div class="ml-4 mb-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer" onclick="viewScheduleDetails('<%= schedule._id %>', '<%= schedule.farmer?.name %>', '<%= schedule.animal?.name %>', '<%= schedule.vaccine?.name %>', '<%= moment(schedule.scheduledDate).format('h:mm A') %>', '<%= schedule.farmer?.address?.village %>')">
                                             <div class="flex justify-between items-center">
                                                 <div>
-                                                    <p class="text-sm font-medium">
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
                                                         <%= schedule.farmer?.name %> - <%= schedule.animal?.name %>
                                                     </p>
                                                     <p class="text-xs text-gray-500"><%= schedule.vaccine?.name %></p>
                                                 </div>
-                                                <span class="text-xs bg-gray-100 px-2 py-1 rounded">
+                                                <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
                                                     <%= moment(schedule.scheduledDate).format('h:mm A') %>
                                                 </span>
                                             </div>
@@ -303,7 +334,7 @@
                             <% }); %>
                         <% } else { %>
                             <div class="p-8 text-center text-gray-500">
-                                <i class="fas fa-calendar-week text-4xl mb-3 text-gray-400"></i>
+                                <i class="fas fa-calendar-week text-5xl mb-3 text-gray-400"></i>
                                 <p>No upcoming schedules this week</p>
                             </div>
                         <% } %>
@@ -311,7 +342,7 @@
                 </div>
             </div>
 
-            <!-- Right Column - Stats & Recent Activity -->
+            <!-- Right Column - Stats & Activity -->
             <div class="space-y-6">
                 <!-- Performance Card -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
@@ -326,12 +357,12 @@
                         <div class="space-y-4">
                             <div>
                                 <div class="flex justify-between text-sm mb-1">
-                                    <span class="text-gray-600 dark:text-gray-400">This Week's Target</span>
+                                    <span class="text-gray-600 dark:text-gray-400">Weekly Progress</span>
                                     <span class="font-semibold"><%= stats.completedThisWeek || 0 %>/50</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
                                     <div class="progress-bar bg-purple-600 h-2 rounded-full" 
-                                         style="width: <%= Math.min((stats.completedThisWeek || 0) / 50 * 100, 100) %>%"></div>
+                                         style="width: <%= Math.min(((stats.completedThisWeek || 0) / 50) * 100, 100) %>%"></div>
                                 </div>
                             </div>
                             
@@ -342,14 +373,20 @@
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
                                     <div class="progress-bar bg-green-600 h-2 rounded-full" 
-                                         style="width: <%= Math.min((stats.totalCompleted || 0) / 200 * 100, 100) %>%"></div>
+                                         style="width: <%= Math.min(((stats.totalCompleted || 0) / 200) * 100, 100) %>%"></div>
                                 </div>
                             </div>
                             
                             <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
                                 <div class="flex justify-between items-center">
                                     <span class="text-gray-600 dark:text-gray-400">Earnings This Month</span>
-                                    <span class="text-xl font-bold text-green-600">₹<%= (performanceMetrics?.reduce((sum, d) => sum + (d.totalAmount || 0), 0) || 0).toLocaleString() %></span>
+                                    <span class="text-xl font-bold text-green-600">₹<%= ((performanceMetrics?.reduce((sum, d) => sum + (d.totalAmount || 0), 0) || 0)).toLocaleString() %></span>
+                                </div>
+                                <div class="mt-2 flex justify-between text-sm">
+                                    <span class="text-gray-500">Completion Rate</span>
+                                    <span class="font-semibold">
+                                        <%= stats.totalCompleted ? Math.round((stats.totalCompleted / (stats.totalCompleted + (stats.pendingVaccinations || 0))) * 100) : 0 %>%
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -365,17 +402,17 @@
                         </h3>
                     </div>
                     
-                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[400px] overflow-y-auto">
                         <% if (recentActivities && recentActivities.length > 0) { %>
-                            <% recentActivities.slice(0, 5).forEach(activity => { %>
+                            <% recentActivities.slice(0, 6).forEach(activity => { %>
                                 <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <div class="flex items-start space-x-3">
-                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                            <i class="fas fa-check text-green-600 text-xs"></i>
+                                        <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-check text-green-600 dark:text-green-400 text-xs"></i>
                                         </div>
                                         <div class="flex-1">
                                             <p class="text-sm text-gray-900 dark:text-white">
-                                                <%= activity.animal?.name %> vaccinated
+                                                <%= activity.animal?.name || activity.vaccine?.name %> vaccinated
                                             </p>
                                             <p class="text-xs text-gray-500 dark:text-gray-400">
                                                 <%= activity.farmer?.name %> • <%= activity.vaccine?.name %>
@@ -389,16 +426,17 @@
                             <% }); %>
                         <% } else { %>
                             <div class="p-8 text-center text-gray-500">
-                                <i class="fas fa-history text-4xl mb-3 text-gray-400"></i>
+                                <i class="fas fa-history text-5xl mb-3 text-gray-400"></i>
                                 <p>No recent activity</p>
+                                <p class="text-sm mt-2">Start vaccinating to see activity here</p>
                             </div>
                         <% } %>
                     </div>
                     
-                    <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700">
-                        <a href="/paravet/recent" class="text-sm text-orange-600 hover:text-orange-800 flex items-center">
+                    <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50">
+                        <a href="/paravet/recent-activities" class="text-sm text-orange-600 hover:text-orange-800 flex items-center">
                             View all activity
-                            <i class="fas fa-arrow-right ml-2"></i>
+                            <i class="fas fa-arrow-right ml-2 text-xs"></i>
                         </a>
                     </div>
                 </div>
@@ -412,22 +450,22 @@
                     
                     <div class="space-y-3">
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-600 dark:text-gray-400">Average per day</span>
+                            <span class="text-gray-600 dark:text-gray-400">Avg. per day</span>
                             <span class="font-semibold"><%= Math.round((stats.totalCompleted || 0) / 30) || 0 %></span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-600 dark:text-gray-400">Completion rate</span>
-                            <span class="font-semibold text-green-600">
-                                <%= stats.totalCompleted ? Math.round((stats.totalCompleted / (stats.totalCompleted + stats.pendingVaccinations)) * 100) : 0 %>%
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
                             <span class="text-gray-600 dark:text-gray-400">Farmers served</span>
-                            <span class="font-semibold"><%= stats.totalFarmers %></span>
+                            <span class="font-semibold"><%= stats.totalFarmers || 0 %></span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600 dark:text-gray-400">Animals vaccinated</span>
-                            <span class="font-semibold"><%= stats.totalAnimals %></span>
+                            <span class="font-semibold"><%= stats.totalAnimals || 0 %></span>
+                        </div>
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <span class="text-gray-600 dark:text-gray-400">Success rate</span>
+                            <span class="font-semibold text-green-600">
+                                <%= stats.totalCompleted ? Math.round((stats.totalCompleted / (stats.totalCompleted + (stats.pendingVaccinations || 0))) * 100) : 0 %>%
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -449,15 +487,17 @@
         <form id="startVisitForm" onsubmit="submitStartVisit(event)">
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Select Farmer
+                    Select Farmer *
                 </label>
-                <select id="visitFarmerId" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                <select id="visitFarmerId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
                     <option value="">Choose farmer...</option>
-                    <% paravet.assignedFarmers.forEach(farmer => { %>
-                        <option value="<%= farmer._id %>">
-                            <%= farmer.name %> - <%= farmer.address?.village || 'N/A' %>
-                        </option>
-                    <% }); %>
+                    <% if (paravet.assignedFarmers && paravet.assignedFarmers.length > 0) { %>
+                        <% paravet.assignedFarmers.forEach(farmer => { %>
+                            <option value="<%= farmer._id %>">
+                                <%= farmer.name %> - <%= farmer.address?.village || 'N/A' %>
+                            </option>
+                        <% }); %>
+                    <% } %>
                 </select>
             </div>
             
@@ -475,11 +515,11 @@
             
             <div class="flex justify-end space-x-3">
                 <button type="button" onclick="closeModal('startVisitModal')" 
-                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
                     Cancel
                 </button>
-                <button type="submit" 
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <button type="submit" id="startVisitBtn"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                     Start Visit
                 </button>
             </div>
@@ -487,77 +527,144 @@
     </div>
 </div>
 
-<script>
-$(document).ready(function() {
-    // Auto-refresh data every 5 minutes
-    setInterval(refreshStats, 300000);
-});
+<!-- Schedule Details Modal -->
+<div id="scheduleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Schedule Details</h3>
+            <button onclick="closeModal('scheduleModal')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="scheduleDetailsContent"></div>
+    </div>
+</div>
 
-function refreshStats() {
-    $.get('/paravet/api/stats', function(response) {
-        if (response.success) {
-            // Update stats in UI
-            console.log('Stats refreshed:', response.stats);
-        }
-    });
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function openStartVisitModal() {
+    document.getElementById('startVisitModal').classList.remove('hidden');
 }
 
-function startVisit() {
-    $('#startVisitModal').removeClass('hidden');
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+}
+
+function viewScheduleDetails(id, farmerName, animalName, vaccineName, time, village) {
+    const modal = document.getElementById('scheduleModal');
+    const content = document.getElementById('scheduleDetailsContent');
+    
+    content.innerHTML = `
+        <div class="space-y-3">
+            <div class="flex justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Farmer</span>
+                <span class="text-sm font-semibold">${farmerName || 'N/A'}</span>
+            </div>
+            <div class="flex justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Animal</span>
+                <span class="text-sm font-semibold">${animalName || 'N/A'}</span>
+            </div>
+            <div class="flex justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Vaccine</span>
+                <span class="text-sm font-semibold">${vaccineName || 'N/A'}</span>
+            </div>
+            <div class="flex justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Time</span>
+                <span class="text-sm font-semibold">${time || 'N/A'}</span>
+            </div>
+            <div class="flex justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Location</span>
+                <span class="text-sm font-semibold">${village || 'N/A'}</span>
+            </div>
+            <div class="mt-4 flex space-x-2">
+                <button onclick="window.location.href='/paravet/vaccination/${id}/perform'" 
+                        class="flex-1 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 transition">
+                    <i class="fas fa-play mr-1"></i> Start Vaccination
+                </button>
+                <button onclick="closeModal('scheduleModal')" 
+                        class="px-4 py-2 border rounded hover:bg-gray-50 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
 }
 
 function submitStartVisit(event) {
     event.preventDefault();
     
-    const farmerId = $('#visitFarmerId').val();
-    const purpose = $('#visitPurpose').val();
+    const farmerId = document.getElementById('visitFarmerId').value;
+    const purpose = document.getElementById('visitPurpose').value;
+    const btn = document.getElementById('startVisitBtn');
     
     if (!farmerId) {
         Swal.fire({
             icon: 'warning',
             title: 'No Farmer Selected',
-            text: 'Please select a farmer'
+            text: 'Please select a farmer to visit'
         });
         return;
     }
     
-    $.ajax({
-        url: '/paravet/visit/start',
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<div class="loading-spinner"></div> Starting...';
+    btn.disabled = true;
+    
+    fetch('/paravet/visit/start', {
         method: 'POST',
-        data: JSON.stringify({ farmerId, purpose }),
-        contentType: 'application/json',
-        success: function(response) {
-            if (response.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Visit Started!',
-                    text: 'Redirecting to farmer page...',
-                    timer: 1500
-                }).then(() => {
-                    window.location.href = `/paravet/farmer/${farmerId}/animals`;
-                });
-            }
+        headers: {
+            'Content-Type': 'application/json',
         },
-        error: function() {
+        body: JSON.stringify({ farmerId, purpose })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Visit Started!',
+                text: 'Redirecting to farmer page...',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = `/paravet/farmer/${farmerId}/animals`;
+            });
+        } else {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Failed to start visit'
+                text: data.message || 'Failed to start visit'
             });
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Network error. Please try again.'
+        });
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     });
 }
 
-function startVaccination(vaccinationId) {
-    window.location.href = `/paravet/vaccination/${vaccinationId}/perform`;
+// Close modal when clicking outside
+window.onclick = function(event) {
+    if (event.target.classList.contains('fixed')) {
+        event.target.classList.add('hidden');
+    }
 }
 
-function toggleNotifications() {
-    // Implement notifications dropdown
-    alert('Notifications feature coming soon!');
-}
-
-function closeModal(modalId) {
-    $('#' + modalId).addClass('hidden');
-}
+// Close modal on Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        document.querySelectorAll('[id$="Modal"]').forEach(modal => {
+            modal.classList.add('hidden');
+        });
+    }
+});
 </script>

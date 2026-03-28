@@ -552,7 +552,10 @@ module.exports.renderEditForm = async (req, res) => {
 module.exports.updateParavet = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userData, paravetData } = req.body;
+
+    const { user, paravet } = req.body; // ✅ FIX
+
+    console.log("BODY:", req.body); // debug
 
     const existingParavet = await Paravet.findById(id);
     if (!existingParavet) {
@@ -562,28 +565,31 @@ module.exports.updateParavet = async (req, res) => {
 
     // Update User
     await User.findByIdAndUpdate(existingParavet.user, {
-      name: userData.name,
+      name: user.name,
       role: "PARAVET",
-      email: userData.email,
-      mobile: userData.mobile,
-      isActive: paravetData.isActive === "on",
+      email: user.email,
+      mobile: user.mobile,
+      isActive: paravet.isActive === "on",
     });
 
     // Update Paravet
-    await Paravet.findByIdAndUpdate(id, {
-      qualification: paravetData.qualification,
-      licenseNumber: paravetData.licenseNumber,
-      assignedAreas: paravetData.assignedAreas,
-      isActive: paravetData.isActive === "on",
-      specialization: paravetData.specialization,
-      experience: paravetData.experience,
-      registrationNumber: paravetData.registrationNumber,
-    }, {
-      runValidators: true,
-    });
+    await Paravet.findByIdAndUpdate(
+      id,
+      {
+        qualification: paravet.qualification,
+        licenseNumber: paravet.licenseNumber,
+        assignedAreas: paravet.assignedAreas,
+        isActive: paravet.isActive === "on",
+        specialization: paravet.specialization,
+        experience: paravet.experience,
+        registrationNumber: paravet.registrationNumber,
+      },
+      { runValidators: true }
+    );
 
     req.flash("success", "Paravet updated successfully");
     res.redirect("/admin/paravets");
+
   } catch (error) {
     console.error("Update Paravet Error:", error);
     req.flash("error", "Failed to update paravet");
@@ -1386,5 +1392,892 @@ exports.getUpcomingSchedules = async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Error fetching schedules" });
+  }
+};
+
+// ================ TASK MANAGEMENT ================
+
+/**
+ * Get all tasks for the current paravet
+ * Tasks include: pending vaccinations, farmer visits, and other assignments
+ */
+exports.getTasks = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const paravet = await Paravet.findOne({ user: userId });
+    const { filter = 'all' } = req.query; // Get filter from query params
+
+    if (!paravet) {
+      req.flash("error", "Paravet profile not found");
+      return res.redirect("/login");
+    }
+
+    const today = moment().startOf("day");
+    const tomorrow = moment().endOf("day");
+
+    // Build query based on filter
+    let query = {
+      assignedParavet: paravet._id,
+    };
+
+    if (filter === 'today') {
+      query.scheduledDate = {
+        $gte: today.toDate(),
+        $lte: tomorrow.toDate()
+      };
+      query.status = { $in: ["Scheduled", "Payment Pending"] };
+    } else if (filter === 'overdue') {
+      query.scheduledDate = { $lt: new Date() };
+      query.status = { $in: ["Scheduled", "Payment Pending"] };
+    } else if (filter === 'completed') {
+      query.status = "Completed";
+    } else if (filter === 'upcoming') {
+      query.scheduledDate = { $gt: tomorrow.toDate() };
+      query.status = { $in: ["Scheduled", "Payment Pending"] };
+    } else {
+      // 'all' - show pending tasks
+      query.status = { $in: ["Scheduled", "Payment Pending"] };
+    }
+
+    // Fetch vaccinations
+    const vaccinations = await Vaccination.find(query)
+      .populate("farmer", "name address mobileNumber")
+      .populate("animal", "name tagNumber animalType")
+      .populate("vaccine", "name diseaseTarget")
+      .sort({ scheduledDate: 1 })
+      .lean();
+
+    // Transform to task format
+    const tasks = vaccinations.map(vaccination => ({
+      id: vaccination._id,
+      type: "vaccination",
+      title: `Vaccinate ${vaccination.animal?.name || "Animal"}`,
+      description: `${vaccination.vaccine?.name || vaccination.vaccineName} vaccination`,
+      farmer: vaccination.farmer,
+      animal: vaccination.animal,
+      scheduledDate: vaccination.scheduledDate,
+      priority: vaccination.scheduledDate <= new Date() ? "high" : 
+                moment(vaccination.scheduledDate).isSame(today, "day") ? "medium" : "low",
+      status: vaccination.status === "Completed" ? "completed" : "pending",
+      location: vaccination.farmer?.address?.village || vaccination.farmer?.address,
+      estimatedDuration: 30,
+      createdAt: vaccination.createdAt
+    }));
+
+    // Group tasks by date
+    const groupedTasks = {};
+    
+    tasks.forEach(task => {
+      let dateKey;
+      const taskDate = moment(task.scheduledDate);
+      
+      if (taskDate.isSame(today, "day")) {
+        dateKey = "Today";
+      } else if (taskDate.isSame(moment().add(1, "day"), "day")) {
+        dateKey = "Tomorrow";
+      } else if (taskDate.isBefore(today)) {
+        dateKey = "Overdue";
+      } else if (taskDate.isBefore(moment().add(7, "days"))) {
+        dateKey = "This Week";
+      } else {
+        dateKey = taskDate.format("DD MMM YYYY");
+      }
+      
+      if (!groupedTasks[dateKey]) {
+        groupedTasks[dateKey] = [];
+      }
+      groupedTasks[dateKey].push(task);
+    });
+
+    // Sort groups
+    const sortedGroups = {};
+    const order = ["Overdue", "Today", "Tomorrow", "This Week"];
+    order.forEach(key => {
+      if (groupedTasks[key]) {
+        sortedGroups[key] = groupedTasks[key];
+      }
+    });
+    Object.keys(groupedTasks).forEach(key => {
+      if (!order.includes(key)) {
+        sortedGroups[key] = groupedTasks[key];
+      }
+    });
+
+    const totalTasks = tasks.length;
+    const todayTasks = tasks.filter(t => moment(t.scheduledDate).isSame(today, "day")).length;
+    const upcomingTasks = tasks.filter(t => moment(t.scheduledDate).isAfter(today, "day") && t.status !== "completed").length;
+    const overdueTasks = tasks.filter(t => moment(t.scheduledDate).isBefore(today, "day") && t.status !== "completed").length;
+
+    res.render("paravet/tasks/index", {
+      title: "My Tasks - Zoopito",
+      groupedTasks: sortedGroups,
+      totalTasks,
+      todayTasks,
+      upcomingTasks,
+      overdueTasks,
+      currentFilter: filter, // Pass the current filter to the view
+      moment,
+      user: req.user,
+      paravet
+    });
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    req.flash("error", "Error fetching tasks");
+    res.redirect("/paravet/dashboard");
+  }
+};
+
+/**
+ * Complete a specific task (vaccination or visit)
+ * @param {string} id - Task ID (vaccination ID or visit ID)
+ */
+exports.completeTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { taskType, completionNotes } = req.body;
+
+    if (taskType === "vaccination") {
+      // Redirect to vaccination completion form
+      req.flash("info", "Please complete the vaccination details");
+      return res.redirect(`/paravet/vaccination/${id}/perform`);
+    } else if (taskType === "visit") {
+      // Handle farmer visit completion
+      const visit = await Visit.findById(id);
+      if (!visit) {
+        req.flash("error", "Visit not found");
+        return res.redirect("/paravet/tasks");
+      }
+
+      visit.status = "Completed";
+      visit.completedAt = new Date();
+      visit.completionNotes = completionNotes;
+      await visit.save();
+
+      req.flash("success", "Visit marked as completed");
+      res.redirect("/paravet/tasks");
+    } else {
+      req.flash("error", "Invalid task type");
+      res.redirect("/paravet/tasks");
+    }
+  } catch (error) {
+    console.error("Error completing task:", error);
+    req.flash("error", "Error completing task");
+    res.redirect("/paravet/tasks");
+  }
+};
+
+/**
+ * Reschedule a task to a new date/time
+ * @param {string} id - Task ID
+ */
+exports.rescheduleTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newDate, newTime, reason } = req.body;
+
+    const newDateTime = moment(`${newDate} ${newTime}`).toDate();
+
+    // Find the vaccination record
+    const vaccination = await Vaccination.findById(id);
+    if (!vaccination) {
+      req.flash("error", "Task not found");
+      return res.redirect("/paravet/tasks");
+    }
+
+    // Update scheduled date
+    vaccination.scheduledDate = newDateTime;
+    vaccination.rescheduleReason = reason;
+    vaccination.rescheduledAt = new Date();
+    vaccination.rescheduledBy = req.user._id;
+
+    await vaccination.save();
+
+    // Optional: Send notification to farmer about reschedule
+    // await sendRescheduleNotification(vaccination.farmer, vaccination);
+
+    req.flash("success", `Task rescheduled to ${moment(newDateTime).format("DD MMM YYYY, hh:mm A")}`);
+    res.redirect("/paravet/tasks");
+  } catch (error) {
+    console.error("Error rescheduling task:", error);
+    req.flash("error", "Error rescheduling task");
+    res.redirect("/paravet/tasks");
+  }
+};
+
+// ================ FARMER VISIT MANAGEMENT ================
+
+/**
+ * Start a visit to a farmer (check-in)
+ */
+exports.startVisit = async (req, res) => {
+  try {
+    const { farmerId, visitType, notes } = req.body;
+    const userId = req.user._id;
+    const paravet = await Paravet.findOne({ user: userId });
+
+    // Verify farmer is assigned to this paravet
+    const farmer = await Farmer.findOne({
+      _id: farmerId,
+      assignedParavet: paravet._id
+    });
+
+    if (!farmer) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Farmer not found or not assigned to you" 
+      });
+    }
+
+    // Create visit record
+    const Visit = require("../models/visit"); // You'll need to create this model
+    const visit = new Visit({
+      farmer: farmerId,
+      paravet: paravet._id,
+      visitType: visitType || "routine",
+      status: "InProgress",
+      startedAt: new Date(),
+      notes: notes,
+      location: {
+        type: "Point",
+        coordinates: [req.body.longitude, req.body.latitude]
+      }
+    });
+
+    await visit.save();
+
+    // Update farmer's last visit tracking
+    await Farmer.findByIdAndUpdate(farmerId, {
+      lastVisitStart: new Date(),
+      currentVisitId: visit._id
+    });
+
+    res.json({
+      success: true,
+      message: "Visit started successfully",
+      visitId: visit._id
+    });
+  } catch (error) {
+    console.error("Error starting visit:", error);
+    res.status(500).json({ success: false, message: "Error starting visit" });
+  }
+};
+
+/**
+ * Complete a farmer visit (check-out)
+ */
+exports.completeVisit = async (req, res) => {
+  try {
+    const { visitId, summary, animalsChecked, recommendations, followUpDate } = req.body;
+    const userId = req.user._id;
+    const paravet = await Paravet.findOne({ user: userId });
+
+    const Visit = require("../models/visit");
+    const visit = await Visit.findOne({
+      _id: visitId,
+      paravet: paravet._id,
+      status: "InProgress"
+    });
+
+    if (!visit) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Active visit not found" 
+      });
+    }
+
+    // Update visit record
+    visit.status = "Completed";
+    visit.completedAt = new Date();
+    visit.summary = summary;
+    visit.animalsChecked = animalsChecked;
+    visit.recommendations = recommendations;
+    visit.followUpDate = followUpDate ? new Date(followUpDate) : null;
+
+    await visit.save();
+
+    // Update farmer record
+    await Farmer.findByIdAndUpdate(visit.farmer, {
+      lastVisitCompleted: new Date(),
+      lastVisitSummary: summary,
+      nextFollowUp: followUpDate ? new Date(followUpDate) : null,
+      $inc: { totalVisits: 1 }
+    });
+
+    // If follow-up scheduled, create a new vaccination task if needed
+    if (followUpDate && recommendations.includes("vaccination")) {
+      // Create follow-up vaccination task logic here
+    }
+
+    res.json({
+      success: true,
+      message: "Visit completed successfully"
+    });
+  } catch (error) {
+    console.error("Error completing visit:", error);
+    res.status(500).json({ success: false, message: "Error completing visit" });
+  }
+};
+
+// ================ RECENT ACTIVITIES ================
+
+/**
+ * Get recent activities for the paravet dashboard
+ * Returns last 10 completed vaccinations and visits
+ */
+exports.getRecentActivities = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const paravet = await Paravet.findOne({ user: userId });
+
+    // Get recent completed vaccinations
+    const recentVaccinations = await Vaccination.find({
+      assignedParavet: paravet._id,
+      status: "Completed"
+    })
+      .populate("farmer", "name")
+      .populate("animal", "name tagNumber animalType")
+      .populate("vaccine", "name")
+      .sort({ dateAdministered: -1 })
+      .limit(5)
+      .lean();
+
+    // Transform vaccinations to activity format
+    const vaccinationActivities = recentVaccinations.map(vac => ({
+      id: vac._id,
+      type: "vaccination",
+      title: "Vaccination Completed",
+      description: `${vac.vaccine?.name || vac.vaccineName} administered to ${vac.animal?.name || vac.animal?.tagNumber}`,
+      farmerName: vac.farmer?.name,
+      timestamp: vac.dateAdministered,
+      status: "completed",
+      icon: "vaccine"
+    }));
+
+    // Get recent visits (if Visit model exists)
+    let visitActivities = [];
+    try {
+      const Visit = require("../models/visit");
+      const recentVisits = await Visit.find({
+        paravet: paravet._id,
+        status: "Completed"
+      })
+        .populate("farmer", "name")
+        .sort({ completedAt: -1 })
+        .limit(5)
+        .lean();
+
+      visitActivities = recentVisits.map(visit => ({
+        id: visit._id,
+        type: "visit",
+        title: "Farmer Visit Completed",
+        description: visit.summary || "Routine visit completed",
+        farmerName: visit.farmer?.name,
+        timestamp: visit.completedAt,
+        status: "completed",
+        icon: "visit"
+      }));
+    } catch (err) {
+      // Visit model might not exist yet
+      console.log("Visit model not available");
+    }
+
+    // Combine and sort by timestamp
+    const allActivities = [...vaccinationActivities, ...visitActivities]
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, 10);
+
+    // If this is an API request
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
+      return res.json({
+        success: true,
+        activities: allActivities
+      });
+    }
+
+    // Otherwise render view
+    res.render("paravet/activities/index", {
+      title: "Recent Activities",
+      activities: allActivities,
+      user: req.user,
+      moment
+    });
+  } catch (error) {
+    console.error("Error fetching recent activities:", error);
+    if (req.xhr) {
+      res.status(500).json({ success: false, message: "Error fetching activities" });
+    } else {
+      req.flash("error", "Error fetching activities");
+      res.redirect("/paravet/dashboard");
+    }
+  }
+};
+
+// ================ PERFORMANCE METRICS ================
+
+/**
+ * Get performance metrics for the paravet
+ * Returns data for charts and analytics
+ */
+exports.getPerformanceMetrics = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const paravet = await Paravet.findOne({ user: userId });
+    const { period = "month", startDate, endDate } = req.query;
+
+    let dateRange = {};
+    let groupFormat = {};
+
+    // Set date range based on period
+    switch (period) {
+      case "week":
+        dateRange = {
+          start: moment().startOf("week").toDate(),
+          end: moment().endOf("week").toDate()
+        };
+        groupFormat = { day: "%d" };
+        break;
+      case "month":
+        dateRange = {
+          start: moment().startOf("month").toDate(),
+          end: moment().endOf("month").toDate()
+        };
+        groupFormat = { day: "%d" };
+        break;
+      case "quarter":
+        dateRange = {
+          start: moment().subtract(3, "months").startOf("month").toDate(),
+          end: moment().toDate()
+        };
+        groupFormat = { week: "%W" };
+        break;
+      case "year":
+        dateRange = {
+          start: moment().startOf("year").toDate(),
+          end: moment().endOf("year").toDate()
+        };
+        groupFormat = { month: "%m" };
+        break;
+      default:
+        if (startDate && endDate) {
+          dateRange = {
+            start: new Date(startDate),
+            end: new Date(endDate)
+          };
+        } else {
+          dateRange = {
+            start: moment().subtract(30, "days").toDate(),
+            end: moment().toDate()
+          };
+        }
+    }
+
+    // Get vaccinations metrics
+    const vaccinationMetrics = await Vaccination.aggregate([
+      {
+        $match: {
+          assignedParavet: paravet._id,
+          status: "Completed",
+          dateAdministered: {
+            $gte: dateRange.start,
+            $lte: dateRange.end
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: "%Y-%m-%d", date: "$dateAdministered" } }
+          },
+          count: { $sum: 1 },
+          revenue: { $sum: { $ifNull: ["$payment.totalAmount", 0] } },
+          uniqueFarmers: { $addToSet: "$farmer" }
+        }
+      },
+      {
+        $project: {
+          date: "$_id.date",
+          count: 1,
+          revenue: 1,
+          uniqueFarmersCount: { $size: "$uniqueFarmers" }
+        }
+      },
+      { $sort: { date: 1 } }
+    ]);
+
+    // Get vaccine distribution
+    const vaccineDistribution = await Vaccination.aggregate([
+      {
+        $match: {
+          assignedParavet: paravet._id,
+          status: "Completed",
+          dateAdministered: {
+            $gte: dateRange.start,
+            $lte: dateRange.end
+          }
+        }
+      },
+      {
+        $group: {
+          _id: { $ifNull: ["$vaccineName", "$vaccine.name"] },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+
+    // Get animal type distribution
+    const animalTypeDistribution = await Vaccination.aggregate([
+      {
+        $match: {
+          assignedParavet: paravet._id,
+          status: "Completed"
+        }
+      },
+      {
+        $lookup: {
+          from: "animals",
+          localField: "animal",
+          foreignField: "_id",
+          as: "animalData"
+        }
+      },
+      { $unwind: "$animalData" },
+      {
+        $group: {
+          _id: "$animalData.animalType",
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    // Get daily average
+    const daysInRange = moment(dateRange.end).diff(moment(dateRange.start), "days") + 1;
+    const totalVaccinations = vaccinationMetrics.reduce((sum, m) => sum + m.count, 0);
+    const dailyAverage = totalVaccinations / daysInRange;
+
+    // Get farmer satisfaction metrics (if you have feedback model)
+    let satisfactionRate = null;
+    try {
+      const Feedback = require("../models/feedback");
+      const feedback = await Feedback.aggregate([
+        {
+          $match: {
+            paravetId: paravet._id,
+            createdAt: { $gte: dateRange.start }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            avgRating: { $avg: "$rating" },
+            totalFeedbacks: { $sum: 1 }
+          }
+        }
+      ]);
+      if (feedback.length > 0) {
+        satisfactionRate = (feedback[0].avgRating / 5) * 100;
+      }
+    } catch (err) {
+      console.log("Feedback model not available");
+    }
+
+    const metrics = {
+      period,
+      dateRange: {
+        start: dateRange.start,
+        end: dateRange.end
+      },
+      summary: {
+        totalVaccinations,
+        totalRevenue: vaccinationMetrics.reduce((sum, m) => sum + m.revenue, 0),
+        totalFarmersServed: new Set(
+          vaccinationMetrics.flatMap(m => m.uniqueFarmers)
+        ).size,
+        dailyAverage: Math.round(dailyAverage * 10) / 10,
+        satisfactionRate: satisfactionRate || null
+      },
+      daily: vaccinationMetrics,
+      vaccineDistribution,
+      animalTypeDistribution,
+      trends: {
+        bestDay: vaccinationMetrics.reduce((best, curr) => 
+          curr.count > best.count ? curr : best, { count: 0, date: null }),
+        bestWeek: null, // Calculate weekly trends if needed
+        growthRate: null // Compare with previous period
+      }
+    };
+
+    // If API request
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
+      return res.json({
+        success: true,
+        metrics
+      });
+    }
+
+    // Render view
+    res.render("paravet/performance/index", {
+      title: "Performance Metrics",
+      metrics,
+      period,
+      user: req.user,
+      moment
+    });
+  } catch (error) {
+    console.error("Error fetching performance metrics:", error);
+    if (req.xhr) {
+      res.status(500).json({ success: false, message: "Error fetching metrics" });
+    } else {
+      req.flash("error", "Error fetching performance metrics");
+      res.redirect("/paravet/dashboard");
+    }
+  }
+};
+
+// ================ MONTHLY REPORT ================
+
+/**
+ * Get monthly report for the paravet
+ */
+exports.getMonthlyReport = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const paravet = await Paravet.findOne({ user: userId });
+    const { month, year } = req.query;
+
+    const reportMonth = month ? parseInt(month) : moment().month() + 1;
+    const reportYear = year ? parseInt(year) : moment().year();
+
+    const startOfMonth = moment()
+      .year(reportYear)
+      .month(reportMonth - 1)
+      .startOf("month");
+    const endOfMonth = moment()
+      .year(reportYear)
+      .month(reportMonth - 1)
+      .endOf("month");
+
+    // Get all completed vaccinations for the month
+    const vaccinations = await Vaccination.find({
+      assignedParavet: paravet._id,
+      status: "Completed",
+      dateAdministered: {
+        $gte: startOfMonth.toDate(),
+        $lte: endOfMonth.toDate()
+      }
+    })
+      .populate("farmer", "name mobileNumber address")
+      .populate("animal", "name tagNumber animalType")
+      .populate("vaccine", "name price")
+      .sort({ dateAdministered: 1 })
+      .lean();
+
+    // Calculate monthly summary
+    const summary = {
+      totalVaccinations: vaccinations.length,
+      totalRevenue: vaccinations.reduce((sum, v) => sum + (v.payment?.totalAmount || 0), 0),
+      totalFarmers: new Set(vaccinations.map(v => v.farmer?._id?.toString())).size,
+      totalAnimals: new Set(vaccinations.map(v => v.animal?._id?.toString())).size,
+      byVaccineType: {},
+      weeklyBreakdown: {
+        week1: 0,
+        week2: 0,
+        week3: 0,
+        week4: 0,
+        week5: 0
+      },
+      paymentMode: {
+        cash: 0,
+        online: 0,
+        pending: 0
+      }
+    };
+
+    // Process vaccinations for breakdowns
+    vaccinations.forEach(vac => {
+      // Vaccine type breakdown
+      const vaccineName = vac.vaccine?.name || vac.vaccineName;
+      summary.byVaccineType[vaccineName] = (summary.byVaccineType[vaccineName] || 0) + 1;
+
+      // Weekly breakdown
+      const weekNumber = moment(vac.dateAdministered).isoWeek();
+      const weekOfMonth = Math.ceil(moment(vac.dateAdministered).date() / 7);
+      summary.weeklyBreakdown[`week${weekOfMonth}`]++;
+
+      // Payment mode breakdown
+      if (vac.payment?.status === "Paid") {
+        if (vac.payment?.paymentMethod === "Cash") {
+          summary.paymentMode.cash += vac.payment.totalAmount || 0;
+        } else {
+          summary.paymentMode.online += vac.payment.totalAmount || 0;
+        }
+      } else {
+        summary.paymentMode.pending += vac.payment?.totalAmount || 0;
+      }
+    });
+
+    // Get previous month data for comparison
+    const previousMonthStart = moment(startOfMonth).subtract(1, "month");
+    const previousMonthEnd = moment(endOfMonth).subtract(1, "month");
+    const previousMonthVaccinations = await Vaccination.countDocuments({
+      assignedParavet: paravet._id,
+      status: "Completed",
+      dateAdministered: {
+        $gte: previousMonthStart.toDate(),
+        $lte: previousMonthEnd.toDate()
+      }
+    });
+
+    const comparison = {
+      vaccinationsChange: previousMonthVaccinations 
+        ? ((summary.totalVaccinations - previousMonthVaccinations) / previousMonthVaccinations * 100).toFixed(1)
+        : 100,
+      // Add more comparison metrics as needed
+    };
+
+    // If API request
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
+      return res.json({
+        success: true,
+        report: {
+          month: reportMonth,
+          year: reportYear,
+          summary,
+          vaccinations,
+          comparison,
+          daily: Object.entries(
+            vaccinations.reduce((acc, v) => {
+              const date = moment(v.dateAdministered).format("YYYY-MM-DD");
+              acc[date] = (acc[date] || 0) + 1;
+              return acc;
+            }, {})
+          ).map(([date, count]) => ({ date, count }))
+        }
+      });
+    }
+
+    // Render view
+    res.render("paravet/reports/monthly", {
+      title: `Monthly Report - ${startOfMonth.format("MMMM YYYY")}`,
+      reportMonth: startOfMonth.format("MMMM"),
+      reportYear,
+      summary,
+      vaccinations,
+      comparison,
+      month: reportMonth,
+      year: reportYear,
+      moment,
+      user: req.user,
+      paravet
+    });
+  } catch (error) {
+    console.error("Error generating monthly report:", error);
+    req.flash("error", "Error generating monthly report");
+    res.redirect("/paravet/dashboard");
+  }
+};
+
+// ================ BULK VACCINATION ================
+
+/**
+ * Perform bulk vaccinations for multiple animals
+ */
+exports.bulkPerformVaccinations = async (req, res) => {
+  try {
+    const { vaccinationIds, vaccinationData } = req.body;
+    const userId = req.user._id;
+    const paravet = await Paravet.findOne({ user: userId });
+
+    if (!vaccinationIds || vaccinationIds.length === 0) {
+      req.flash("error", "No vaccinations selected");
+      return res.redirect("/paravet/vaccinations/pending");
+    }
+
+    const results = {
+      success: [],
+      failed: []
+    };
+
+    for (const vacId of vaccinationIds) {
+      try {
+        const vaccination = await Vaccination.findById(vacId)
+          .populate("animal")
+          .populate("farmer")
+          .populate("vaccine");
+
+        if (!vaccination) {
+          results.failed.push({ id: vacId, reason: "Vaccination not found" });
+          continue;
+        }
+
+        // Update vaccination record
+        vaccination.status = "Completed";
+        vaccination.dateAdministered = new Date();
+        vaccination.administeredBy = req.user.name;
+        vaccination.batchNumber = vaccinationData.batchNumber;
+        vaccination.expiryDate = vaccinationData.expiryDate;
+        vaccination.dosageAmount = vaccinationData.dosageAmount;
+        vaccination.administrationMethod = vaccinationData.administrationMethod;
+        vaccination.notes = vaccinationData.notes;
+
+        // Update payment details if provided
+        if (vaccinationData.paymentReceived) {
+          vaccination.payment = {
+            status: "Paid",
+            totalAmount: vaccination.vaccine?.price || 0,
+            amountPaid: vaccination.vaccine?.price || 0,
+            paymentMethod: vaccinationData.paymentMethod || "Cash",
+            paymentDate: new Date(),
+            transactionId: `BULK_${Date.now()}_${vacId}`
+          };
+        }
+
+        await vaccination.save();
+
+        // Update animal's vaccination summary
+        await Animal.findByIdAndUpdate(vaccination.animal._id, {
+          $set: {
+            "vaccinationSummary.lastVaccinationDate": new Date(),
+            "vaccinationSummary.lastVaccineType": vaccination.vaccine.name,
+            "vaccinationSummary.lastUpdated": new Date()
+          },
+          $inc: { "vaccinationSummary.totalVaccinations": 1 },
+          $push: {
+            "vaccinationSummary.vaccinesGiven": {
+              vaccine: vaccination.vaccine._id,
+              vaccineName: vaccination.vaccine.name,
+              date: new Date(),
+              status: "completed",
+              batchNumber: vaccinationData.batchNumber
+            }
+          }
+        });
+
+        results.success.push({ id: vacId, name: vaccination.animal?.name || vacId });
+      } catch (error) {
+        console.error(`Error processing vaccination ${vacId}:`, error);
+        results.failed.push({ id: vacId, reason: error.message });
+      }
+    }
+
+    req.flash(
+      "success",
+      `Bulk vaccination completed: ${results.success.length} successful, ${results.failed.length} failed`
+    );
+    
+    if (req.xhr) {
+      return res.json({ success: true, results });
+    }
+    
+    res.redirect("/paravet/vaccinations/pending");
+  } catch (error) {
+    console.error("Error in bulk vaccination:", error);
+    if (req.xhr) {
+      return res.status(500).json({ success: false, message: "Error performing bulk vaccination" });
+    }
+    req.flash("error", "Error performing bulk vaccination");
+    res.redirect("/paravet/vaccinations/pending");
   }
 };

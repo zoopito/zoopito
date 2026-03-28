@@ -1,0 +1,91 @@
+<% layout("layouts/boilerplate", {
+    title: 'Recent Activities',
+    description: 'View all your recent activities',
+    pageStyles: `
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #3b82f6, #10b981);
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -0.35rem;
+            top: 0.5rem;
+            width: 0.7rem;
+            height: 0.7rem;
+            border-radius: 50%;
+            background: #3b82f6;
+            border: 2px solid white;
+        }
+        .dark .timeline-dot {
+            border-color: #1f2937;
+        }
+    `
+}) -%>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Recent Activities</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Your vaccination and visit history</p>
+        </div>
+
+        <!-- Timeline -->
+        <div class="space-y-6">
+            <% if (activities && activities.length > 0) { %>
+                <% activities.forEach(activity => { %>
+                    <div class="timeline-item bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <div class="timeline-dot"></div>
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4 
+                                <%= activity.type === 'vaccination' ? 'bg-green-100' : 'bg-blue-100' %>">
+                                <i class="fas <%= activity.type === 'vaccination' ? 'fa-syringe text-green-600' : 'fa-calendar-check text-blue-600' %> text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                        <%= activity.title %>
+                                    </h3>
+                                    <span class="text-xs text-gray-500"><%= moment(activity.timestamp).format('DD MMM YYYY, hh:mm A') %></span>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-400"><%= activity.description %></p>
+                                <p class="text-sm text-gray-500 mt-2">
+                                    <i class="fas fa-user mr-1"></i><%= activity.farmerName %>
+                                </p>
+                                <% if (activity.type === 'vaccination') { %>
+                                    <div class="mt-3">
+                                        <button onclick="viewVaccinationDetails('<%= activity.id %>')" 
+                                                class="text-sm text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-eye mr-1"></i>View Details
+                                        </button>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+                    <i class="fas fa-history text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Activities Yet</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Start vaccinating animals to see activities here.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewVaccinationDetails(vaccinationId) {
+    window.location.href = `/paravet/vaccination/${vaccinationId}/details`;
+}
+</script>

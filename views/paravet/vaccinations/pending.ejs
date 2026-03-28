@@ -1,0 +1,131 @@
+<% layout("layouts/boilerplate", {
+    title: 'Pending Vaccinations',
+    description: 'Manage pending vaccination schedules',
+    pageStyles: `
+        .vaccination-card {
+            transition: all 0.3s ease;
+        }
+        .vaccination-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .priority-high { border-left-color: #ef4444; }
+        .priority-medium { border-left-color: #f59e0b; }
+        .priority-low { border-left-color: #10b981; }
+    `
+}) -%>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Pending Vaccinations</h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2"><%= total %> vaccinations waiting to be completed</p>
+                </div>
+                <div class="mt-4 sm:mt-0">
+                    <select id="filterSelect" onchange="filterVaccinations()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="all" <%= currentFilter === 'all' ? 'selected' : '' %>>All</option>
+                        <option value="today" <%= currentFilter === 'today' ? 'selected' : '' %>>Today</option>
+                        <option value="overdue" <%= currentFilter === 'overdue' ? 'selected' : '' %>>Overdue</option>
+                        <option value="week" <%= currentFilter === 'week' ? 'selected' : '' %>>This Week</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vaccinations by Farmer -->
+        <% if (groupedVaccinations && groupedVaccinations.length > 0) { %>
+            <div class="space-y-6">
+                <% groupedVaccinations.forEach(group => { %>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h2 class="text-xl font-semibold"><%= group.farmer.name %></h2>
+                                    <p class="text-sm text-blue-100 mt-1">
+                                        <i class="fas fa-phone mr-1"></i><%= group.farmer.mobileNumber || 'No phone' %>
+                                    </p>
+                                </div>
+                                <span class="bg-white/20 px-3 py-1 rounded-full text-sm">
+                                    <%= group.vaccinations.length %> pending
+                                </span>
+                            </div>
+                        </div>
+                        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <% group.vaccinations.forEach(vac => { %>
+                                <div class="vaccination-card p-5 border-l-4 priority-<%= moment(vac.scheduledDate).isBefore(moment()) ? 'high' : (moment(vac.scheduledDate).isSame(moment(), 'day') ? 'medium' : 'low') %>">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                    <%= vac.animal?.name || 'Unknown Animal' %>
+                                                    <span class="text-sm text-gray-500">(<%= vac.animal?.tagNumber %>)</span>
+                                                </h3>
+                                                <span class="status-badge status-upcoming">
+                                                    <%= vac.vaccine?.name %>
+                                                </span>
+                                            </div>
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                                <div>
+                                                    <i class="fas fa-calendar-alt mr-2"></i>
+                                                    Scheduled: <%= moment(vac.scheduledDate).format('DD MMM YYYY, hh:mm A') %>
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-syringe mr-2"></i>
+                                                    Dose: <%= vac.doseNumber || 1 %>/<%= vac.totalDosesRequired || 1 %>
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-tag mr-2"></i>
+                                                    Batch: <%= vac.batchNumber || 'Not assigned' %>
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-clock mr-2"></i>
+                                                    Due: <%= moment(vac.nextDueDate).fromNow() %>
+                                                </div>
+                                            </div>
+                                            <div class="text-sm text-gray-500">
+                                                <i class="fas fa-stethoscope mr-2"></i>
+                                                Notes: <%= vac.notes || 'No additional notes' %>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <button onclick="startVaccination('<%= vac._id %>')" 
+                                                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
+                                                <i class="fas fa-play mr-1"></i>Start
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                        <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50">
+                            <button onclick="window.location.href='/paravet/farmer/<%= group.farmer._id %>/animals'" 
+                                    class="text-sm text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-arrow-right mr-1"></i>View all animals
+                            </button>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+                <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Pending Vaccinations</h3>
+                <p class="text-gray-600 dark:text-gray-400">All vaccinations are up to date! Great job! 🎉</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+function filterVaccinations() {
+    const filter = document.getElementById('filterSelect').value;
+    window.location.href = `/paravet/vaccination/pending?filter=${filter}`;
+}
+
+function startVaccination(vaccinationId) {
+    window.location.href = `/paravet/vaccination/${vaccinationId}/perform`;
+}
+</script>

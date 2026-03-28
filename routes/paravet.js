@@ -208,31 +208,31 @@ router.get("/dashboard", paravetController.getDashboard);
 // API endpoints for dashboard data
 router.get("/api/stats", paravetController.getStats);
 router.get("/api/upcoming-schedules", paravetController.getUpcomingSchedules);
-//router.get("/api/recent-activities", paravetController.getRecentActivities);
+router.get("/api/recent-activities", paravetController.getRecentActivities);
 router.get("/api/farmer-list", paravetController.getFarmerList);
-//router.get("/api/performance-metrics", paravetController.getPerformanceMetrics);
+router.get("/api/performance-metrics", paravetController.getPerformanceMetrics);
 
 // Task management
-//router.get("/tasks", paravetController.getTasks);
-//router.post("/tasks/:id/complete", paravetController.completeTask);
-//router.post("/tasks/:id/reschedule", paravetController.rescheduleTask);
+router.get("/tasks", paravetController.getTasks);
+router.post("/tasks/:id/complete", paravetController.completeTask);
+router.post("/tasks/:id/reschedule", paravetController.rescheduleTask);
 
 // Farmer visit routes
 router.get("/farmer/:farmerId/animals", paravetController.getFarmerAnimals);
-//router.post("/visit/start", paravetController.startVisit);
-//router.post("/visit/complete", paravetController.completeVisit);
+router.post("/visit/start", paravetController.startVisit);
+router.post("/visit/complete", paravetController.completeVisit);
 
 // Vaccination routes for paravet
 router.get("/vaccination/pending", paravetController.getPendingVaccinations);
 router.post("/vaccination/:id/perform", paravetController.performVaccination);
-// router.post(
-//   "/vaccination/bulk-perform",
-//   paravetController.bulkPerformVaccinations,
-// );
+router.post(
+  "/vaccination/bulk-perform",
+  paravetController.bulkPerformVaccinations,
+);
 
 // Reports
 router.get("/reports/daily", paravetController.getDailyReport);
 router.get("/reports/weekly", paravetController.getWeeklyReport);
-//router.get("/reports/monthly", paravetController.getMonthlyReport);
+router.get("/reports/monthly", paravetController.getMonthlyReport);
 
 module.exports = router;
