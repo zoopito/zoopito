@@ -75,7 +75,8 @@ exports.renderSchedulePage = async (req, res) => {
         //   path: "assignedParavet",
         //   populate: { path: "user", select: "name" },
         // })
-        .sort({ nextDueDate: 1, createdAt: -1 })
+        // Sort by whichever date is earlier (scheduled vs next due)
+        .sort({ status: 1, scheduledDate: 1, nextDueDate: 1, createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit))
         .lean(),
@@ -198,49 +199,74 @@ async function buildFilters(query) {
     search,
   } = query;
 
-  // Status filter
-  if (status) {
-    if (status === "pending") {
-      filters.status = { $in: ["Scheduled", "Payment Pending", "Missed"] };
-    } else if (status === "completed") {
-      filters.status = {
-        $in: ["Administered", "Completed", "Payment Verified"],
-      };
-    } else if (status === "overdue") {
-      filters.status = { $in: ["Scheduled", "Payment Pending", "Missed"] };
-      filters.nextDueDate = { $lt: new Date() };
+  // Date range setup
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // ============ DETERMINE DATE RANGE ============
+  let dateRangeStart = today;
+  let dateRangeEnd = tomorrow;
+
+  if (dueDate === "week") {
+    dateRangeEnd = new Date(today);
+    dateRangeEnd.setDate(dateRangeEnd.getDate() + 7);
+  } else if (dueDate === "month") {
+    dateRangeEnd = new Date(today);
+    dateRangeEnd.setMonth(dateRangeEnd.getMonth() + 1);
+  } else if (dueDate !== "today" && dueDate) {
+    // Custom date handling
+    dateRangeEnd = new Date(today);
+    dateRangeEnd.setDate(dateRangeEnd.getDate() + 7);
+  }
+  // Note: if no dueDate provided, defaults to today
+
+  // ============ CORE DATE FILTER ============
+  // Get records where either scheduledDate OR nextDueDate falls in range
+  filters.$or = [
+    {
+      status: "Scheduled",
+      scheduledDate: { $gte: dateRangeStart, $lt: dateRangeEnd }
+    },
+    {
+      status: { $in: ["Payment Pending", "Administered", "Completed", "Payment Verified", "Missed"] },
+      nextDueDate: { $gte: dateRangeStart, $lt: dateRangeEnd }
+    }
+  ];
+
+  // Status filter - only apply if explicitly provided AND different from pending/completed
+  if (status && status !== "pending" && status !== "completed") {
+    if (status === "overdue") {
+      // Show only overdue vaccinations
+      filters.$or = [
+        {
+          status: "Scheduled",
+          scheduledDate: { $lt: today }
+        },
+        {
+          status: { $in: ["Payment Pending", "Administered", "Completed", "Payment Verified", "Missed"] },
+          nextDueDate: { $lt: today }
+        }
+      ];
     } else {
+      // Specific status
       filters.status = status;
     }
-  }
-
-  // Due date filter
-  if (dueDate && dueDate !== "overdue") {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    if (dueDate === "today") {
-      filters.nextDueDate = {
-        $gte: today,
-        $lt: tomorrow,
-      };
-    } else if (dueDate === "week") {
-      const nextWeek = new Date(today);
-      nextWeek.setDate(nextWeek.getDate() + 7);
-      filters.nextDueDate = {
-        $gte: today,
-        $lt: nextWeek,
-      };
-    } else if (dueDate === "month") {
-      const nextMonth = new Date(today);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      filters.nextDueDate = {
-        $gte: today,
-        $lt: nextMonth,
-      };
-    }
+  } else if (status === "pending") {
+    // Better pending filter
+    filters.$or = [
+      {
+        status: "Scheduled",
+        scheduledDate: { $gte: dateRangeStart, $lt: dateRangeEnd }
+      },
+      {
+        status: { $in: ["Payment Pending", "Missed"] },
+        nextDueDate: { $gte: dateRangeStart, $lt: dateRangeEnd }
+      }
+    ];
+  } else if (status === "completed") {
+    filters.status = { $in: ["Administered", "Completed", "Payment Verified"] };
   }
 
   // Area filter - need to join with farmer
@@ -257,12 +283,12 @@ async function buildFilters(query) {
     }
   }
 
-  // Farmer filter
+  // Farmer filter - ADD to existing filters, don't override
   if (farmer) {
     filters.farmer = farmer;
   }
 
-  // Paravet filter
+  // Paravet filter - ADD to existing filters
   if (paravet) {
     if (paravet === "unassigned") {
       filters.assignedParavet = { $exists: false };
@@ -285,11 +311,29 @@ async function buildFilters(query) {
     }
   }
 
-  // Vaccinated status filter
-  if (vaccinated === "yes") {
-    filters.status = { $in: ["Administered", "Completed", "Payment Verified"] };
-  } else if (vaccinated === "no") {
-    filters.status = { $in: ["Scheduled", "Payment Pending", "Missed"] };
+  // Vaccinated status filter - integrate into $or if not already specific status
+  if (vaccinated === "yes" && !status) {
+    filters.$or = [
+      {
+        status: { $in: ["Administered", "Completed", "Payment Verified"] },
+        scheduledDate: { $gte: dateRangeStart, $lt: dateRangeEnd }
+      },
+      {
+        status: { $in: ["Administered", "Completed", "Payment Verified"] },
+        nextDueDate: { $gte: dateRangeStart, $lt: dateRangeEnd }
+      }
+    ];
+  } else if (vaccinated === "no" && !status) {
+    filters.$or = [
+      {
+        status: "Scheduled",
+        scheduledDate: { $gte: dateRangeStart, $lt: dateRangeEnd }
+      },
+      {
+        status: { $in: ["Payment Pending", "Missed"] },
+        nextDueDate: { $gte: dateRangeStart, $lt: dateRangeEnd }
+      }
+    ];
   }
 
   // Tag status filter - need to join with animal
@@ -317,7 +361,7 @@ async function buildFilters(query) {
     }
   }
 
-  // Search filter - search across multiple fields
+  // Search filter - APPEND search condition to $or instead of replacing it
   if (search && search.trim() !== "") {
     const searchRegex = new RegExp(search.trim(), "i");
 
@@ -349,7 +393,9 @@ async function buildFilters(query) {
       ],
     }).select("_id");
 
+    // ADD to existing OR conditions instead of replacing
     filters.$or = [
+      ...(filters.$or || []),
       { farmer: { $in: matchingFarmers.map((f) => f._id) } },
       { animal: { $in: matchingAnimals.map((a) => a._id) } },
       { vaccine: { $in: matchingVaccines.map((v) => v._id) } },

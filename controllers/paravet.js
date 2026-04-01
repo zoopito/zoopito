@@ -515,7 +515,7 @@ module.exports.viewParavet = async (req, res) => {
       }),
     };
 
-    res.render("admin/paravets/view", {
+    res.render("paravet/view", {
       paravet,
       stats,
       currentUser: req.user,

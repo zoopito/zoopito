@@ -281,7 +281,10 @@ router.get(
 );
 
 // Payment routes
+router.get('/admin/payments/:paymentId', isLoggedIn, isAdmin, animalController.getPaymentDetails);
 router.get('/animals/payment/:paymentId', isLoggedIn, isAdmin, animalController.showPaymentPage);
+router.get('/payments/verify-page', isLoggedIn, isAdmin, animalController.renderPaymentVerificationPage);
+router.post('/animals/verify-payment/:paymentId', isLoggedIn, isAdmin, animalController.verifyPayment);
 router.post('/animals/api/payments/:paymentId/verify', isLoggedIn, isAdmin, animalController.verifyPayment);
 router.get('/animals/api/payments/:paymentId/status', isLoggedIn, isAdmin, animalController.getPaymentStatus);
 router.put('/animals/api/payments/:paymentId', isLoggedIn, isAdmin, animalController.updatePaymentStatus);

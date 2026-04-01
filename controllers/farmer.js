@@ -4,6 +4,9 @@ const Animal = require("../models/animal");
 const Paravet = require("../models/paravet");
 const Servise = require("../models/services");
 const SalesTeam = require("../models/salesteam");
+const Vaccination = require("../models/vaccination");
+const Payment = require("../models/payment");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 
@@ -163,44 +166,107 @@ module.exports.createFarmer = async (req, res) => {
   }
 };
 
-module.exports.viewFarmer = async (req, res) => {
-  const role = req.user.role.toLowerCase();
-  try {
-    const { id } = req.params;
+exports.viewFarmer = async (req, res) => {
+    try {
+        const { id } = req.params;
 
-    // 🔐 Validate ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      req.flash("error", "Invalid farmer ID");
-      return res.redirect(`/${role}/farmers`);
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            req.flash("error", "Invalid farmer ID");
+            return res.redirect("/admin/farmers");
+        }
+
+        // Get farmer with populated data
+        const farmer = await Farmer.findById(id)
+            .populate("assignedParavet", "employeeCode")
+            .populate("assignedParavet.user", "name email")
+            .lean();
+
+        if (!farmer) {
+            req.flash("error", "Farmer not found");
+            return res.redirect("/admin/farmers");
+        }
+
+        // Get all animals for this farmer
+        const animals = await Animal.find({ farmer: id, isActive: true })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const activeAnimals = animals.filter(a => a.status === 'active').length;
+        const healthyAnimals = animals.filter(a => a.healthStatus?.currentStatus === 'Healthy').length;
+        const underTreatment = animals.filter(a => a.healthStatus?.currentStatus === 'Under Treatment').length;
+
+        // Get all vaccinations for this farmer
+        const vaccinations = await Vaccination.find({ farmer: id })
+            .populate("animal", "name tagNumber animalType")
+            .populate("vaccine", "name")
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const totalVaccinations = vaccinations.length;
+        const completedVaccinations = vaccinations.filter(v => v.status === "Completed").length;
+        const pendingVaccinations = vaccinations.filter(v => v.status === "Scheduled" || v.status === "Payment Pending").length;
+        
+        // Get upcoming and overdue vaccinations
+        const now = new Date();
+        const upcomingVaccinations = vaccinations.filter(v => 
+            v.nextDueDate && new Date(v.nextDueDate) > now && v.status !== "Completed"
+        ).sort((a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate));
+        
+        const overdueVaccinations = vaccinations.filter(v => 
+            v.nextDueDate && new Date(v.nextDueDate) < now && v.status !== "Completed"
+        );
+
+        const vaccinationRate = totalVaccinations > 0 
+            ? Math.round((completedVaccinations / totalVaccinations) * 100) 
+            : 0;
+
+        // Get payments
+        const payments = await Payment.find({ farmerId: id })
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .lean();
+
+        // Get recent activities (combine vaccinations and animal additions)
+        const recentVaccinations = vaccinations.slice(0, 5).map(v => ({
+            type: 'vaccination',
+            description: `${v.vaccineName || v.vaccine?.name} vaccination for ${v.animal?.name || 'animal'}`,
+            timestamp: v.dateAdministered || v.createdAt
+        }));
+
+        const recentAnimals = animals.slice(0, 5).map(a => ({
+            type: 'animal',
+            description: `Added new ${a.animalType} - ${a.name || 'Unnamed'}`,
+            timestamp: a.createdAt
+        }));
+
+        const activities = [...recentVaccinations, ...recentAnimals]
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10);
+
+        res.render("admin/farmer/view.ejs", {
+            title: `${farmer.name} - Farmer Details`,
+            farmer,
+            animals,
+            activeAnimals,
+            healthyAnimals,
+            underTreatment,
+            vaccinations,
+            totalVaccinations,
+            completedVaccinations,
+            pendingVaccinations,
+            upcomingVaccinations,
+            overdueVaccinations,
+            vaccinationRate,
+            payments,
+            activities,
+            currentUser: req.user,
+            moment: moment
+        });
+    } catch (error) {
+        console.error("View Farmer Details Error:", error);
+        req.flash("error", "Unable to load farmer details");
+        res.redirect("/admin/farmers");
     }
-
-    const farmer = await Farmer.findOne({
-      _id: id,
-      isActive: true, // soft delete safety
-    })
-      .populate("registeredBy", "name email mobile role")
-      .populate({
-        path: "assignedParavet",
-        populate: {
-          path: "user",
-          select: "name mobile",
-        },
-      })
-      .lean();
-    if (!farmer) {
-      req.flash("error", "Farmer not found or inactive");
-      return res.redirect(`/${role}/farmers`);
-    }
-
-    res.render("admin/farmer/view.ejs", {
-      farmer,
-      currentUser: req.user,
-    });
-  } catch (error) {
-    console.error("View Farmer Error:", error);
-    req.flash("error", "Unable to load farmer details");
-    res.redirect(`/${role}/farmers`);
-  }
 };
 
 module.exports.renderEditform = async (req, res) => {

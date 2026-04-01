@@ -1,135 +1,710 @@
-<% layout("layouts/boilerplate") %>
+<% layout("layouts/boilerplate", {
+    title: `${farmer.name} - Farmer Details`,
+    description: 'Complete farmer profile with animals and vaccination records',
+    pageStyles: `
+        .stat-card {
+            transition: all 0.3s ease;
+            border-radius: 1rem;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.15);
+        }
+        .animal-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .animal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.15);
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .status-active { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .status-inactive { background: linear-gradient(135deg, #6b7280, #4b5563); color: white; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-overdue { background: #fee2e2; color: #991b1b; }
+        .vaccine-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .dark .info-row {
+            border-bottom-color: #374151;
+        }
+        .tab-button {
+            transition: all 0.2s ease;
+        }
+        .tab-button.active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    `
+}) -%>
 
-<div class="max-w-6xl mx-auto space-y-6">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="/admin/dashboard" class="text-gray-600 dark:text-gray-400 hover:text-blue-600">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2 text-sm"></i>
+                        <a href="/admin/farmers" class="text-gray-600 dark:text-gray-400 hover:text-blue-600">Farmers</a>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2 text-sm"></i>
+                        <span class="text-gray-500 dark:text-gray-500"><%= farmer.name %></span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
 
-  <!-- Header -->
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
-        Farmer Details
-      </h1>
-      <p class="text-sm text-gray-500">
-        Farmer ID: <span class="font-medium"><%= farmer.uniqueFarmerId %></span>
-      </p>
+        <!-- Farmer Profile Header -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8">
+                <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between">
+                    <div class="flex items-center space-x-6">
+                        <!-- Profile Image -->
+                        <div class="relative">
+                            <% if(farmer.photo && farmer.photo.url) { %>
+                                <img src="<%= farmer.photo.url %>" 
+                                     alt="<%= farmer.name %>"
+                                     class="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-xl">
+                            <% } else { %>
+                                <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-xl">
+                                    <span class="text-4xl font-bold text-white"><%= farmer.name.charAt(0).toUpperCase() %></span>
+                                </div>
+                            <% } %>
+                            <div class="absolute -bottom-2 -right-2">
+                                <span class="status-badge <%= farmer.isActive ? 'status-active' : 'status-inactive' %>">
+                                    <i class="fas <%= farmer.isActive ? 'fa-check-circle' : 'fa-times-circle' %> mr-1"></i>
+                                    <%= farmer.isActive ? 'Active' : 'Inactive' %>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h1 class="text-3xl font-bold text-white mb-2"><%= farmer.name %></h1>
+                            <div class="flex flex-wrap gap-3 text-blue-100">
+                                <span class="flex items-center">
+                                    <i class="fas fa-id-card mr-2"></i>
+                                    ID: <%= farmer.uniqueFarmerId || 'PENDING' %>
+                                </span>
+                                <span class="flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2"></i>
+                                    Joined: <%= moment(farmer.createdAt).format('DD MMM YYYY') %>
+                                </span>
+                                <% if(farmer.assignedParavet) { %>
+                                    <span class="flex items-center">
+                                        <i class="fas fa-user-md mr-2"></i>
+                                        Paravet: <%= farmer.assignedParavet?.user?.name || 'Assigned' %>
+                                    </span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3 mt-4 lg:mt-0">
+                        <a href="/admin/farmers/<%= farmer._id %>/edit" 
+                           class="bg-white/20 hover:bg-white/30 text-white px-5 py-2.5 rounded-xl transition flex items-center">
+                            <i class="fas fa-edit mr-2"></i>Edit Profile
+                        </a>
+                        <button onclick="window.print()" 
+                                class="bg-white/20 hover:bg-white/30 text-white px-5 py-2.5 rounded-xl transition flex items-center">
+                            <i class="fas fa-print mr-2"></i>Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats Row -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50 dark:bg-gray-900">
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= animals.length %></p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Animals</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-green-600"><%= activeAnimals %></p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Active Animals</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-blue-600"><%= totalVaccinations %></p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Vaccinations</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-orange-600"><%= pendingVaccinations %></p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Pending Vaccinations</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Tabs -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <nav class="flex flex-wrap px-6 -mb-px" aria-label="Tabs">
+                    <button class="tab-button active py-4 px-6 text-sm font-medium border-b-2 border-blue-600 text-blue-600" data-tab="overview">
+                        <i class="fas fa-info-circle mr-2"></i>Overview
+                    </button>
+                    <button class="tab-button py-4 px-6 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" data-tab="animals">
+                        <i class="fas fa-paw mr-2"></i>Animals 
+                        <span class="ml-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-full text-xs"><%= animals.length %></span>
+                    </button>
+                    <button class="tab-button py-4 px-6 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" data-tab="vaccinations">
+                        <i class="fas fa-syringe mr-2"></i>Vaccinations
+                    </button>
+                    <button class="tab-button py-4 px-6 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" data-tab="payments">
+                        <i class="fas fa-rupee-sign mr-2"></i>Payments
+                    </button>
+                    <button class="tab-button py-4 px-6 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" data-tab="activity">
+                        <i class="fas fa-history mr-2"></i>Activity
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab: Overview -->
+            <div id="tab-overview" class="tab-content p-6 fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Contact Information -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                                <i class="fas fa-address-card text-blue-500 mr-2"></i>
+                                Contact Information
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="info-row">
+                                    <span class="text-gray-600 dark:text-gray-400">Mobile Number</span>
+                                    <span class="font-medium">
+                                        <a href="tel:<%= farmer.mobileNumber %>" class="text-blue-600 hover:underline">
+                                            <%= farmer.mobileNumber || 'Not provided' %>
+                                        </a>
+                                    </span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-gray-600 dark:text-gray-400">Alternate Number</span>
+                                    <span class="font-medium"><%= farmer.alternateNumber || 'Not provided' %></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-gray-600 dark:text-gray-400">Email</span>
+                                    <span class="font-medium"><%= farmer.email || 'Not provided' %></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-gray-600 dark:text-gray-400">WhatsApp Available</span>
+                                    <span class="font-medium">
+                                        <% if(farmer.whatsappAvailable) { %>
+                                            <span class="text-green-600"><i class="fab fa-whatsapp"></i> Yes</span>
+                                        <% } else { %>
+                                            <span class="text-gray-500">No</span>
+                                        <% } %>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Address Information -->
+                        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 mt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                                <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
+                                Address Details
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="info-row">
+                                    <span class="text-gray-600 dark:text-gray-400">Village</span>
+                                    <span class="font-medium"><%= farmer.address?.village || 'Not provided' %></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-gray-600 dark:text-gray-400">Taluka</span>
+                                    <span class="font-medium"><%= farmer.address?.taluka || 'Not provided' %></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-gray-600 dark:text-gray-400">District</span>
+                                    <span class="font-medium"><%= farmer.address?.district || 'Not provided' %></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-gray-600 dark:text-gray-400">State</span>
+                                    <span class="font-medium"><%= farmer.address?.state || 'Not provided' %></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="text-gray-600 dark:text-gray-400">Pincode</span>
+                                    <span class="font-medium"><%= farmer.address?.pincode || 'Not provided' %></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats & Actions -->
+                    <div>
+                        <!-- Health Summary -->
+                        <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white mb-6">
+                            <h3 class="text-lg font-semibold mb-3">Health Summary</h3>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Healthy Animals</span>
+                                    <span class="font-bold"><%= healthyAnimals || 0 %></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Under Treatment</span>
+                                    <span class="font-bold"><%= underTreatment || 0 %></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Vaccination Rate</span>
+                                    <span class="font-bold"><%= vaccinationRate || 0 %>%</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-white/20">
+                                <div class="w-full bg-white/20 rounded-full h-2">
+                                    <div class="bg-white h-2 rounded-full" style="width: <%= vaccinationRate || 0 %>%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Activities Quick View -->
+                        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                                <i class="fas fa-bell text-blue-500 mr-2"></i>
+                                Recent Alerts
+                            </h3>
+                            <div class="space-y-3">
+                                <% if(upcomingVaccinations && upcomingVaccinations.length > 0) { %>
+                                    <div class="flex items-start space-x-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-0.5"></i>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                <%= upcomingVaccinations.length %> Vaccinations Due
+                                            </p>
+                                            <p class="text-xs text-gray-500">Next due: <%= moment(upcomingVaccinations[0].nextDueDate).format('DD MMM YYYY') %></p>
+                                        </div>
+                                    </div>
+                                <% } %>
+                                <% if(overdueVaccinations && overdueVaccinations.length > 0) { %>
+                                    <div class="flex items-start space-x-3 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                                        <i class="fas fa-times-circle text-red-600 mt-0.5"></i>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                <%= overdueVaccinations.length %> Overdue Vaccinations
+                                            </p>
+                                            <p class="text-xs text-gray-500">Immediate attention required!</p>
+                                        </div>
+                                    </div>
+                                <% } %>
+                                <% if(!upcomingVaccinations?.length && !overdueVaccinations?.length) { %>
+                                    <div class="text-center py-4 text-gray-500">
+                                        <i class="fas fa-check-circle text-green-500 text-2xl mb-2"></i>
+                                        <p>All vaccinations up to date!</p>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Animals -->
+            <div id="tab-animals" class="tab-content p-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">All Animals</h2>
+                    <a href="/admin/farmers/<%= farmer._id %>/animals/add" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center">
+                        <i class="fas fa-plus mr-2"></i>Add New Animal
+                    </a>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <% animals.forEach(animal => { %>
+                        <div class="animal-card bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all">
+                            <!-- Animal Image/Icon -->
+                            <div class="h-32 bg-gradient-to-r from-blue-400 to-blue-500 relative">
+                                <% if(animal.photos && animal.photos.front && animal.photos.front.url) { %>
+                                    <img src="<%= animal.photos.front.url %>" alt="<%= animal.name %>" class="w-full h-full object-cover">
+                                <% } else { %>
+                                    <div class="flex items-center justify-center h-full">
+                                        <i class="fas fa-paw text-white text-5xl"></i>
+                                    </div>
+                                <% } %>
+                                <div class="absolute top-2 right-2">
+                                    <span class="status-badge <%= animal.status === 'active' ? 'status-active' : 'status-inactive' %>">
+                                        <%= animal.status %>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900 dark:text-white"><%= animal.name || 'Unnamed' %></h3>
+                                        <p class="text-sm text-gray-500">ID: <%= animal.tagNumber || animal.uniqueAnimalId?.slice(-6) %></p>
+                                    </div>
+                                    <span class="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                                        <%= animal.animalType %>
+                                    </span>
+                                </div>
+                                
+                                <div class="space-y-1 text-sm mb-3">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Breed:</span>
+                                        <span><%= animal.breed || 'Unknown' %></span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Age:</span>
+                                        <span><%= animal.age?.value || 'N/A' %> <%= animal.age?.unit || '' %></span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Gender:</span>
+                                        <span><%= animal.gender || 'Unknown' %></span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Vaccination Status -->
+                                <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-xs font-medium">Vaccination Status</span>
+                                        <span class="text-xs <%= animal.vaccinationSummary?.isUpToDate ? 'text-green-600' : 'text-red-600' %>">
+                                            <%= animal.vaccinationSummary?.isUpToDate ? 'Up to Date' : 'Due Soon' %>
+                                        </span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                        <div class="bg-green-500 h-1.5 rounded-full" style="width: <%= (animal.vaccinationSummary?.totalVaccinations || 0) * 10 %>%"></div>
+                                    </div>
+                                    <div class="mt-2 text-xs text-gray-500">
+                                        <i class="fas fa-syringe mr-1"></i>
+                                        <%= animal.vaccinationSummary?.totalVaccinations || 0 %> vaccinations
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 flex space-x-2">
+                                    <a href="/admin/animals/<%= animal._id %>" 
+                                       class="flex-1 text-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 px-3 py-1.5 rounded-lg text-sm hover:bg-blue-100 transition">
+                                        View Details
+                                    </a>
+                                    <button onclick="startVaccination('<%= animal._id %>')" 
+                                            class="flex-1 text-center bg-green-50 dark:bg-green-900/20 text-green-600 px-3 py-1.5 rounded-lg text-sm hover:bg-green-100 transition">
+                                        Vaccinate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+                
+                <% if(animals.length === 0) { %>
+                    <div class="text-center py-12">
+                        <i class="fas fa-paw text-6xl text-gray-300 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Animals Yet</h3>
+                        <p class="text-gray-500">This farmer hasn't added any animals to their farm.</p>
+                        <a href="/admin/farmers/<%= farmer._id %>/animals/add" 
+                           class="inline-block mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                            Add First Animal
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Tab: Vaccinations -->
+            <div id="tab-vaccinations" class="tab-content p-6 hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Vaccination History</h2>
+                    
+                    <!-- Filters -->
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        <button class="vaccine-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white" data-filter="all">
+                            All
+                        </button>
+                        <button class="vaccine-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200" data-filter="upcoming">
+                            Upcoming
+                        </button>
+                        <button class="vaccine-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200" data-filter="overdue">
+                            Overdue
+                        </button>
+                        <button class="vaccine-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200" data-filter="completed">
+                            Completed
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="space-y-4" id="vaccinationsList">
+                    <% if(vaccinations && vaccinations.length > 0) { %>
+                        <% vaccinations.forEach(vac => { %>
+                            <div class="vaccine-item bg-gray-50 dark:bg-gray-900 rounded-xl p-4" data-status="<%= vac.status.toLowerCase() %>">
+                                <div class="flex flex-wrap items-start justify-between gap-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <span class="status-badge <%= vac.status === 'Completed' ? 'status-completed' : (vac.nextDueDate && new Date(vac.nextDueDate) < new Date() ? 'status-overdue' : 'status-pending') %>">
+                                                <i class="fas <%= vac.status === 'Completed' ? 'fa-check-circle' : 'fa-clock' %> mr-1"></i>
+                                                <%= vac.status %>
+                                            </span>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                                <%= moment(vac.dateAdministered || vac.scheduledDate).format('DD MMM YYYY') %>
+                                            </span>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                                            <%= vac.vaccineName || vac.vaccine?.name %>
+                                        </h3>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                                            <i class="fas fa-paw mr-1"></i>Animal: <%= vac.animal?.name || 'N/A' %> 
+                                            (<%= vac.animal?.tagNumber || 'No Tag' %>)
+                                        </p>
+                                        <div class="mt-2 flex flex-wrap gap-4 text-sm text-gray-500">
+                                            <span><i class="fas fa-hashtag mr-1"></i>Batch: <%= vac.batchNumber || 'N/A' %></span>
+                                            <span><i class="fas fa-syringe mr-1"></i>Dose: <%= vac.doseNumber %>/<%= vac.totalDosesRequired %></span>
+                                            <% if(vac.nextDueDate) { %>
+                                                <span><i class="fas fa-calendar-alt mr-1"></i>Next Due: <%= moment(vac.nextDueDate).format('DD MMM YYYY') %></span>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <a href="/admin/vaccinations/<%= vac._id %>" 
+                                           class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="text-center py-12">
+                            <i class="fas fa-syringe text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Vaccination Records</h3>
+                            <p class="text-gray-500">No vaccinations have been recorded for this farmer yet.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Tab: Payments -->
+            <div id="tab-payments" class="tab-content p-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">Payment History</h2>
+                    <button onclick="recordPayment()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition flex items-center">
+                        <i class="fas fa-plus mr-2"></i>Record Payment
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Method</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <% if(payments && payments.length > 0) { %>
+                                <% payments.forEach(payment => { %>
+                                    <tr>
+                                        <td class="px-6 py-4 text-sm"><%= moment(payment.createdAt).format('DD MMM YYYY') %></td>
+                                        <td class="px-6 py-4 text-sm font-mono"><%= payment.transactionId || 'N/A' %></td>
+                                        <td class="px-6 py-4 text-sm font-semibold">₹<%= payment.amount %></td>
+                                        <td class="px-6 py-4 text-sm"><%= payment.paymentMethod %></td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span class="status-badge <%= payment.paymentStatus === 'completed' ? 'status-completed' : 'status-pending' %>">
+                                                <%= payment.paymentStatus %>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <a href="/admin/payments/<%= payment._id %>" class="text-blue-600 hover:underline">View</a>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                        No payment records found
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Activity -->
+            <div id="tab-activity" class="tab-content p-6 hidden">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Recent Activity</h2>
+                <div class="space-y-4">
+                    <% if(activities && activities.length > 0) { %>
+                        <% activities.forEach(activity => { %>
+                            <div class="flex items-start space-x-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center 
+                                    <%= activity.type === 'vaccination' ? 'bg-green-100' : 'bg-blue-100' %>">
+                                    <i class="fas <%= activity.type === 'vaccination' ? 'fa-syringe text-green-600' : 'fa-user-plus text-blue-600' %>"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white"><%= activity.description %></p>
+                                    <p class="text-xs text-gray-500 mt-1"><%= moment(activity.timestamp).fromNow() %></p>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="text-center py-12">
+                            <i class="fas fa-history text-6xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500">No recent activity found</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="flex gap-2">
-      <a href="/admin/farmers" class="px-4 py-2 text-sm rounded-md border">
-        ← Back
-      </a>
-      <a href="
-      <% if(currUser.role === "ADMIN"){ %>
-           /admin/farmers/<%= farmer._id %>/edit
-      <% }else if(currUser.role === "SALES"){ %>
-        /sales/farmers/<%= farmer._id %>/edit
-      <% } %>
-      "
-         class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">
-        Edit
-      </a>
-    </div>
-  </div>
-
-  <!-- Farmer Profile -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-    <!-- Left: Photo -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow border p-4 flex justify-center">
-      <img
-        src="<%= farmer.photo?.url || '/images/user-placeholder.jpg' %>"
-        alt="Farmer Photo"
-        class="w-48 h-48 rounded-lg object-cover border"
-      />
-    </div>
-
-    <!-- Right: Info -->
-    <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow border p-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-        <div>
-          <p class="text-xs text-gray-500">Name</p>
-          <p class="font-medium"><%= farmer.name %></p>
-        </div>
-
-        <div>
-          <p class="text-xs text-gray-500">Mobile</p>
-          <p class="font-medium"><%= farmer.mobileNumber %></p>
-        </div>
-
-        <div>
-          <p class="text-xs text-gray-500">Village</p>
-          <p><%= farmer.address?.village || "-" %></p>
-        </div>
-
-        <div>
-          <p class="text-xs text-gray-500">Taluka</p>
-          <p><%= farmer.address?.taluka || "-" %></p>
-        </div>
-
-        <div>
-          <p class="text-xs text-gray-500">District</p>
-          <p><%= farmer.address?.district || "-" %></p>
-        </div>
-
-        <div>
-          <p class="text-xs text-gray-500">State</p>
-          <p><%= farmer.address?.state || "-" %></p>
-        </div>
-
-        <div>
-          <p class="text-xs text-gray-500">Registered By</p>
-          <p><%= farmer.registeredBy?.name || "System" %></p>
-        </div>
-
-        <div>
-          <p class="text-xs text-gray-500">Status</p>
-          <span class="inline-block px-3 py-1 text-xs rounded-full
-            <%= farmer.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
-            <%= farmer.isActive ? 'Active' : 'Inactive' %>
-          </span>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- GPS Location -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow border p-6">
-    <h2 class="text-lg font-semibold mb-3">Location</h2>
-
-    <% if (farmer.location?.coordinates?.[0] !== 0) { %>
-      <p class="text-sm">
-        Longitude: <%= farmer.location.coordinates[0] %>,
-        Latitude: <%= farmer.location.coordinates[1] %>
-      </p>
-
-      <a
-        target="_blank"
-        href="https://www.google.com/maps?q=<%= farmer.location.coordinates[1] %>,<%= farmer.location.coordinates[0] %>"
-        class="inline-block mt-2 text-blue-600 text-sm hover:underline">
-        View on Google Maps
-      </a>
-    <% } else { %>
-      <p class="text-sm text-gray-500">Location not available</p>
-    <% } %>
-  </div>
-
-  <!-- Actions -->
-  <div class="flex flex-wrap gap-3">
-    <a href="/admin/animals?farmer=<%= farmer._id %>"
-       class="px-4 py-2 text-sm rounded-md bg-indigo-600 text-white">
-      View Animals
-    </a>
-
-    <a href="/admin/services?farmer=<%= farmer._id %>"
-       class="px-4 py-2 text-sm rounded-md bg-green-600 text-white">
-      View Services
-    </a>
-
-    <a href="/admin/vaccinations?farmer=<%= farmer._id %>"
-       class="px-4 py-2 text-sm rounded-md bg-yellow-600 text-white">
-      Vaccination Records
-    </a>
-  </div>
-
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Tab Switching
+document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const tabName = button.getAttribute('data-tab');
+        
+        // Update button styles
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active', 'border-blue-600', 'text-blue-600');
+            btn.classList.add('text-gray-500');
+        });
+        button.classList.add('active', 'border-blue-600', 'text-blue-600');
+        button.classList.remove('text-gray-500');
+        
+        // Show selected tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+    });
+});
+
+// Vaccine Filter
+document.querySelectorAll('.vaccine-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const filter = btn.getAttribute('data-filter');
+        
+        // Update button styles
+        document.querySelectorAll('.vaccine-filter-btn').forEach(b => {
+            b.classList.remove('bg-blue-600', 'text-white');
+            b.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700');
+        });
+        btn.classList.add('bg-blue-600', 'text-white');
+        btn.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700');
+        
+        // Filter items
+        document.querySelectorAll('.vaccine-item').forEach(item => {
+            if(filter === 'all') {
+                item.style.display = 'block';
+            } else {
+                const status = item.getAttribute('data-status');
+                if(filter === 'upcoming') {
+                    item.style.display = status === 'scheduled' ? 'block' : 'none';
+                } else if(filter === 'overdue') {
+                    item.style.display = status === 'overdue' ? 'block' : 'none';
+                } else {
+                    item.style.display = status === filter ? 'block' : 'none';
+                }
+            }
+        });
+    });
+});
+
+function startVaccination(animalId) {
+    window.location.href = `/admin/vaccinations/new?animal=${animalId}&farmer=<%= farmer._id %>`;
+}
+
+function recordPayment() {
+    Swal.fire({
+        title: 'Record Payment',
+        html: `
+            <input type="number" id="paymentAmount" class="swal2-input" placeholder="Amount">
+            <select id="paymentMethod" class="swal2-select">
+                <option value="cash">Cash</option>
+                <option value="online">Online Transfer</option>
+                <option value="card">Card</option>
+            </select>
+            <input type="text" id="transactionId" class="swal2-input" placeholder="Transaction ID (Optional)">
+        `,
+        confirmButtonText: 'Record',
+        showCancelButton: true,
+        preConfirm: () => {
+            const amount = document.getElementById('paymentAmount').value;
+            const method = document.getElementById('paymentMethod').value;
+            const transactionId = document.getElementById('transactionId').value;
+            
+            if(!amount) {
+                Swal.showValidationMessage('Please enter amount');
+                return false;
+            }
+            
+            return { amount, method, transactionId };
+        }
+    }).then((result) => {
+        if(result.isConfirmed) {
+            fetch(`/admin/farmers/<%= farmer._id %>/payments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(result.value)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    Swal.fire('Success!', 'Payment recorded successfully', 'success')
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            });
+        }
+    });
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('[data-dropdown]')) {
+        document.querySelectorAll('[id^="dropdown-"]').forEach(drop => {
+            drop.classList.add('hidden');
+        });
+    }
+});
+
+// Add fade-in animation to new content
+document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.add('fade-in');
+});
+</script>

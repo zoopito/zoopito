@@ -140,6 +140,35 @@
       </div>
     </div>
 
+    <!-- Payment Verification Alert -->
+    <% if (pendingPayment) { %>
+      <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-300 dark:border-amber-600 rounded-xl shadow-lg p-6 mb-8">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 4v2M6.343 17.657l-1.414 1.414M9.929 14.071l-1.414 1.414m5.656 5.656l-1.414 1.414M14.071 9.929l1.414 1.414M8 12a4 4 0 118 0 4 4 0 01-8 0z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-amber-900 dark:text-amber-200">⏳ Payment Pending</h3>
+              <p class="text-amber-800 dark:text-amber-300 text-sm mt-1">
+                This animal has a pending vaccination plan payment of <span class="font-bold">₹<%= pendingPayment.amount %></span>. 
+                The vaccination schedule will be activated once payment is verified.
+              </p>
+            </div>
+          </div>
+          <a href="/admin/payments/verify-page?paymentId=<%= pendingPayment._id %>" 
+             class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-lg transition transform hover:scale-105 shadow-lg whitespace-nowrap">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Verify Payment
+          </a>
+        </div>
+      </div>
+    <% } %>
+
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       <!-- Left Column: Photos & Basic Info -->
@@ -740,6 +769,88 @@
       </div>
     </div>
 
+    <!-- VACCINATION SCHEDULE TABLE -->
+    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6 mb-8">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        Vaccination Schedule
+      </h3>
+
+      <% if (upcomingVaccinations && upcomingVaccinations.length > 0) { %>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-orange-50 dark:bg-orange-900/20">
+              <tr>
+                <th class="px-4 py-3 text-left font-semibold text-gray-900 dark:text-white">Vaccine</th>
+                <th class="px-4 py-3 text-left font-semibold text-gray-900 dark:text-white">Scheduled Date</th>
+                <th class="px-4 py-3 text-left font-semibold text-gray-900 dark:text-white">Status</th>
+                <th class="px-4 py-3 text-left font-semibold text-gray-900 dark:text-white">Dose</th>
+                <th class="px-4 py-3 text-center font-semibold text-gray-900 dark:text-white">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% upcomingVaccinations.forEach(vax => { %>
+                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                  <td class="px-4 py-3">
+                    <div>
+                      <p class="font-medium text-gray-900 dark:text-white"><%= vax.vaccineName %></p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400"><%= vax.vaccineType %></p>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white font-semibold">
+                    <% const schedDate = vax.status === 'Scheduled' ? new Date(vax.scheduledDate) : new Date(vax.nextDueDate);
+                       const today = new Date();
+                       const isUpcoming = schedDate > today;
+                       const daysUntil = Math.ceil((schedDate - today) / (1000 * 60 * 60 * 24));
+                    %>
+                    <%= helpers.formatDate(schedDate) %>
+                    <% if (isUpcoming && daysUntil <= 7) { %>
+                      <span class="text-red-600 dark:text-red-400 text-xs ml-1">⚠️ <%= daysUntil %> days</span>
+                    <% } %>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="<%= 
+                      vax.status === 'Scheduled' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                      vax.status === 'Administered' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                      vax.status === 'Completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                      'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
+                    %> px-2 py-1 rounded text-xs font-medium">
+                      <%= vax.status %>
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white">
+                    <%= vax.doseNumber %>/<%= vax.totalDosesRequired %>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <% if (vax.status === 'Scheduled') { %>
+                      <a href="/vaccination/<%= vax._id %>/verify" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-xs font-medium">
+                        Verify
+                      </a>
+                    <% } else if (vax.status === 'Administered' && currUser && currUser.role === 'ADMIN') { %>
+                      <button onclick="openCompleteModal('<%= vax._id %>')" class="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-xs font-medium">
+                        Complete
+                      </button>
+                    <% } else { %>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">-</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="text-center py-8">
+          <svg class="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-gray-600 dark:text-gray-400">No upcoming vaccinations scheduled</p>
+        </div>
+      <% } %>
+    </div>
+
     <!-- Vaccination History -->
     <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-6 mb-8">
       <div class="flex items-center justify-between mb-6">
@@ -835,6 +946,63 @@
     // Activate selected tab button
     document.getElementById(tabName + '-tab').classList.remove('text-gray-600', 'dark:text-gray-400');
     document.getElementById(tabName + '-tab').classList.add('active', 'text-blue-600', 'dark:text-blue-400', 'border-blue-500');
+  }
+
+  // VACCINATION FUNCTIONS
+  
+  // Open modal to edit next due date
+  function openEditNextDueModal(animalId) {
+    const newDate = prompt('Enter new next due date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+    if (!newDate) return;
+
+    fetch(`/vaccination/${animalId}/edit-next-due`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newNextDueDate: newDate })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert('✅ Next due date updated!');
+        location.reload();
+      } else {
+        alert('Error: ' + data.message);
+      }
+    })
+    .catch(err => {
+      console.error('Error:', err);
+      alert('Error updating date');
+    });
+  }
+
+  // Complete a vaccination
+  function openCompleteModal(vaccinationId) {
+    const completeDate = prompt('Completion date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+    if (!completeDate) return;
+
+    fetch(`/vaccination/${vaccinationId}/complete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ completionDate: completeDate })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert('✅ Vaccination completed!\nNext due: ' + data.nextDueDate);
+        location.reload();
+      } else {
+        alert('Error: ' + data.message);
+      }
+    })
+    .catch(err => {
+      console.error('Error:', err);
+      alert('Error completing vaccination');
+    });
+  }
+
+  // Record vaccination
+  function recordVaccination(vaccinationId, animalId) {
+    window.location.href = `/vaccination/${vaccinationId}/record`;
   }
 
   document.addEventListener('DOMContentLoaded', function() {

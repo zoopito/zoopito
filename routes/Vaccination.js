@@ -16,6 +16,13 @@ const upload = multer({ storage });
 // ================= STATIC ROUTES =================
 router.get("/new", vaccinationController.renderNewForm);
 
+// ================= VACCINATION RECORDING & VERIFICATION =================
+// Render vaccination recording form
+router.get("/record", isLoggedIn, vaccinationController.renderVaccinationRecordForm);
+
+// Render admin verification page
+router.get("/:id/verify-page", isLoggedIn, isAdmin, vaccinationController.renderVaccinationVerifyPage);
+
 router.get("/schedule", taskController.renderSchedulePage);
 
 // ================= PAYMENT ROUTES =================
@@ -41,11 +48,28 @@ router.get(
 
 router.post("/calculate-next-due", vaccinationController.calculateNextDueDate);
 
+// ================= NEW VACCINATION MANAGEMENT ROUTES =================
+// Record vaccination (Paravet submits)
+router.post("/:animalId/record", isLoggedIn, vaccinationController.recordVaccination);
+
+// Complete vaccination (Mark as complete & auto-calc next due)
+router.post("/:id/complete", isLoggedIn, vaccinationController.completeVaccination);
+
+// Admin verify vaccination
+router.post("/:id/verify", isLoggedIn, isAdmin, vaccinationController.adminVerifyVaccination);
+
+// Edit next due date (Admin testing)
+router.post("/:id/edit-next-due", isLoggedIn, isAdmin, vaccinationController.editNextDueDate);
+
+// Get animal vaccination schedule
+router.get("/animal/:animalId/schedule", vaccinationController.getAnimalVaccinationSchedule);
+
 // ================= CREATE =================
 router.post("/", vaccinationController.addVaccination);
 
 // ================= UPDATE =================
 router.put("/:id", vaccinationController.updateVaccination);
+
 // ================= DELETE =================
 router.delete("/:id", vaccinationController.deleteVaccination);
 

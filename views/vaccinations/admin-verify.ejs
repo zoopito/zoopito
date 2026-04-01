@@ -1,0 +1,236 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-6 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <a href="/" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow">
+          <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+        </a>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Vaccination Verification</h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-2">Review and verify paravet vaccination records</p>
+    </div>
+
+    <!-- Vaccination Card -->
+    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-8 mb-8">
+      
+      <!-- Animal & Vaccine Info -->
+      <div class="grid md:grid-cols-3 gap-6 mb-8 pb-8 border-b border-gray-200 dark:border-gray-700">
+        <div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Animal</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= vaccination.animal.name %></p>
+          <p class="text-sm text-gray-500 dark:text-gray-400"><%= vaccination.animal.species %></p>
+        </div>
+
+        <div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Vaccine</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= vaccination.vaccine.name %></p>
+          <p class="text-sm text-gray-500 dark:text-gray-400"><%= vaccination.vaccine.brand %></p>
+        </div>
+
+        <div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Current Status</p>
+          <span class="inline-block px-3 py-1 rounded-full text-sm font-medium <%= 
+            vaccination.status === 'Administered' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+            vaccination.status === 'Completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+          %>">
+            <%= vaccination.status %>
+          </span>
+        </div>
+      </div>
+
+      <!-- Vaccination Details Table -->
+      <div class="mb-8">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Vaccination Details</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <tbody>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Date Administered</td>
+                <td class="py-3 px-4 text-gray-900 dark:text-white"><%= new Date(vaccination.dateAdministered).toLocaleDateString() %></td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700 bg-orange-50 dark:bg-orange-900/10">
+                <td class="py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Next Due Date</td>
+                <td class="py-3 px-4 text-orange-700 dark:text-orange-300 font-semibold">
+                  <%= vaccination.nextDueDate ? new Date(vaccination.nextDueDate).toLocaleDateString() : 'Not scheduled' %>
+                </td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Administered By</td>
+                <td class="py-3 px-4 text-gray-900 dark:text-white"><%= vaccination.administeredBy %></td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Dose Number</td>
+                <td class="py-3 px-4 text-gray-900 dark:text-white"><%= vaccination.doseNumber %> of <%= vaccination.totalDosesRequired %></td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Injection Site</td>
+                <td class="py-3 px-4 text-gray-900 dark:text-white"><%= vaccination.injectionSite %></td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Dosage</td>
+                <td class="py-3 px-4 text-gray-900 dark:text-white"><%= vaccination.dosageAmount %> <%= vaccination.dosageUnit %></td>
+              </tr>
+              <% if (vaccination.hadAdverseReaction) { %>
+                <tr class="border-b border-gray-200 dark:border-gray-700 bg-red-50 dark:bg-red-900/10">
+                  <td class="py-3 px-4 font-medium text-red-700 dark:text-red-300">⚠️ Adverse Reaction</td>
+                  <td class="py-3 px-4 text-red-900 dark:text-red-100"><%= vaccination.adverseReactionDetails %> (<%= vaccination.reactionSeverity %>)</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Animal Condition -->
+      <div class="mb-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-4">Animal Condition at Time of Vaccination</h3>
+        <div class="grid md:grid-cols-4 gap-4">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Temperature</p>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= vaccination.animalCondition?.temperature || 'N/A' %>°F</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Weight</p>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= vaccination.animalCondition?.weight || 'N/A' %> kg</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Body Condition</p>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= vaccination.animalCondition?.bodyConditionScore || 'N/A' %>/5</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Status</p>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= vaccination.animalCondition?.isPregnant ? '🤰 Pregnant' : 'Normal' %></p>
+          </div>
+        </div>
+        <% if (vaccination.notes) { %>
+          <div class="mt-4 pt-4 border-t border-purple-300 dark:border-purple-700">
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Notes</p>
+            <p class="text-gray-900 dark:text-white"><%= vaccination.notes %></p>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Verification Section -->
+      <div class="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-4">Admin Verification</h3>
+        
+        <form id="verificationForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Verification Status <span class="text-red-500">*</span></label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="verificationStatus" value="Verified" class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500" required>
+                <span class="text-gray-700 dark:text-gray-300">✅ Approve</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="verificationStatus" value="Rejected" class="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-2 focus:ring-red-500">
+                <span class="text-gray-700 dark:text-gray-300">❌ Reject</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Verification Notes</label>
+            <textarea name="verificationNotes" rows="3" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none" placeholder="Add any verification notes here..."></textarea>
+          </div>
+
+          <div class="flex gap-4">
+            <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg shadow-green-500/25">
+              Submit Verification
+            </button>
+            <a href="/" class="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Edit Next Due Date (Testing) -->
+      <div class="mb-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-4">🧪 Edit Next Due Date (Admin Testing)</h3>
+        <p class="text-sm text-amber-700 dark:text-amber-300 mb-4">Use this option to manually adjust the next vaccination due date for testing purposes</p>
+        
+        <form id="editNextDueForm" class="space-y-4">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Next Due Date</label>
+              <input type="date" name="newNextDueDate" required class="w-full px-4 py-2.5 border border-amber-300 dark:border-amber-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent transition">
+            </div>
+
+            <div class="flex items-end">
+              <button type="submit" class="w-full px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition">
+                Update Next Due Date
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Verification Form
+  document.getElementById('verificationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const verificationStatus = document.querySelector('input[name="verificationStatus"]:checked').value;
+    const verificationNotes = document.querySelector('textarea[name="verificationNotes"]').value;
+
+    try {
+      const response = await fetch('/vaccination/<%= vaccination._id %>/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          verificationStatus,
+          verificationNotes
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert('Verification submitted successfully!');
+        window.location.href = '/admin/vaccinations';
+      } else {
+        alert('Error: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error submitting verification');
+    }
+  });
+
+  // Edit Next Due Date Form
+  document.getElementById('editNextDueForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const newNextDueDate = document.querySelector('input[name="newNextDueDate"]').value;
+
+    try {
+      const response = await fetch('/vaccination/<%= vaccination._id %>/edit-next-due', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          newNextDueDate
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert('✅ Next due date updated to: ' + data.nextDueDate);
+        location.reload();
+      } else {
+        alert('Error: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error updating date');
+    }
+  });
+</script>

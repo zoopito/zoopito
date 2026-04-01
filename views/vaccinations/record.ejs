@@ -1,0 +1,281 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-6 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <a href="/" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow">
+          <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+        </a>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Record Vaccination</h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-2">Submit vaccination details and automatically calculate next due date</p>
+    </div>
+
+    <!-- Main Form Card -->
+    <form id="vaccinationForm" class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 dark:border-gray-700/50 p-8">
+      
+      <!-- Animal Info Section -->
+      <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 4v16h-4V4h4z"/>
+          </svg>
+          Animal Information
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- Animal Select -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Animal <span class="text-red-500">*</span></label>
+            <select name="animalId" id="animalSelect" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+              <option value="">Select Animal</option>
+            </select>
+          </div>
+
+          <!-- Vaccine Select -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vaccine <span class="text-red-500">*</span></label>
+            <select name="vaccineId" id="vaccineSelect" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+              <option value="">Select Vaccine</option>
+            </select>
+          </div>
+
+          <!-- Tag Number (Read-only) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tag Number</label>
+            <input type="text" id="tagNumber" readonly class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 cursor-not-allowed">
+          </div>
+
+          <!-- Species (Read-only) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Species</label>
+            <input type="text" id="species" readonly class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 cursor-not-allowed">
+          </div>
+        </div>
+      </div>
+
+      <!-- Vaccination Details Section -->
+      <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Vaccination Details
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- Date Administered -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Administered <span class="text-red-500">*</span></label>
+            <input type="date" name="dateAdministered" id="dateAdministered" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+          </div>
+
+          <!-- Next Due Date (Auto-calculated, Read-only) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Next Due Date (Auto-calculated)</label>
+            <input type="date" name="nextDueDate" id="nextDueDate" readonly class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-gray-900 dark:text-white border-orange-300 dark:border-orange-700 cursor-not-allowed">
+            <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Calculated based on vaccine booster interval or immunity duration</p>
+          </div>
+
+          <!-- Dose Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dose Number</label>
+            <input type="number" name="doseNumber" value="1" min="1" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+          </div>
+
+          <!-- Total Doses -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Total Doses Required</label>
+            <input type="number" name="totalDosesRequired" value="1" min="1" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+          </div>
+
+          <!-- Injection Site -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Injection Site</label>
+            <select name="injectionSite" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+              <option value="Subcutaneous">Subcutaneous</option>
+              <option value="Intramuscular">Intramuscular</option>
+              <option value="Intradermal">Intradermal</option>
+              <option value="Intravenous">Intravenous</option>
+            </select>
+          </div>
+
+          <!-- Dosage Amount -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dosage Amount</label>
+            <div class="flex gap-2">
+              <input type="number" name="dosageAmount" step="0.1" class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+              <select name="dosageUnit" class="w-24 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                <option value="ml">ml</option>
+                <option value="cc">cc</option>
+                <option value="dose">dose</option>
+                <option value="mg">mg</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Animal Condition Section -->
+      <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Animal Condition
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- Temperature -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Temperature (°F)</label>
+            <input type="number" name="temperature" step="0.1" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+          </div>
+
+          <!-- Weight -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Weight (kg)</label>
+            <input type="number" name="weight" step="0.1" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+          </div>
+
+          <!-- Body Condition Score -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Body Condition Score (1-5)</label>
+            <select name="bodyConditionScore" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+              <option value="">Select Score</option>
+              <option value="1">1 - Very Thin</option>
+              <option value="2">2 - Thin</option>
+              <option value="3">3 - Ideal</option>
+              <option value="4">4 - Overweight</option>
+              <option value="5">5 - Obese</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Adverse Reactions Section -->
+      <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 4v2M6.343 3.665c.877-.265 1.944-.348 2.818-.062 1.497.501 2.566 1.721 2.839 3.167.273-1.446 1.342-2.666 2.839-3.167.874-.286 1.941-.203 2.818.062M12 21c3.314 0 6-1.343 6-3 0-.664-.806-1.284-2-1.684"/>
+          </svg>
+          Adverse Reactions
+        </h2>
+
+        <div class="space-y-4">
+          <!-- Adverse Reaction Checkbox -->
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" name="hadAdverseReaction" id="hadAdverseReaction" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500">
+            <span class="text-gray-700 dark:text-gray-300">Animal had adverse reaction</span>
+          </label>
+
+          <!-- Adverse Reaction Details -->
+          <div id="adverseReactionDetails" class="hidden space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Severity</label>
+              <select name="reactionSeverity" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                <option value="">Select Severity</option>
+                <option value="Mild">Mild</option>
+                <option value="Moderate">Moderate</option>
+                <option value="Severe">Severe</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Details</label>
+              <textarea name="adverseReactionDetails" rows="3" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none" placeholder="Describe the adverse reaction..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes Section -->
+      <div class="mb-8">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes</label>
+        <textarea name="notes" rows="4" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none" placeholder="Additional notes or observations..."></textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex gap-4">
+        <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
+          Record Vaccination
+        </button>
+        <a href="/" class="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Show/hide adverse reaction details
+  document.getElementById('hadAdverseReaction').addEventListener('change', function() {
+    document.getElementById('adverseReactionDetails').classList.toggle('hidden', !this.checked);
+  });
+
+  // Auto-calculate next due date
+  document.getElementById('dateAdministered').addEventListener('change', calculateNextDue);
+  document.getElementById('vaccineSelect').addEventListener('change', calculateNextDue);
+
+  function calculateNextDue() {
+    const dateAdministered = document.getElementById('dateAdministered').value;
+    const vaccineId = document.getElementById('vaccineSelect').value;
+
+    if (!dateAdministered || !vaccineId) return;
+
+    fetch('/vaccination/calculate-next-due', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        vaccineId,
+        dateAdministered
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('nextDueDate').value = data.nextDueDate;
+      }
+    })
+    .catch(err => console.error('Error calculating next due date:', err));
+  }
+
+  // Load animals (placeholder - implement based on your farmer selection)
+  // For now, assuming animals are passed from server
+
+  // Form submission
+  document.getElementById('vaccinationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const animalId = document.getElementById('animalSelect').value;
+    if (!animalId) {
+      alert('Please select an animal');
+      return;
+    }
+
+    const formData = new FormData(this);
+    try {
+      const response = await fetch(`/vaccination/${animalId}/record`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(formData))
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert('Vaccination recorded successfully! Next due: ' + data.nextDueDate);
+        window.location.href = '/';
+      } else {
+        alert('Error: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error recording vaccination');
+    }
+  });
+</script>

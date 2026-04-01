@@ -10,6 +10,7 @@ const Payment = require('../models/payment');
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { cloudinary, storage } = require("../Cloudconfig.js");
+const { generateVaccinationSchedule } = require("../utils/vaccinationScheduler");
 
 //employe id generator for sales memebers
 const generateAnimaleID = async () => {
@@ -811,22 +812,53 @@ module.exports.verifyPayment = async (req, res) => {
         
         await payment.save();
         
-        // Activate plans for all animals
+        // Activate plans and generate vaccination schedules for all animals
         const planType = payment.metadata.planType;
         const planPrice = payment.amount / payment.animalIds.length;
+        const planTypeKey = planType.toLowerCase().includes('basic') ? 'basic' : 
+                            planType.toLowerCase().includes('premium') ? 'premium' : 'custom';
+        let scheduledCount = 0;
         
         for (const animal of payment.animalIds) {
-            await animal.activatePlan(
-                planType.toLowerCase().includes('basic') ? 'basic' : 
-                planType.toLowerCase().includes('premium') ? 'premium' : 'custom',
-                planPrice,
-                1,
-                req.user._id,
-                `Plan activated after payment verification (UTR: ${utrNumber})`
-            );
+            try {
+                // Activate plan
+                if (typeof animal.activatePlan === 'function') {
+                    await animal.activatePlan(
+                        planTypeKey,
+                        planPrice,
+                        1,
+                        req.user._id,
+                        `Plan activated after payment verification (UTR: ${utrNumber})`
+                    );
+                } else {
+                    // Fallback if activatePlan method doesn't exist
+                    animal.plan = {
+                        type: planTypeKey,
+                        name: planType,
+                        price: planPrice,
+                        status: 'active',
+                        startDate: new Date(),
+                        endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                        features: []
+                    };
+                    await animal.save();
+                }
+                
+                // Generate vaccination schedule based on plan
+                const vaccinationSchedule = await generateVaccinationSchedule(
+                    animal,
+                    planTypeKey,
+                    req.user._id
+                );
+                scheduledCount += vaccinationSchedule.length;
+                console.log(`Generated ${vaccinationSchedule.length} vaccinations for animal ${animal._id}`);
+            } catch (scheduleError) {
+                console.error(`Error activating plan/generating schedule for animal ${animal._id}:`, scheduleError);
+                // Don't fail the entire payment if one animal has issues
+            }
         }
         
-        req.flash('success', `Payment verified successfully! Plans activated for ${payment.animalIds.length} animal(s).`);
+        req.flash('success', `Payment verified successfully! Plans activated for ${payment.animalIds.length} animal(s). Vaccination schedule created for ${scheduledCount} doses.`);
         
         res.json({
             success: true,
@@ -840,6 +872,74 @@ module.exports.verifyPayment = async (req, res) => {
             success: false,
             message: 'Failed to verify payment'
         });
+    }
+};
+
+module.exports.getPaymentDetails = async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        
+        const payment = await Payment.findById(paymentId)
+            .populate('animalIds', 'name tagNumber uniqueAnimalId animalType plan');
+
+        if (!payment) {
+            return res.json({
+                success: false,
+                message: 'Payment not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            payment: {
+                _id: payment._id,
+                amount: payment.amount,
+                paymentStatus: payment.paymentStatus,
+                metadata: payment.metadata,
+                animalIds: payment.animalIds.map(animal => ({
+                    _id: animal._id,
+                    name: animal.name,
+                    tagNumber: animal.tagNumber,
+                    uniqueAnimalId: animal.uniqueAnimalId,
+                    animalType: animal.animalType,
+                    plan: animal.plan
+                }))
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching payment details:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching payment details'
+        });
+    }
+};
+
+module.exports.renderPaymentVerificationPage = async (req, res) => {
+    try {
+        const { paymentId } = req.query;
+        
+        if (!paymentId) {
+            req.flash('error', 'Payment ID not provided');
+            return res.redirect('/admin/animals');
+        }
+
+        const payment = await Payment.findById(paymentId)
+            .populate('animalIds', 'name tagNumber uniqueAnimalId animalType plan');
+
+        if (!payment) {
+            req.flash('error', 'Payment not found');
+            return res.redirect('/admin/animals');
+        }
+
+        res.render('admin/payments/verify', {
+            payment,
+            title: 'Verify Payment'
+        });
+    } catch (error) {
+        console.error('Error rendering payment verification page:', error);
+        req.flash('error', 'Error loading payment verification page');
+        res.redirect('/admin/animals');
     }
 };
 
@@ -1456,15 +1556,17 @@ module.exports.viewAnimal = async (req, res) => {
       );
     }
 
-    // Get upcoming vaccinations
+    // Get upcoming vaccinations (both Scheduled and Administered)
     const upcomingVaccinations = await Vaccination.find({
       animal: id,
-      nextDueDate: { $gte: new Date() },
-      status: "Administered",
+      $or: [
+        { scheduledDate: { $gte: new Date() }, status: "Scheduled" },
+        { nextDueDate: { $gte: new Date() }, status: "Administered" }
+      ]
     })
       .populate("vaccine", "name vaccineType")
-      .sort({ nextDueDate: 1 })
-      .limit(3);
+      .sort({ scheduledDate: 1, nextDueDate: 1 })
+      .limit(10);
 
     // Get vaccination statistics
     const vaccinationStats = await Vaccination.aggregate([
@@ -1528,6 +1630,15 @@ module.exports.viewAnimal = async (req, res) => {
         })
       : null;
 
+    // Get pending payment for vaccine plans if any
+    let pendingPayment = null;
+    if (animal.plan?.type && animal.plan.type !== 'none') {
+      pendingPayment = await Payment.findOne({
+        animalIds: id,
+        paymentStatus: 'pending'
+      }).select('_id amount metadata animalIds paymentStatus');
+    }
+
     res.render("admin/animals/view", {
       animal,
       vaccinations,
@@ -1542,6 +1653,7 @@ module.exports.viewAnimal = async (req, res) => {
       pregnancyDuration,
       daysUntilDelivery,
       batchInfo,
+      pendingPayment,
       title: `Animal Details - ${animal.uniqueAnimalId || animal.tagNumber}`,
       helpers: {
         formatDate: function (date) {

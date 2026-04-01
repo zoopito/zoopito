@@ -1086,3 +1086,364 @@ exports.calculateNextDueDate = async (req, res) => {
       .json({ success: false, message: "Error calculating next due date" });
   }
 };
+
+// ================ RECORD VACCINATION (Paravet Submission) ================
+exports.recordVaccination = async (req, res) => {
+  try {
+    const { animalId } = req.params;
+    const { vaccineId, dateAdministered, doseNumber, totalDosesRequired, injectionSite, dosageAmount, dosageUnit, notes, hadAdverseReaction, adverseReactionDetails, temperature, weight, bodyConditionScore } = req.body;
+
+    // Fetch vaccine details
+    const vaccine = await Vaccine.findById(vaccineId);
+    if (!vaccine) {
+      return res.status(404).json({ success: false, message: "Vaccine not found" });
+    }
+
+    // Fetch animal and calculate next due date
+    const animal = await Animal.findById(animalId);
+    if (!animal) {
+      return res.status(404).json({ success: false, message: "Animal not found" });
+    }
+
+    const adminDate = new Date(dateAdministered);
+    let nextDueDate = new Date(adminDate);
+
+    // Calculate next due date based on vaccine settings
+    if (vaccine.boosterIntervalWeeks) {
+      nextDueDate.setDate(nextDueDate.getDate() + vaccine.boosterIntervalWeeks * 7);
+    } else if (vaccine.immunityDurationMonths) {
+      nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.immunityDurationMonths);
+    } else {
+      nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+    }
+
+    // Update vaccination record
+    const vaccination = await Vaccination.findOneAndUpdate(
+      {
+        animal: animalId,
+        vaccine: vaccineId,
+        status: "Scheduled"
+      },
+      {
+        dateAdministered: adminDate,
+        doseNumber: doseNumber || 1,
+        totalDosesRequired: totalDosesRequired || 1,
+        administeredBy: req.user.name,
+        injectionSite: injectionSite || "Subcutaneous",
+        dosageAmount: dosageAmount,
+        dosageUnit: dosageUnit || vaccine.dosageUnit || "ml",
+        status: "Administered",
+        nextDueDate: nextDueDate,
+        animalCondition: {
+          temperature: temperature,
+          weight: weight,
+          bodyConditionScore: bodyConditionScore,
+          isPregnant: animal.pregnancyStatus?.isPregnant || false,
+          isLactating: false
+        },
+        hadAdverseReaction: hadAdverseReaction === "true" || hadAdverseReaction === true,
+        adverseReactionDetails: adverseReactionDetails || "",
+        notes: notes || "",
+        updatedBy: req.user._id,
+        verificationStatus: "Pending" // Pending admin verification
+      },
+      { new: true }
+    );
+
+    if (!vaccination) {
+      return res.status(404).json({ success: false, message: "Vaccination record not found" });
+    }
+
+    // Update animal's next vaccination date
+    await Animal.findByIdAndUpdate(
+      animalId,
+      {
+        $set: {
+          "vaccinationSummary.nextVaccinationDate": nextDueDate,
+          "vaccinationSummary.lastVaccinationDate": adminDate,
+          "vaccinationSummary.totalVaccinations": (animal.vaccinationSummary?.totalVaccinations || 0) + 1
+        }
+      }
+    );
+
+    req.flash("success", "Vaccination recorded successfully. Pending admin verification.");
+    res.json({
+      success: true,
+      message: "Vaccination recorded successfully",
+      vaccination: vaccination,
+      nextDueDate: nextDueDate.toISOString().split("T")[0]
+    });
+
+  } catch (error) {
+    console.error("Error recording vaccination:", error);
+    res.status(500).json({ success: false, message: error.message || "Error recording vaccination" });
+  }
+};
+
+// ================ COMPLETE VACCINATION (Mark complete & auto-calculate next) ================
+exports.completeVaccination = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { completionDate } = req.body;
+
+    const vaccination = await Vaccination.findById(id).populate("vaccine");
+    if (!vaccination) {
+      return res.status(404).json({ success: false, message: "Vaccination record not found" });
+    }
+
+    if (vaccination.status !== "Administered") {
+      return res.status(400).json({ success: false, message: "Vaccination must be administered before completing" });
+    }
+
+    const completeDate = new Date(completionDate || new Date());
+    let nextDueDate = new Date(completeDate);
+
+    // Calculate next due date based on vaccine booster or immunity
+    const vaccine = vaccination.vaccine;
+    if (vaccine && vaccine.boosterIntervalWeeks) {
+      nextDueDate.setDate(nextDueDate.getDate() + vaccine.boosterIntervalWeeks * 7);
+    } else if (vaccine && vaccine.immunityDurationMonths) {
+      nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.immunityDurationMonths);
+    } else {
+      nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+    }
+
+    // Check if this is the last dose
+    const isLastDose = vaccination.doseNumber >= vaccination.totalDosesRequired;
+
+    vaccination.status = "Completed";
+    vaccination.verificationStatus = "Verified";
+    vaccination.verifiedBy = req.user._id;
+
+    // Only set next due if not the last dose of series
+    if (!isLastDose) {
+      vaccination.nextDueDate = nextDueDate;
+    } else {
+      vaccination.isSeriesComplete = true;
+      vaccination.seriesCompletionDate = completeDate;
+      vaccination.nextDueDate = nextDueDate; // Still set for any future boosters
+    }
+
+    await vaccination.save();
+
+    // Update animal summary
+    await Animal.findByIdAndUpdate(
+      vaccination.animal,
+      {
+        $set: {
+          "vaccinationSummary.nextVaccinationDate": nextDueDate,
+          "vaccinationSummary.lastVaccinationDate": completeDate
+        }
+      }
+    );
+
+    req.flash("success", `Vaccination completed. Next due: ${nextDueDate.toLocaleDateString()}`);
+    res.json({
+      success: true,
+      message: "Vaccination completed",
+      vaccination: vaccination,
+      nextDueDate: nextDueDate.toISOString().split("T")[0]
+    });
+
+  } catch (error) {
+    console.error("Error completing vaccination:", error);
+    res.status(500).json({ success: false, message: error.message || "Error completing vaccination" });
+  }
+};
+
+// ================ ADMIN VERIFY VACCINATION ================
+exports.adminVerifyVaccination = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { verificationStatus, verificationNotes } = req.body;
+
+    const vaccination = await Vaccination.findById(id);
+    if (!vaccination) {
+      return res.status(404).json({ success: false, message: "Vaccination record not found" });
+    }
+
+    if (verificationStatus === "Verified") {
+      vaccination.verificationStatus = "Verified";
+      vaccination.verifiedBy = req.user._id;
+      vaccination.status = "Administered"; // Mark as administered after verification
+    } else if (verificationStatus === "Rejected") {
+      vaccination.verificationStatus = "Rejected";
+      vaccination.status = "Scheduled"; // Revert status if rejected
+    }
+
+    vaccination.verificationNotes = verificationNotes || "";
+    vaccination.updatedBy = req.user._id;
+
+    await vaccination.save();
+
+    req.flash("success", `Vaccination ${verificationStatus.toLowerCase()} by admin`);
+    res.json({
+      success: true,
+      message: `Vaccination ${verificationStatus.toLowerCase()} successfully`,
+      verificationStatus: vaccination.verificationStatus,
+      status: vaccination.status
+    });
+
+  } catch (error) {
+    console.error("Error verifying vaccination:", error);
+    res.status(500).json({ success: false, message: error.message || "Error verifying vaccination" });
+  }
+};
+
+// ================ EDIT NEXT DUE DATE (Admin Testing) ================
+exports.editNextDueDate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newNextDueDate } = req.body;
+
+    const vaccination = await Vaccination.findByIdAndUpdate(
+      id,
+      {
+        nextDueDate: new Date(newNextDueDate),
+        updatedBy: req.user._id
+      },
+      { new: true }
+    );
+
+    if (!vaccination) {
+      return res.status(404).json({ success: false, message: "Vaccination record not found" });
+    }
+
+    // Also update animal's next vaccination date if this is the latest
+    const animal = await Animal.findById(vaccination.animal);
+    if (animal) {
+      const latestVaccination = await Vaccination.findOne({
+        animal: vaccination.animal,
+        status: { $in: ["Administered", "Completed"] }
+      }).sort({ dateAdministered: -1 });
+
+      if (latestVaccination && latestVaccination._id.equals(vaccination._id)) {
+        await Animal.findByIdAndUpdate(
+          vaccination.animal,
+          { "vaccinationSummary.nextVaccinationDate": new Date(newNextDueDate) }
+        );
+      }
+    }
+
+    req.flash("success", "Next due date updated successfully");
+    res.json({
+      success: true,
+      message: "Next due date updated successfully",
+      nextDueDate: vaccination.nextDueDate.toISOString().split("T")[0]
+    });
+
+  } catch (error) {
+    console.error("Error editing next due date:", error);
+    res.status(500).json({ success: false, message: error.message || "Error editing next due date" });
+  }
+};
+
+// ================ GET ANIMAL VACCINATION SCHEDULE ================
+exports.getAnimalVaccinationSchedule = async (req, res) => {
+  try {
+    const { animalId } = req.params;
+
+    const animal = await Animal.findById(animalId);
+    if (!animal) {
+      return res.status(404).json({ success: false, message: "Animal not found" });
+    }
+
+    const vaccinations = await Vaccination.find({
+      animal: animalId
+    })
+      .populate("vaccine", "name brand boosterIntervalWeeks immunityDurationMonths diseaseTarget")
+      .sort({ scheduledDate: 1 });
+
+    res.json({
+      success: true,
+      animal: {
+        name: animal.name,
+        tagNumber: animal.tagNumber,
+        species: animal.species,
+        nextVaccinationDate: animal.vaccinationSummary?.nextVaccinationDate
+      },
+      vaccinations: vaccinations
+    });
+
+  } catch (error) {
+    console.error("Error fetching vaccination schedule:", error);
+    res.status(500).json({ success: false, message: error.message || "Error fetching vaccination schedule" });
+  }
+};
+
+// ================ RENDER VACCINATION RECORDING FORM ================
+exports.renderVaccinationRecordForm = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const paravet = await Paravet.findOne({ user: userId });
+    const admin = await User.findOne({ _id: userId, role: "ADMIN" });
+
+    if (!paravet && !admin) {
+      req.flash("error", "Access denied");
+      return res.redirect("/");
+    }
+
+    // Get farmers for paravet
+    let farmers = [];
+    if (paravet) {
+      const districts = paravet.assignedAreas?.map(area => area.district) || [];
+      const villages = paravet.assignedAreas?.map(area => area.village).filter(Boolean) || [];
+      let farmerQuery = { isActive: true };
+      
+      if (villages.length > 0) {
+        farmerQuery["address.village"] = { $in: villages };
+      } else if (districts.length > 0) {
+        farmerQuery["address.district"] = { $in: districts };
+      }
+
+      farmers = await Farmer.find(farmerQuery).select("name uniqueFarmerId village").sort({ name: 1 });
+    } else if (admin) {
+      farmers = await Farmer.find({ isActive: true }).select("name uniqueFarmerId village").sort({ name: 1 });
+    }
+
+    // Get all active vaccines
+    const vaccines = await Vaccine.find({ isActive: true })
+      .select("name brand vaccineType diseaseTarget boosterIntervalWeeks immunityDurationMonths")
+      .sort({ name: 1 });
+
+    res.render("vaccinations/record", {
+      title: "Record Vaccination",
+      farmers,
+      vaccines,
+      user: req.user
+    });
+
+  } catch (error) {
+    console.error("Error rendering vaccination form:", error);
+    req.flash("error", "Error loading form");
+    res.redirect("/");
+  }
+};
+
+// ================ RENDER VACCINATION VERIFICATION/ADMIN PAGE ================
+exports.renderVaccinationVerifyPage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const vaccination = await Vaccination.findById(id)
+      .populate("animal", "name tagNumber species pregnancyStatus vaccinations")
+      .populate("vaccine", "name brand boosterIntervalWeeks immunityDurationMonths")
+      .populate("farmer", "name village mobileNumber");
+
+    if (!vaccination) {
+      req.flash("error", "Vaccination record not found");
+      return res.redirect("/admin/vaccinations");
+    }
+
+    res.render("vaccinations/admin-verify", {
+      title: "Verify Vaccination",
+      vaccination,
+      user: req.user
+    });
+
+  } catch (error) {
+    console.error("Error rendering verification page:", error);
+    req.flash("error", "Error loading verification page");
+    res.redirect("/admin/vaccinations");
+  }
+};
