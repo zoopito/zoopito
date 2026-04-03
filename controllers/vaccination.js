@@ -256,16 +256,14 @@ exports.renderNewForm = async (req, res) => {
     const userId = req.user._id;
 
     // Get paravet details with assigned areas
-    const paravet = await Paravet.findOne({ user: userId }).populate(
-      "assignedAreas",
-    );
+    const paravet = await Paravet.findOne({ user: userId });
 
     const admin = await User.findOne({ _id: userId, role: "ADMIN" });
 
     // ✅ FIXED CONDITION
     if (!paravet && !admin) {
       req.flash("error", "Access denied");
-      return res.redirect("/vaccination");
+      return res.redirect("/admin/vaccinations");
     } else if (admin) {
     }
 
@@ -328,7 +326,7 @@ exports.renderNewForm = async (req, res) => {
   } catch (error) {
     console.error("Error rendering new form:", error);
     req.flash("error", "Error loading form");
-    res.redirect("/vaccination");
+    res.redirect("/admin/vaccinations");
   }
 };
 
