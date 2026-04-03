@@ -386,7 +386,7 @@
                         View
                       </a>
                       
-                      <% if (user && user.role === 'admin') { %>
+                      <% if (currUser && currUser.role === 'ADMIN') { %>
                         <form action="/vaccination/<%= vaccination._id %>" method="POST" class="inline" onsubmit="return confirm('Delete this vaccination record?')">
                           <input type="hidden" name="_method" value="DELETE">
                           <button type="submit" 
