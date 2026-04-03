@@ -919,34 +919,23 @@ exports.verifyStatus = async (req, res) => {
 
 // ================ DELETE VACCINATION ================
 exports.deleteVaccination = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
-    const vaccination = await Vaccination.findById(req.params.id).session(
-      session,
-    );
+    const vaccination = await Vaccination.findById(req.params.id);
 
     if (!vaccination) {
-      await session.abortTransaction();
-      session.endSession();
-      return res
-        .status(404)
-        .json({ success: false, message: "Record not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Record not found",
+      });
     }
 
     // Remove reference from animal
-    await Animal.findByIdAndUpdate(
-      vaccination.animal,
-      { $pull: { vaccinationHistory: vaccination._id } },
-      { session },
-    );
+    await Animal.findByIdAndUpdate(vaccination.animal, {
+      $pull: { vaccinationHistory: vaccination._id },
+    });
 
-    // Delete the vaccination record
-    await vaccination.deleteOne({ session });
-
-    await session.commitTransaction();
-    session.endSession();
+    // Delete vaccination
+    await Vaccination.findByIdAndDelete(req.params.id);
 
     req.flash("success", "Vaccination record deleted successfully");
 
@@ -957,20 +946,19 @@ exports.deleteVaccination = async (req, res) => {
       });
     }
 
-    res.redirect("/vaccination");
+    res.redirect("/admin/vaccinations");
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     console.error("Error deleting vaccination:", error);
 
     if (req.xhr || req.headers.accept.indexOf("json") > -1) {
-      return res
-        .status(500)
-        .json({ success: false, message: "Error deleting record" });
+      return res.status(500).json({
+        success: false,
+        message: "Error deleting record",
+      });
     }
 
     req.flash("error", "Error deleting vaccination record");
-    res.redirect("/vaccination");
+    res.redirect("/admin/vaccinations");
   }
 };
 
