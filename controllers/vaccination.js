@@ -255,45 +255,50 @@ exports.renderNewForm = async (req, res) => {
     const { animalId, farmerId, batch } = req.query;
     const userId = req.user._id;
 
-    // Get paravet details with assigned areas
-    const paravet = await Paravet.findOne({ user: userId });
-
+    const paravet = await Paravet.findOne({ user: userId }).populate("assignedAreas");
     const admin = await User.findOne({ _id: userId, role: "ADMIN" });
 
-    // ✅ FIXED CONDITION
+    // 🚫 No access
     if (!paravet && !admin) {
       req.flash("error", "Access denied");
       return res.redirect("/admin/vaccinations");
-    } else if (admin) {
     }
 
-    // Get farmers from assigned areas
-    const districts = paravet.assignedAreas.map((area) => area.district);
-    const villages = paravet.assignedAreas
-      .map((area) => area.village)
-      .filter(Boolean);
+    let farmers = [];
 
-    let farmerQuery = { isActive: true };
-
-    // Build query based on assigned areas
-    if (villages.length > 0) {
-      farmerQuery["address.village"] = { $in: villages };
-    } else if (districts.length > 0) {
-      farmerQuery["address.district"] = { $in: districts };
+    // ================= ADMIN =================
+    if (admin) {
+      farmers = await Farmer.find({ isActive: true })
+        .select("name address.village uniqueFarmerId phone")
+        .sort({ name: 1 });
     }
 
-    const farmers = await Farmer.find(farmerQuery)
-      .select("name address.village uniqueFarmerId phone")
-      .sort({ name: 1 });
+    // ================= PARAVET =================
+    if (paravet) {
+      const districts = paravet.assignedAreas.map((area) => area.district);
+      const villages = paravet.assignedAreas
+        .map((area) => area.village)
+        .filter(Boolean);
 
-    // Get all active vaccines with pricing
+      let farmerQuery = { isActive: true };
+
+      if (villages.length > 0) {
+        farmerQuery["address.village"] = { $in: villages };
+      } else if (districts.length > 0) {
+        farmerQuery["address.district"] = { $in: districts };
+      }
+
+      farmers = await Farmer.find(farmerQuery)
+        .select("name address.village uniqueFarmerId phone")
+        .sort({ name: 1 });
+    }
+
+    // ================= VACCINES =================
     const vaccines = await Vaccine.find({ isActive: true })
-      .select(
-        "name brand vaccineType diseaseTarget defaultNextDueMonths dosageUnit standardDosage administrationRoute vaccineCharge actualPrice writtenPrice description",
-      )
+      .select("name brand vaccineType diseaseTarget defaultNextDueMonths dosageUnit standardDosage administrationRoute vaccineCharge actualPrice writtenPrice description")
       .sort({ name: 1 });
 
-    // Get animals for pre-selected farmer
+    // ================= ANIMALS =================
     let animals = [];
     if (farmerId) {
       animals = await Animal.find({
@@ -304,7 +309,7 @@ exports.renderNewForm = async (req, res) => {
         .sort({ name: 1 });
     }
 
-    // If batch registration, get pre-selected data
+    // ================= BATCH =================
     let batchData = null;
     if (batch === "true" && req.session.bulkVaccinationData) {
       batchData = req.session.bulkVaccinationData;
@@ -323,13 +328,13 @@ exports.renderNewForm = async (req, res) => {
       paravet,
       user: req.user,
     });
+
   } catch (error) {
     console.error("Error rendering new form:", error);
     req.flash("error", "Error loading form");
     res.redirect("/admin/vaccinations");
   }
 };
-
 // ================ ADD NEW VACCINATION ================
 exports.addVaccination = async (req, res) => {
   try {
