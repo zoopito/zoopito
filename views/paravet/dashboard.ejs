@@ -264,7 +264,7 @@
                                                 <i class="fas fa-clock mr-1"></i>
                                                 <%= moment(schedule.scheduledDate).format('h:mm A') %>
                                             </div>
-                                            <button onclick="event.stopPropagation(); window.location.href='/paravet/vaccination/<%= schedule._id %>/perform'" 
+                                            <button onclick="event.stopPropagation(); window.location.href='/paravet/vaccination/<%= schedule._id %>/complete'" 
                                                     class="mt-2 text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg transition">
                                                 Start
                                             </button>
@@ -577,7 +577,7 @@ function viewScheduleDetails(id, farmerName, animalName, vaccineName, time, vill
                 <span class="text-sm font-semibold">${village || 'N/A'}</span>
             </div>
             <div class="mt-4 flex space-x-2">
-                <button onclick="window.location.href='/paravet/vaccination/${id}/perform'" 
+                <button onclick="window.location.href='/paravet/vaccination/${id}/complete'"
                         class="flex-1 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 transition">
                     <i class="fas fa-play mr-1"></i> Start Vaccination
                 </button>

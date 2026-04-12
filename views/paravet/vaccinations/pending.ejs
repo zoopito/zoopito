@@ -92,7 +92,7 @@
                                         </div>
                                         <div class="ml-4">
                                             <button onclick="startVaccination('<%= vac._id %>')" 
-                                                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
+                                                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
                                                 <i class="fas fa-play mr-1"></i>Start
                                             </button>
                                         </div>
@@ -126,6 +126,6 @@ function filterVaccinations() {
 }
 
 function startVaccination(vaccinationId) {
-    window.location.href = `/paravet/vaccination/${vaccinationId}/perform`;
+    window.location.href = `/paravet/vaccination/${vaccinationId}/complete`;
 }
 </script>
