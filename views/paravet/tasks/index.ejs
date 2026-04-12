@@ -127,6 +127,32 @@
             </div>
         </div>
 
+
+        <!-- Area Filter -->
+<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Area</label>
+    <div class="flex flex-wrap gap-2">
+        <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all <%= !selectedArea || selectedArea === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200' %>" 
+                onclick="filterByArea('all')">
+            All Areas
+        </button>
+        <% if(availableAreas && availableAreas.length > 0) { %>
+            <% availableAreas.forEach(area => { %>
+                <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all <%= selectedArea === (area.village || area) ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200' %>" 
+                        onclick="filterByArea('<%= area.village || area %>')">
+                    <i class="fas fa-map-marker-alt mr-1"></i>
+                    <%= area.village || area %>
+                    <% if(pendingByArea && pendingByArea.find(a => a._id === (area.village || area))) { %>
+                        <span class="ml-1 px-1.5 py-0.5 bg-red-500 text-white rounded-full text-xs">
+                            <%= pendingByArea.find(a => a._id === (area.village || area)).count %>
+                        </span>
+                    <% } %>
+                </button>
+            <% }); %>
+        <% } %>
+    </div>
+</div>
+
         <!-- Tasks List -->
         <div id="tasksList" class="space-y-6">
             <% if (groupedTasks && Object.keys(groupedTasks).length > 0) { %>

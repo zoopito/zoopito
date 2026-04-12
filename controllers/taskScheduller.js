@@ -829,9 +829,8 @@ exports.assignParavetToVaccinations = async (req, res) => {
   try {
     const { paravetId, vaccinationIds, scheduledDate } = req.body;
 
-    if (!paravetId || !vaccinationIds || vaccinationIds.length === 0) {
-      throw new Error("Paravet ID and vaccination IDs are required");
-    }
+    console.log("Assigning to paravet:", paravetId);
+    console.log("Vaccination IDs:", vaccinationIds);
 
     // Verify paravet exists
     const paravet = await Paravet.findById(paravetId).populate("user");
@@ -839,43 +838,31 @@ exports.assignParavetToVaccinations = async (req, res) => {
       throw new Error("Paravet not found");
     }
 
-    // Update vaccinations
+    // ✅ Update vaccinations with assignedParavet
     const updateData = {
-      assignedParavet: paravetId,
+      assignedParavet: paravetId,  // This is the key field!
       status: "Scheduled",
       scheduledDate: scheduledDate || new Date(),
       updatedBy: req.user._id,
     };
 
-    const updatedVaccinations = await Vaccination.updateMany(
+    const result = await Vaccination.updateMany(
       { _id: { $in: vaccinationIds } },
-      updateData,
+      { $set: updateData }
     );
 
-    // Get unique farmer IDs from these vaccinations
-    const vaccinations = await Vaccination.find({
-      _id: { $in: vaccinationIds },
-    }).populate("farmer");
+    console.log(`✅ Updated ${result.modifiedCount} vaccinations`);
 
-    const farmerIds = [
-      ...new Set(vaccinations.map((v) => v.farmer._id.toString())),
-    ];
-
-    // Update paravet's assigned farmers
-    if (farmerIds.length > 0) {
-      await Paravet.findByIdAndUpdate(paravetId, {
-        $addToSet: {
-          assignedFarmers: {
-            $each: farmerIds.map((id) => new mongoose.Types.ObjectId(id)),
-          },
-        },
-      });
-    }
+    // Verify the update worked
+    const updated = await Vaccination.find({ _id: { $in: vaccinationIds } })
+      .select("assignedParavet status")
+      .lean();
+    console.log("Verification - Updated records:", updated);
 
     res.json({
       success: true,
-      message: `Successfully assigned ${updatedVaccinations.modifiedCount} vaccinations to ${paravet.user?.name}`,
-      modifiedCount: updatedVaccinations.modifiedCount,
+      message: `Successfully assigned ${result.modifiedCount} vaccinations to ${paravet.user?.name}`,
+      modifiedCount: result.modifiedCount,
     });
   } catch (error) {
     console.error("Error assigning paravet:", error);

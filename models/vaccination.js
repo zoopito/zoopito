@@ -99,6 +99,13 @@ const vaccinationSchema = new Schema(
       ref: "User",
     },
 
+    assignedParavet: {
+      type: Schema.Types.ObjectId,
+      ref: "Paravet",
+      index: true, 
+      description: "Paravet assigned to perform this vaccination",
+    },
+
     // Animal condition
     animalCondition: {
       temperature: Number,
@@ -346,5 +353,8 @@ vaccinationSchema.index({ "payment.paymentStatus": 1, createdAt: -1 });
 vaccinationSchema.index({ "payment.utrNumber": 1 });
 vaccinationSchema.index({ "payment.receiptNumber": 1 });
 vaccinationSchema.index({ status: 1, "payment.paymentStatus": 1 });
+vaccinationSchema.index({ assignedParavet: 1, status: 1 });
+vaccinationSchema.index({ assignedParavet: 1, scheduledDate: 1 });
+vaccinationSchema.index({ assignedParavet: 1, nextDueDate: 1 });
 
 module.exports = mongoose.model("Vaccination", vaccinationSchema);
