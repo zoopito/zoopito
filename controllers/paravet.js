@@ -1640,35 +1640,115 @@ exports.getTasks = async (req, res) => {
 exports.completeTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { taskType, completionNotes } = req.body;
+    const { 
+      taskType,
+      batchNumber,
+      expiryDate,
+      dosageAmount,
+      administrationMethod,
+      injectionSite,
+      temperature,
+      weight,
+      notes
+    } = req.body;
+
+    console.log("Completing task:", id, taskType);
 
     if (taskType === "vaccination") {
-      // Redirect to vaccination completion form
-      req.flash("info", "Please complete the vaccination details");
-      return res.redirect(`/paravet/vaccination/${id}/perform`);
-    } else if (taskType === "visit") {
-      // Handle farmer visit completion
-      const visit = await Visit.findById(id);
-      if (!visit) {
-        req.flash("error", "Visit not found");
-        return res.redirect("/paravet/tasks");
+      // Find the vaccination
+      const vaccination = await Vaccination.findById(id)
+        .populate("vaccine");
+
+      if (!vaccination) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Vaccination task not found" 
+        });
       }
 
-      visit.status = "Completed";
-      visit.completedAt = new Date();
-      visit.completionNotes = completionNotes;
-      await visit.save();
+      // Update vaccination record
+      vaccination.status = "Completed";
+      vaccination.dateAdministered = new Date();
+      vaccination.administeredBy = req.user.name;
+      vaccination.verificationStatus = "Verified";
+      
+      // Update batch details if provided
+      if (batchNumber) vaccination.batchNumber = batchNumber;
+      if (expiryDate) vaccination.expiryDate = new Date(expiryDate);
+      if (dosageAmount) vaccination.dosageAmount = dosageAmount;
+      if (administrationMethod) vaccination.administrationMethod = administrationMethod;
+      if (injectionSite) vaccination.injectionSite = injectionSite;
+      if (notes) vaccination.notes = notes;
+      
+      // Update animal condition if provided
+      if (temperature || weight) {
+        vaccination.animalCondition = {
+          ...vaccination.animalCondition,
+          temperature: temperature || vaccination.animalCondition?.temperature,
+          weight: weight || vaccination.animalCondition?.weight,
+          healthNotes: notes,
+        };
+      }
+      
+      // Calculate next due date based on vaccine
+      let nextDueDate = null;
+      if (vaccination.vaccine) {
+        if (vaccination.vaccine.defaultNextDueMonths) {
+          nextDueDate = new Date();
+          nextDueDate.setMonth(nextDueDate.getMonth() + vaccination.vaccine.defaultNextDueMonths);
+        } else if (vaccination.vaccine.boosterIntervalWeeks) {
+          nextDueDate = new Date();
+          nextDueDate.setDate(nextDueDate.getDate() + (vaccination.vaccine.boosterIntervalWeeks * 7));
+        } else if (vaccination.vaccine.immunityDurationMonths) {
+          nextDueDate = new Date();
+          nextDueDate.setMonth(nextDueDate.getMonth() + vaccination.vaccine.immunityDurationMonths);
+        }
+      }
+      
+      if (nextDueDate) {
+        vaccination.nextDueDate = nextDueDate;
+      }
 
-      req.flash("success", "Visit marked as completed");
-      res.redirect("/paravet/tasks");
-    } else {
-      req.flash("error", "Invalid task type");
-      res.redirect("/paravet/tasks");
+      await vaccination.save();
+
+      // Update animal's vaccination summary
+      await Animal.findByIdAndUpdate(vaccination.animal, {
+        $set: {
+          "vaccinationSummary.lastVaccinationDate": new Date(),
+          "vaccinationSummary.lastVaccineType": vaccination.vaccineName,
+          "vaccinationSummary.isUpToDate": true,
+          "vaccinationSummary.lastUpdated": new Date(),
+          "vaccinationSummary.nextVaccinationDate": nextDueDate
+        },
+        $inc: { "vaccinationSummary.totalVaccinations": 1 },
+        $push: {
+          "vaccinationSummary.vaccinesGiven": {
+            vaccine: vaccination.vaccine?._id,
+            vaccineName: vaccination.vaccineName,
+            lastDate: new Date(),
+            nextDue: nextDueDate,
+            status: "up_to_date"
+          }
+        }
+      });
+
+      return res.json({ 
+        success: true, 
+        message: "Vaccination completed successfully! Next due date has been calculated."
+      });
+    } 
+    else {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid task type" 
+      });
     }
   } catch (error) {
     console.error("Error completing task:", error);
-    req.flash("error", "Error completing task");
-    res.redirect("/paravet/tasks");
+    return res.status(500).json({ 
+      success: false, 
+      message: error.message || "Server error" 
+    });
   }
 };
 
@@ -1681,31 +1761,78 @@ exports.rescheduleTask = async (req, res) => {
     const { id } = req.params;
     const { newDate, newTime, reason } = req.body;
 
-    const newDateTime = moment(`${newDate} ${newTime}`).toDate();
+    console.log("Rescheduling task:", id, "to", newDate, newTime);
+
+    if (!newDate || !newTime) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Please provide both date and time" 
+      });
+    }
+
+    const newDateTime = moment(`${newDate} ${newTime}`, "YYYY-MM-DD HH:mm").toDate();
 
     // Find the vaccination record
     const vaccination = await Vaccination.findById(id);
+    
     if (!vaccination) {
-      req.flash("error", "Task not found");
-      return res.redirect("/paravet/tasks");
+      return res.status(404).json({ 
+        success: false, 
+        message: "Task not found" 
+      });
     }
 
     // Update scheduled date
     vaccination.scheduledDate = newDateTime;
-    vaccination.rescheduleReason = reason;
+    vaccination.rescheduleReason = reason || "Rescheduled by paravet";
     vaccination.rescheduledAt = new Date();
     vaccination.rescheduledBy = req.user._id;
+    vaccination.status = "Scheduled";
 
     await vaccination.save();
 
-    // Optional: Send notification to farmer about reschedule
-    // await sendRescheduleNotification(vaccination.farmer, vaccination);
+    console.log("Task rescheduled successfully");
 
-    req.flash("success", `Task rescheduled to ${moment(newDateTime).format("DD MMM YYYY, hh:mm A")}`);
-    res.redirect("/paravet/tasks");
+    return res.json({ 
+      success: true, 
+      message: `Task rescheduled to ${moment(newDateTime).format("DD MMM YYYY, hh:mm A")}` 
+    });
   } catch (error) {
     console.error("Error rescheduling task:", error);
-    req.flash("error", "Error rescheduling task");
+    return res.status(500).json({ 
+      success: false, 
+      message: error.message || "Error rescheduling task" 
+    });
+  }
+};
+
+// ================ GET VACCINATION FORM FOR COMPLETION ================
+exports.getVaccinationCompletionForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    const paravet = await Paravet.findOne({ user: userId });
+
+    const vaccination = await Vaccination.findById(id)
+      .populate("farmer", "name address mobileNumber")
+      .populate("animal", "name tagNumber animalType age breed")
+      .populate("vaccine", "name diseaseTarget defaultNextDueMonths boosterIntervalWeeks");
+
+    if (!vaccination) {
+      req.flash("error", "Vaccination not found");
+      return res.redirect("/paravet/tasks");
+    }
+
+    res.render("paravet/vaccinations/complete", {
+      title: "Complete Vaccination",
+      vaccination,
+      paravet,
+      user: req.user,
+      moment
+    });
+  } catch (error) {
+    console.error("Error loading vaccination completion form:", error);
+    req.flash("error", "Error loading form");
     res.redirect("/paravet/tasks");
   }
 };

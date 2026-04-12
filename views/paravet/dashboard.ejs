@@ -235,7 +235,7 @@
                     <div class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[400px] overflow-y-auto">
                         <% if (upcomingSchedules && upcomingSchedules.filter(s => moment(s.scheduledDate).isSame(moment(), 'day')).length > 0) { %>
                             <% upcomingSchedules.filter(s => moment(s.scheduledDate).isSame(moment(), 'day')).forEach(schedule => { %>
-                                <div class="schedule-item p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="viewScheduleDetails('<%= schedule._id %>', '<%= schedule.farmer?.name %>', '<%= schedule.animal?.name %>', '<%= schedule.vaccine?.name %>', '<%= moment(schedule.scheduledDate).format('h:mm A') %>', '<%= schedule.farmer?.address?.village %>')">
+                                <div class="schedule-item p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="viewScheduleDetails('<%= schedule._id %>', '<%= schedule.farmer?.name %>', '<%= schedule.animal?.name %>', '<%= schedule.vaccine?.name %>', '<%= moment(schedule.scheduledDate).format(`h:mm A`) %>', '<%= schedule.farmer?.address?.village %>')">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center space-x-3 flex-1">
                                             <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
@@ -316,7 +316,7 @@
                                         <span class="ml-2 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded"><%= schedules.length %> visits</span>
                                     </h4>
                                     <% schedules.forEach(schedule => { %>
-                                        <div class="ml-4 mb-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer" onclick="viewScheduleDetails('<%= schedule._id %>', '<%= schedule.farmer?.name %>', '<%= schedule.animal?.name %>', '<%= schedule.vaccine?.name %>', '<%= moment(schedule.scheduledDate).format('h:mm A') %>', '<%= schedule.farmer?.address?.village %>')">
+                                        <div class="ml-4 mb-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer" onclick="viewScheduleDetails('<%= schedule._id %>', '<%= schedule.farmer?.name %>', '<%= schedule.animal?.name %>', '<%= schedule.vaccine?.name %>', '<%= moment(schedule.scheduledDate).format(`h:mm A`) %>', '<%= schedule.farmer?.address?.village %>')">
                                             <div class="flex justify-between items-center">
                                                 <div>
                                                     <p class="text-sm font-medium text-gray-900 dark:text-white">

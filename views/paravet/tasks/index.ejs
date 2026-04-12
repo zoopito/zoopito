@@ -198,7 +198,7 @@
                                                                 class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm">
                                                             <i class="fas fa-check mr-1"></i> Complete
                                                         </button>
-                                                        <button onclick="openRescheduleModal('<%= task.id %>', '<%= moment(task.scheduledDate).format('YYYY-MM-DD') %>', '<%= moment(task.scheduledDate).format('HH:mm') %>')" 
+                                                        <button onclick="openRescheduleModal('<%= task.id %>', '<%= moment(task.scheduledDate).format(`YYYY-MM-DD`) %>', '<%= moment(task.scheduledDate).format(`HH:mm`) %>')" 
                                                                 class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm">
                                                             <i class="fas fa-calendar-alt mr-1"></i> Reschedule
                                                         </button>
@@ -278,52 +278,7 @@ function filterTasks(filter) {
 }
 
 function completeTask(taskId, taskType) {
-    Swal.fire({
-        title: 'Complete Task?',
-        text: 'Are you sure you want to mark this task as completed?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, complete it!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/paravet/tasks/${taskId}/complete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ taskType })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Task Completed!',
-                        text: 'Great job!',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'Failed to complete task'
-                    });
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Network error. Please try again.'
-                });
-            });
-        }
-    });
+    window.location.href = `/paravet/vaccination/${taskId}/complete`;
 }
 
 let currentTaskId = null;
@@ -353,39 +308,62 @@ function submitReschedule(event) {
         return;
     }
     
-    fetch(`/paravet/tasks/${taskId}/reschedule`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ newDate, newTime, reason })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+    Swal.fire({
+        title: 'Reschedule Task?',
+        text: 'Are you sure you want to reschedule this task?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#f59e0b',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, reschedule it!'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
             Swal.fire({
-                icon: 'success',
-                title: 'Task Rescheduled!',
-                text: data.message || 'Task has been rescheduled successfully',
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                location.reload();
+                title: 'Processing...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: data.message || 'Failed to reschedule task'
-            });
+            
+            try {
+                const response = await fetch(`/paravet/tasks/${taskId}/reschedule`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ newDate, newTime, reason })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Task Rescheduled!',
+                        text: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to reschedule task'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Network error. Please try again.'
+                });
+            }
         }
-    })
-    .catch(error => {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Network error. Please try again.'
-        });
     });
 }
 

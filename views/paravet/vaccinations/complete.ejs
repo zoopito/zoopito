@@ -1,0 +1,315 @@
+<% layout("layouts/boilerplate", {
+    title: 'Complete Vaccination - Zoopito',
+    description: 'Record vaccination details',
+    pageStyles: `
+        .form-card {
+            transition: all 0.3s ease;
+        }
+        .form-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+        .info-badge {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .dark .info-badge {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+    `
+}) -%>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                        <i class="fas fa-syringe mr-3 text-green-500"></i>
+                        Complete Vaccination
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">
+                        Record vaccination details for this animal
+                    </p>
+                </div>
+                <a href="/paravet/tasks" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="info-badge mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Farmer</p>
+                    <p class="font-semibold text-gray-900 dark:text-white"><%= vaccination.farmer?.name %></p>
+                    <p class="text-sm text-gray-500"><%= vaccination.farmer?.address?.village %></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Animal</p>
+                    <p class="font-semibold text-gray-900 dark:text-white"><%= vaccination.animal?.name %></p>
+                    <p class="text-sm text-gray-500">Tag: <%= vaccination.animal?.tagNumber || 'No Tag' %></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Vaccine</p>
+                    <p class="font-semibold text-gray-900 dark:text-white"><%= vaccination.vaccine?.name %></p>
+                    <p class="text-sm text-gray-500"><%= vaccination.vaccine?.diseaseTarget %></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Scheduled Date</p>
+                    <p class="font-semibold text-gray-900 dark:text-white"><%= moment(vaccination.scheduledDate).format('DD MMM YYYY, hh:mm A') %></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form id="completeVaccinationForm" class="space-y-6">
+            <input type="hidden" name="taskType" value="vaccination">
+            <input type="hidden" name="vaccinationId" value="<%= vaccination._id %>">
+
+            <!-- Batch Information -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden form-card">
+                <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
+                    <h2 class="text-lg font-semibold text-white flex items-center">
+                        <i class="fas fa-barcode mr-2"></i>
+                        Batch Information
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Batch Number
+                            </label>
+                            <input type="text" 
+                                   name="batchNumber" 
+                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+                                   placeholder="Enter batch number">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Expiry Date
+                            </label>
+                            <input type="date" 
+                                   name="expiryDate" 
+                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Administration Details -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden form-card">
+                <div class="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600">
+                    <h2 class="text-lg font-semibold text-white flex items-center">
+                        <i class="fas fa-syringe mr-2"></i>
+                        Administration Details
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Dosage Amount
+                            </label>
+                            <input type="number" 
+                                   step="0.1" 
+                                   name="dosageAmount" 
+                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+                                   placeholder="e.g., 2.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Administration Method
+                            </label>
+                            <select name="administrationMethod" 
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700">
+                                <option value="Injection">Injection</option>
+                                <option value="Oral">Oral</option>
+                                <option value="Nasal">Nasal</option>
+                                <option value="Topical">Topical</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Injection Site
+                            </label>
+                            <select name="injectionSite" 
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700">
+                                <option value="Subcutaneous">Subcutaneous</option>
+                                <option value="Intramuscular">Intramuscular</option>
+                                <option value="Intradermal">Intradermal</option>
+                                <option value="Intravenous">Intravenous</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Animal Condition -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden form-card">
+                <div class="px-6 py-4 bg-gradient-to-r from-purple-500 to-purple-600">
+                    <h2 class="text-lg font-semibold text-white flex items-center">
+                        <i class="fas fa-heartbeat mr-2"></i>
+                        Animal Condition (Optional)
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Temperature (°C)
+                            </label>
+                            <input type="number" 
+                                   step="0.1" 
+                                   name="temperature" 
+                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+                                   placeholder="e.g., 101.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Weight (kg)
+                            </label>
+                            <input type="number" 
+                                   step="0.1" 
+                                   name="weight" 
+                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+                                   placeholder="e.g., 250">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden form-card">
+                <div class="px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                    <h2 class="text-lg font-semibold text-white flex items-center">
+                        <i class="fas fa-sticky-note mr-2"></i>
+                        Additional Notes
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <textarea name="notes" 
+                              rows="4" 
+                              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+                              placeholder="Any additional observations or notes..."></textarea>
+                </div>
+            </div>
+
+            <!-- Next Due Date Info -->
+            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+                <div class="flex items-start">
+                    <i class="fas fa-calendar-alt text-blue-500 mt-1 mr-3"></i>
+                    <div>
+                        <p class="text-sm font-medium text-blue-800 dark:text-blue-300">
+                            Next Due Date Information
+                        </p>
+                        <p class="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                            Based on the vaccine type, the next due date will be automatically calculated.
+                            <%= vaccination.vaccine?.defaultNextDueMonths ? 
+                                `This vaccine requires a booster after ${vaccination.vaccine.defaultNextDueMonths} months.` : 
+                                'Please check the vaccine schedule for next due date.' %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-4">
+                <a href="/paravet/tasks" 
+                   class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        id="submitBtn"
+                        class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition flex items-center">
+                    <i class="fas fa-check mr-2"></i>
+                    Complete Vaccination
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById('completeVaccinationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => {
+            if (value) data[key] = value;
+        });
+        
+        const vaccinationId = '<%= vaccination._id %>';
+        const taskType = data.taskType;
+        delete data.taskType;
+        delete data.vaccinationId;
+        
+        Swal.fire({
+            title: 'Complete Vaccination?',
+            text: 'Are you sure you want to mark this vaccination as completed?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, complete it!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                try {
+                    const response = await fetch(`/paravet/tasks/${vaccinationId}/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ taskType, ...data })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: result.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = '/paravet/tasks';
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: result.message || 'Failed to complete vaccination'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Network error. Please try again.'
+                    });
+                }
+            }
+        });
+    });
+</script>
