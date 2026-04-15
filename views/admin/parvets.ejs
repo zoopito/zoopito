@@ -65,7 +65,7 @@
           Bulk Upload
         </button>
         
-        <div class="relative group">
+        <!-- <div class="relative group">
           <button class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/25">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
@@ -100,7 +100,7 @@
               </a>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
       <% } %>
     </div>
@@ -314,12 +314,12 @@
                       </svg>
                       Edit Profile
                     </a>
-                    <a href="/admin/paravets/<%= paravet._id %>/assign" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <!-- <a href="/admin/paravets/<%= paravet._id %>/assign" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                       <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                       </svg>
                       Assign Areas
-                    </a>
+                    </a> -->
                     <% if (paravet.isActive) { %>
                       <form 
                           action="/admin/paravets/<%= paravet._id %>?_method=PATCH" 
@@ -445,10 +445,10 @@
                  class="text-center px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-colors">
                 View Assignments
               </a>
-              <a href="/admin/paravets/<%= paravet._id %>/performance"
+              <!-- <a href="/admin/paravets/<%= paravet._id %>/performance"
                  class="text-center px-3 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-sm font-medium rounded-lg hover:bg-green-100 dark:hover:bg-green-800/30 transition-colors">
                 Performance Stats
-              </a>
+              </a> -->
             </div>
           </div>
         </div>

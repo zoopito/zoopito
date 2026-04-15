@@ -4,6 +4,7 @@ const Animal = require("../models/animal");
 const Paravet = require("../models/paravet");
 const Servise = require("../models/services");
 const SalesTeam = require("../models/salesteam");
+const Vaccination = require("../models/vaccination")
 const crypto = require("crypto");
 const brevo = require("@getbrevo/brevo");
 
@@ -339,31 +340,335 @@ async function sendSalesMemberWelcomeEmail(user, tempPassword, employeeCode, isN
 module.exports.index = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    const notifications = user.notifications || [];
-    const notificationCount = notifications.length;
-    const tile = "Admin Dashboard";
-    const shortDescription =
-      "This is admin panel admin can control everything from here sales team, farmers, animals, vaccinations etc.";
-    const farmersCount = await Farmer.countDocuments();
-    const animalsCount = await Animal.countDocuments();
-    const paravetsCount = await Paravet.countDocuments();
-    // const servicesCount = await Servise.countDocuments();
-    const salesTeamsCount = await SalesTeam.countDocuments();
+    
+    // Get filter parameters from query
+    const { dateRange = 'today', region, animalType, status } = req.query;
+    
+    // Date range calculation
+    let startDate, endDate;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    switch(dateRange) {
+      case 'today':
+        startDate = today;
+        endDate = new Date(today);
+        endDate.setHours(23, 59, 59);
+        break;
+      case 'yesterday':
+        startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - 1);
+        endDate = new Date(startDate);
+        endDate.setHours(23, 59, 59);
+        break;
+      case 'last7days':
+        startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - 7);
+        endDate = new Date(today);
+        endDate.setHours(23, 59, 59);
+        break;
+      case 'last30days':
+        startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - 30);
+        endDate = new Date(today);
+        endDate.setHours(23, 59, 59);
+        break;
+      case 'thismonth':
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        endDate.setHours(23, 59, 59);
+        break;
+      case 'lastmonth':
+        startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+        endDate.setHours(23, 59, 59);
+        break;
+      default:
+        startDate = today;
+        endDate = new Date(today);
+        endDate.setHours(23, 59, 59);
+    }
+    
+    // Build filter queries
+    let farmerQuery = { isActive: true };
+    let animalQuery = { isActive: true };
+    let vaccinationQuery = {};
+    
+    if (region && region !== '') {
+      farmerQuery['address.district'] = region;
+      animalQuery['address.district'] = region;
+    }
+    
+    if (animalType && animalType !== '') {
+      let animalTypeMap = {
+        'cow': 'Cow',
+        'buffalo': 'Buffalo',
+        'goat': 'Goat',
+        'sheep': 'Sheep',
+        'poultry': 'Poultry',
+        'pet': { $in: ['Dog', 'Cat'] }
+      };
+      animalQuery.animalType = animalTypeMap[animalType] || animalType;
+    }
+    
+    if (status && status !== '') {
+      if (status === 'active') vaccinationQuery.status = { $in: ['Scheduled', 'Payment Pending'] };
+      else if (status === 'completed') vaccinationQuery.status = 'Completed';
+      else if (status === 'pending') vaccinationQuery.status = 'Payment Pending';
+    }
+    
+    // Add date filter to vaccination query
+    if (dateRange !== 'all') {
+      vaccinationQuery.createdAt = { $gte: startDate, $lte: endDate };
+    }
+    
+    // Get all counts with filters
+    const farmersCount = await Farmer.countDocuments(farmerQuery);
+    const animalsCount = await Animal.countDocuments(animalQuery);
+    const paravetsCount = await Paravet.countDocuments({ isActive: true });
+    const salesTeamsCount = await SalesTeam.countDocuments({ isActive: true });
+    
+    // Get vaccinated animals count
+    const vaccinatedAnimals = await Vaccination.distinct('animal', { status: 'Completed' });
+    const vaccinatedCount = vaccinatedAnimals.length;
+    
+    // Get pending vaccinations
+    const pendingVaccinations = await Vaccination.countDocuments({
+      status: { $in: ['Scheduled', 'Payment Pending'] },
+      scheduledDate: { $lte: new Date() }
+    });
+    
+    // Get completed services this month
+    const completedServices = await Vaccination.countDocuments({
+      status: 'Completed',
+      dateAdministered: { $gte: startDate, $lte: endDate }
+    });
+    
+    // Get species breakdown
+    const speciesBreakdown = await Animal.aggregate([
+      { $match: animalQuery },
+      { $group: { _id: '$animalType', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+    
+    // Get weekly registration trends
+    const weeklyTrends = await getWeeklyTrends(startDate, endDate);
+    
+    // Get recent activities
+    const recentActivities = await getRecentActivities(startDate, endDate);
+    
+    // Get regional distribution
+    const regionalDistribution = await Farmer.aggregate([
+      { $match: farmerQuery },
+      { $group: { _id: '$address.district', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+    
+    // Get vaccination coverage by species
+    const vaccinationCoverage = await getVaccinationCoverage();
+    
+    // Get paravet performance
+    const paravetPerformance = await Paravet.aggregate([
+      { $match: { isActive: true } },
+      { $lookup: { from: 'vaccinations', localField: '_id', foreignField: 'assignedParavet', as: 'tasks' } },
+      { $project: {
+          name: { $arrayElemAt: ['$user.name', 0] },
+          totalTasks: { $size: '$tasks' },
+          completedTasks: { $size: { $filter: { input: '$tasks', as: 't', cond: { $eq: ['$$t.status', 'Completed'] } } } }
+        }
+      }
+    ]);
+    
+    // Get daily registration data for chart (last 7 days)
+    const dailyData = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      const nextDate = new Date(date);
+      nextDate.setHours(23, 59, 59);
+      
+      const count = await Farmer.countDocuments({
+        createdAt: { $gte: date, $lte: nextDate }
+      });
+      
+      dailyData.push({
+        day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        count: count
+      });
+    }
+    
+    // Calculate growth percentages
+    const previousPeriodStart = new Date(startDate);
+    previousPeriodStart.setDate(previousPeriodStart.getDate() - (endDate - startDate) / (1000 * 60 * 60 * 24));
+    const previousPeriodEnd = new Date(startDate);
+    previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1);
+    
+    const previousFarmersCount = await Farmer.countDocuments({
+      createdAt: { $gte: previousPeriodStart, $lte: previousPeriodEnd }
+    });
+    
+    const farmerGrowth = previousFarmersCount > 0 
+      ? (((farmersCount - previousFarmersCount) / previousFarmersCount) * 100).toFixed(1)
+      : 0;
+    
     res.render("admin/index.ejs", {
       User: user,
-      tile,
-      shortDescription,
+      currUser: req.user,
       farmersCount,
       animalsCount,
       paravetsCount,
       salesTeamsCount,
+      vaccinatedCount,
+      pendingVaccinations,
+      completedServices,
+      speciesBreakdown,
+      weeklyTrends,
+      recentActivities,
+      regionalDistribution,
+      vaccinationCoverage,
+      paravetPerformance,
+      dailyData,
+      farmerGrowth,
+      startDate,
+      endDate,
+      selectedFilters: { dateRange, region, animalType, status },
+      moment: null 
     });
+    
   } catch (err) {
     console.log(err);
-    req.flash("error", "Somthing went wrong");
+    req.flash("error", "Something went wrong");
     res.redirect("/login");
   }
 };
+
+// Helper function to get weekly trends
+async function getWeeklyTrends(startDate, endDate) {
+  const trends = [];
+  const currentDate = new Date(startDate);
+  
+  while (currentDate <= endDate) {
+    const weekStart = new Date(currentDate);
+    const weekEnd = new Date(currentDate);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    const farmers = await Farmer.countDocuments({
+      createdAt: { $gte: weekStart, $lte: weekEnd }
+    });
+    
+    const animals = await Animal.countDocuments({
+      createdAt: { $gte: weekStart, $lte: weekEnd }
+    });
+    
+    trends.push({
+      week: `Week ${Math.ceil(currentDate.getDate() / 7)}`,
+      farmers,
+      animals
+    });
+    
+    currentDate.setDate(currentDate.getDate() + 7);
+  }
+  
+  return trends;
+}
+
+// Helper function to get recent activities
+async function getRecentActivities(startDate, endDate) {
+  const activities = [];
+  
+  // Get recent farmer registrations
+  const recentFarmers = await Farmer.find({
+    createdAt: { $gte: startDate, $lte: endDate }
+  })
+    .populate('registeredBy', 'name')
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
+  
+  recentFarmers.forEach(farmer => {
+    activities.push({
+      user: farmer.registeredBy?.name || 'System',
+      action: `registered new farmer: ${farmer.name}`,
+      time: moment(farmer.createdAt).fromNow(),
+      type: 'farmer'
+    });
+  });
+  
+  // Get recent animal registrations
+  const recentAnimals = await Animal.find({
+    createdAt: { $gte: startDate, $lte: endDate }
+  })
+    .populate('registeredBy', 'name')
+    .populate('farmer', 'name')
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
+  
+  recentAnimals.forEach(animal => {
+    activities.push({
+      user: animal.registeredBy?.name || 'System',
+      action: `added ${animal.animalType} - ${animal.name || 'Unnamed'} for ${animal.farmer?.name}`,
+      time: moment(animal.createdAt).fromNow(),
+      type: 'animal'
+    });
+  });
+  
+  // Get recent vaccinations
+  const recentVaccinations = await Vaccination.find({
+    dateAdministered: { $gte: startDate, $lte: endDate },
+    status: 'Completed'
+  })
+    .populate('administeredBy', 'name')
+    .populate('animal', 'name')
+    .sort({ dateAdministered: -1 })
+    .limit(5)
+    .lean();
+  
+  recentVaccinations.forEach(vac => {
+    activities.push({
+      user: vac.administeredBy || 'System',
+      action: `completed vaccination for ${vac.animal?.name || 'animal'}`,
+      time: moment(vac.dateAdministered).fromNow(),
+      type: 'vaccination'
+    });
+  });
+  
+  // Sort by time (most recent first) and limit to 10
+  return activities.sort((a, b) => {
+    const timeA = parseInt(a.time);
+    const timeB = parseInt(b.time);
+    return timeB - timeA;
+  }).slice(0, 10);
+}
+
+// Helper function to get vaccination coverage
+async function getVaccinationCoverage() {
+  const coverage = [];
+  
+  const species = ['Cow', 'Buffalo', 'Goat', 'Sheep', 'Poultry'];
+  
+  for (const speciesName of species) {
+    const totalAnimals = await Animal.countDocuments({ animalType: speciesName, isActive: true });
+    const vaccinatedAnimals = await Vaccination.distinct('animal', {
+      status: 'Completed'
+    });
+    const vaccinatedCount = await Animal.countDocuments({
+      animalType: speciesName,
+      _id: { $in: vaccinatedAnimals }
+    });
+    
+    coverage.push({
+      species: speciesName,
+      total: totalAnimals,
+      vaccinated: vaccinatedCount,
+      percentage: totalAnimals > 0 ? ((vaccinatedCount / totalAnimals) * 100).toFixed(1) : 0
+    });
+  }
+  
+  return coverage;
+}
 
 //employe id generator for sales memebers
 const generateEmployeeCode = async () => {

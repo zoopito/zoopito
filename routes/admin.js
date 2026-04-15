@@ -117,6 +117,15 @@ router.get(
   paravetController.renderEditForm,
 );
 
+//view paravet assignments 
+// Paravet Assignment Routes
+router.get("/paravets/:id/assignments", isAdmin, paravetController.paravetAssignments);
+router.get("/paravets/:id/assignments/filter", isAdmin, paravetController.filterParavetAssignments);
+router.get("/paravets/:id/assignments/export", isAdmin, paravetController.exportParavetAssignments);
+router.post("/vaccinations/:id/reassign", isAdmin, paravetController.reassignTask);
+router.post("/vaccinations/:id/unassign", isAdmin, paravetController.unassignTask);
+
+
 router.get("/animals", isLoggedIn, isAdmin, animalController.animalsIndexPage);
 router.get(
   "/animals/new",

@@ -1,0 +1,492 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header with Back Button -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <div class="flex items-center space-x-3">
+                    <a href="/admin/paravets" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <div>
+                        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+                            <i class="fas fa-tasks mr-3 text-purple-500"></i>
+                            <%= paravet.user.name %> - Task Assignments
+                        </h1>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            Manage and track all tasks assigned to this paravet
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="flex space-x-3">
+                <button onclick="exportTasks()" 
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center">
+                    <i class="fas fa-download mr-2"></i>
+                    Export Report
+                </button>
+                <a href="/admin/paravets/<%= paravet._id %>/assignments/new" 
+                   class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Assign New Task
+                </a>
+            </div> -->
+        </div>
+
+        <!-- Paravet Profile Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-6">
+            <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold text-white">
+                            <%= paravet.user.name.charAt(0).toUpperCase() %>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-white"><%= paravet.user.name %></h2>
+                            <p class="text-purple-100">Employee ID: <%= paravet.employeeCode %></p>
+                        </div>
+                    </div>
+                    <span class="status-badge <%= paravet.isActive ? 'status-scheduled' : 'status-overdue' %>">
+                        <%= paravet.isActive ? 'Active' : 'Inactive' %>
+                    </span>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Contact</p>
+                        <p class="font-medium"><%= paravet.user.email %></p>
+                        <p class="text-sm"><%= paravet.user.mobile || 'N/A' %></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Qualification</p>
+                        <p class="font-medium"><%= paravet.qualification || 'N/A' %></p>
+                        <p class="text-sm">License: <%= paravet.licenseNumber || 'N/A' %></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Assigned Areas</p>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            <% if (paravet.assignedAreas && paravet.assignedAreas.length > 0) { %>
+                                <% paravet.assignedAreas.forEach(area => { %>
+                                    <span class="area-badge"><%= area.village || area.taluka || area.district %></span>
+                                <% }); %>
+                            <% } else { %>
+                                <span class="text-gray-400 text-sm">No areas assigned</span>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+            <div class="stats-card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Tasks</p>
+                        <p class="text-2xl font-bold text-gray-900"><%= stats.total %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-clipboard-list text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Scheduled</p>
+                        <p class="text-2xl font-bold text-blue-600"><%= stats.scheduled %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-calendar-day text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Completed</p>
+                        <p class="text-2xl font-bold text-green-600"><%= stats.completed %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Pending</p>
+                        <p class="text-2xl font-bold text-yellow-600"><%= stats.pending %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-clock text-yellow-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Overdue</p>
+                        <p class="text-2xl font-bold text-red-600"><%= stats.overdue %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                    <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <option value="all">All Status</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending Payment</option>
+                        <option value="overdue">Overdue</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From Date</label>
+                    <input type="date" id="fromDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To Date</label>
+                    <input type="date" id="toDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">&nbsp;</label>
+                    <button onclick="applyFilters()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-search mr-2"></i>Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Table -->
+        <div class="bg-white dark:bg-gray-800 shadow overflow-hidden rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Assigned Tasks</h3>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Animal</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Farmer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vaccine</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Next Due</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <% if (tasks && tasks.length > 0) { %>
+                            <% tasks.forEach(task => { 
+                                const isOverdue = task.scheduledDate && new Date(task.scheduledDate) < new Date() && task.status !== 'Completed';
+                            %>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                <%= task.animal?.name || 'N/A' %>
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                Tag: <%= task.animal?.tagNumber || 'No Tag' %>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-900 dark:text-white"><%= task.farmer?.name || 'N/A' %></div>
+                                        <div class="text-xs text-gray-500"><%= task.farmer?.address?.village || 'N/A' %></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-white"><%= task.vaccine?.name || task.vaccineName %></div>
+                                        <div class="text-xs text-gray-500"><%= task.vaccineType || 'N/A' %></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <%= task.scheduledDate ? moment(task.scheduledDate).format('DD MMM YYYY') : 'Not scheduled' %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <%= task.nextDueDate ? moment(task.nextDueDate).format('DD MMM YYYY') : 'N/A' %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="status-badge <%= isOverdue ? 'status-overdue' : (task.status === 'Completed' ? 'status-completed' : (task.status === 'Scheduled' ? 'status-scheduled' : 'status-pending')) %>">
+                                            <%= isOverdue ? 'Overdue' : task.status %>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex space-x-2">
+                                            <a href="/admin/vaccinations/<%= task._id %>" 
+                                               class="text-blue-600 hover:text-blue-900" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button onclick="reassignTask('<%= task._id %>')" 
+                                                    class="text-green-600 hover:text-green-900" title="Reassign">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                            <button onclick="removeTask('<%= task._id %>')" 
+                                                    class="text-red-600 hover:text-red-900" title="Unassign">
+                                                <i class="fas fa-user-slash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                    <i class="fas fa-tasks text-4xl mb-3 text-gray-400"></i>
+                                    <p>No tasks assigned to this paravet yet</p>
+                                    <a href="/admin/paravets/<%= paravet._id %>/assignments/new" 
+                                       class="inline-block mt-3 text-blue-600 hover:text-blue-700">
+                                        <i class="fas fa-plus mr-1"></i>Assign First Task
+                                    </a>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reassign Modal -->
+<div id="reassignModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Reassign Task</h3>
+            <button onclick="closeModal('reassignModal')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="reassignForm" onsubmit="submitReassign(event)">
+            <input type="hidden" id="reassignTaskId">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Select New Paravet *
+                </label>
+                <select id="newParavetId" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                    <option value="">Choose paravet...</option>
+                    <% const otherParavets = paravetsList.filter(p => p._id.toString() !== paravet._id.toString()); %>
+                    <% otherParavets.forEach(p => { %>
+                        <option value="<%= p._id %>"><%= p.user?.name %> - <%= p.employeeCode %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    New Schedule Date
+                </label>
+                <input type="date" id="newScheduleDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('reassignModal')" 
+                        class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Reassign</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+let currentReassignTaskId = null;
+
+function applyFilters() {
+    const status = $('#statusFilter').val();
+    const fromDate = $('#fromDate').val();
+    const toDate = $('#toDate').val();
+    
+    $.ajax({
+        url: '/admin/paravets/<%= paravet._id %>/assignments/filter',
+        method: 'GET',
+        data: { status, fromDate, toDate },
+        success: function(response) {
+            if (response.success) {
+                updateTasksTable(response.tasks);
+            }
+        },
+        error: function() {
+            Swal.fire('Error', 'Failed to filter tasks', 'error');
+        }
+    });
+}
+
+function updateTasksTable(tasks) {
+    const tbody = $('#tasksTableBody');
+    tbody.empty();
+    
+    if (tasks.length === 0) {
+        tbody.html(`
+            <tr>
+                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                    <i class="fas fa-tasks text-4xl mb-3 text-gray-400"></i>
+                    <p>No tasks found with selected filters</p>
+                </td>
+            </tr>
+        `);
+        return;
+    }
+    
+    tasks.forEach(task => {
+        const isOverdue = task.scheduledDate && new Date(task.scheduledDate) < new Date() && task.status !== 'Completed';
+        const row = `
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">${task.animal?.name || 'N/A'}</div>
+                        <div class="text-xs text-gray-500">Tag: ${task.animal?.tagNumber || 'No Tag'}</div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm text-gray-900 dark:text-white">${task.farmer?.name || 'N/A'}</div>
+                    <div class="text-xs text-gray-500">${task.farmer?.address?.village || 'N/A'}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900 dark:text-white">${task.vaccine?.name || task.vaccineName}</div>
+                    <div class="text-xs text-gray-500">${task.vaccineType || 'N/A'}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${task.scheduledDate ? moment(task.scheduledDate).format('DD MMM YYYY') : 'Not scheduled'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    ${task.nextDueDate ? moment(task.nextDueDate).format('DD MMM YYYY') : 'N/A'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="status-badge ${isOverdue ? 'status-overdue' : (task.status === 'Completed' ? 'status-completed' : (task.status === 'Scheduled' ? 'status-scheduled' : 'status-pending'))}">
+                        ${isOverdue ? 'Overdue' : task.status}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex space-x-2">
+                        <a href="/admin/vaccinations/${task._id}" class="text-blue-600 hover:text-blue-900" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button onclick="reassignTask('${task._id}')" class="text-green-600 hover:text-green-900" title="Reassign">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                        <button onclick="removeTask('${task._id}')" class="text-red-600 hover:text-red-900" title="Unassign">
+                            <i class="fas fa-user-slash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.append(row);
+    });
+}
+
+function reassignTask(taskId) {
+    currentReassignTaskId = taskId;
+    $('#reassignTaskId').val(taskId);
+    $('#newScheduleDate').val(new Date().toISOString().split('T')[0]);
+    $('#reassignModal').removeClass('hidden');
+}
+
+function submitReassign(event) {
+    event.preventDefault();
+    
+    const taskId = $('#reassignTaskId').val();
+    const newParavetId = $('#newParavetId').val();
+    const newScheduleDate = $('#newScheduleDate').val();
+    
+    if (!newParavetId) {
+        Swal.fire('Error', 'Please select a paravet', 'error');
+        return;
+    }
+    
+    Swal.fire({
+        title: 'Reassign Task?',
+        text: 'Are you sure you want to reassign this task?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3b82f6',
+        confirmButtonText: 'Yes, reassign'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({ title: 'Reassigning...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            fetch(`/admin/vaccinations/${taskId}/reassign`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paravetId: newParavetId, scheduledDate: newScheduleDate })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Success!', 'Task reassigned successfully', 'success')
+                        .then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Network error', 'error');
+            });
+        }
+    });
+}
+
+function removeTask(taskId) {
+    Swal.fire({
+        title: 'Unassign Task?',
+        text: 'This will remove the assignment from this paravet. The task will become unassigned.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Yes, unassign',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            fetch(`/admin/vaccinations/${taskId}/unassign`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Success!', 'Task unassigned successfully', 'success')
+                        .then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Network error', 'error');
+            });
+        }
+    });
+}
+
+function exportTasks() {
+    const status = $('#statusFilter').val();
+    const fromDate = $('#fromDate').val();
+    const toDate = $('#toDate').val();
+    window.location.href = `/admin/paravets/<%= paravet._id %>/assignments/export?status=${status}&fromDate=${fromDate}&toDate=${toDate}`;
+}
+
+function closeModal(modalId) {
+    $('#' + modalId).addClass('hidden');
+}
+
+// Close modal on escape
+$(document).keydown(function(e) {
+    if (e.key === 'Escape') {
+        $('.fixed').addClass('hidden');
+    }
+});
+</script>

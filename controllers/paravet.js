@@ -2514,3 +2514,215 @@ exports.bulkPerformVaccinations = async (req, res) => {
     res.redirect("/paravet/vaccinations/pending");
   }
 };
+
+// ================ VIEW PARAVET ASSIGNMENTS ================
+exports.paravetAssignments = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const paravet = await Paravet.findById(id)
+            .populate("user", "name email mobile")
+            .lean();
+        
+        if (!paravet) {
+            req.flash("error", "Paravet not found");
+            return res.redirect("/admin/paravets");
+        }
+        
+        // Get all tasks assigned to this paravet
+        const tasks = await Vaccination.find({ assignedParavet: id })
+            .populate("farmer", "name address mobileNumber")
+            .populate("animal", "name tagNumber animalType")
+            .populate("vaccine", "name")
+            .sort({ scheduledDate: -1, createdAt: -1 })
+            .lean();
+        
+        // Calculate stats
+        const stats = {
+            total: tasks.length,
+            scheduled: tasks.filter(t => t.status === "Scheduled").length,
+            completed: tasks.filter(t => t.status === "Completed").length,
+            pending: tasks.filter(t => t.status === "Payment Pending").length,
+            overdue: tasks.filter(t => t.scheduledDate && new Date(t.scheduledDate) < new Date() && t.status !== "Completed").length
+        };
+        
+        // Get all paravets for reassign dropdown
+        const paravetsList = await Paravet.find({ isActive: true })
+            .populate("user", "name")
+            .lean();
+        
+        res.render("admin/paravets/assignments", {
+            title: `${paravet.user.name} - Task Assignments`,
+            paravet,
+            tasks,
+            stats,
+            paravetsList,
+            moment
+        });
+    } catch (error) {
+        console.error("Error viewing paravet assignments:", error);
+        req.flash("error", "Error loading assignments");
+        res.redirect("/admin/paravets");
+    }
+};
+
+// ================ FILTER PARAVET ASSIGNMENTS ================
+exports.filterParavetAssignments = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, fromDate, toDate } = req.query;
+        
+        let query = { assignedParavet: id };
+        
+        if (status && status !== 'all') {
+            if (status === 'overdue') {
+                query.scheduledDate = { $lt: new Date() };
+                query.status = { $ne: "Completed" };
+            } else if (status === 'scheduled') {
+                query.status = "Scheduled";
+            } else if (status === 'completed') {
+                query.status = "Completed";
+            } else if (status === 'pending') {
+                query.status = "Payment Pending";
+            }
+        }
+        
+        if (fromDate && toDate) {
+            const startDate = new Date(fromDate);
+            const endDate = new Date(toDate);
+            endDate.setHours(23, 59, 59);
+            query.scheduledDate = { $gte: startDate, $lte: endDate };
+        } else if (fromDate) {
+            const startDate = new Date(fromDate);
+            query.scheduledDate = { $gte: startDate };
+        } else if (toDate) {
+            const endDate = new Date(toDate);
+            endDate.setHours(23, 59, 59);
+            query.scheduledDate = { $lte: endDate };
+        }
+        
+        const tasks = await Vaccination.find(query)
+            .populate("farmer", "name address")
+            .populate("animal", "name tagNumber")
+            .populate("vaccine", "name")
+            .sort({ scheduledDate: -1 })
+            .lean();
+        
+        res.json({ success: true, tasks });
+    } catch (error) {
+        console.error("Error filtering assignments:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// ================ REASSIGN TASK ================
+exports.reassignTask = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { paravetId, scheduledDate } = req.body;
+        
+        const vaccination = await Vaccination.findByIdAndUpdate(id, {
+            assignedParavet: paravetId,
+            scheduledDate: scheduledDate ? new Date(scheduledDate) : new Date(),
+            status: "Scheduled",
+            updatedBy: req.user._id
+        }, { new: true });
+        
+        if (!vaccination) {
+            return res.status(404).json({ success: false, message: "Task not found" });
+        }
+        
+        res.json({ success: true, message: "Task reassigned successfully" });
+    } catch (error) {
+        console.error("Error reassigning task:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// ================ UNASSIGN TASK ================
+exports.unassignTask = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const vaccination = await Vaccination.findByIdAndUpdate(id, {
+            $unset: { assignedParavet: "" },
+            updatedBy: req.user._id
+        }, { new: true });
+        
+        if (!vaccination) {
+            return res.status(404).json({ success: false, message: "Task not found" });
+        }
+        
+        res.json({ success: true, message: "Task unassigned successfully" });
+    } catch (error) {
+        console.error("Error unassigning task:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// ================ EXPORT PARAVET ASSIGNMENTS ================
+exports.exportParavetAssignments = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, fromDate, toDate } = req.query;
+        
+        let query = { assignedParavet: id };
+        
+        if (status && status !== 'all') {
+            if (status === 'overdue') {
+                query.scheduledDate = { $lt: new Date() };
+                query.status = { $ne: "Completed" };
+            } else if (status === 'scheduled') {
+                query.status = "Scheduled";
+            } else if (status === 'completed') {
+                query.status = "Completed";
+            }
+        }
+        
+        if (fromDate && toDate) {
+            const startDate = new Date(fromDate);
+            const endDate = new Date(toDate);
+            endDate.setHours(23, 59, 59);
+            query.scheduledDate = { $gte: startDate, $lte: endDate };
+        }
+        
+        const tasks = await Vaccination.find(query)
+            .populate("farmer", "name address mobileNumber")
+            .populate("animal", "name tagNumber animalType")
+            .populate("vaccine", "name")
+            .lean();
+        
+        const json2csv = require('json2csv').Parser;
+        const fields = [
+            "Farmer Name", "Farmer Mobile", "Farmer Village",
+            "Animal Name", "Animal Tag", "Animal Type",
+            "Vaccine Name", "Batch Number", "Scheduled Date",
+            "Date Administered", "Next Due Date", "Status"
+        ];
+        
+        const data = tasks.map(t => ({
+            "Farmer Name": t.farmer?.name || "N/A",
+            "Farmer Mobile": t.farmer?.mobileNumber || "N/A",
+            "Farmer Village": t.farmer?.address?.village || "N/A",
+            "Animal Name": t.animal?.name || "N/A",
+            "Animal Tag": t.animal?.tagNumber || "N/A",
+            "Animal Type": t.animal?.animalType || "N/A",
+            "Vaccine Name": t.vaccine?.name || t.vaccineName,
+            "Batch Number": t.batchNumber || "N/A",
+            "Scheduled Date": t.scheduledDate ? moment(t.scheduledDate).format("DD/MM/YYYY") : "N/A",
+            "Date Administered": t.dateAdministered ? moment(t.dateAdministered).format("DD/MM/YYYY") : "N/A",
+            "Next Due Date": t.nextDueDate ? moment(t.nextDueDate).format("DD/MM/YYYY") : "N/A",
+            "Status": t.status
+        }));
+        
+        const parser = new json2csv({ fields });
+        const csv = parser.parse(data);
+        
+        res.setHeader("Content-Type", "text/csv");
+        res.setHeader("Content-Disposition", `attachment; filename=paravet-tasks-${moment().format("YYYY-MM-DD")}.csv`);
+        res.send(csv);
+    } catch (error) {
+        console.error("Error exporting assignments:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
