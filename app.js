@@ -15,6 +15,7 @@ const MongoStore = require("connect-mongo");
 const flash = require("connect-flash");
 const crypto = require("crypto");
 const passport = require("passport");
+const moment = require("moment");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
@@ -29,7 +30,7 @@ const othersRouter = require("./routes/others.js");
 const VaccineRouter = require("./routes/vaccine.js");
 const vaccinationRouter = require("./routes/Vaccination.js");
 // const animalRouter = require("./routes/animal.js");
-// const farmerRouter = require("./routes/farmer.js");
+ const farmerRouter = require("./routes/farmer.js");
 const paravetRouter = require("./routes/paravet.js");
 // const serviceRouter = require("./routes/service.js");
 
@@ -145,6 +146,7 @@ app.use((req, res, next) => {
   res.locals.currUser = req.user || null;
   res.locals.currentPath = req.path;
   res.locals.showsplash = false;
+  res.locals.moment = moment;
   next();
 });
 
@@ -195,7 +197,7 @@ app.use("/vaccines", VaccineRouter);
 app.use("/admin", adminRouter);
 app.use("/vaccination", vaccinationRouter);
 // app.use("/animals", animalRouter);
-// app.use("/farmers", farmerRouter);
+app.use("/farmer", farmerRouter);
 app.use("/paravet", paravetRouter);
 // app.use("/services", serviceRouter);
 app.use("/sales", salesteamRouter);

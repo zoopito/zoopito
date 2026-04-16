@@ -2,13 +2,368 @@ const User = require("../models/user");
 const Farmer = require("../models/farmer");
 const Animal = require("../models/animal");
 const Paravet = require("../models/paravet");
-const Servise = require("../models/services");
+const Service = require("../models/services");
 const SalesTeam = require("../models/salesteam");
 const Vaccination = require("../models/vaccination");
 const Payment = require("../models/payment");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
+
+// ================ FARMER DASHBOARD ================
+exports.getDashboard = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).lean();
+    if (!user) {
+      req.flash("error", "User not found");
+      return res.redirect("/");
+    };
+    // Get farmer profile linked to this user
+    const farmer = await Farmer.findOne({ mobileNumber: user.mobile })
+      .populate("assignedParavet", "qualification licenseNumber rating")
+      .populate({
+        path: "assignedParavet",
+        populate: { path: "user", select: "name email mobile" }
+      })
+      .lean();
+
+    if (!farmer) {
+      req.flash("error", "Farmer profile not found. Please contact support.");
+      return res.redirect("/");
+    }
+
+    // Get all animals for this farmer
+    const animals = await Animal.find({ farmer: farmer._id, isActive: true })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Get animal statistics
+    const animalStats = {
+      total: animals.length,
+      byType: {},
+      vaccinated: 0,
+      pendingVaccinations: 0,
+      pregnant: 0,
+      healthy: 0,
+      underTreatment: 0
+    };
+
+    animals.forEach(animal => {
+      // Count by type
+      animalStats.byType[animal.animalType] = (animalStats.byType[animal.animalType] || 0) + 1;
+      
+      // Vaccination status
+      if (animal.vaccinationSummary?.isUpToDate) {
+        animalStats.vaccinated++;
+      }
+      
+      // Pregnancy status
+      if (animal.pregnancyStatus?.isPregnant) {
+        animalStats.pregnant++;
+      }
+      
+      // Health status
+      if (animal.healthStatus?.currentStatus === "Healthy") {
+        animalStats.healthy++;
+      } else if (animal.healthStatus?.currentStatus === "Under Treatment") {
+        animalStats.underTreatment++;
+      }
+    });
+
+    // Get recent vaccinations (last 10)
+    const recentVaccinations = await Vaccination.find({ farmer: farmer._id })
+      .populate("animal", "name tagNumber animalType")
+      .populate("vaccine", "name diseaseTarget")
+      .sort({ dateAdministered: -1 })
+      .limit(10)
+      .lean();
+
+    // Get upcoming vaccinations (next 30 days)
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+    const upcomingVaccinations = await Vaccination.find({
+      farmer: farmer._id,
+      nextDueDate: { $gte: new Date(), $lte: thirtyDaysFromNow },
+      status: { $in: ["Scheduled", "Payment Pending", "Administered"] }
+    })
+      .populate("animal", "name tagNumber animalType")
+      .populate("vaccine", "name diseaseTarget")
+      .sort({ nextDueDate: 1 })
+      .limit(10)
+      .lean();
+
+    // Get overdue vaccinations
+    const overdueVaccinations = await Vaccination.find({
+      farmer: farmer._id,
+      nextDueDate: { $lt: new Date() },
+      status: { $ne: "Completed" }
+    })
+      .populate("animal", "name tagNumber animalType")
+      .populate("vaccine", "name diseaseTarget")
+      .sort({ nextDueDate: 1 })
+      .lean();
+
+    // Get recent payments
+    const recentPayments = await Payment.find({ farmerId: farmer._id })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    // Get payment statistics
+    const paymentStats = await Payment.aggregate([
+      { $match: { farmerId: farmer._id, paymentStatus: "completed" } },
+      { $group: { _id: null, total: { $sum: "$amount" }, count: { $sum: 1 } } }
+    ]);
+
+    // Get services summary
+    let servicesSummary = null;
+    servicesSummary = await Service.aggregate([
+      { $match: { farmer: farmer._id } },
+      { $group: { _id: "$serviceType", count: { $sum: 1 } } }
+    ]);
+
+    // Get health summary (animals needing attention)
+    const animalsNeedingAttention = animals.filter(a => 
+      a.healthStatus?.currentStatus === "Sick" || 
+      a.healthStatus?.currentStatus === "Under Treatment" ||
+      (a.vaccinationSummary?.nextVaccinationDate && new Date(a.vaccinationSummary.nextVaccinationDate) < new Date())
+    ).length;
+
+    // Prepare chart data for vaccination trends (last 6 months)
+    const vaccinationTrends = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthStart = moment().subtract(i, "months").startOf("month");
+      const monthEnd = moment().subtract(i, "months").endOf("month");
+      
+      const count = await Vaccination.countDocuments({
+        farmer: farmer._id,
+        dateAdministered: { $gte: monthStart.toDate(), $lte: monthEnd.toDate() },
+        status: "Completed"
+      });
+      
+      vaccinationTrends.push({
+        month: monthStart.format("MMM YYYY"),
+        count
+      });
+    }
+
+    res.render("farmer/dashboard", {
+      title: "Farmer Dashboard - Zoopito",
+      farmer,
+      animals,
+      animalStats,
+      recentVaccinations,
+      upcomingVaccinations,
+      overdueVaccinations,
+      recentPayments,
+      paymentStats: paymentStats[0] || { total: 0, count: 0 },
+      servicesSummary,
+      animalsNeedingAttention,
+      vaccinationTrends,
+      moment,
+      user: req.user
+    });
+    
+  } catch (error) {
+    console.error("Error loading farmer dashboard:", error);
+    req.flash("error", "Error loading dashboard");
+    res.redirect("/");
+  }
+};
+
+// ================ MY ANIMALS PAGE ================
+exports.getMyAnimals = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).lean();
+    if (!user) {
+      req.flash("error", "User not found");
+      return res.redirect("/");
+    }
+    const farmer = await Farmer.findOne({ mobileNumber: user.mobile}).lean();
+    if (!farmer) {
+      req.flash("error", "Farmer profile not found");
+      return res.redirect("/");
+    }
+
+    const animals = await Animal.find({ farmer: farmer._id, isActive: true })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Get vaccination summary for each animal
+    const animalsWithDetails = await Promise.all(animals.map(async (animal) => {
+      const lastVaccination = await Vaccination.findOne({
+        animal: animal._id,
+        status: "Completed"
+      }).sort({ dateAdministered: -1 }).lean();
+      
+      const nextVaccination = await Vaccination.findOne({
+        animal: animal._id,
+        nextDueDate: { $gte: new Date() },
+        status: { $in: ["Scheduled", "Administered"] }
+      }).sort({ nextDueDate: 1 }).lean();
+      
+      return {
+        ...animal,
+        lastVaccination,
+        nextVaccination
+      };
+    }));
+
+    res.render("farmer/animals", {
+      title: "My Animals - Zoopito",
+      farmer,
+      animals: animalsWithDetails,
+      moment,
+      user: req.user
+    });
+    
+  } catch (error) {
+    console.error("Error loading animals page:", error);
+    req.flash("error", "Error loading animals");
+    res.redirect("/farmer/dashboard");
+  }
+};
+
+// ================ ANIMAL DETAILS PAGE ================
+exports.getAnimalDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    const user = await User.findById(userId).lean();
+    if (!user) {
+      req.flash("error", "User not found");
+      return res.redirect("/");
+    }
+    const farmer = await Farmer.findOne({ mobileNumber: user.mobile}).lean();
+    if (!farmer) {
+      req.flash("error", "Farmer profile not found");
+      return res.redirect("/");
+    }
+
+    const animal = await Animal.findOne({ _id: id, farmer: farmer._id })
+      .lean();
+
+    if (!animal) {
+      req.flash("error", "Animal not found");
+      return res.redirect("/farmer/animals");
+    }
+
+    // Get vaccination history
+    const vaccinationHistory = await Vaccination.find({ animal: animal._id })
+      .populate("vaccine", "name diseaseTarget")
+      .sort({ dateAdministered: -1 })
+      .lean();
+
+    // Get upcoming vaccinations
+    const upcomingVaccinations = await Vaccination.find({
+      animal: animal._id,
+      nextDueDate: { $gte: new Date() },
+      status: { $in: ["Scheduled", "Administered"] }
+    }).sort({ nextDueDate: 1 }).lean();
+
+    // Get service history
+    const serviceHistory = await Service.find({ animal: animal._id })
+      .populate("paravet", "qualification")
+      .populate({
+        path: "paravet",
+        populate: { path: "user", select: "name" }
+      })
+      .sort({ serviceDate: -1 })
+      .lean();
+
+    res.render("farmer/animal-details", {
+      title: `${animal.name || "Animal"} - Details`,
+      farmer,
+      animal,
+      vaccinationHistory,
+      upcomingVaccinations,
+      serviceHistory,
+      moment,
+      user: req.user
+    });
+    
+  } catch (error) {
+    console.error("Error loading animal details:", error);
+    req.flash("error", "Error loading animal details");
+    res.redirect("/farmer/animals");
+  }
+};
+
+// ================ VACCINATION HISTORY PAGE ================
+exports.getVaccinationHistory = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).lean();
+    if (!user) {
+      req.flash("error", "User not found");
+      return res.redirect("/");
+    }
+    const farmer = await Farmer.findOne({ mobileNumber: user.mobile}).lean();
+    if (!farmer) {
+      req.flash("error", "Farmer profile not found");
+      return res.redirect("/");
+    }
+
+    const vaccinations = await Vaccination.find({ farmer: farmer._id })
+      .populate("animal", "name tagNumber animalType")
+      .populate("vaccine", "name diseaseTarget")
+      .sort({ dateAdministered: -1 })
+      .lean();
+
+    res.render("farmer/vaccinations", {
+      title: "Vaccination History - Zoopito",
+      farmer,
+      vaccinations,
+      moment,
+      user: req.user
+    });
+    
+  } catch (error) {
+    console.error("Error loading vaccination history:", error);
+    req.flash("error", "Error loading vaccination history");
+    res.redirect("/farmer/dashboard");
+  }
+};
+
+// ================ PAYMENT HISTORY PAGE ================
+exports.getPaymentHistory = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).lean();
+    if (!user) {
+      req.flash("error", "User not found");
+      return res.redirect("/");
+    }
+    const farmer = await Farmer.findOne({ mobileNumber: user.mobile}).lean();
+    if (!farmer) {
+      req.flash("error", "Farmer profile not found");
+      return res.redirect("/");
+    }
+
+    const payments = await Payment.find({ farmerId: farmer._id })
+      .populate("animalIds", "name tagNumber")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.render("farmer/payments", {
+      title: "Payment History - Zoopito",
+      farmer,
+      payments,
+      moment,
+      user: req.user
+    });
+    
+  } catch (error) {
+    console.error("Error loading payment history:", error);
+    req.flash("error", "Error loading payment history");
+    res.redirect("/farmer/dashboard");
+  }
+};
+
+
 
 //employe id generator for sales memebers
 const generateEmployeeCode = async () => {

@@ -1,0 +1,160 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li><a href="/farmer/dashboard" class="text-gray-600 hover:text-green-600"><i class="fas fa-home mr-2"></i>Dashboard</a></li>
+                <li><i class="fas fa-chevron-right text-gray-400 text-sm"></i></li>
+                <li><span class="text-gray-500">Vaccination History</span></li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Vaccination History</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Complete record of all vaccinations for your animals</p>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Vaccinations</p>
+                        <p class="text-2xl font-bold text-gray-900"><%= vaccinations.length %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-syringe text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Completed</p>
+                        <p class="text-2xl font-bold text-green-600"><%= vaccinations.filter(v => v.status === 'Completed').length %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Pending/Upcoming</p>
+                        <p class="text-2xl font-bold text-yellow-600"><%= vaccinations.filter(v => v.status !== 'Completed').length %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-clock text-yellow-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow mb-6 p-4">
+            <div class="flex flex-wrap gap-4">
+                <div class="flex-1 min-w-[200px]">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="Search by animal name, vaccine, or tag..." 
+                               class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                <select id="statusFilter" class="px-4 py-2 border rounded-lg">
+                    <option value="all">All Status</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Payment Pending">Payment Pending</option>
+                </select>
+                <button onclick="resetFilters()" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                    <i class="fas fa-redo mr-2"></i>Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Vaccinations Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Animal</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vaccine</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Next Due</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Administered By</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <% if (vaccinations.length > 0) { %>
+                            <% vaccinations.forEach(vac => { %>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td class="px-6 py-4 text-sm"><%= moment(vac.dateAdministered).format('DD MMM YYYY') %></td>
+                                    <td class="px-6 py-4">
+                                        <div>
+                                            <p class="font-medium text-gray-900"><%= vac.animal?.name || 'Unknown' %></p>
+                                            <p class="text-xs text-gray-500"><%= vac.animal?.tagNumber || 'No Tag' %></p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm"><%= vac.vaccine?.name || vac.vaccineName %></td>
+                                    <td class="px-6 py-4 text-sm">
+                                        <%= vac.nextDueDate ? moment(vac.nextDueDate).format('DD MMM YYYY') : 'N/A' %>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                                            <%= vac.status === 'Completed' ? 'bg-green-100 text-green-800' : 
+                                               vac.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' : 
+                                               'bg-yellow-100 text-yellow-800' %>">
+                                            <%= vac.status %>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm"><%= vac.administeredBy || 'N/A' %></td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                    <i class="fas fa-syringe text-4xl mb-2 text-gray-400"></i>
+                                    <p>No vaccination records found</p>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('searchInput').addEventListener('input', filterTable);
+document.getElementById('statusFilter').addEventListener('change', filterTable);
+
+function filterTable() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        const status = row.querySelector('td:nth-child(5)')?.innerText || '';
+        
+        const matchesSearch = text.includes(searchTerm);
+        const matchesStatus = statusFilter === 'all' || status.includes(statusFilter);
+        
+        row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+    });
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = 'all';
+    filterTable();
+}
+</script>

@@ -1,0 +1,318 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li><a href="/farmer/dashboard" class="text-gray-600 hover:text-green-600"><i class="fas fa-home mr-2"></i>Dashboard</a></li>
+                <li><i class="fas fa-chevron-right text-gray-400 text-sm"></i></li>
+                <li><a href="/farmer/animals" class="text-gray-600 hover:text-green-600">My Animals</a></li>
+                <li><i class="fas fa-chevron-right text-gray-400 text-sm"></i></li>
+                <li><span class="text-gray-500"><%= animal.name || 'Animal Details' %></span></li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    <%= animal.name || 'Unnamed Animal' %>
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    <i class="fas fa-tag mr-1"></i>Tag: <%= animal.tagNumber || 'No Tag' %> | 
+                    <i class="fas fa-id-card mr-1"></i>ID: <%= animal.uniqueAnimalId || 'N/A' %>
+                </p>
+            </div>
+            <a href="/farmer/animals" class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Animals
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column - Animal Info -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Animal Photos -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-camera mr-2"></i>Animal Photos
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <% if (animal.photos?.front?.url) { %>
+                                <div>
+                                    <img src="<%= animal.photos.front.url %>" alt="Front View" class="w-full h-32 object-cover rounded-lg">
+                                    <p class="text-xs text-center mt-1 text-gray-500">Front</p>
+                                </div>
+                            <% } %>
+                            <% if (animal.photos?.left?.url) { %>
+                                <div>
+                                    <img src="<%= animal.photos.left.url %>" alt="Left View" class="w-full h-32 object-cover rounded-lg">
+                                    <p class="text-xs text-center mt-1 text-gray-500">Left</p>
+                                </div>
+                            <% } %>
+                            <% if (animal.photos?.right?.url) { %>
+                                <div>
+                                    <img src="<%= animal.photos.right.url %>" alt="Right View" class="w-full h-32 object-cover rounded-lg">
+                                    <p class="text-xs text-center mt-1 text-gray-500">Right</p>
+                                </div>
+                            <% } %>
+                            <% if (animal.photos?.back?.url) { %>
+                                <div>
+                                    <img src="<%= animal.photos.back.url %>" alt="Back View" class="w-full h-32 object-cover rounded-lg">
+                                    <p class="text-xs text-center mt-1 text-gray-500">Back</p>
+                                </div>
+                            <% } %>
+                            <% if (!animal.photos?.front?.url && !animal.photos?.left?.url && !animal.photos?.right?.url && !animal.photos?.back?.url) { %>
+                                <div class="col-span-full text-center py-8 text-gray-500">
+                                    <i class="fas fa-image text-4xl mb-2 text-gray-400"></i>
+                                    <p>No photos uploaded</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Basic Information -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-info-circle mr-2"></i>Basic Information
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Animal Type</label>
+                                <p class="mt-1 text-gray-900 font-semibold"><%= animal.animalType %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Breed</label>
+                                <p class="mt-1 text-gray-900"><%= animal.breed || 'Not specified' %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Gender</label>
+                                <p class="mt-1 text-gray-900"><%= animal.gender %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Age</label>
+                                <p class="mt-1 text-gray-900"><%= animal.age?.value || 'N/A' %> <%= animal.age?.unit || '' %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Date of Birth</label>
+                                <p class="mt-1 text-gray-900"><%= animal.dateOfBirth ? moment(animal.dateOfBirth).format('DD MMM YYYY') : 'Not specified' %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Registration Date</label>
+                                <p class="mt-1 text-gray-900"><%= moment(animal.createdAt).format('DD MMM YYYY') %></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Health Information -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-purple-500 to-purple-600">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-heartbeat mr-2"></i>Health Information
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Health Status</label>
+                                <p class="mt-1">
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                                        <%= animal.healthStatus?.currentStatus === 'Healthy' ? 'bg-green-100 text-green-800' : 
+                                           animal.healthStatus?.currentStatus === 'Under Treatment' ? 'bg-red-100 text-red-800' : 
+                                           'bg-yellow-100 text-yellow-800' %>">
+                                        <%= animal.healthStatus?.currentStatus || 'Healthy' %>
+                                    </span>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Body Condition Score</label>
+                                <p class="mt-1 text-gray-900"><%= animal.healthStatus?.bodyConditionScore || 'N/A' %> / 5</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Last Checkup</label>
+                                <p class="mt-1 text-gray-900"><%= animal.healthStatus?.lastCheckupDate ? moment(animal.healthStatus.lastCheckupDate).format('DD MMM YYYY') : 'Not recorded' %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Health Notes</label>
+                                <p class="mt-1 text-gray-900"><%= animal.healthStatus?.healthNotes || 'No notes' %></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Pregnancy Status -->
+                        <% if (animal.pregnancyStatus?.isPregnant) { %>
+                            <div class="mt-4 p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg">
+                                <h3 class="font-semibold text-pink-800 dark:text-pink-300 mb-2">
+                                    <i class="fas fa-baby-carriage mr-2"></i>Pregnancy Status
+                                </h3>
+                                <div class="grid grid-cols-2 gap-3 text-sm">
+                                    <div>
+                                        <span class="text-gray-500">Confirmed Date:</span>
+                                        <span class="ml-2 font-medium"><%= animal.pregnancyStatus.confirmedDate ? moment(animal.pregnancyStatus.confirmedDate).format('DD MMM YYYY') : 'N/A' %></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Expected Delivery:</span>
+                                        <span class="ml-2 font-medium"><%= animal.pregnancyStatus.expectedDeliveryDate ? moment(animal.pregnancyStatus.expectedDeliveryDate).format('DD MMM YYYY') : 'N/A' %></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Number of Fetuses:</span>
+                                        <span class="ml-2 font-medium"><%= animal.pregnancyStatus.numberOfFetuses || 'N/A' %></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Previous Pregnancies:</span>
+                                        <span class="ml-2 font-medium"><%= animal.pregnancyStatus.previousPregnancies || 0 %></span>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Vaccinations & Services -->
+            <div class="space-y-6">
+                
+                <!-- Vaccination Summary -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-teal-500 to-teal-600">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-syringe mr-2"></i>Vaccination Summary
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-center mb-4">
+                            <div class="text-3xl font-bold text-teal-600"><%= animal.vaccinationSummary?.totalVaccinations || 0 %></div>
+                            <p class="text-sm text-gray-500">Total Vaccinations</p>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Vaccination Rate</span>
+                                <span><%= animal.vaccinationSummary?.totalVaccinations ? Math.min((animal.vaccinationSummary.totalVaccinations / 5) * 100, 100) : 0 %>%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-teal-500 h-2 rounded-full" style="width: <%= animal.vaccinationSummary?.totalVaccinations ? Math.min((animal.vaccinationSummary.totalVaccinations / 5) * 100, 100) : 0 %>%"></div>
+                            </div>
+                        </div>
+                        
+                        <% if (animal.vaccinationSummary?.lastVaccinationDate) { %>
+                            <div class="text-sm">
+                                <p><strong>Last Vaccination:</strong> <%= moment(animal.vaccinationSummary.lastVaccinationDate).format('DD MMM YYYY') %></p>
+                                <p><strong>Last Vaccine:</strong> <%= animal.vaccinationSummary.lastVaccineType || 'N/A' %></p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Upcoming Vaccinations -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i>Upcoming Vaccinations
+                        </h2>
+                    </div>
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <% if (upcomingVaccinations && upcomingVaccinations.length > 0) { %>
+                            <% upcomingVaccinations.forEach(vac => { %>
+                                <div class="p-4">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="font-medium text-gray-900"><%= vac.vaccine?.name %></p>
+                                            <p class="text-sm text-gray-500">Due: <%= moment(vac.nextDueDate).format('DD MMM YYYY') %></p>
+                                            <p class="text-xs text-gray-400"><%= moment(vac.nextDueDate).fromNow() %></p>
+                                        </div>
+                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                                            Due Soon
+                                        </span>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="p-6 text-center text-gray-500">
+                                <i class="fas fa-check-circle text-3xl mb-2 text-green-500"></i>
+                                <p>No upcoming vaccinations</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Vaccination History -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
+                        <h2 class="text-lg font-semibold text-white flex items-center justify-between">
+                            <span><i class="fas fa-history mr-2"></i>Vaccination History</span>
+                            <span class="text-sm bg-white/20 px-2 py-1 rounded-full"><%= vaccinationHistory.length %> records</span>
+                        </h2>
+                    </div>
+                    <div class="max-h-96 overflow-y-auto">
+                        <% if (vaccinationHistory && vaccinationHistory.length > 0) { %>
+                            <% vaccinationHistory.forEach(vac => { %>
+                                <div class="p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="font-medium text-gray-900"><%= vac.vaccine?.name %></p>
+                                            <p class="text-sm text-gray-500">Administered: <%= moment(vac.dateAdministered).format('DD MMM YYYY') %></p>
+                                            <% if (vac.nextDueDate) { %>
+                                                <p class="text-xs text-gray-400">Next due: <%= moment(vac.nextDueDate).format('DD MMM YYYY') %></p>
+                                            <% } %>
+                                        </div>
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                            Completed
+                                        </span>
+                                    </div>
+                                    <% if (vac.notes) { %>
+                                        <p class="text-xs text-gray-500 mt-2">Note: <%= vac.notes %></p>
+                                    <% } %>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="p-6 text-center text-gray-500">
+                                <i class="fas fa-syringe text-3xl mb-2 text-gray-400"></i>
+                                <p>No vaccination records</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Service History -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-indigo-500 to-indigo-600">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-stethoscope mr-2"></i>Service History
+                        </h2>
+                    </div>
+                    <div class="max-h-64 overflow-y-auto">
+                        <% if (serviceHistory && serviceHistory.length > 0) { %>
+                            <% serviceHistory.forEach(service => { %>
+                                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                                    <p class="font-medium text-gray-900"><%= service.serviceName || service.serviceType %></p>
+                                    <p class="text-sm text-gray-500">Date: <%= moment(service.serviceDate).format('DD MMM YYYY') %></p>
+                                    <% if (service.paravet?.user?.name) { %>
+                                        <p class="text-xs text-gray-400">By: <%= service.paravet.user.name %></p>
+                                    <% } %>
+                                    <% if (service.description) { %>
+                                        <p class="text-xs text-gray-500 mt-1"><%= service.description %></p>
+                                    <% } %>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="p-6 text-center text-gray-500">
+                                <i class="fas fa-stethoscope text-3xl mb-2 text-gray-400"></i>
+                                <p>No service records</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

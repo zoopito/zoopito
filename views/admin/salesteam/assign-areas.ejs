@@ -1,0 +1,284 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li><a href="/admin/dashboard" class="text-gray-600 hover:text-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a></li>
+                <li><i class="fas fa-chevron-right text-gray-400 text-sm"></i></li>
+                <li><a href="/admin/sales-team" class="text-gray-600 hover:text-blue-600">Sales Team</a></li>
+                <li><i class="fas fa-chevron-right text-gray-400 text-sm"></i></li>
+                <li><span class="text-gray-500">Assign Areas</span></li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                <i class="fas fa-map-marker-alt text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Assign Areas</h1>
+                <p class="text-gray-600 dark:text-gray-400"><%= salesMember.user.name %> • ID: <%= salesMember.employeeCode %></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Column - Add Area Form -->
+            <div class="lg:col-span-1">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden sticky top-6">
+                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-plus-circle mr-2"></i>
+                            Add New Area
+                        </h2>
+                    </div>
+                    
+                    <form id="addAreaForm" class="p-6 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-tree text-gray-400 mr-1"></i> Village
+                            </label>
+                            <input type="text" id="village" name="village" 
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Enter village name">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-city text-gray-400 mr-1"></i> Taluka
+                            </label>
+                            <input type="text" id="taluka" name="taluka" 
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Enter taluka name">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-building text-gray-400 mr-1"></i> District
+                            </label>
+                            <input type="text" id="district" name="district" 
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Enter district name">
+                            <div class="mt-1 text-xs text-gray-500">Suggestions: 
+                                <span id="districtSuggestions"></span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-globe text-gray-400 mr-1"></i> State
+                            </label>
+                            <input type="text" id="state" name="state" 
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Enter state name" value="Uttar Pradesh">
+                        </div>
+                        
+                        <button type="submit" 
+                                class="w-full py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition">
+                            <i class="fas fa-plus mr-2"></i>Add Area
+                        </button>
+                    </form>
+                    
+                    <div class="px-6 pb-6">
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                            <p class="text-xs text-blue-700 dark:text-blue-300">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Add villages, talukas, or districts to assign this area to the sales member.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column - Assigned Areas List -->
+            <div class="lg:col-span-2">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600">
+                        <h2 class="text-lg font-semibold text-white flex items-center justify-between">
+                            <span><i class="fas fa-list mr-2"></i>Assigned Areas</span>
+                            <span class="text-sm bg-white/20 px-2 py-1 rounded-full">
+                                <%= salesMember.assignedAreas?.length || 0 %> Areas
+                            </span>
+                        </h2>
+                    </div>
+                    
+                    <% if (!salesMember.assignedAreas || salesMember.assignedAreas.length === 0) { %>
+                        <div class="text-center py-12">
+                            <i class="fas fa-map-marker-alt text-5xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-500">No areas assigned yet</p>
+                            <p class="text-sm text-gray-400">Use the form to add areas</p>
+                        </div>
+                    <% } else { %>
+                        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <% salesMember.assignedAreas.forEach((area, index) => { %>
+                                <div class="p-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition group" data-area-index="<%= index %>">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex flex-wrap gap-2 mb-2">
+                                                <% if (area.village) { %>
+                                                    <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-full">
+                                                        <i class="fas fa-tree mr-1"></i><%= area.village %>
+                                                    </span>
+                                                <% } %>
+                                                <% if (area.taluka) { %>
+                                                    <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full">
+                                                        <i class="fas fa-city mr-1"></i><%= area.taluka %>
+                                                    </span>
+                                                <% } %>
+                                                <% if (area.district) { %>
+                                                    <span class="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-full">
+                                                        <i class="fas fa-building mr-1"></i><%= area.district %>
+                                                    </span>
+                                                <% } %>
+                                                <% if (area.state) { %>
+                                                    <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
+                                                        <i class="fas fa-globe mr-1"></i><%= area.state %>
+                                                    </span>
+                                                <% } %>
+                                            </div>
+                                            <% if (areaStats && areaStats[index]) { %>
+                                                <div class="flex gap-4 text-sm text-gray-500">
+                                                    <span><i class="fas fa-tractor mr-1"></i><%= areaStats[index].farmerCount || 0 %> Farmers</span>
+                                                    <span><i class="fas fa-paw mr-1"></i><%= areaStats[index].animalCount || 0 %> Animals</span>
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                        <button onclick="removeArea(<%= index %>)" 
+                                                class="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                </div>
+                
+                <!-- Summary Card -->
+                <div class="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-xl p-4 border border-blue-100 dark:border-gray-700">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-chart-pie text-blue-500 text-xl"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white">Area Coverage Summary</h3>
+                            <div class="grid grid-cols-2 gap-4 mt-2 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Total Areas:</span>
+                                    <span class="font-semibold ml-2"><%= salesMember.assignedAreas?.length || 0 %></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Villages:</span>
+                                    <span class="font-semibold ml-2"><%= salesMember.assignedAreas?.filter(a => a.village).length || 0 %></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Talukas:</span>
+                                    <span class="font-semibold ml-2"><%= salesMember.assignedAreas?.filter(a => a.taluka).length || 0 %></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Districts:</span>
+                                    <span class="font-semibold ml-2"><%= salesMember.assignedAreas?.filter(a => a.district).length || 0 %></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="flex justify-end gap-3 mt-6">
+            <a href="/admin/sales-team" class="px-6 py-2.5 border rounded-lg hover:bg-gray-50 transition">
+                <i class="fas fa-arrow-left mr-2"></i>Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// District suggestions
+const districts = `<%= JSON.stringify(districts || []) %>`;
+const talukas = `<%= JSON.stringify(talukas || []) %>`;
+const villages = `<%= JSON.stringify(villages || []) %>`;
+
+// Add area form submission
+document.getElementById('addAreaForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const village = document.getElementById('village').value;
+    const taluka = document.getElementById('taluka').value;
+    const district = document.getElementById('district').value;
+    const state = document.getElementById('state').value;
+    
+    if (!district && !taluka && !village) {
+        Swal.fire('Error', 'Please provide at least district, taluka, or village', 'error');
+        return;
+    }
+    
+    Swal.fire({
+        title: 'Add Area?',
+        text: `Add ${village || taluka || district} to assigned areas?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3b82f6',
+        confirmButtonText: 'Yes, add area'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            Swal.fire({ title: 'Adding...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            try {
+                const response = await fetch(`/admin/sales-team/<%= salesMember._id %>/areas/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ village, taluka, district, state })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    Swal.fire('Success!', data.message, 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error!', 'Network error', 'error');
+            }
+        }
+    });
+});
+
+// Remove area
+function removeArea(areaIndex) {
+    Swal.fire({
+        title: 'Remove Area?',
+        text: 'Are you sure you want to remove this area?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Yes, remove'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            Swal.fire({ title: 'Removing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            try {
+                const response = await fetch(`/admin/sales-team/<%= salesMember._id %>/areas/${areaIndex}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    Swal.fire('Removed!', data.message, 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error!', 'Network error', 'error');
+            }
+        }
+    });
+}
+</script>

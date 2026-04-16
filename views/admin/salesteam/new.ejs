@@ -1,149 +1,280 @@
 <% layout("layouts/boilerplate") %>
 
-<div class="max-w-3xl">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Breadcrumb Navigation -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="/admin/dashboard" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2 text-sm"></i>
+                        <a href="/admin/sales-team" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">Sales Team</a>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2 text-sm"></i>
+                        <span class="text-gray-500 dark:text-gray-500">Add New Member</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
 
-  <!-- Header -->
-  <div class="mb-6">
-    <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-      Add New Sales Member
-    </h1>
-    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-      Create a new sales / field executive account
-    </p>
-  </div>
-
-  <!-- Form Card -->
-  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-6">
-
-    <form action="/admin/sales-team/new" method="POST" class="space-y-5">
-
-      <!-- Name -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Full Name
-        </label>
-        <input
-          type="text"
-          name="name"
-          required
-          placeholder="Enter full name"
-          class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      <!-- Email -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Email Address
-        </label>
-        <input
-          type="email"
-          name="email"
-          required
-          placeholder="example@zoopito.com"
-          class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      <!-- Mobile -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Mobile Number
-        </label>
-        <input
-          type="text"
-          name="mobile"
-          required
-          placeholder="10-digit mobile number"
-          class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      
-
-      <!-- Assigned Area -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Village
-          </label>
-          <input
-            type="text"
-            name="assignedAreas[village]"
-            placeholder="Village name"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          />
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-user-plus text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                        Add New Sales Member
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-1">
+                        Create a new sales / field executive account and assign their work area
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Taluka
-          </label>
-          <input
-            type="text"
-            name="assignedAreas[taluka]"
-            placeholder="Taluka name"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          />
+        <!-- Form Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+            
+            <!-- Form Header -->
+            <div class="px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-user-circle text-blue-600 text-2xl"></i>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Member Information</h2>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Fill in the details to create a new sales team member account</p>
+                    </div>
+                </div>
+            </div>
+
+            <form action="/admin/sales-team/new" method="POST" class="p-6 space-y-6">
+                
+                <!-- Personal Information Section -->
+                <div>
+                    <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+                        <i class="fas fa-id-card text-blue-500"></i>
+                        Personal Information
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <!-- Name -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Full Name <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                                <input type="text" name="name" required
+                                    placeholder="Enter full name"
+                                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Enter the full name as per official records</p>
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Email Address <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-envelope text-gray-400"></i>
+                                </div>
+                                <input type="email" name="email" required
+                                    placeholder="example@zoopito.com"
+                                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Mobile -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Mobile Number <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-phone text-gray-400"></i>
+                                </div>
+                                <input type="tel" name="mobile" required
+                                    placeholder="10-digit mobile number"
+                                    pattern="[0-9]{10}"
+                                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Enter a valid 10-digit mobile number</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assigned Area Section -->
+                <div class="pt-2">
+                    <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+                        <i class="fas fa-map-marker-alt text-green-500"></i>
+                        Assigned Area / Territory
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-tree mr-1 text-gray-400"></i> Village
+                            </label>
+                            <input type="text" name="assignedAreas[village]"
+                                placeholder="e.g., Gokalpur"
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-city mr-1 text-gray-400"></i> Taluka
+                            </label>
+                            <input type="text" name="assignedAreas[taluka]"
+                                placeholder="e.g., Sadar"
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-building mr-1 text-gray-400"></i> District
+                            </label>
+                            <input type="text" name="assignedAreas[district]"
+                                placeholder="e.g., Lucknow"
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-globe mr-1 text-gray-400"></i> State
+                            </label>
+                            <input type="text" name="assignedAreas[state]"
+                                placeholder="e.g., Uttar Pradesh"
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        </div>
+                    </div>
+                    <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <p class="text-xs text-blue-700 dark:text-blue-300">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            The sales member will be assigned to this area for farmer onboarding and field activities.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Account Status Section -->
+                <div class="pt-2">
+                    <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+                        <i class="fas fa-toggle-on text-purple-500"></i>
+                        Account Settings
+                    </h3>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Account Status
+                        </label>
+                        <div class="flex gap-6">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="isActive" value="true" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <i class="fas fa-check-circle text-green-500 mr-1"></i>Active
+                                </span>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="isActive" value="false" class="w-4 h-4 text-red-600 focus:ring-red-500">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <i class="fas fa-ban text-red-500 mr-1"></i>Inactive
+                                </span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Inactive members cannot log in or perform any activities</p>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700/50 dark:to-gray-800/50 rounded-xl p-4 border border-blue-100 dark:border-gray-600">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-lightbulb text-yellow-500 text-xl mt-0.5"></i>
+                        <div>
+                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">What happens next?</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                After saving, the sales member will receive a welcome email with login credentials.
+                                They will be able to access the sales portal and start onboarding farmers and animals.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <a href="/admin/sales-team"
+                        class="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </a>
+                    <button type="submit"
+                        class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg">
+                        <i class="fas fa-save mr-2"></i>Save Sales Member
+                    </button>
+                </div>
+            </form>
         </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            District
-          </label>
-          <input
-            type="text"
-            name="assignedAreas[district]"
-            placeholder="District name"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            State
-          </label>
-          <input
-            type="text"
-            name="assignedAreas[state]"
-            placeholder="State name"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          />
-        </div>
-      </div>
-
-      <!-- Status -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Account Status
-        </label>
-        <select
-          name="isActive"
-          class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-        >
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
-        </select>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex items-center justify-end gap-3 pt-4">
-        <a
-          href="/admin/sales-team"
-          class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          Cancel
-        </a>
-
-        <button
-          type="submit"
-          class="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
-        >
-          Save Sales Member
-        </button>
-      </div>
-
-    </form>
-  </div>
-
+    </div>
 </div>
+
+<script>
+// Add input validation for mobile number
+document.querySelector('input[name="mobile"]').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+});
+
+// Add email validation feedback
+document.querySelector('input[name="email"]').addEventListener('blur', function(e) {
+    const email = this.value;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email && !emailPattern.test(email)) {
+        this.classList.add('border-red-500');
+        this.classList.remove('border-gray-300');
+        // Add error message if needed
+    } else {
+        this.classList.remove('border-red-500');
+        this.classList.add('border-gray-300');
+    }
+});
+</script>
+
+<style>
+/* Smooth transitions */
+input, select, textarea {
+    transition: all 0.2s ease;
+}
+
+/* Custom focus styles */
+input:focus, select:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Radio button styling */
+input[type="radio"] {
+    accent-color: #3b82f6;
+}
+
+/* Animation for form load */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bg-white {
+    animation: fadeInUp 0.5s ease-out;
+}
+</style>

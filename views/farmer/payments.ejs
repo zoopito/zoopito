@@ -1,0 +1,104 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li><a href="/farmer/dashboard" class="text-gray-600 hover:text-green-600"><i class="fas fa-home mr-2"></i>Dashboard</a></li>
+                <li><i class="fas fa-chevron-right text-gray-400 text-sm"></i></li>
+                <li><span class="text-gray-500">Payment History</span></li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Payment History</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Track all your transactions and payments</p>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Spent</p>
+                        <p class="text-2xl font-bold text-gray-900">₹<%= payments.reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString() %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-rupee-sign text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Transactions</p>
+                        <p class="text-2xl font-bold text-gray-900"><%= payments.length %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-receipt text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Completed Payments</p>
+                        <p class="text-2xl font-bold text-green-600"><%= payments.filter(p => p.paymentStatus === 'completed').length %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <% if (payments.length > 0) { %>
+                            <% payments.forEach(payment => { %>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td class="px-6 py-4 text-sm"><%= moment(payment.createdAt).format('DD MMM YYYY') %></td>
+                                    <td class="px-6 py-4 text-sm font-mono"><%= payment.transactionId || 'N/A' %></td>
+                                    <td class="px-6 py-4 text-sm capitalize"><%= payment.paymentType?.replace('_', ' ') || 'N/A' %></td>
+                                    <td class="px-6 py-4 text-sm font-semibold">₹<%= (payment.amount || 0).toLocaleString() %></td>
+                                    <td class="px-6 py-4 text-sm capitalize"><%= payment.paymentMethod || 'N/A' %></td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                                            <%= payment.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' : 
+                                               payment.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                               'bg-red-100 text-red-800' %>">
+                                            <%= payment.paymentStatus?.charAt(0).toUpperCase() + payment.paymentStatus?.slice(1) || 'N/A' %>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                    <i class="fas fa-receipt text-4xl mb-2 text-gray-400"></i>
+                                    <p>No payment records found</p>
+                                 </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

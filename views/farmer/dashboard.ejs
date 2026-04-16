@@ -1,0 +1,387 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Welcome Banner -->
+        <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl shadow-xl p-6 mb-8 text-white">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">Welcome back, <%= farmer.name %>! 🌾</h2>
+                    <p class="text-green-100"><%= moment().format('dddd, DD MMMM YYYY') %></p>
+                    <div class="mt-2 flex items-center gap-2 text-sm">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span><%= farmer.address?.village || 'Location not set' %>, <%= farmer.address?.district || '' %></span>
+                        <% if (farmer.assignedParavet) { %>
+                            <span class="ml-4"><i class="fas fa-user-md"></i> Paravet: <%= farmer.assignedParavet?.user?.name || 'Assigned' %></span>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="flex space-x-3 mt-4 sm:mt-0">
+                    <a href="/farmer/animals" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-paw mr-2"></i>My Animals
+                    </a>
+                    <a href="/farmer/vaccinations" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-syringe mr-2"></i>Vaccination History
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Animals -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total Animals</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= animalStats.total %></p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-paw text-blue-600 dark:text-blue-400 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <% Object.entries(animalStats.byType).slice(0, 3).forEach(([type, count]) => { %>
+                        <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                            <%= type %>: <%= count %>
+                        </span>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Vaccinated Animals -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Vaccinated</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= animalStats.vaccinated %></p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: <%= animalStats.total ? (animalStats.vaccinated / animalStats.total) * 100 : 0 %>%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1"><%= Math.round((animalStats.vaccinated / animalStats.total) * 100) || 0 %>% vaccinated</p>
+                </div>
+            </div>
+
+            <!-- Pregnant Animals -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-pink-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Pregnant</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= animalStats.pregnant %></p>
+                    </div>
+                    <div class="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-baby-carriage text-pink-600 dark:text-pink-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Status -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Needs Attention</p>
+                        <p class="text-3xl font-bold text-red-600"><%= animalsNeedingAttention %></p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-heartbeat text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column - Upcoming & Overdue -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Overdue Vaccinations Alert -->
+                <% if (overdueVaccinations && overdueVaccinations.length > 0) { %>
+                    <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-red-500 text-xl mr-3"></i>
+                            <div>
+                                <h3 class="font-semibold text-red-800 dark:text-red-300">Overdue Vaccinations</h3>
+                                <p class="text-sm text-red-700 dark:text-red-400">You have <%= overdueVaccinations.length %> overdue vaccination(s). Please contact your paravet immediately.</p>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Upcoming Vaccinations -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white">
+                        <h3 class="font-semibold flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            Upcoming Vaccinations
+                            <span class="ml-2 text-sm bg-white/20 px-2 py-1 rounded-full"><%= upcomingVaccinations.length %> due soon</span>
+                        </h3>
+                    </div>
+                    
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <% if (upcomingVaccinations && upcomingVaccinations.length > 0) { %>
+                            <% upcomingVaccinations.forEach(vac => { %>
+                                <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-syringe text-green-600"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-medium text-gray-900 dark:text-white">
+                                                    <%= vac.animal?.name || 'Animal' %>
+                                                    <span class="text-sm text-gray-500">(<%= vac.animal?.tagNumber || 'No Tag' %>)</span>
+                                                </h4>
+                                                <p class="text-sm text-gray-500"><%= vac.vaccine?.name %></p>
+                                                <p class="text-xs text-gray-400">
+                                                    Due: <%= moment(vac.nextDueDate).format('DD MMM YYYY') %>
+                                                    (<%= moment(vac.nextDueDate).fromNow() %>)
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span class="status-badge <%= moment(vac.nextDueDate).diff(moment(), 'days') <= 7 ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' %>">
+                                            <%= moment(vac.nextDueDate).diff(moment(), 'days') <= 0 ? 'Overdue' : moment(vac.nextDueDate).diff(moment(), 'days') + ' days left' %>
+                                        </span>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="p-8 text-center text-gray-500">
+                                <i class="fas fa-check-circle text-4xl mb-3 text-green-500"></i>
+                                <p>All vaccinations are up to date!</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Recent Vaccination History -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                        <h3 class="font-semibold flex items-center">
+                            <i class="fas fa-history mr-2"></i>
+                            Recent Vaccination History
+                        </h3>
+                    </div>
+                    
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <% if (recentVaccinations && recentVaccinations.length > 0) { %>
+                            <% recentVaccinations.slice(0, 5).forEach(vac => { %>
+                                <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <p class="font-medium text-gray-900 dark:text-white">
+                                                <%= vac.animal?.name || 'Animal' %> - <%= vac.vaccine?.name %>
+                                            </p>
+                                            <p class="text-sm text-gray-500">
+                                                Administered on: <%= moment(vac.dateAdministered).format('DD MMM YYYY') %>
+                                            </p>
+                                            <% if (vac.nextDueDate) { %>
+                                                <p class="text-xs text-gray-400">
+                                                    Next due: <%= moment(vac.nextDueDate).format('DD MMM YYYY') %>
+                                                </p>
+                                            <% } %>
+                                        </div>
+                                        <span class="status-badge bg-green-100 text-green-800">
+                                            Completed
+                                        </span>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="p-8 text-center text-gray-500">
+                                <i class="fas fa-syringe text-4xl mb-3 text-gray-400"></i>
+                                <p>No vaccination records yet</p>
+                            </div>
+                        <% } %>
+                    </div>
+                    
+                    <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50">
+                        <a href="/farmer/vaccinations" class="text-sm text-blue-600 hover:text-blue-800 flex items-center">
+                            View full history
+                            <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Stats & Info -->
+            <div class="space-y-6">
+                
+                <!-- Paravet Information -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                        <h3 class="font-semibold flex items-center">
+                            <i class="fas fa-user-md mr-2"></i>
+                            Your Paravet
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <% if (farmer.assignedParavet) { %>
+                            <div class="text-center">
+                                <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-user-md text-purple-600 text-3xl"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white"><%= farmer.assignedParavet?.user?.name || 'Assigned Paravet' %></h4>
+                                <p class="text-sm text-gray-500"><%= farmer.assignedParavet?.qualification || 'Veterinary Professional' %></p>
+                                <div class="mt-3 flex items-center justify-center gap-2">
+                                    <i class="fas fa-star text-yellow-500"></i>
+                                    <span class="text-sm"><%= farmer.assignedParavet?.rating || 'Not rated' %> / 5</span>
+                                </div>
+                                <div class="mt-4">
+                                    <a href="tel:<%= farmer.assignedParavet?.user?.mobile %>" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                        <i class="fas fa-phone mr-2"></i>Contact Paravet
+                                    </a>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <div class="text-center py-4">
+                                <i class="fas fa-user-md text-4xl text-gray-400 mb-3"></i>
+                                <p class="text-gray-500">No paravet assigned yet</p>
+                                <p class="text-sm text-gray-400 mt-2">Contact admin for assistance</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                    <h3 class="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i class="fas fa-chart-pie mr-2 text-blue-500"></i>
+                        Quick Stats
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 dark:text-gray-400">Healthy Animals</span>
+                            <span class="font-semibold text-green-600"><%= animalStats.healthy %></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 dark:text-gray-400">Under Treatment</span>
+                            <span class="font-semibold text-red-600"><%= animalStats.underTreatment %></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 dark:text-gray-400">Total Spent</span>
+                            <span class="font-semibold text-gray-900 dark:text-white">₹<%= (paymentStats.total || 0).toLocaleString() %></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 dark:text-gray-400">Services Availed</span>
+                            <span class="font-semibold"><%= servicesSummary.reduce((sum, s) => sum + s.count, 0) || 0 %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Animal Type Distribution -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                    <h3 class="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i class="fas fa-chart-bar mr-2 text-green-500"></i>
+                        Animal Distribution
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <% Object.entries(animalStats.byType).forEach(([type, count]) => { %>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600 dark:text-gray-400"><%= type %></span>
+                                    <span class="font-semibold"><%= count %></span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: <%= (count / animalStats.total) * 100 %>%"></div>
+                                </div>
+                            </div>
+                        <% }); %>
+                        <% if (Object.keys(animalStats.byType).length === 0) { %>
+                            <p class="text-gray-500 text-center">No animals added yet</p>
+                        <% } %>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="/farmer/animals" class="block text-center text-sm text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-plus mr-1"></i>Manage Animals
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Support Contact -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-xl p-4">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-headset text-blue-500 text-xl"></i>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white">Need Help?</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                Contact our support team for assistance with your account or animal health.
+                            </p>
+                            <a href="/contact" class="inline-block mt-2 text-sm text-blue-600 hover:text-blue-800">
+                                Contact Support →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Animals Quick View -->
+        <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-teal-500 to-teal-600 text-white">
+                <h3 class="font-semibold flex items-center justify-between">
+                    <span><i class="fas fa-paw mr-2"></i>My Animals</span>
+                    <a href="/farmer/animals" class="text-sm bg-white/20 px-3 py-1 rounded-lg hover:bg-white/30">
+                        View All (<%= animalStats.total %>)
+                    </a>
+                </h3>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
+                <% animals.slice(0, 4).forEach(animal => { %>
+                    <a href="/farmer/animal/<%= animal._id %>" class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-lg transition group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 flex items-center justify-center text-white font-bold">
+                                <%= animal.name?.charAt(0).toUpperCase() || animal.animalType?.charAt(0) || 'A' %>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 dark:text-white group-hover:text-blue-600">
+                                    <%= animal.name || 'Unnamed' %>
+                                </h4>
+                                <p class="text-xs text-gray-500"><%= animal.animalType %></p>
+                                <p class="text-xs text-gray-400">Tag: <%= animal.tagNumber || 'N/A' %></p>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex items-center justify-between text-xs">
+                            <span class="<%= animal.vaccinationSummary?.isUpToDate ? 'text-green-600' : 'text-yellow-600' %>">
+                                <i class="fas fa-syringe mr-1"></i>
+                                <%= animal.vaccinationSummary?.isUpToDate ? 'Vaccinated' : 'Due Soon' %>
+                            </span>
+                            <span class="text-gray-400">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                <%= moment(animal.createdAt).format('DD MMM YYYY') %>
+                            </span>
+                        </div>
+                    </a>
+                <% }); %>
+                
+                <% if (animals.length === 0) { %>
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        <i class="fas fa-paw text-4xl mb-3 text-gray-400"></i>
+                        <p>No animals added yet</p>
+                        <p class="text-sm mt-2">Contact your sales executive to add animals to your farm</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+</style>

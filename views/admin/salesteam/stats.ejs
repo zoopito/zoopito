@@ -1,0 +1,274 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li><a href="/admin/dashboard" class="text-gray-600 hover:text-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a></li>
+                <li><i class="fas fa-chevron-right text-gray-400 text-sm"></i></li>
+                <li><a href="/admin/sales-team" class="text-gray-600 hover:text-blue-600">Sales Team</a></li>
+                <li><i class="fas fa-chevron-right text-gray-400 text-sm"></i></li>
+                <li><span class="text-gray-500">Performance Stats</span></li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-14 h-14 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                    <i class="fas fa-chart-line text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Performance Statistics</h1>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        <%= salesMember.user.name %> • <%= salesMember.employeeCode %>
+                    </p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <a href="/admin/sales-team/<%= salesMember._id %>/export" 
+                   class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center">
+                    <i class="fas fa-download mr-2"></i>Export Report
+                </a>
+                <a href="/admin/sales-team" class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition">
+                    <i class="fas fa-arrow-left mr-2"></i>Back
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Farmers</p>
+                        <p class="text-3xl font-bold text-gray-900"><%= stats.totalFarmers %></p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-tractor text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-sm">
+                    <span class="text-green-600">+<%= stats.farmersThisMonth %></span>
+                    <span class="text-gray-500"> this month</span>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Animals</p>
+                        <p class="text-3xl font-bold text-gray-900"><%= stats.totalAnimals %></p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-paw text-green-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-sm">
+                    <span class="text-green-600">+<%= stats.animalsThisMonth %></span>
+                    <span class="text-gray-500"> this month</span>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Last 30 Days</p>
+                        <p class="text-3xl font-bold text-gray-900"><%= stats.last30DaysFarmers %></p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-calendar-alt text-yellow-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-sm text-gray-500">
+                    Farmers registered
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Performance Score</p>
+                        <p class="text-3xl font-bold text-purple-600"><%= stats.performanceScore %>%</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-star text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 mt-3">
+                    <div class="bg-purple-600 h-2 rounded-full" style="width: <%= stats.performanceScore %>%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Daily Activity Chart -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                    Daily Activity (Last 7 Days)
+                </h3>
+                <canvas id="activityChart" height="250"></canvas>
+            </div>
+            
+            <!-- Species Breakdown -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <i class="fas fa-chart-pie text-green-500 mr-2"></i>
+                    Animal Species Breakdown
+                </h3>
+                <canvas id="speciesChart" height="250"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Villages -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8">
+            <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
+                <h3 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-map-marker-alt mr-2"></i>
+                    Top Villages by Farmer Count
+                </h3>
+            </div>
+            <div class="p-6">
+                <% if (stats.topVillages && stats.topVillages.length > 0) { %>
+                    <div class="space-y-4">
+                        <% stats.topVillages.forEach((village, index) => { %>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="font-medium"><%= index + 1 %>. <%= village.village %></span>
+                                    <span class="text-gray-500"><%= village.count %> farmers</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: <%= (village.count / stats.topVillages[0].count) * 100 %>%"></div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <p class="text-gray-500 text-center py-4">No village data available</p>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Recent Farmers Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600">
+                <h3 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-users mr-2"></i>
+                    Recently Onboarded Farmers
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mobile</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Village</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Farmer ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Registered On</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <% const recentFarmers = salesMember.onboardedFarmers?.slice(0, 10) || []; %>
+                        <% if (recentFarmers.length > 0) { %>
+                            <% recentFarmers.forEach(farmer => { %>
+                                <tr>
+                                    <td class="px-6 py-4 text-sm font-medium"><%= farmer.name %></td>
+                                    <td class="px-6 py-4 text-sm"><%= farmer.mobileNumber || 'N/A' %></td>
+                                    <td class="px-6 py-4 text-sm"><%= farmer.address?.village || 'N/A' %></td>
+                                    <td class="px-6 py-4 text-sm font-mono"><%= farmer.uniqueFarmerId || 'N/A' %></td>
+                                    <td class="px-6 py-4 text-sm"><%= moment(farmer.createdAt).format('DD MMM YYYY') %></td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                    No farmers onboarded yet
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Daily Activity Chart
+const ctx1 = document.getElementById('activityChart').getContext('2d');
+const dailyData = <%= JSON.stringify(stats.dailyActivity || []) %>;
+
+new Chart(ctx1, {
+    type: 'line',
+    data: {
+        labels: dailyData.map(d => d.date),
+        datasets: [
+            {
+                label: 'Farmers',
+                data: dailyData.map(d => d.farmers),
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Animals',
+                data: dailyData.map(d => d.animals),
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4,
+                fill: true
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: '#e5e7eb' }
+            },
+            x: {
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// Species Breakdown Chart
+const ctx2 = document.getElementById('speciesChart').getContext('2d');
+const speciesData = <%= JSON.stringify(stats.speciesBreakdown || {}) %>;
+
+new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(speciesData),
+        datasets: [{
+            data: Object.values(speciesData),
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            }
+        }
+    }
+});
+</script>

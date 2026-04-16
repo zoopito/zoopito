@@ -1,0 +1,652 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="/admin/dashboard" class="text-gray-600 dark:text-gray-400 hover:text-blue-600">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2 text-sm"></i>
+                        <a href="/admin/allusers" class="text-gray-600 dark:text-gray-400 hover:text-blue-600">Users</a>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2 text-sm"></i>
+                        <span class="text-gray-500 dark:text-gray-500"><%= user.name %></span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <!-- Avatar -->
+                        <div class="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center">
+                            <span class="text-4xl font-bold text-white"><%= user.name.charAt(0).toUpperCase() %></span>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-white"><%= user.name %></h1>
+                            <p class="text-blue-100 mt-1">
+                                <i class="fas fa-id-card mr-1"></i>
+                                User ID: <%= user._id.toString().slice(-8) %>
+                            </p>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <!-- Role Badge -->
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold 
+                                    <%= user.role === 'ADMIN' ? 'bg-purple-500 text-white' : 
+                                       user.role === 'SALES' ? 'bg-blue-500 text-white' :
+                                       user.role === 'PARAVET' ? 'bg-green-500 text-white' :
+                                       user.role === 'FARMER' ? 'bg-yellow-500 text-white' :
+                                       'bg-gray-500 text-white' %>">
+                                    <i class="fas <%= user.role === 'ADMIN' ? 'fa-shield-alt' : 
+                                                   user.role === 'SALES' ? 'fa-chart-line' :
+                                                   user.role === 'PARAVET' ? 'fa-user-md' :
+                                                   user.role === 'FARMER' ? 'fa-tractor' :
+                                                   'fa-user' %> mr-1"></i>
+                                    <%= user.role %>
+                                </span>
+                                
+                                <!-- Status Badges -->
+                                <% if (user.isActive) { %>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                        <i class="fas fa-check-circle mr-1"></i>Active
+                                    </span>
+                                <% } else { %>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                        <i class="fas fa-ban mr-1"></i>Inactive
+                                    </span>
+                                <% } %>
+                                
+                                <% if (user.isBlocked) { %>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                        <i class="fas fa-lock mr-1"></i>Blocked
+                                    </span>
+                                <% } %>
+                                
+                                <!-- Email Verification Badge -->
+                                <% if (user.isVerified) { %>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                        <i class="fas fa-envelope-open-text mr-1"></i>Email Verified
+                                    </span>
+                                <% } else { %>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                        <i class="fas fa-envelope mr-1"></i>Email Not Verified
+                                    </span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <a href="/admin/users/<%= user._id %>/edit" 
+                           class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition flex items-center">
+                            <i class="fas fa-edit mr-2"></i>Edit User
+                        </a>
+                        <button onclick="window.print()" 
+                                class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition flex items-center">
+                            <i class="fas fa-print mr-2"></i>Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column - Personal Information -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Personal Details Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                            <i class="fas fa-user-circle text-blue-500 mr-2"></i>
+                            Personal Information
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Full Name</label>
+                                <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white"><%= user.name %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Email Address</label>
+                                <p class="mt-1 text-gray-900 dark:text-white flex items-center">
+                                    <%= user.email %>
+                                    <% if (user.isVerified) { %>
+                                        <span class="ml-2 text-green-500 text-xs"><i class="fas fa-check-circle"></i> Verified</span>
+                                    <% } else { %>
+                                        <span class="ml-2 text-yellow-500 text-xs"><i class="fas fa-clock"></i> Pending</span>
+                                    <% } %>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Mobile Number</label>
+                                <p class="mt-1 text-gray-900 dark:text-white"><%= user.mobile || 'Not provided' %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Role</label>
+                                <p class="mt-1 text-gray-900 dark:text-white"><%= user.role %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Designation</label>
+                                <p class="mt-1 text-gray-900 dark:text-white"><%= user.designation || 'Not specified' %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Bio / About</label>
+                                <p class="mt-1 text-gray-900 dark:text-white"><%= user.bio || 'No bio provided' %></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Details Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                            <i class="fas fa-shield-alt text-green-500 mr-2"></i>
+                            Account Details
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Account Created</label>
+                                <p class="mt-1 text-gray-900 dark:text-white">
+                                    <%= moment(user.createdAt).format('DD MMM YYYY, hh:mm A') %>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Last Updated</label>
+                                <p class="mt-1 text-gray-900 dark:text-white">
+                                    <%= moment(user.updatedAt).format('DD MMM YYYY, hh:mm A') %>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Last Login</label>
+                                <p class="mt-1 text-gray-900 dark:text-white">
+                                    <%= user.lastLogin ? moment(user.lastLogin).format('DD MMM YYYY, hh:mm A') : 'Never logged in' %>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Last Login IP</label>
+                                <p class="mt-1 text-gray-900 dark:text-white"><%= user.lastLoginIP || 'Not recorded' %></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Created By</label>
+                                <p class="mt-1 text-gray-900 dark:text-white">
+                                    <%= user.createdBy ? user.createdBy.name : 'System' %>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Email Verified At</label>
+                                <p class="mt-1 text-gray-900 dark:text-white">
+                                    <%= user.emailVerifiedAt ? moment(user.emailVerifiedAt).format('DD MMM YYYY, hh:mm A') : 'Not verified' %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Actions & Statistics -->
+            <div class="space-y-6">
+                
+                <!-- Quick Actions Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                            <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                            Quick Actions
+                        </h2>
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <!-- Email Verification Button (Manual) -->
+                        <% if (!user.isVerified) { %>
+                            <button onclick="verifyEmail('verify')" 
+                                    class="w-full px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition flex items-center justify-center">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Verify Email Manually
+                            </button>
+                        <% } else { %>
+                            <div class="w-full px-4 py-2.5 bg-green-100 text-green-700 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Email Already Verified
+                            </div>
+                        <% } %>
+
+                        <!-- Resend Verification Email -->
+                        <button onclick="verifyEmail('resend')" 
+                                class="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center justify-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            Resend Verification Email
+                        </button>
+
+                        <!-- Reset Password -->
+                        <button onclick="resetPassword()" 
+                                class="w-full px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition flex items-center justify-center">
+                            <i class="fas fa-key mr-2"></i>
+                            Reset Password
+                        </button>
+
+                        <!-- Toggle Active Status -->
+                        <form action="/admin/users/<%= user._id %>/<%= user.isActive ? 'deactivate' : 'activate' %>" method="POST" class="inline-block w-full">
+                            <button type="submit" 
+                                    class="w-full px-4 py-2.5 <%= user.isActive ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600' %> text-white rounded-lg transition flex items-center justify-center"
+                                    onclick="return confirm('<%= user.isActive ? 'Deactivate' : 'Activate' %> this user?')">
+                                <i class="fas <%= user.isActive ? 'fa-ban' : 'fa-check-circle' %> mr-2"></i>
+                                <%= user.isActive ? 'Deactivate Account' : 'Activate Account' %>
+                            </button>
+                        </form>
+
+                        <!-- Toggle Block Status (only for non-admin) -->
+                        <% if (user.role !== 'ADMIN') { %>
+                            <% if (!user.isBlocked) { %>
+                                <button onclick="toggleBlock('block')" 
+                                        class="w-full px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition flex items-center justify-center">
+                                    <i class="fas fa-lock mr-2"></i>
+                                    Block User
+                                </button>
+                            <% } else { %>
+                                <button onclick="toggleBlock('unblock')" 
+                                        class="w-full px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition flex items-center justify-center">
+                                    <i class="fas fa-unlock-alt mr-2"></i>
+                                    Unblock User
+                                </button>
+                            <% } %>
+                        <% } %>
+
+                        <!-- Delete User (only for non-admin) -->
+                        <% if (user.role !== 'ADMIN') { %>
+                            <form action="/admin/users/<%= user._id %>/delete" method="POST" class="inline-block w-full">
+                                <button type="submit" 
+                                        class="w-full px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition flex items-center justify-center"
+                                        onclick="return confirm('⚠️ Delete this user permanently? This action cannot be undone.')">
+                                    <i class="fas fa-trash-alt mr-2"></i>
+                                    Delete User
+                                </button>
+                            </form>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Login Activity Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                            <i class="fas fa-history text-purple-500 mr-2"></i>
+                            Login Activity
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-400">Total Logins</span>
+                                <span class="font-semibold text-gray-900 dark:text-white"><%= user.loginHistory?.length || 0 %></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-400">Last Login Device</span>
+                                <span class="text-sm text-gray-900 dark:text-white"><%= user.lastLoginDevice || 'Unknown' %></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-400">Account Status</span>
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold <%= user.isActive && !user.isBlocked && user.isVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                                    <%= user.isActive && !user.isBlocked && user.isVerified ? 'Active' : 'Limited Access' %>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <% if (user.loginHistory && user.loginHistory.length > 0) { %>
+                            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recent Logins:</p>
+                                <div class="space-y-2 max-h-40 overflow-y-auto">
+                                    <% user.loginHistory.slice(-5).reverse().forEach(login => { %>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                            <i class="fas fa-sign-in-alt mr-1"></i>
+                                            <%= moment(login.timestamp).format('DD MMM YYYY, hh:mm A') %>
+                                            <% if (login.ip) { %> - IP: <%= login.ip %><% } %>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Additional Info Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                            Additional Information
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Provider</label>
+                                <p class="mt-1 text-gray-900 dark:text-white capitalize"><%= user.provider || 'local' %></p>
+                            </div>
+                            <% if (user.providerId) { %>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Provider ID</label>
+                                    <p class="mt-1 text-gray-900 dark:text-white text-sm"><%= user.providerId %></p>
+                                </div>
+                            <% } %>
+                            <% if (user.notes) { %>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Admin Notes</label>
+                                    <p class="mt-1 text-gray-900 dark:text-white"><%= user.notes %></p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Verification Modal -->
+<div id="verifyModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full shadow-2xl">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Verify Email</h3>
+            <button onclick="closeModal('verifyModal')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <i class="fas fa-envelope-open-text text-5xl text-green-500 mb-3"></i>
+                <p class="text-gray-700 dark:text-gray-300">
+                    Are you sure you want to manually verify this user's email?
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    User: <strong><%= user.name %></strong><br>
+                    Email: <strong><%= user.email %></strong>
+                </p>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeModal('verifyModal')" 
+                        class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition">
+                    Cancel
+                </button>
+                <button onclick="confirmVerify()" 
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    Yes, Verify Email
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+let currentAction = null;
+
+function verifyEmail(action) {
+    currentAction = action;
+    if (action === 'verify') {
+        document.getElementById('verifyModal').classList.remove('hidden');
+        document.getElementById('verifyModal').classList.add('flex');
+    } else if (action === 'resend') {
+        Swal.fire({
+            title: 'Resend Verification Email?',
+            text: 'Send a new verification link to this user\'s email address?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            confirmButtonText: 'Yes, Send Email',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                performResendVerification();
+            }
+        });
+    }
+}
+
+function performResendVerification() {
+    Swal.fire({
+        title: 'Sending...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    fetch(`/admin/users/<%= user._id %>/resend-verification`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Email Sent!',
+                text: 'Verification email has been sent to the user.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed',
+                text: data.message || 'Failed to send verification email'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Network error. Please try again.'
+        });
+    });
+}
+
+function confirmVerify() {
+    closeModal('verifyModal');
+    
+    Swal.fire({
+        title: 'Verifying...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    fetch(`/admin/users/<%= user._id %>/verify-email`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Verified!',
+                text: 'User email has been verified successfully.',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed',
+                text: data.message || 'Failed to verify email'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Network error. Please try again.'
+        });
+    });
+}
+
+function resetPassword() {
+    Swal.fire({
+        title: 'Reset Password?',
+        text: 'This will generate a new random password and send it to the user via email.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#f59e0b',
+        confirmButtonText: 'Yes, Reset Password',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Resetting...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            fetch(`/admin/users/<%= user._id %>/reset-password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Password Reset!',
+                        html: `New password: <strong>${data.newPassword}</strong><br><br>Email has been sent to the user.`,
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed',
+                        text: data.message || 'Failed to reset password'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Network error. Please try again.'
+                });
+            });
+        }
+    });
+}
+
+function toggleBlock(action) {
+    Swal.fire({
+        title: action === 'block' ? 'Block User?' : 'Unblock User?',
+        text: action === 'block' 
+            ? 'This user will not be able to login or access the system.' 
+            : 'This user will regain access to the system.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: action === 'block' ? '#ef4444' : '#10b981',
+        confirmButtonText: action === 'block' ? 'Yes, Block User' : 'Yes, Unblock User',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/users/<%= user._id %>/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: action === 'block' ? 'User Blocked!' : 'User Unblocked!',
+                        text: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed',
+                        text: data.message || `Failed to ${action} user`
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Network error. Please try again.'
+                });
+            });
+        }
+    });
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('verifyModal');
+        if (modal && modal.classList.contains('flex')) {
+            closeModal('verifyModal');
+        }
+    }
+});
+
+// Close modal when clicking outside
+document.getElementById('verifyModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal('verifyModal');
+    }
+});
+</script>
+
+<style>
+/* Print styles */
+@media print {
+    .no-print, .bg-gradient-to-r, .fixed, button, a[href*="/admin/users/"]:not([href*="/admin/users/view"]) {
+        display: none !important;
+    }
+    body {
+        background: white;
+    }
+    .shadow-xl, .rounded-2xl {
+        box-shadow: none !important;
+    }
+}
+</style>

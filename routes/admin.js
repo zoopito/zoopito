@@ -54,6 +54,17 @@ router.post(
   isAdmin,
   adminController.deleteSalesMember,
 );
+//slaes team assign aream and view stats .............
+router.get("/sales-team/:id/assignments", isLoggedIn, isAdmin, adminController.renderAssignAreas);
+router.post("/sales-team/:id/assignments", isLoggedIn, isAdmin, adminController.saveAssignedAreas);
+router.post("/sales-team/:id/areas/add", isLoggedIn, isAdmin, adminController.addArea);
+router.delete("/sales-team/:id/areas/:areaIndex", isLoggedIn, isAdmin, adminController.removeArea);
+
+// ================ VIEW STATS ROUTES ================
+router.get("/sales-team/:id/performance", isLoggedIn, isAdmin, adminController.renderStats);
+router.get("/sales-team/:id/export", isLoggedIn, isAdmin, adminController.exportStats);
+ //.........................................
+
 
 router
   .route("/farmers")
@@ -349,5 +360,11 @@ router.post(
 );
 // router.post("/allusers/:id/reset-password", adminController.resetPassword);
 // router.get("/allusers/:id/login-history", adminController.loginHistory);
+// User Management Routes
+router.post("/users/:id/verify-email", adminController.verifyUserEmail);
+router.post("/users/:id/resend-verification", adminController.resendVerificationEmail);
+router.post("/users/:id/reset-password", adminController.resetUserPassword);
+router.post("/users/:id/block", adminController.blockUser);
+router.post("/users/:id/unblock", adminController.unblockUser);
 
 module.exports = router;

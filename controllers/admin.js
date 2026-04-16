@@ -6,6 +6,7 @@ const Servise = require("../models/services");
 const SalesTeam = require("../models/salesteam");
 const Vaccination = require("../models/vaccination")
 const crypto = require("crypto");
+const moment = require("moment");
 const brevo = require("@getbrevo/brevo");
 
 // Configure Brevo API
@@ -1273,6 +1274,368 @@ module.exports.deleteSalesMember = async (req, res) => {
   }
 };
 
+//assign sales member to areas 
+//...........................
+exports.renderAssignAreas = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const salesMember = await SalesTeam.findById(id)
+      .populate("user", "name email mobile")
+      .lean();
+
+    if (!salesMember) {
+      req.flash("error", "Sales team member not found");
+      return res.redirect("/admin/sales-team");
+    }
+
+    // Get unique districts and talukas for suggestions
+    const districts = await Farmer.distinct("address.district", {
+      "address.district": { $ne: null, $ne: "" }
+    });
+
+    const talukas = await Farmer.distinct("address.taluka", {
+      "address.taluka": { $ne: null, $ne: "" }
+    });
+
+    const villages = await Farmer.distinct("address.village", {
+      "address.village": { $ne: null, $ne: "" }
+    });
+
+    // Get statistics for current assigned areas
+    const areaStats = [];
+    if (salesMember.assignedAreas && salesMember.assignedAreas.length > 0) {
+      for (const area of salesMember.assignedAreas) {
+        const query = {};
+        if (area.village) query["address.village"] = area.village;
+        if (area.taluka) query["address.taluka"] = area.taluka;
+        if (area.district) query["address.district"] = area.district;
+
+        const farmerCount = await Farmer.countDocuments(query);
+        const animalCount = await Animal.countDocuments({
+          farmer: { $in: await Farmer.find(query).distinct("_id") }
+        });
+
+        areaStats.push({
+          ...area,
+          farmerCount,
+          animalCount
+        });
+      }
+    }
+
+    res.render("admin/salesteam/assign-areas", {
+      title: `Assign Areas - ${salesMember.user.name}`,
+      salesMember,
+      districts: districts.filter(d => d),
+      talukas: talukas.filter(t => t),
+      villages: villages.filter(v => v),
+      areaStats,
+      moment,
+      user: req.user
+    });
+  } catch (error) {
+    console.error("Error rendering assign areas page:", error);
+    req.flash("error", "Error loading assign areas page");
+    res.redirect("/admin/sales-team");
+  }
+};
+
+// Save Assigned Areas.............
+exports.saveAssignedAreas = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { areas } = req.body;
+
+    let assignedAreas = [];
+
+    if (areas && areas.length > 0) {
+      // Parse areas from form data
+      if (typeof areas === "string") {
+        assignedAreas = JSON.parse(areas);
+      } else if (Array.isArray(areas)) {
+        assignedAreas = areas;
+      }
+    }
+
+    // Update sales member
+    const updated = await SalesTeam.findByIdAndUpdate(
+      id,
+      {
+        $set: { assignedAreas },
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Sales team member not found"
+      });
+    }
+
+    req.flash("success", `Assigned ${assignedAreas.length} area(s) successfully`);
+    res.json({
+      success: true,
+      message: `Assigned ${assignedAreas.length} area(s) successfully`,
+      assignedAreas
+    });
+  } catch (error) {
+    console.error("Error saving assigned areas:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error saving assigned areas"
+    });
+  }
+};
+
+// Add Single Area...................
+exports.addArea = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { village, taluka, district, state } = req.body;
+
+    if (!district && !taluka && !village) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide at least district, taluka, or village"
+      });
+    }
+
+    const salesMember = await SalesTeam.findById(id);
+    if (!salesMember) {
+      return res.status(404).json({
+        success: false,
+        message: "Sales team member not found"
+      });
+    }
+
+    // Check if area already exists
+    const areaExists = salesMember.assignedAreas.some(
+      a => a.village === village && a.taluka === taluka && a.district === district
+    );
+
+    if (areaExists) {
+      return res.status(400).json({
+        success: false,
+        message: "This area is already assigned"
+      });
+    }
+
+    salesMember.assignedAreas.push({ village, taluka, district, state });
+    await salesMember.save();
+
+    res.json({
+      success: true,
+      message: "Area added successfully",
+      area: { village, taluka, district, state }
+    });
+  } catch (error) {
+    console.error("Error adding area:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error adding area"
+    });
+  }
+};
+
+// Remove Area...........................
+exports.removeArea = async (req, res) => {
+  try {
+    const { id, areaIndex } = req.params;
+
+    const salesMember = await SalesTeam.findById(id);
+    if (!salesMember) {
+      return res.status(404).json({
+        success: false,
+        message: "Sales team member not found"
+      });
+    }
+
+    if (areaIndex >= 0 && areaIndex < salesMember.assignedAreas.length) {
+      salesMember.assignedAreas.splice(areaIndex, 1);
+      await salesMember.save();
+    }
+
+    res.json({
+      success: true,
+      message: "Area removed successfully"
+    });
+  } catch (error) {
+    console.error("Error removing area:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error removing area"
+    });
+  }
+};
+
+// ================ VIEW STATS ================
+
+// Render Stats Page.....................
+exports.renderStats = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const salesMember = await SalesTeam.findById(id)
+      .populate("user", "name email mobile")
+      .populate("onboardedFarmers", "name mobileNumber address uniqueFarmerId createdAt")
+      .populate("onboardedAnimals", "name tagNumber animalType breed createdAt")
+      .lean();
+
+    if (!salesMember) {
+      req.flash("error", "Sales team member not found");
+      return res.redirect("/admin/sales-team");
+    }
+
+    // Get detailed statistics
+    const totalFarmers = salesMember.onboardedFarmers?.length || 0;
+    const totalAnimals = salesMember.onboardedAnimals?.length || 0;
+
+    // Get farmers added this month
+    const startOfMonth = moment().startOf("month").toDate();
+    const farmersThisMonth = salesMember.onboardedFarmers?.filter(
+      f => f.createdAt && new Date(f.createdAt) >= startOfMonth
+    ).length || 0;
+
+    // Get animals added this month
+    const animalsThisMonth = salesMember.onboardedAnimals?.filter(
+      a => a.createdAt && new Date(a.createdAt) >= startOfMonth
+    ).length || 0;
+
+    // Get last 30 days activity
+    const thirtyDaysAgo = moment().subtract(30, "days").toDate();
+    const last30DaysFarmers = salesMember.onboardedFarmers?.filter(
+      f => f.createdAt && new Date(f.createdAt) >= thirtyDaysAgo
+    ) || [];
+    
+    const last30DaysAnimals = salesMember.onboardedAnimals?.filter(
+      a => a.createdAt && new Date(a.createdAt) >= thirtyDaysAgo
+    ) || [];
+
+    // Daily activity for chart (last 7 days)
+    const dailyActivity = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = moment().subtract(i, "days");
+      const dayStart = date.startOf("day").toDate();
+      const dayEnd = date.endOf("day").toDate();
+
+      const farmersCount = salesMember.onboardedFarmers?.filter(
+        f => f.createdAt && new Date(f.createdAt) >= dayStart && new Date(f.createdAt) <= dayEnd
+      ).length || 0;
+
+      const animalsCount = salesMember.onboardedAnimals?.filter(
+        a => a.createdAt && new Date(a.createdAt) >= dayStart && new Date(a.createdAt) <= dayEnd
+      ).length || 0;
+
+      dailyActivity.push({
+        date: date.format("DD MMM"),
+        farmers: farmersCount,
+        animals: animalsCount
+      });
+    }
+
+    // Get species breakdown
+    const speciesBreakdown = {};
+    salesMember.onboardedAnimals?.forEach(animal => {
+      const species = animal.animalType || "Other";
+      speciesBreakdown[species] = (speciesBreakdown[species] || 0) + 1;
+    });
+
+    // Get top villages by farmer count
+    const villageStats = {};
+    salesMember.onboardedFarmers?.forEach(farmer => {
+      const village = farmer.address?.village || "Unknown";
+      villageStats[village] = (villageStats[village] || 0) + 1;
+    });
+
+    const topVillages = Object.entries(villageStats)
+      .map(([village, count]) => ({ village, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // Calculate performance metrics
+    const performanceScore = totalFarmers > 0 
+      ? Math.min(Math.round((totalFarmers / 50) * 100), 100)
+      : 0;
+
+    res.render("admin/salesteam/stats", {
+      title: `${salesMember.user.name} - Performance Stats`,
+      salesMember,
+      stats: {
+        totalFarmers,
+        totalAnimals,
+        farmersThisMonth,
+        animalsThisMonth,
+        last30DaysFarmers: last30DaysFarmers.length,
+        last30DaysAnimals: last30DaysAnimals.length,
+        performanceScore,
+        topVillages,
+        speciesBreakdown,
+        dailyActivity
+      },
+      moment,
+      user: req.user
+    });
+  } catch (error) {
+    console.error("Error rendering stats page:", error);
+    req.flash("error", "Error loading statistics");
+    res.redirect("/admin/sales-team");
+  }
+};
+
+// Export Stats as CSV.........................
+exports.exportStats = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const salesMember = await SalesTeam.findById(id)
+      .populate("user", "name email")
+      .populate("onboardedFarmers", "name mobileNumber address uniqueFarmerId createdAt")
+      .populate("onboardedAnimals", "name tagNumber animalType breed createdAt")
+      .lean();
+
+    if (!salesMember) {
+      return res.status(404).json({ success: false, message: "Sales team member not found" });
+    }
+
+    // Prepare CSV data
+    const farmersData = salesMember.onboardedFarmers?.map(f => ({
+      "Name": f.name,
+      "Mobile": f.mobileNumber,
+      "Village": f.address?.village,
+      "Taluka": f.address?.taluka,
+      "District": f.address?.district,
+      "Farmer ID": f.uniqueFarmerId,
+      "Registered On": moment(f.createdAt).format("DD/MM/YYYY")
+    })) || [];
+
+    const animalsData = salesMember.onboardedAnimals?.map(a => ({
+      "Name": a.name,
+      "Tag Number": a.tagNumber,
+      "Type": a.animalType,
+      "Breed": a.breed,
+      "Registered On": moment(a.createdAt).format("DD/MM/YYYY")
+    })) || [];
+
+    const json2csv = require("json2csv").Parser;
+    
+    const farmersCsv = new json2csv({ fields: Object.keys(farmersData[0] || {}) }).parse(farmersData);
+    const animalsCsv = new json2csv({ fields: Object.keys(animalsData[0] || {}) }).parse(animalsData);
+
+    const csv = `Farmers Data:\n${farmersCsv}\n\nAnimals Data:\n${animalsCsv}`;
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename=${salesMember.user.name}_stats_${moment().format("YYYY-MM-DD")}.csv`);
+    res.send(csv);
+  } catch (error) {
+    console.error("Error exporting stats:", error);
+    req.flash("error", "Error exporting statistics");
+    res.redirect(`/admin/sales-team/${req.params.id}/performance`);
+  }
+};
+
 module.exports.paravetsIndexpage = async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page) || 1, 1);
@@ -1616,4 +1979,166 @@ module.exports.viewUser = async (req, res) => {
     req.flash("error", "❌ Failed to load user details");
     res.redirect("/admin/allusers");
   }
+};
+
+// ================ USER MANAGEMENT CONTROLLERS ================
+
+// Verify User Email (Manual)
+exports.verifyUserEmail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        if (user.isVerified) {
+            return res.status(400).json({ success: false, message: "User already verified" });
+        }
+        
+        user.isVerified = true;
+        user.emailVerifiedAt = new Date();
+        user.emailVerificationToken = null;
+        await user.save();
+        
+        // Log activity
+        console.log(`✅ User ${user.email} verified manually by admin ${req.user.email}`);
+        
+        res.json({ 
+            success: true, 
+            message: "Email verified successfully" 
+        });
+    } catch (error) {
+        console.error("Error verifying user email:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Resend Verification Email
+exports.resendVerificationEmail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        if (user.isVerified) {
+            return res.status(400).json({ success: false, message: "User already verified" });
+        }
+        
+        // Generate new verification token
+        const crypto = require("crypto");
+        const verificationToken = crypto.randomBytes(32).toString("hex");
+        
+        user.emailVerificationToken = verificationToken;
+        user.emailVerificationExpiry = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+        await user.save();
+        
+        // Send verification email
+        const domain = process.env.DOMAIN || "http://localhost:3000";
+        const verificationLink = `${domain}/verify-email?token=${verificationToken}&email=${user.email}`;
+        
+        // You can implement email sending here
+        // await sendVerificationEmail(user.email, user.name, verificationLink);
+        
+        res.json({ 
+            success: true, 
+            message: "Verification email sent successfully" 
+        });
+    } catch (error) {
+        console.error("Error resending verification email:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Reset User Password
+exports.resetUserPassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        // Generate random password
+        const crypto = require("crypto");
+        const newPassword = crypto.randomBytes(6).toString("base64").slice(0, 10);
+        console.log(`Generated new password for ${user.email}: ${newPassword}`);
+        
+        // ✅ Use passport-local-mongoose's setPassword method
+        await user.setPassword(newPassword);
+        
+        // Clear any reset tokens
+        user.resetPasswordToken = null;
+        user.resetPasswordExpires = null;
+        await user.save();
+        
+        // Send email with new password
+        //await sendPasswordResetEmail(user.email, user.name, newPassword);
+        
+        res.json({ 
+            success: true, 
+            message: "Password reset successfully. Email sent to user.",
+            newPassword: newPassword // Only for testing, remove in production
+        });
+    } catch (error) {
+        console.error("Error resetting password:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Block User
+exports.blockUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        if (user.role === "ADMIN") {
+            return res.status(403).json({ success: false, message: "Cannot block admin users" });
+        }
+        
+        user.isBlocked = true;
+        user.isActive = false;
+        await user.save();
+        
+        res.json({ 
+            success: true, 
+            message: "User blocked successfully" 
+        });
+    } catch (error) {
+        console.error("Error blocking user:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Unblock User
+exports.unblockUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        user.isBlocked = false;
+        user.isActive = true;
+        await user.save();
+        
+        res.json({ 
+            success: true, 
+            message: "User unblocked successfully" 
+        });
+    } catch (error) {
+        console.error("Error unblocking user:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
 };

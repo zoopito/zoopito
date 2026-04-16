@@ -166,6 +166,28 @@
               <i class="fas fa-history mr-2"></i>Vaccination History
             </a>
 
+            <% } else if(currUser.role === "FARMER") { %>
+              <a href="/farmer/dashboard" 
+              class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/farmer/dashboard') ? active : inactive %> nav-link-hover">   
+            <i class="fas fa-dashboard mr-2"></i>Dashboard
+          </a>
+              <a href="/farmer/animals" 
+               class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/farmer/animals') ? active : inactive %> nav-link-hover">
+              <i class="fas fa-paw mr-2"></i>My Animals
+            </a>
+              <a href="/farmer/vaccinations" 
+                class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/farmer/vaccinations') ? active : inactive %> nav-link-hover">
+                <i class="fas fa-syringe mr-2"></i>Vaccinations
+              </a>
+             
+              <a href="/farmer/payments" 
+                class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath.includes('/farmer/payments') ? active : inactive %> nav-link-hover">
+                <i class="fas fa-credit-card mr-2"></i>Payments 
+              </a>
+              <a href="/contact" 
+             class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/contact' ? active : inactive %> nav-link-hover">
+            <i class="fas fa-envelope mr-2"></i>Contact
+          </a>  
             <% } else{ %>
             <a href="/services" 
              class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 <%= currentPath === '/services' ? active : inactive %> nav-link-hover">
