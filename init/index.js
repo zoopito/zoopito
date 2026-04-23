@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 const User = require("../models/user.js");
 const Farmer = require("../models/farmer.js");
+const Vaccine = require("../models/vaccine.js");
+const Vaccination = require("../models/vaccination.js");
+const Animal = require("../models/animal.js");
+const Paravet = require("../models/paravet.js");
+const Payment = require("../models/payment.js");
+
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/zoopito";
 
@@ -17,23 +23,18 @@ async function main() {
 }
 
 const initDB = async () => {
-  //try {
-  //   // 🔥 DROP OLD UNIQUE INDEX
-  //   await User.collection.dropIndex("mobile_1");
-  //   console.log("mobile_1 index dropped successfully");
-
-  //   const users = await User.find();
-  //   console.log("Admin user check complete", users.length);
-  // } catch (err) {
-  //   console.log("Error in checking admin user or dropping index:", err.message);
-  // } finally {
-  //   mongoose.connection.close();
-  // }
-  // const users = await Farmer.find();
-  // console.log(users);
-  const user = await User.findOneAndDelete({
-    email: "thecubicals123@gmail.com",
-  });
+  try {
+    // 🔥 DROP OLD UNIQUE INDEX
+    await Animal.findAndDeleteMany({});
+    await Farmer.findAndDeleteMany({});
+    await Vaccine.findAndDeleteMany({});
+    await Vaccination.findAndDeleteMany({});
+    await Paravet.findAndDeleteMany({});
+    await Payment.findAndDeleteMany({});
+  } catch (err) {
+    console.log(err);
+  }
+  };
 
   console.log(user);
 };

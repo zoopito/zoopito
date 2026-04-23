@@ -185,6 +185,27 @@
                     </h2>
                 </div>
                 
+
+                <!-- Add this inside the Price Summary card -->
+<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+    <div class="flex items-center">
+        <input type="checkbox" 
+               id="skipPayment" 
+               name="skip_payment" 
+               value="true"
+               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+        <label for="skipPayment" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+            <i class="fas fa-check-circle mr-1 text-green-500"></i>
+            Skip payment verification (Mark as completed directly)
+        </label>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-6">
+        When checked, vaccinations will be marked as completed immediately without payment verification.
+        Use this for cash payments or internal records.
+    </p>
+</div>
+
+
                 <div class="p-6 price-summary">
                     <div class="space-y-4">
                         <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
@@ -249,7 +270,7 @@
 <script>
     let selectedAnimals = new Set();
     let currentVaccinePrice = 0;
-    let serviceCharge = <%= paravet?.serviceCharge || 50 %>;
+    var serviceCharge = `<%= paravet?.serviceCharge || 50 %>`;
 
     $(document).ready(function() {
         // Load animals when farmer is selected
@@ -316,6 +337,16 @@
             // Set selected animals in hidden input
             $('#selectedAnimalsInput').val(Array.from(selectedAnimals).join(','));
             
+            // Set skip_payment value
+    const skipPayment = $('#skipPayment').is(':checked');
+    if (skipPayment) {
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'skip_payment',
+            value: 'true'
+        }).appendTo('#vaccinationForm');
+    }
+
             // Show loading
             $('#buttonText').addClass('hidden');
             $('#loadingSpinner').removeClass('hidden');

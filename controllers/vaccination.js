@@ -19,7 +19,7 @@ exports.vaccinationindex = async (req, res) => {
       vaccineType,
       animalType,
       page = 1,
-      limit = 10,
+      limit = 40,
     } = req.query;
 
     // Build query
@@ -336,6 +336,8 @@ exports.renderNewForm = async (req, res) => {
   }
 };
 // ================ ADD NEW VACCINATION ================
+// controllers/vaccination.js
+
 exports.addVaccination = async (req, res) => {
   try {
     const vaccinationData = req.body;
@@ -373,6 +375,18 @@ exports.addVaccination = async (req, res) => {
       const animal = await Animal.findById(selectedAnimals[i]);
       if (!animal) continue;
 
+      // Calculate next due date
+      let nextDueDate = null;
+      if (vaccinationData.nextDueDate) {
+        nextDueDate = new Date(vaccinationData.nextDueDate);
+      } else if (vaccine.defaultNextDueMonths) {
+        nextDueDate = new Date(vaccinationData.dateAdministered || new Date());
+        nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.defaultNextDueMonths);
+      } else if (vaccine.boosterIntervalWeeks) {
+        nextDueDate = new Date(vaccinationData.dateAdministered || new Date());
+        nextDueDate.setDate(nextDueDate.getDate() + (vaccine.boosterIntervalWeeks * 7));
+      }
+
       const vaccination = {
         farmer: animal.farmer,
         animal: animal._id,
@@ -383,22 +397,21 @@ exports.addVaccination = async (req, res) => {
         expiryDate: vaccinationData.expiryDate,
         doseNumber: vaccinationData.doseNumber || 1,
         totalDosesRequired: vaccinationData.totalDosesRequired || 1,
-        administrationMethod:
-          vaccinationData.administrationMethod || "Injection",
+        administrationMethod: vaccinationData.administrationMethod || "Injection",
         injectionSite: vaccinationData.injectionSite || "Subcutaneous",
         dosageAmount: vaccinationData.dosageAmount || vaccine.standardDosage,
         dosageUnit: vaccinationData.dosageUnit || vaccine.dosageUnit || "ml",
         dateAdministered: vaccinationData.dateAdministered || new Date(),
-        nextDueDate: vaccinationData.nextDueDate,
-        administeredBy: req.user.name,
+        nextDueDate: nextDueDate,
+        administeredBy: vaccinationData.administeredBy || req.user.name,
         verifiedBy: userId,
 
         payment: {
           vaccinePrice: vaccinePrice,
           serviceCharge: serviceCharge,
           totalAmount: totalPerAnimal,
-          paymentStatus: "Pending",
-          paymentMethod: vaccinationData.paymentMethod || "UPI",
+          paymentStatus: "Completed",  // ✅ Mark as completed directly
+          paymentMethod: vaccinationData.paymentMethod || "Cash",
           paymentDate: new Date(),
         },
 
@@ -417,14 +430,11 @@ exports.addVaccination = async (req, res) => {
         notes: vaccinationData.notes,
         followUpInstructions: vaccinationData.followUpInstructions,
 
-        status: "Payment Pending",
-        verificationStatus: "Pending",
+        status: "Completed",  // ✅ Mark as completed directly
+        verificationStatus: "Verified",  // ✅ Mark as verified directly
 
-        source:
-          selectedAnimals.length > 1 ? "bulk_registration" : "manual_entry",
-
+        source: selectedAnimals.length > 1 ? "bulk_registration" : "manual_entry",
         registrationBatchId: selectedAnimals.length > 1 ? batchId : undefined,
-
         registrationBatchIndex: i,
         isBulkRegistration: selectedAnimals.length > 1,
         bulkAnimalCount: selectedAnimals.length,
@@ -437,35 +447,53 @@ exports.addVaccination = async (req, res) => {
 
     const savedVaccinations = await Vaccination.insertMany(vaccinations);
 
+    // Update animal's vaccination summary
     for (const vac of savedVaccinations) {
       await Animal.findByIdAndUpdate(vac.animal, {
-        lastVaccinationDate: vac.dateAdministered,
-        $push: { vaccinationHistory: vac._id },
+        $set: {
+          "vaccinationSummary.lastVaccinationDate": vac.dateAdministered,
+          "vaccinationSummary.lastVaccineType": vac.vaccineType,
+          "vaccinationSummary.nextVaccinationDate": vac.nextDueDate,
+          "vaccinationSummary.isUpToDate": vac.nextDueDate ? vac.nextDueDate > new Date() : true,
+          "vaccinationSummary.lastUpdated": new Date(),
+        },
+        $inc: { "vaccinationSummary.totalVaccinations": 1 },
+        $push: {
+          "vaccinationSummary.vaccinesGiven": {
+            vaccine: vac.vaccine,
+            vaccineName: vac.vaccineName,
+            lastDate: vac.dateAdministered,
+            nextDue: vac.nextDueDate,
+            status: vac.nextDueDate && vac.nextDueDate > new Date() ? "up_to_date" : "due_soon",
+          },
+        },
       });
     }
 
-    req.session.pendingPayment = {
-      batchId:
-        selectedAnimals.length > 1
-          ? batchId
-          : savedVaccinations[0]._id.toString(),
+    req.flash("success", `${savedVaccinations.length} vaccination record(s) created successfully!`);
 
-      totalAmount: totalAmount,
-      animalCount: selectedAnimals.length,
-      vaccineName: vaccine.name,
-      farmerName: (await Farmer.findById(vaccinations[0].farmer)).name,
-    };
+    // ✅ Redirect directly to vaccinations list page
+    const role = req.user.role.toLowerCase();
+    if (role === 'admin') {
+      res.redirect("/admin/vaccinations");
+    } else if (role === 'paravet') {
+      res.redirect("/paravet/vaccinations");
+    } else {
+      res.redirect("/vaccination");
+    }
 
-    req.flash(
-      "success",
-      `${savedVaccinations.length} vaccination record(s) created. Please complete payment.`,
-    );
-
-    res.redirect("/vaccination/payment");
   } catch (error) {
     console.error("Error saving vaccination:", error);
     req.flash("error", error.message || "Error saving vaccination record");
-    res.redirect("/vaccination/new");
+    
+    const role = req.user.role.toLowerCase();
+    if (role === 'admin') {
+      res.redirect("/admin/vaccinations/new");
+    } else if (role === 'paravet') {
+      res.redirect("/paravet/vaccinations/new");
+    } else {
+      res.redirect("/vaccination/new");
+    }
   }
 };
 // ================ GET ANIMALS BY FARMER (AJAX) ================
@@ -1172,73 +1200,429 @@ exports.recordVaccination = async (req, res) => {
 };
 
 // ================ COMPLETE VACCINATION (Mark complete & auto-calculate next) ================
+// controllers/taskScheduller.js - Add/Update these functions
+
+/**
+ * Complete a vaccination and automatically calculate next due date
+ */
 exports.completeVaccination = async (req, res) => {
   try {
     const { id } = req.params;
-    const { completionDate } = req.body;
+    const { completionDate, batchNumber, notes, animalCondition } = req.body;
 
-    const vaccination = await Vaccination.findById(id).populate("vaccine");
+    // Find vaccination with populated vaccine and animal
+    const vaccination = await Vaccination.findById(id)
+      .populate('vaccine')
+      .populate('animal');
+
     if (!vaccination) {
-      return res.status(404).json({ success: false, message: "Vaccination record not found" });
+      return res.status(404).json({
+        success: false,
+        message: 'Vaccination record not found'
+      });
     }
 
-    if (vaccination.status !== "Administered") {
-      return res.status(400).json({ success: false, message: "Vaccination must be administered before completing" });
+    // Check if already completed
+    if (vaccination.status === 'Completed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Vaccination already completed'
+      });
     }
 
-    const completeDate = new Date(completionDate || new Date());
-    let nextDueDate = new Date(completeDate);
+    const completeDate = completionDate ? new Date(completionDate) : new Date();
+    completeDate.setHours(0, 0, 0, 0);
 
-    // Calculate next due date based on vaccine booster or immunity
-    const vaccine = vaccination.vaccine;
-    if (vaccine && vaccine.boosterIntervalWeeks) {
-      nextDueDate.setDate(nextDueDate.getDate() + vaccine.boosterIntervalWeeks * 7);
-    } else if (vaccine && vaccine.immunityDurationMonths) {
-      nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.immunityDurationMonths);
+    // Calculate next due date based on vaccine
+    let nextDueDate = null;
+    let boosterInterval = null;
+
+    if (vaccination.vaccine) {
+      const vaccine = vaccination.vaccine;
+      
+      // Priority 1: Booster Interval Weeks
+      if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
+        nextDueDate = new Date(completeDate);
+        nextDueDate.setDate(nextDueDate.getDate() + (vaccine.boosterIntervalWeeks * 7));
+        boosterInterval = `${vaccine.boosterIntervalWeeks} weeks`;
+      }
+      // Priority 2: Immunity Duration Months
+      else if (vaccine.immunityDurationMonths && vaccine.immunityDurationMonths > 0) {
+        nextDueDate = new Date(completeDate);
+        nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.immunityDurationMonths);
+        boosterInterval = `${vaccine.immunityDurationMonths} months`;
+      }
+      // Priority 3: Default Next Due Months
+      else if (vaccine.defaultNextDueMonths && vaccine.defaultNextDueMonths > 0) {
+        nextDueDate = new Date(completeDate);
+        nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.defaultNextDueMonths);
+        boosterInterval = `${vaccine.defaultNextDueMonths} months`;
+      }
+      // Default: 1 year
+      else {
+        nextDueDate = new Date(completeDate);
+        nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+        boosterInterval = '1 year';
+      }
     } else {
+      // Fallback if no vaccine data
+      nextDueDate = new Date(completeDate);
       nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+      boosterInterval = '1 year';
     }
 
-    // Check if this is the last dose
-    const isLastDose = vaccination.doseNumber >= vaccination.totalDosesRequired;
-
-    vaccination.status = "Completed";
-    vaccination.verificationStatus = "Verified";
+    // Update vaccination record
+    vaccination.status = 'Completed';
+    vaccination.verificationStatus = 'Verified';
+    vaccination.dateAdministered = completeDate;
+    vaccination.nextDueDate = nextDueDate;
     vaccination.verifiedBy = req.user._id;
+    vaccination.verifiedAt = new Date();
+    
+    if (batchNumber) vaccination.batchNumber = batchNumber;
+    if (notes) vaccination.notes = notes;
+    
+    // Update animal condition if provided
+    if (animalCondition) {
+      vaccination.animalCondition = {
+        ...vaccination.animalCondition,
+        ...animalCondition,
+        recordedAt: new Date()
+      };
+    }
 
-    // Only set next due if not the last dose of series
-    if (!isLastDose) {
-      vaccination.nextDueDate = nextDueDate;
-    } else {
+    // Check if this is the last dose in a series
+    if (vaccination.doseNumber >= vaccination.totalDosesRequired) {
       vaccination.isSeriesComplete = true;
-      vaccination.seriesCompletionDate = completeDate;
-      vaccination.nextDueDate = nextDueDate; // Still set for any future boosters
+      vaccination.seriesCompletionDate = new Date();
+    } else {
+      vaccination.doseNumber += 1;
     }
 
     await vaccination.save();
 
-    // Update animal summary
-    await Animal.findByIdAndUpdate(
-      vaccination.animal,
-      {
-        $set: {
-          "vaccinationSummary.nextVaccinationDate": nextDueDate,
-          "vaccinationSummary.lastVaccinationDate": completeDate
-        }
-      }
-    );
+    // Update animal's vaccination summary
+    await updateAnimalVaccinationSummary(vaccination.animal._id, vaccination);
 
-    req.flash("success", `Vaccination completed. Next due: ${nextDueDate.toLocaleDateString()}`);
+    // Create next scheduled vaccination if needed (for multi-dose series)
+    if (!vaccination.isSeriesComplete && vaccination.vaccine) {
+      await createNextScheduledVaccination(vaccination, nextDueDate, req.user._id);
+    }
+
+    console.log(`✅ Vaccination ${id} completed. Next due: ${nextDueDate.toISOString().split('T')[0]} (${boosterInterval})`);
+
     res.json({
       success: true,
-      message: "Vaccination completed",
-      vaccination: vaccination,
-      nextDueDate: nextDueDate.toISOString().split("T")[0]
+      message: `Vaccination completed successfully! Next due date: ${nextDueDate.toLocaleDateString()}`,
+      data: {
+        vaccinationId: vaccination._id,
+        completedDate: completeDate,
+        nextDueDate: nextDueDate,
+        nextDueDateFormatted: nextDueDate.toLocaleDateString(),
+        boosterInterval: boosterInterval,
+        isSeriesComplete: vaccination.isSeriesComplete,
+        doseNumber: vaccination.doseNumber,
+        totalDoses: vaccination.totalDosesRequired
+      }
     });
 
   } catch (error) {
-    console.error("Error completing vaccination:", error);
-    res.status(500).json({ success: false, message: error.message || "Error completing vaccination" });
+    console.error('Error completing vaccination:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error completing vaccination'
+    });
+  }
+};
+
+/**
+ * Update animal's vaccination summary after completion
+ */
+async function updateAnimalVaccinationSummary(animalId, vaccination) {
+  try {
+    const animal = await Animal.findById(animalId);
+    if (!animal) return;
+
+    // Get all completed vaccinations for this animal
+    const allVaccinations = await Vaccination.find({
+      animal: animalId,
+      status: 'Completed'
+    }).sort({ dateAdministered: -1 });
+
+    // Find earliest next due date from all vaccinations
+    let earliestNextDue = null;
+    for (const vac of allVaccinations) {
+      if (vac.nextDueDate && vac.nextDueDate > new Date()) {
+        if (!earliestNextDue || vac.nextDueDate < earliestNextDue) {
+          earliestNextDue = vac.nextDueDate;
+        }
+      }
+    }
+
+    // Update or create vaccination summary
+    if (!animal.vaccinationSummary) {
+      animal.vaccinationSummary = {
+        totalVaccinations: 0,
+        vaccinesGiven: [],
+        isUpToDate: false,
+        lastUpdated: new Date()
+      };
+    }
+
+    // Update summary fields
+    animal.vaccinationSummary.totalVaccinations = allVaccinations.length;
+    animal.vaccinationSummary.lastVaccinationDate = vaccination.dateAdministered;
+    animal.vaccinationSummary.lastVaccineType = vaccination.vaccineName;
+    animal.vaccinationSummary.nextVaccinationDate = earliestNextDue;
+    animal.vaccinationSummary.isUpToDate = !earliestNextDue || earliestNextDue <= new Date();
+    animal.vaccinationSummary.lastUpdated = new Date();
+
+    // Update individual vaccine record in the array
+    const vaccineIndex = animal.vaccinationSummary.vaccinesGiven.findIndex(
+      v => v.vaccine && v.vaccine.toString() === vaccination.vaccine?.toString()
+    );
+
+    const vaccineRecord = {
+      vaccine: vaccination.vaccine,
+      vaccineName: vaccination.vaccineName,
+      lastDate: vaccination.dateAdministered,
+      nextDue: vaccination.nextDueDate,
+      status: vaccination.nextDueDate && vaccination.nextDueDate > new Date() ? 'up_to_date' : 'due_soon'
+    };
+
+    if (vaccineIndex >= 0) {
+      animal.vaccinationSummary.vaccinesGiven[vaccineIndex] = vaccineRecord;
+    } else {
+      animal.vaccinationSummary.vaccinesGiven.push(vaccineRecord);
+    }
+
+    await animal.save();
+    console.log(`✅ Updated vaccination summary for animal ${animalId}`);
+
+  } catch (error) {
+    console.error('Error updating animal vaccination summary:', error);
+  }
+}
+
+/**
+ * Create next scheduled vaccination for multi-dose series
+ */
+async function createNextScheduledVaccination(vaccination, nextDueDate, userId) {
+  try {
+    // Check if next dose already exists
+    const existingNext = await Vaccination.findOne({
+      animal: vaccination.animal._id,
+      vaccine: vaccination.vaccine._id,
+      doseNumber: vaccination.doseNumber + 1,
+      status: { $in: ['Scheduled', 'Payment Pending'] }
+    });
+
+    if (existingNext) {
+      // Update existing scheduled vaccination
+      existingNext.scheduledDate = nextDueDate;
+      existingNext.nextDueDate = nextDueDate;
+      existingNext.updatedBy = userId;
+      await existingNext.save();
+      console.log(`✅ Updated existing scheduled dose ${vaccination.doseNumber + 1}`);
+      return;
+    }
+
+    // Create new scheduled vaccination for next dose
+    const nextVaccination = new Vaccination({
+      farmer: vaccination.farmer,
+      animal: vaccination.animal._id,
+      vaccine: vaccination.vaccine._id,
+      vaccineName: vaccination.vaccineName,
+      vaccineType: vaccination.vaccineType,
+      doseNumber: vaccination.doseNumber + 1,
+      totalDosesRequired: vaccination.totalDosesRequired,
+      dosageAmount: vaccination.dosageAmount,
+      dosageUnit: vaccination.dosageUnit,
+      administrationMethod: vaccination.administrationMethod,
+      injectionSite: vaccination.injectionSite,
+      scheduledDate: nextDueDate,
+      nextDueDate: nextDueDate,
+      status: 'Scheduled',
+      payment: {
+        vaccinePrice: vaccination.payment?.vaccinePrice || 0,
+        serviceCharge: vaccination.payment?.serviceCharge || 0,
+        totalAmount: (vaccination.payment?.vaccinePrice || 0) + (vaccination.payment?.serviceCharge || 0),
+        paymentStatus: 'Pending'
+      },
+      createdBy: userId,
+      source: 'schedule'
+    });
+
+    await nextVaccination.save();
+    console.log(`✅ Created scheduled dose ${vaccination.doseNumber + 1} for animal ${vaccination.animal._id}`);
+
+  } catch (error) {
+    console.error('Error creating next scheduled vaccination:', error);
+  }
+}
+
+/**
+ * Bulk complete multiple vaccinations
+ */
+exports.bulkCompleteVaccinations = async (req, res) => {
+  try {
+    const { vaccinationIds, completionDate, batchNumber, notes } = req.body;
+
+    if (!vaccinationIds || !Array.isArray(vaccinationIds) || vaccinationIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No vaccination IDs provided'
+      });
+    }
+
+    const results = {
+      success: [],
+      failed: [],
+      totalCompleted: 0
+    };
+
+    for (const vacId of vaccinationIds) {
+      try {
+        const vaccination = await Vaccination.findById(vacId)
+          .populate('vaccine')
+          .populate('animal');
+
+        if (!vaccination) {
+          results.failed.push({ id: vacId, reason: 'Not found' });
+          continue;
+        }
+
+        if (vaccination.status === 'Completed') {
+          results.failed.push({ id: vacId, reason: 'Already completed' });
+          continue;
+        }
+
+        const completeDate = completionDate ? new Date(completionDate) : new Date();
+        completeDate.setHours(0, 0, 0, 0);
+
+        // Calculate next due date
+        let nextDueDate = new Date(completeDate);
+        if (vaccination.vaccine) {
+          const vaccine = vaccination.vaccine;
+          if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
+            nextDueDate.setDate(nextDueDate.getDate() + (vaccine.boosterIntervalWeeks * 7));
+          } else if (vaccine.immunityDurationMonths && vaccine.immunityDurationMonths > 0) {
+            nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.immunityDurationMonths);
+          } else if (vaccine.defaultNextDueMonths && vaccine.defaultNextDueMonths > 0) {
+            nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.defaultNextDueMonths);
+          } else {
+            nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+          }
+        } else {
+          nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+        }
+
+        // Update vaccination
+        vaccination.status = 'Completed';
+        vaccination.verificationStatus = 'Verified';
+        vaccination.dateAdministered = completeDate;
+        vaccination.nextDueDate = nextDueDate;
+        vaccination.verifiedBy = req.user._id;
+        vaccination.verifiedAt = new Date();
+        if (batchNumber) vaccination.batchNumber = batchNumber;
+        if (notes) vaccination.notes = notes;
+
+        await vaccination.save();
+
+        // Update animal summary
+        await updateAnimalVaccinationSummary(vaccination.animal._id, vaccination);
+
+        results.success.push({
+          id: vacId,
+          animalName: vaccination.animal?.name || 'Unknown',
+          nextDueDate: nextDueDate.toISOString().split('T')[0]
+        });
+        results.totalCompleted++;
+
+      } catch (error) {
+        console.error(`Error completing vaccination ${vacId}:`, error);
+        results.failed.push({ id: vacId, reason: error.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Completed ${results.totalCompleted} vaccinations successfully`,
+      results: results
+    });
+
+  } catch (error) {
+    console.error('Error in bulk complete:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error completing vaccinations'
+    });
+  }
+};
+
+/**
+ * Get vaccine details for next due calculation
+ */
+exports.getVaccineNextDueInfo = async (req, res) => {
+  try {
+    const { vaccineId } = req.params;
+    
+    const vaccine = await Vaccine.findById(vaccineId).select(
+      'name boosterIntervalWeeks immunityDurationMonths defaultNextDueMonths'
+    );
+    
+    if (!vaccine) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vaccine not found'
+      });
+    }
+    
+    let nextDueInfo = {
+      hasBooster: false,
+      intervalValue: null,
+      intervalUnit: null,
+      description: 'No booster information available'
+    };
+    
+    if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
+      nextDueInfo = {
+        hasBooster: true,
+        intervalValue: vaccine.boosterIntervalWeeks,
+        intervalUnit: 'weeks',
+        description: `Booster due after ${vaccine.boosterIntervalWeeks} week${vaccine.boosterIntervalWeeks > 1 ? 's' : ''}`
+      };
+    } else if (vaccine.immunityDurationMonths && vaccine.immunityDurationMonths > 0) {
+      nextDueInfo = {
+        hasBooster: true,
+        intervalValue: vaccine.immunityDurationMonths,
+        intervalUnit: 'months',
+        description: `Next dose due after ${vaccine.immunityDurationMonths} month${vaccine.immunityDurationMonths > 1 ? 's' : ''}`
+      };
+    } else if (vaccine.defaultNextDueMonths && vaccine.defaultNextDueMonths > 0) {
+      nextDueInfo = {
+        hasBooster: true,
+        intervalValue: vaccine.defaultNextDueMonths,
+        intervalUnit: 'months',
+        description: `Next dose due after ${vaccine.defaultNextDueMonths} month${vaccine.defaultNextDueMonths > 1 ? 's' : ''}`
+      };
+    }
+    
+    res.json({
+      success: true,
+      vaccine: {
+        id: vaccine._id,
+        name: vaccine.name,
+        nextDueInfo
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error getting vaccine next due info:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 

@@ -394,17 +394,89 @@ module.exports.farmersIndex = async (req, res) => {
     const limit = 20;
     const skip = (page - 1) * limit;
 
-    // 🔐 Admin-only access assumed via middleware
+    // Get filter parameters
+    const search = req.query.search || '';
+    const village = req.query.village || '';
+    const status = req.query.status || '';
+    const paravetId = req.query.paravet || '';
+    const sortBy = req.query.sortBy || 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
-    const query = {}; // Future: add filters here
+    // Build query
+    let query = {};
+    
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { mobileNumber: { $regex: search, $options: 'i' } },
+        { uniqueFarmerId: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    if (village) {
+      query['address.village'] = { $regex: village, $options: 'i' };
+    }
+    
+    if (status === 'active') {
+      query.isActive = true;
+    } else if (status === 'inactive') {
+      query.isActive = false;
+    }
+    
+    if (paravetId) {
+      query.assignedParavet = paravetId;
+    }
 
+    // Build sort object
+    let sortObj = {};
+    if (sortBy === 'name') {
+      sortObj = { name: sortOrder };
+    } else if (sortBy === 'location') {
+      sortObj = { 'address.village': sortOrder };
+    } else if (sortBy === 'contact') {
+      sortObj = { mobileNumber: sortOrder };
+    } else {
+      sortObj = { createdAt: -1 };
+    }
+
+    // Get farmers with populated data
     const [farmers, totalCount] = await Promise.all([
-      Farmer.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-
+      Farmer.find(query)
+        .populate('assignedParavet', 'user')
+        .populate('assignedParavet.user', 'name')
+        .sort(sortObj)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
       Farmer.countDocuments(query),
     ]);
 
     const totalPages = Math.ceil(totalCount / limit) || 1;
+
+    // Calculate statistics
+    const activeCount = await Farmer.countDocuments({ isActive: true });
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const monthlyCount = await Farmer.countDocuments({
+      createdAt: { $gte: startOfMonth }
+    });
+    
+    const animalCounts = await Animal.aggregate([
+      { $group: { _id: '$farmer', count: { $sum: 1 } } }
+    ]);
+    const totalAnimals = animalCounts.reduce((sum, a) => sum + a.count, 0);
+    const avgAnimals = totalCount > 0 ? totalAnimals / totalCount : 0;
+
+    // Get unique villages for filter
+    const uniqueVillages = await Farmer.distinct('address.village', {
+      'address.village': { $ne: null, $ne: '' }
+    });
+
+    // Get paravets for filter
+    const paravets = await Paravet.find({ isActive: true })
+      .populate('user', 'name')
+      .lean();
 
     if (page > totalPages && totalPages > 0) {
       return res.redirect(`/${role}/farmers?page=${totalPages}`);
@@ -417,6 +489,20 @@ module.exports.farmersIndex = async (req, res) => {
       totalPages,
       totalCount,
       limit,
+      // Statistics
+      activeCount,
+      monthlyCount,
+      avgAnimals,
+      // Filters
+      searchQuery: search,
+      selectedVillage: village,
+      statusFilter: status,
+      selectedParavet: paravetId,
+      uniqueVillages,
+      paravets,
+      // Sorting
+      sortBy,
+      sortOrder: sortOrder === 1 ? 'asc' : 'desc',
     });
   } catch (error) {
     console.error("Farmer Index Error:", error);

@@ -107,7 +107,7 @@ router.get(
   taskController.getVaccinationHistory,
 );
 router.post("/api/bulk-assign", taskController.bulkAssignParavets);
-router.post("/api/bulk-complete", taskController.bulkCompleteVaccinations);
+router.post("/api/bulk-complete", vaccinationController.bulkCompleteVaccinations);
 router.post("/api/schedule-date", taskController.scheduleDate);
 
 // Update vaccination status
@@ -115,6 +115,8 @@ router.patch(
   "/api/vaccination/:id/status",
   taskController.updateVaccinationStatus,
 );
+
+router.get("/api/vaccine/:vaccineId/next-due", isLoggedIn, vaccinationController.getVaccineNextDueInfo);
 
 // Delete vaccination
 //router.delete("/api/vaccination/:id", vaccinationController.deleteVaccination);

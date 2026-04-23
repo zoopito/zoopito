@@ -33,7 +33,7 @@ const generateAnimaleID = async () => {
 module.exports.animalsIndexPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 40;
     const skip = (page - 1) * limit;
 
     // Get filter parameters
@@ -195,6 +195,8 @@ module.exports.animalsIndexPage = async (req, res) => {
 
     const totalPages = Math.ceil(totalAnimals / limit);
 
+    vaccinatedCount = await Vaccination.countDocuments({ status: "Administered" });
+
     // Get animal type statistics
     const animalTypeStats = await Animal.aggregate([
       {
@@ -209,6 +211,13 @@ module.exports.animalsIndexPage = async (req, res) => {
     res.render("admin/animal.ejs", {
       title: "Animals Management",
       animals,
+      vaccinatedCount: vaccinatedCount || 0,
+overdueCount: await Vaccination.countDocuments({ 
+  status: { $in: ['Scheduled', 'Payment Pending'] }, 
+  nextDueDate: { $lt: new Date() } 
+}) || 0,
+filterGender: req.query.gender || 'all',
+filterHealth: req.query.health || 'all',
       // Pagination
       currentPage: page,
       totalPages,
@@ -437,10 +446,14 @@ async function createSingleAnimal(req, res) {
 }
 
 // Bulk animal registration
+// Bulk animal registration - UPDATED with common vaccination scheduling
 async function createBulkAnimals(req, res) {
   try {
     console.log("========== BULK ANIMAL REGISTRATION DEBUG ==========");
     console.log("Request body animals count:", req.body.animals?.length);
+    console.log("Apply common vaccination date:", req.body.applyCommonVaccinationDate);
+    console.log("Common scheduled date:", req.body.commonScheduledDate);
+    console.log("Common administered by:", req.body.commonAdministeredBy);
     
     if (!req.body.animals || !Array.isArray(req.body.animals) || req.body.animals.length === 0) {
       console.log("No animals array found, treating as single animal registration");
@@ -450,6 +463,11 @@ async function createBulkAnimals(req, res) {
     const animalsData = [];
     const createdAnimals = [];
     const errors = [];
+    
+    // Common vaccination scheduling data
+    const applyCommonVaccination = req.body.applyCommonVaccinationDate === 'on';
+    const commonScheduledDate = req.body.commonScheduledDate;
+    const commonAdministeredBy = req.body.commonAdministeredBy;
     
     // Track if any animal has a paid plan
     let hasPaidPlan = false;
@@ -471,7 +489,6 @@ async function createBulkAnimals(req, res) {
             totalPlanAmount += planDetails.price;
             paymentMethods.add(animalInput.planPaymentMethod || 'pending');
             
-            // Store the highest plan or combine them
             if (!combinedPlanDetails) {
               combinedPlanDetails = {
                 name: `Combined Plan (${req.body.animals.length} animals)`,
@@ -489,7 +506,6 @@ async function createBulkAnimals(req, res) {
             };
           }
         } else {
-          // No plan selected
           animalData.plan = {
             type: 'none',
             name: 'No Plan',
@@ -499,7 +515,7 @@ async function createBulkAnimals(req, res) {
           };
         }
 
-        animalsData.push({ animalData, index: i });
+        animalsData.push({ animalData, index: i, animalInput });
       } catch (error) {
         errors.push({
           index: i + 1,
@@ -516,17 +532,35 @@ async function createBulkAnimals(req, res) {
       return res.redirect(`/${req.user.role.toLowerCase()}/animals/new?type=bulk`);
     }
 
-    // Create all animals
-    for (const { animalData, index } of animalsData) {
+    // Create all animals and schedule remaining vaccines if requested
+    let totalScheduledVaccinations = 0;
+    
+    for (const { animalData, index, animalInput } of animalsData) {
       try {
         const newAnimal = new Animal(animalData);
         await newAnimal.save();
         createdAnimals.push(newAnimal);
+        
+        console.log(`✅ Animal ${index + 1} saved with ID: ${newAnimal._id}`);
 
-        // Create vaccination records if applicable
+        // Create vaccination records if specifically provided for this animal
         if (req.body.animals[index]?.vaccinations) {
           await createVaccinationRecords(req, newAnimal, null, index);
         }
+        
+        // Schedule remaining vaccines if common vaccination is enabled
+        if (applyCommonVaccination && commonScheduledDate && commonAdministeredBy) {
+          console.log(`📅 Scheduling remaining vaccines for animal ${newAnimal._id} on ${commonScheduledDate}`);
+          const scheduledVaccinations = await scheduleRemainingVaccines(
+            newAnimal._id,
+            commonScheduledDate,
+            commonAdministeredBy,
+            req.user._id
+          );
+          totalScheduledVaccinations += scheduledVaccinations.length;
+          console.log(`✅ Scheduled ${scheduledVaccinations.length} vaccines for animal ${newAnimal.name || newAnimal.tagNumber}`);
+        }
+        
       } catch (animalError) {
         console.error(`Error saving animal ${index}:`, animalError);
         errors.push({
@@ -545,10 +579,8 @@ async function createBulkAnimals(req, res) {
     // Create a SINGLE combined payment for all animals with paid plans
     let combinedPayment = null;
     if (hasPaidPlan && totalPlanAmount > 0) {
-      // Determine payment method - use the first one (or combine logic)
       const paymentMethod = Array.from(paymentMethods)[0] || 'pending';
       
-      // Create combined plan details
       const combinedPlan = {
         name: `Combined Plan - ${createdAnimals.filter(a => a.plan && a.plan.price > 0).length} animals`,
         price: totalPlanAmount,
@@ -557,14 +589,8 @@ async function createBulkAnimals(req, res) {
       
       console.log(`Creating combined payment: ₹${totalPlanAmount} for ${createdAnimals.length} animals`);
       
-      combinedPayment = await createCombinedPayment(
-        req, 
-        createdAnimals, 
-        combinedPlan, 
-        paymentMethod
-      );
+      combinedPayment = await createCombinedPayment(req, createdAnimals, combinedPlan, paymentMethod);
       
-      // If online payment, redirect to payment page
       if (combinedPayment && paymentMethod === 'online') {
         console.log(`🚀 Redirecting to combined payment page for payment ID: ${combinedPayment._id}`);
         req.flash('info', `Total payment of ₹${totalPlanAmount} for ${createdAnimals.length} animal(s) pending.`);
@@ -572,20 +598,20 @@ async function createBulkAnimals(req, res) {
       }
     }
 
-    // If some animals failed to save
-    if (errors.length > 0) {
-      const successCount = createdAnimals.length;
-      const failureCount = errors.length;
-      req.flash("warning", `${successCount} animal(s) registered successfully, but ${failureCount} failed.`);
+    // Create success message
+    let successMessage = `${createdAnimals.length} animal(s) registered successfully!`;
+    if (applyCommonVaccination && totalScheduledVaccinations > 0) {
+      successMessage += ` ${totalScheduledVaccinations} upcoming vaccinations scheduled for ${commonScheduledDate}.`;
     }
 
-    // Send success response
-    if (createdAnimals.length > 0) {
-      sendSuccessResponse(req, res, createdAnimals, "bulk", combinedPayment ? [combinedPayment] : []);
-    } else {
-      req.flash("error", "Failed to register any animals. Please try again.");
-      res.redirect(`/${req.user.role.toLowerCase()}/animals/new?type=bulk`);
+    req.flash("success", successMessage);
+    
+    if (errors.length > 0) {
+      req.flash("warning", `${createdAnimals.length} animal(s) registered successfully, but ${errors.length} failed.`);
     }
+
+    res.redirect(`/${req.user.role.toLowerCase()}/animals`);
+    
   } catch (error) {
     console.error("Error in bulk animal registration:", error);
     handleError(error, req, res);
@@ -672,6 +698,156 @@ function getPlanDetails(planType) {
     };
     return plans[planType] || plans.none;
 }
+
+// Add this function after your existing functions in animal.js
+
+/**
+ * Schedule remaining vaccines for an animal
+ * @param {ObjectId} animalId - Animal ID
+ * @param {Date} scheduledDate - Date to schedule remaining vaccines
+ * @param {string} administeredBy - Who will administer
+ * @param {ObjectId} userId - User ID
+ * @returns {Promise<Array>} - Created vaccination records
+ */
+async function scheduleRemainingVaccines(animalId, scheduledDate, administeredBy, userId) {
+    try {
+        // Get animal details
+        const animal = await Animal.findById(animalId).populate('farmer');
+        if (!animal) {
+            throw new Error('Animal not found');
+        }
+
+        // Get all active vaccines
+        const allVaccines = await Vaccine.find({ isActive: true });
+        
+        // Get existing vaccinations for this animal (completed/administered)
+        const existingVaccinations = await Vaccination.find({
+            animal: animalId,
+            status: { $in: ['Administered', 'Completed', 'Payment Verified'] }
+        }).distinct('vaccine');
+        
+        // Filter out vaccines that have already been given
+        const remainingVaccines = allVaccines.filter(v => 
+            !existingVaccinations.some(existingId => existingId.toString() === v._id.toString())
+        );
+        
+        if (remainingVaccines.length === 0) {
+            return [];
+        }
+        
+        const scheduleDate = new Date(scheduledDate);
+        scheduleDate.setHours(0, 0, 0, 0);
+        
+        // Calculate next due date (schedule date + booster interval)
+        const createdVaccinations = [];
+        
+        for (const vaccine of remainingVaccines) {
+            // Calculate next due date
+            let nextDueDate = new Date(scheduleDate);
+            if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
+                nextDueDate.setDate(nextDueDate.getDate() + (vaccine.boosterIntervalWeeks * 7));
+            } else if (vaccine.defaultNextDueMonths && vaccine.defaultNextDueMonths > 0) {
+                nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.defaultNextDueMonths);
+            } else {
+                nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+            }
+            
+            // Check if vaccination already exists for this vaccine
+            const existing = await Vaccination.findOne({
+                animal: animalId,
+                vaccine: vaccine._id,
+                status: { $in: ['Scheduled', 'Payment Pending', 'Administered', 'Completed'] }
+            });
+            
+            if (existing) {
+                // Update existing scheduled vaccination
+                existing.scheduledDate = scheduleDate;
+                existing.nextDueDate = nextDueDate;
+                existing.administeredBy = administeredBy;
+                existing.updatedBy = userId;
+                existing.status = 'Scheduled';
+                await existing.save();
+                createdVaccinations.push(existing);
+            } else {
+                // Create new scheduled vaccination
+                const vaccination = new Vaccination({
+                    farmer: animal.farmer._id,
+                    animal: animalId,
+                    vaccine: vaccine._id,
+                    vaccineName: vaccine.vaccineName || vaccine.name,
+                    vaccineType: vaccine.vaccineType,
+                    doseNumber: 1,
+                    totalDosesRequired: 1,
+                    dosageAmount: vaccine.standardDosage || 1,
+                    dosageUnit: vaccine.dosageUnit || 'ml',
+                    administrationMethod: vaccine.administrationRoute || 'Injection',
+                    injectionSite: 'Subcutaneous',
+                    scheduledDate: scheduleDate,
+                    nextDueDate: nextDueDate,
+                    dateAdministered: null,
+                    administeredBy: administeredBy,
+                    status: 'Scheduled',
+                    payment: {
+                        vaccinePrice: vaccine.vaccineCharge || 0,
+                        serviceCharge: 200,
+                        totalAmount: (vaccine.vaccineCharge || 0) + 200,
+                        paymentStatus: 'Pending'
+                    },
+                    createdBy: userId,
+                    source: 'schedule'
+                });
+                
+                await vaccination.save();
+                createdVaccinations.push(vaccination);
+            }
+        }
+        
+        // Update animal's vaccination summary
+        const earliestNextDue = createdVaccinations
+            .filter(v => v.nextDueDate)
+            .sort((a, b) => a.nextDueDate - b.nextDueDate)[0];
+        
+        if (earliestNextDue) {
+            animal.vaccinationSummary = {
+                ...animal.vaccinationSummary,
+                nextVaccinationDate: earliestNextDue.nextDueDate,
+                totalVaccinations: (animal.vaccinationSummary?.totalVaccinations || 0),
+                lastUpdated: new Date(),
+                isUpToDate: false
+            };
+            await animal.save();
+        }
+        
+        console.log(`✅ Scheduled ${createdVaccinations.length} remaining vaccines for animal ${animal.name || animal.tagNumber}`);
+        return createdVaccinations;
+        
+    } catch (error) {
+        console.error('Error scheduling remaining vaccines:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get upcoming vaccinations for an animal
+ */
+async function getUpcomingVaccinations(animalId) {
+    try {
+        const vaccinations = await Vaccination.find({
+            animal: animalId,
+            status: { $in: ['Scheduled', 'Payment Pending'] }
+        })
+        .populate('vaccine', 'name vaccineType diseaseTarget boosterIntervalWeeks')
+        .sort({ scheduledDate: 1, nextDueDate: 1 })
+        .lean();
+        
+        return vaccinations;
+    } catch (error) {
+        console.error('Error getting upcoming vaccinations:', error);
+        return [];
+    }
+}
+
+
 
 // Create plan payment
 // In your createPlanPayment function
@@ -1494,12 +1670,8 @@ module.exports.viewAnimal = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Fetch animal with comprehensive population
     const animal = await Animal.findById(id)
-      .populate(
-        "farmer",
-        "name mobileNumber uniqueFarmerId address totalAnimals createdAt",
-      )
+      .populate("farmer", "name mobileNumber uniqueFarmerId address totalAnimals createdAt")
       .populate("registeredBy", "name email role")
       .populate("currentOwner", "name uniqueFarmerId")
       .populate("medicalHistory.treatedBy", "name");
@@ -1512,11 +1684,31 @@ module.exports.viewAnimal = async (req, res) => {
     // Get vaccination records for this animal
     const Vaccination = require("../models/vaccination");
     const vaccinations = await Vaccination.find({ animal: id })
-      .populate("vaccine", "name vaccineType")
+      .populate("vaccine", "name vaccineType diseaseTarget boosterIntervalWeeks")
       .sort({ dateAdministered: -1 })
-      .limit(5);
+      .limit(10);
 
-    // Calculate age in months if dateOfBirth exists
+    // Get UPCOMING vaccinations (Scheduled status)
+    const upcomingVaccinations = await Vaccination.find({
+      animal: id,
+      status: { $in: ["Scheduled", "Payment Pending"] },
+      scheduledDate: { $gte: new Date() }
+    })
+      .populate("vaccine", "name vaccineType diseaseTarget boosterIntervalWeeks")
+      .sort({ scheduledDate: 1 })
+      .lean();
+
+    // Get overdue vaccinations
+    const overdueVaccinations = await Vaccination.find({
+      animal: id,
+      status: { $in: ["Scheduled", "Payment Pending"] },
+      scheduledDate: { $lt: new Date() }
+    })
+      .populate("vaccine", "name")
+      .sort({ scheduledDate: 1 })
+      .lean();
+
+    // Calculate age in months
     let ageInMonths = null;
     if (animal.dateOfBirth) {
       const today = new Date();
@@ -1529,45 +1721,6 @@ module.exports.viewAnimal = async (req, res) => {
       ageInMonths = months;
     }
 
-    // Calculate pregnancy duration if pregnant
-    let pregnancyDuration = null;
-    let daysUntilDelivery = null;
-    if (
-      animal.pregnancyStatus?.isPregnant &&
-      animal.pregnancyStatus?.confirmedDate
-    ) {
-      const today = new Date();
-      const confirmedDate = new Date(animal.pregnancyStatus.confirmedDate);
-      const diffTime = Math.abs(today - confirmedDate);
-      pregnancyDuration = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    }
-
-    // Calculate days until expected delivery
-    if (
-      animal.pregnancyStatus?.isPregnant &&
-      animal.pregnancyStatus?.expectedDeliveryDate
-    ) {
-      const today = new Date();
-      const expectedDelivery = new Date(
-        animal.pregnancyStatus.expectedDeliveryDate,
-      );
-      daysUntilDelivery = Math.ceil(
-        (expectedDelivery - today) / (1000 * 60 * 60 * 24),
-      );
-    }
-
-    // Get upcoming vaccinations (both Scheduled and Administered)
-    const upcomingVaccinations = await Vaccination.find({
-      animal: id,
-      $or: [
-        { scheduledDate: { $gte: new Date() }, status: "Scheduled" },
-        { nextDueDate: { $gte: new Date() }, status: "Administered" }
-      ]
-    })
-      .populate("vaccine", "name vaccineType")
-      .sort({ scheduledDate: 1, nextDueDate: 1 })
-      .limit(10);
-
     // Get vaccination statistics
     const vaccinationStats = await Vaccination.aggregate([
       { $match: { animal: animal._id } },
@@ -1575,62 +1728,44 @@ module.exports.viewAnimal = async (req, res) => {
         $group: {
           _id: null,
           total: { $sum: 1 },
-          overdue: {
+          completed: {
             $sum: {
               $cond: [
-                {
-                  $and: [
-                    { $lt: ["$nextDueDate", new Date()] },
-                    { $eq: ["$status", "Administered"] },
-                  ],
-                },
+                { $in: ["$status", ["Administered", "Completed", "Payment Verified"]] },
                 1,
-                0,
-              ],
-            },
+                0
+              ]
+            }
           },
-          upcoming: {
+          scheduled: {
             $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $gte: ["$nextDueDate", new Date()] },
-                    {
-                      $lte: [
-                        "$nextDueDate",
-                        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-                      ],
-                    },
-                  ],
-                },
-                1,
-                0,
-              ],
-            },
+              $cond: [{ $eq: ["$status", "Scheduled"] }, 1, 0]
+            }
           },
-        },
-      },
+          pending: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Payment Pending"] }, 1, 0]
+            }
+          }
+        }
+      }
     ]);
 
-    // Get other animals from the same farmer
+    // Get other animals from same farmer
     const otherAnimals = await Animal.find({
       farmer: animal.farmer._id,
       _id: { $ne: id },
       isActive: true,
     })
-      .select(
-        "name animalType tagNumber uniqueAnimalId healthStatus.currentStatus",
-      )
+      .select("name animalType tagNumber uniqueAnimalId healthStatus.currentStatus")
       .limit(5);
 
     // Check if animal was from bulk registration
     const batchInfo = animal.registrationBatchId
-      ? await Animal.countDocuments({
-          registrationBatchId: animal.registrationBatchId,
-        })
+      ? await Animal.countDocuments({ registrationBatchId: animal.registrationBatchId })
       : null;
 
-    // Get pending payment for vaccine plans if any
+    // Get pending payment for vaccine plans
     let pendingPayment = null;
     if (animal.plan?.type && animal.plan.type !== 'none') {
       pendingPayment = await Payment.findOne({
@@ -1639,78 +1774,67 @@ module.exports.viewAnimal = async (req, res) => {
       }).select('_id amount metadata animalIds paymentStatus');
     }
 
+    // Define helper functions to pass to the view
+    const helpers = {
+      formatDate: function(date) {
+        if (!date) return 'N/A';
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return 'N/A';
+        return d.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      },
+      formatDateTime: function(date) {
+        if (!date) return 'N/A';
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return 'N/A';
+        return d.toLocaleString('en-IN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      },
+      getHealthColor: function(status) {
+        const colors = {
+          'Healthy': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+          'Sick': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+          'Under Treatment': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+          'Recovered': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+          'Quarantined': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+          'Chronic Condition': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+        };
+        return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+      },
+      getVaccinationStatusColor: function(dueDate) {
+        if (!dueDate) return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+        const days = Math.ceil((new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+        if (days < 0) return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+        if (days <= 7) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      }
+    };
+
     res.render("admin/animals/view", {
       animal,
       vaccinations,
       upcomingVaccinations,
+      overdueVaccinations,
       vaccinationStats: vaccinationStats[0] || {
         total: 0,
-        overdue: 0,
-        upcoming: 0,
+        completed: 0,
+        scheduled: 0,
+        pending: 0
       },
       otherAnimals,
       ageInMonths,
-      pregnancyDuration,
-      daysUntilDelivery,
       batchInfo,
       pendingPayment,
+      helpers,  // Pass helpers to the view
       title: `Animal Details - ${animal.uniqueAnimalId || animal.tagNumber}`,
-      helpers: {
-        formatDate: function (date) {
-          return date
-            ? new Date(date).toLocaleDateString("en-IN", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
-            : "N/A";
-        },
-        formatDateTime: function (date) {
-          return date
-            ? new Date(date).toLocaleString("en-IN", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "N/A";
-        },
-        getHealthColor: function (status) {
-          const colors = {
-            Healthy:
-              "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-            Sick: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-            "Under Treatment":
-              "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
-            Recovered:
-              "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-            Quarantined:
-              "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-            "Chronic Condition":
-              "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
-          };
-          return (
-            colors[status] ||
-            "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-          );
-        },
-        getVaccinationStatusColor: function (dueDate) {
-          if (!dueDate) return "bg-gray-100 text-gray-800";
-          const days = Math.ceil(
-            (new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24),
-          );
-          if (days < 0)
-            return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-          if (days <= 7)
-            return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
-          return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-        },
-        formatAge: function (age) {
-          if (!age || !age.value) return "N/A";
-          return `${age.value} ${age.unit}`;
-        },
-      },
     });
   } catch (error) {
     console.error("Error fetching animal:", error);

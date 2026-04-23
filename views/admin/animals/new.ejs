@@ -100,10 +100,18 @@
             </select>
           </div>
 
-          <!-- Breed -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Breed</label>
-            <input type="text" name="animals[<%= animalIdx %>][breed]" placeholder="Enter breed" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+          <div class="grid grid-cols-2 gap-3">
+            <!-- Breed -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Breed</label>
+              <input type="text" name="animals[<%= animalIdx %>][breed]" placeholder="Enter breed" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+            <!-- name -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+              <input type="text" name="animals[<%= animalIdx %>][name]" placeholder="Enter name (optional)" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+            </div>
+
           </div>
 
           <!-- Age -->
@@ -489,57 +497,63 @@
     </div>
     <% } %>
 
-    <!-- Common Vaccination Date for All Animals -->
-    <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
-      <div class="flex items-start bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-        <div class="flex items-center h-5">
-          <input type="checkbox" 
-                 id="applyCommonVaccinationDate" 
-                 name="applyCommonVaccinationDate" 
-                 class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
-        </div>
-        <div class="ml-3 flex-1">
-          <label for="applyCommonVaccinationDate" class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-            Add a Vaccination date for remaining vaccines for all animals in this batch (if applicable)
-          </label>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Dont click if all animals are vaccined on all available vaccines. Only click if you want to add a common vaccination date for all remaining vaccines that are not marked as administered for each animal. This will help you quickly set the same vaccination date for all those vaccines across all animals.
-          </p>
-        </div>
-      </div>
-      
-      <!-- <div id="commonVaccinationDateSection" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Common Vaccination Date *
-          </label>
-          <input type="date" 
-                 id="commonVaccinationDate" 
-                 name="commonVaccinationDate" 
-                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"
-                 max="<%= new Date().toISOString().split('T')[0] %>">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Common Next Due Date
-          </label>
-          <input type="date" 
-                 id="commonNextDueDate" 
-                 name="commonNextDueDate" 
-                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-        </div>
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Common Administered By
-          </label>
-          <input type="text" 
-                 id="commonAdministeredBy" 
-                 name="commonAdministeredBy" 
-                 placeholder="Name of person who administered the vaccine"
-                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
-        </div>
-      </div> -->
+    <!-- Common Vaccination Date for Remaining Vaccines -->
+<div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
+  <div class="flex items-start bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+    <div class="flex items-center h-5">
+      <input type="checkbox" 
+             id="applyCommonVaccinationDate" 
+             name="applyCommonVaccinationDate" 
+             class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
     </div>
+    <div class="ml-3 flex-1">
+      <label for="applyCommonVaccinationDate" class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+        Schedule remaining vaccines for all animals
+      </label>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+        Check this to schedule all remaining (not yet administered) vaccines for each animal on a common future date.
+        This will create upcoming vaccination entries for all missing vaccines.
+      </p>
+    </div>
+  </div>
+  
+  <div id="commonVaccinationSection" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        Schedule Date (5-8 days from now) *
+      </label>
+      <input type="date" 
+             id="commonScheduledDate" 
+             name="commonScheduledDate" 
+             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition"
+             min="<%= new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] %>"
+             max="<%= new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] %>">
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+        Recommended: Schedule within 5-8 days from today
+      </p>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        Administered By *
+      </label>
+      <input type="text" 
+             id="commonAdministeredBy" 
+             name="commonAdministeredBy" 
+             placeholder="Name of vet/paravet who will administer"
+             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition">
+    </div>
+    <div class="md:col-span-2">
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+        <p class="text-sm text-yellow-800 dark:text-yellow-300 flex items-start">
+          <svg class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+          </svg>
+          <span>This will automatically find all vaccines NOT yet administered to each animal and schedule them on the selected date. Vaccines already given will be skipped.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- Other Common Information -->
     <div class="border-b pb-6 mb-6 border-gray-200 dark:border-gray-700">
@@ -1508,4 +1522,39 @@ function autoCalculateNextDue(button) {
         }
     }
 }
+
+// Initialize common vaccination date section
+function initializeCommonVaccinationDate() {
+  const applyCommonCheckbox = document.getElementById('applyCommonVaccinationDate');
+  const commonSection = document.getElementById('commonVaccinationSection');
+  const commonDateInput = document.getElementById('commonScheduledDate');
+  
+  if (applyCommonCheckbox && commonSection) {
+    applyCommonCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        commonSection.classList.remove('hidden');
+        // Set default date (5 days from now)
+        if (commonDateInput && !commonDateInput.value) {
+          const defaultDate = new Date();
+          defaultDate.setDate(defaultDate.getDate() + 5);
+          commonDateInput.value = defaultDate.toISOString().split('T')[0];
+        }
+        // Make fields required
+        document.getElementById('commonScheduledDate')?.setAttribute('required', 'required');
+        document.getElementById('commonAdministeredBy')?.setAttribute('required', 'required');
+      } else {
+        commonSection.classList.add('hidden');
+        // Remove required attributes
+        document.getElementById('commonScheduledDate')?.removeAttribute('required');
+        document.getElementById('commonAdministeredBy')?.removeAttribute('required');
+      }
+    });
+  }
+}
+
+// Call this in DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+  // ... existing initialization ...
+  initializeCommonVaccinationDate();
+});
 </script>
