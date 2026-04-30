@@ -1,1531 +1,1365 @@
-<% layout("layouts/boilerplate", {
-    title: 'Vaccination Schedule - Zoopito',
-    description: 'Manage and schedule vaccinations',
-    pageStyles: `
-        .stat-card { transition: all 0.3s ease; }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .filter-badge { transition: all 0.2s ease; }
-        .filter-badge:hover { background-color: #e5e7eb; }
-        .assignment-modal { max-height: 80vh; overflow-y: auto; }
-        .status-badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
-        .status-pending { background-color: #fef3c7; color: #92400e; }
-        .status-scheduled { background-color: #dbeafe; color: #1e40af; }
-        .status-completed { background-color: #d1fae5; color: #065f46; }
-        .status-overdue { background-color: #fee2e2; color: #991b1b; }
-        .action-btn { transition: all 0.2s ease; }
-        .action-btn:hover { transform: scale(1.1); }
-    `
-}) -%>
+<% layout("layouts/boilerplate") %>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                        <i class="fas fa-calendar-check mr-3 text-blue-500"></i>
-                        Vaccination Schedule
-                    </h1>
-                    <nav class="flex mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        <a href="/dashboard" class="hover:text-blue-600 dark:hover:text-blue-400">Dashboard</a>
-                        <span class="mx-2">/</span>
-                        <span class="text-gray-700 dark:text-gray-300">Vaccination Schedule</span>
-                    </nav>
-                </div>
-                <div class="flex space-x-3">
-                    <a href="/vaccination/schedule/export?<%= new URLSearchParams(filters).toString() %>" 
-                       class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center">
-                        <i class="fas fa-download mr-2"></i>
-                        Export CSV
-                    </a>
-                    <button onclick="openBulkAssignModal()" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
-                        <i class="fas fa-tasks mr-2"></i>
-                        Bulk Assign
-                    </button>
-                </div>
-            </div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            <i class="fas fa-calendar-check mr-3 text-blue-500"></i>
+            Vaccination Schedule
+          </h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Manage all pending and scheduled vaccinations
+          </p>
         </div>
-
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Total Pending</p>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= stats.totalPending %></p>
-                    </div>
-                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    <span class="text-red-600"><%= stats.totalOverdue %></span> overdue
-                </div>
-            </div>
-
-            <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-blue-500">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Scheduled Today</p>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= stats.todayScheduled %></p>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-calendar-day text-blue-600 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    <span class="text-blue-600"><%= stats.totalScheduled %></span> total scheduled
-                </div>
-            </div>
-
-            <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-green-500">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Completed</p>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= stats.totalCompleted %></p>
-                    </div>
-                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    This month: +<%= stats.totalCompleted %>
-                </div>
-            </div>
-
-            <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-purple-500">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Tag Stats</p>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                            <%= tagStats.tagged %> / <%= tagStats.tagged + tagStats.untagged %>
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-tag text-purple-600 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    <span class="text-yellow-600"><%= tagStats.untagged %></span> untagged animals
-                </div>
-            </div>
+        <div class="flex space-x-3">
+          <button onclick="openBulkAssignModal()" 
+                  class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors">
+            <i class="fas fa-tasks mr-2"></i>
+            Bulk Assign Paravet
+          </button>
+          <a href="/vaccination/export/schedule?<%= new URLSearchParams(filters).toString() %>" 
+             class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center transition-colors">
+            <i class="fas fa-download mr-2"></i>
+            Export CSV
+          </a>
         </div>
+      </div>
+    </div>
 
-        <!-- Filters Section -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                    <i class="fas fa-filter mr-2 text-blue-500"></i>
-                    Filters
-                </h2>
-                <button onclick="clearFilters()" class="text-sm text-blue-600 hover:text-blue-800">
-                    Clear All Filters
-                </button>
-            </div>
-
-            <form id="filterForm" method="GET" action="/vaccination/schedule" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- Area Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Area</label>
-                    <select name="area" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Areas</option>
-                        <% (areas || []).forEach(area => { %>
-                            <option value="<%= area.village %>" <%= filters.area === area.village ? 'selected' : '' %>>
-                                <%= area.village %> - <%= area.taluka %> (<%= area.district %>)
-                            </option>
-                        <% }) %>
-                    </select>
-                </div>
-
-                <!-- Paravet Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned To</label>
-                    <select name="paravet" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Paravets</option>
-                        <option value="unassigned" <%= filters.paravet === 'unassigned' ? 'selected' : '' %>>Unassigned</option>
-                        <% (paravets || []).forEach(paravet => { %>
-                            <option value="<%= paravet._id %>" <%= filters.paravet === paravet._id.toString() ? 'selected' : '' %>>
-                                <%= paravet.user?.name || 'Unknown' %>
-                            </option>
-                        <% }) %>
-                    </select>
-                </div>
-                
-                <!-- Farmer Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Farmer</label>
-                    <select name="farmer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Farmers</option>
-                        <% (farmers || []).forEach(farmer => { %>
-                            <option value="<%= farmer._id %>" <%= filters.farmer === farmer._id.toString() ? 'selected' : '' %>>
-                                <%= farmer.name %> - <%= farmer.uniqueFarmerId || 'No ID' %> (<%= farmer.address?.village || 'N/A' %>)
-                            </option>
-                        <% }) %>
-                    </select>
-                </div>
-
-                <!-- Status Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Status</option>
-                        <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
-                        <option value="Scheduled" <%= filters.status === 'Scheduled' ? 'selected' : '' %>>Scheduled</option>
-                        <option value="Administered" <%= filters.status === 'Administered' ? 'selected' : '' %>>Administered</option>
-                        <option value="Completed" <%= filters.status === 'Completed' ? 'selected' : '' %>>Completed</option>
-                        <option value="Missed" <%= filters.status === 'Missed' ? 'selected' : '' %>>Missed</option>
-                        <option value="Payment Pending" <%= filters.status === 'Payment Pending' ? 'selected' : '' %>>Payment Pending</option>
-                    </select>
-                </div>
-
-                <!-- Due Date Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Due Date</label>
-                    <select name="dueDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Any Time</option>
-                        <option value="overdue" <%= filters.dueDate === 'overdue' ? 'selected' : '' %>>Overdue</option>
-                        <option value="today" <%= filters.dueDate === 'today' ? 'selected' : '' %>>Today</option>
-                        <option value="week" <%= filters.dueDate === 'week' ? 'selected' : '' %>>This Week</option>
-                        <option value="month" <%= filters.dueDate === 'month' ? 'selected' : '' %>>This Month</option>
-                    </select>
-                </div>
-
-                <!-- Species Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Species</label>
-                    <select name="species" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Species</option>
-                        <option value="Cow" <%= filters.species === 'Cow' ? 'selected' : '' %>>Cow</option>
-                        <option value="Buffalo" <%= filters.species === 'Buffalo' ? 'selected' : '' %>>Buffalo</option>
-                        <option value="Goat" <%= filters.species === 'Goat' ? 'selected' : '' %>>Goat</option>
-                        <option value="Sheep" <%= filters.species === 'Sheep' ? 'selected' : '' %>>Sheep</option>
-                        <option value="Poultry" <%= filters.species === 'Poultry' ? 'selected' : '' %>>Poultry</option>
-                    </select>
-                </div>
-
-                <!-- Vaccinated Status -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vaccinated</label>
-                    <select name="vaccinated" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All</option>
-                        <option value="yes" <%= filters.vaccinated === 'yes' ? 'selected' : '' %>>Vaccinated</option>
-                        <option value="no" <%= filters.vaccinated === 'no' ? 'selected' : '' %>>Not Vaccinated</option>
-                    </select>
-                </div>
-
-                <!-- Tag Status -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tag Status</label>
-                    <select name="tagStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All</option>
-                        <option value="tagged" <%= filters.tagStatus === 'tagged' ? 'selected' : '' %>>Tagged</option>
-                        <option value="untagged" <%= filters.tagStatus === 'untagged' ? 'selected' : '' %>>Untagged</option>
-                    </select>
-                </div>
-
-                <!-- Search -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
-                    <input type="text" 
-                           name="search" 
-                           value="<%= filters.search || '' %>"
-                           placeholder="Farmer/Animal/Vaccine..."
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                </div>
-
-                <!-- Apply Filters Button -->
-                <div class="flex items-end">
-                    <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        <i class="fas fa-search mr-2"></i>
-                        Apply Filters
-                    </button>
-                </div>
-            </form>
-
-            <!-- Active Filters -->
-            <% if (filters && Object.keys(filters).length > 0) { %>
-                <div class="mt-4 flex flex-wrap gap-2">
-                    <% Object.entries(filters).forEach(([key, value]) => { %>
-                        <% if (value && key !== 'page' && key !== 'limit') { %>
-                            <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
-                                <%= key %>: <%= value %>
-                                <button onclick="removeFilter('<%= key %>')" class="ml-2 text-gray-500 hover:text-gray-700">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </span>
-                        <% } %>
-                    <% }) %>
-                </div>
-            <% } %>
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
+      <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-yellow-500 hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Total Pending</p>
+            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400"><%= stats.totalPending || 0 %></p>
+          </div>
+          <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+            <i class="fas fa-clock text-yellow-600 dark:text-yellow-400"></i>
+          </div>
         </div>
+      </div>
 
-        <!-- Main Content - Grouped by Farmer -->
-        <div class="space-y-6">
-            <% if (!groupedVaccinations || groupedVaccinations.length === 0) { %>
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-12 text-center">
-                    <i class="fas fa-calendar-check text-6xl text-gray-400 mb-4"></i>
-                    <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No Vaccinations Found</h3>
-                    <p class="text-gray-500 dark:text-gray-400">No vaccinations match your current filters.</p>
-                </div>
-            <% } else { %>
-                <% groupedVaccinations.forEach(group => { %>
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                        <!-- Farmer Header -->
-                        <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500 text-white">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                    <div>
-                                        <h2 class="text-lg font-semibold">
-                                            <%= group.farmer?.name || 'Unknown Farmer' %>
-                                            <span class="text-sm bg-white/20 px-2 py-1 rounded-full ml-2">
-                                                <%= group.farmer?.uniqueFarmerId || 'No ID' %>
-                                            </span>
-                                        </h2>
-                                        <p class="text-sm text-white/80">
-                                            <i class="fas fa-phone mr-1"></i> <%= group.farmer?.mobileNumber || 'N/A' %> |
-                                            <i class="fas fa-map-marker-alt ml-2 mr-1"></i> 
-                                            <%= group.farmer?.address?.village || 'N/A' %>, <%= group.farmer?.address?.taluka || '' %>
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-4">
-                                    <div class="text-center">
-                                        <span class="text-2xl font-bold"><%= group.totalAnimals || 0 %></span>
-                                        <span class="text-sm block">Total</span>
-                                    </div>
-                                    <div class="text-center">
-                                        <span class="text-2xl font-bold text-green-300"><%= group.vaccinatedCount || 0 %></span>
-                                        <span class="text-sm block">Done</span>
-                                    </div>
-                                    <div class="text-center">
-                                        <span class="text-2xl font-bold text-yellow-300"><%= group.pendingCount || 0 %></span>
-                                        <span class="text-sm block">Pending</span>
-                                    </div>
-                                    <button onclick="selectFarmer('<%= group.farmer?._id %>')" 
-                                            class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-sm flex items-center">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        Select All
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Animals Table -->
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            <input type="checkbox" onchange="toggleFarmerAnimals('<%= group.farmer?._id %>', this.checked)" class="rounded border-gray-300">
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Animal</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tag</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Vaccine</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dose</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Next Due</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Schedule</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                    
-                                </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <% if (group.vaccinations && group.vaccinations.length > 0) { %>
-                                        <% group.vaccinations.forEach(function(vac) { %>
-                                            <%
-                                            const statusClass = vac.status === 'Scheduled' ? 'status-scheduled' : 
-                                                              (vac.status === 'Administered' || vac.status === 'Completed') ? 'status-completed' : 
-                                                              vac.status === 'Payment Pending' ? 'status-pending' : 
-                                                              helpers?.isOverdue(vac.nextDueDate) ? 'status-overdue' : 'status-pending';
-                                            const isOverdue = helpers?.isOverdue(vac.nextDueDate);
-                                        %>
-                                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700" data-id="<%= vac._id %>">
-                                                <td class="px-6 py-4">
-                                                    <input type="checkbox" 
-                                                           class="animal-checkbox rounded border-gray-300 farmer-<%= group.farmer?._id %>"
-                                                           value="<%= vac._id %>"
-                                                           data-farmer="<%= group.farmer?._id %>">
-                                                </td>
-                                                <td class="px-6 py-4">
-                                                    <div class="flex items-center">
-                                                        <div class="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                                            <i class="fas fa-paw text-gray-500"></i>
-                                                        </div>
-                                                        <div class="ml-4">
-                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                                <%= vac.animal?.name || 'Unnamed' %>
-                                                            </div>
-                                                            <div class="text-sm text-gray-500 dark:text-gray-400">
-                                                                <%= vac.animal?.animalType || 'N/A' %> | <%= vac.animal?.breed || 'N/A' %>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4">
-                                                    <% if (vac.animal?.tagNumber) { %>
-                                                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                                                            <i class="fas fa-tag mr-1"></i><%= vac.animal.tagNumber %>
-                                                        </span>
-                                                    <% } else { %>
-                                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
-                                                            <i class="fas fa-exclamation-triangle mr-1"></i>Untagged
-                                                        </span>
-                                                    <% } %>
-                                                </td>
-                                                <td class="px-6 py-4">
-                                                    <div class="text-sm text-gray-900 dark:text-white">
-                                                        <%= vac.vaccine?.name || vac.vaccineName || 'N/A' %>
-                                                    </div>
-                                                    <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                        <%= vac.vaccine?.diseaseTarget || 'N/A' %>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4">
-                                                    <div class="text-sm">
-                                                        <%= vac.doseNumber || 1 %>/<%= vac.totalDosesRequired || 1 %>
-                                                    </div>
-                                                    <div class="w-16 h-1 bg-gray-200 rounded-full mt-1">
-                                                        <div class="h-full bg-blue-600 rounded-full" 
-                                                             style="width: <%= ((vac.doseNumber || 1) / (vac.totalDosesRequired || 1)) * 100 %>%">
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4">
-                                                    <% if (vac.nextDueDate) { %>
-                                                        <div class="text-sm <%= isOverdue ? 'text-red-600 font-semibold' : '' %>">
-                                                            <%= helpers?.formatDate ? helpers.formatDate(vac.nextDueDate) : new Date(vac.nextDueDate).toLocaleDateString() %>
-                                                        </div>
-                                                        <% if (isOverdue) { %>
-                                                            <span class="text-xs text-red-500">Overdue</span>
-                                                        <% } %>
-                                                    <% } else { %>
-                                                        <span class="text-sm text-gray-400">Not set</span>
-                                                    <% } %>
-                                                </td>
-                                                <td class="px-6 py-4">
-                                                    <span class="status-badge <%= statusClass %>">
-                                                        <%= vac.status || 'Unknown' %>
-                                                    </span>
-                                                    <% if (vac.payment?.paymentStatus === 'Pending') { %>
-                                                        <span class="ml-1 text-xs text-yellow-600">(Payment Pending)</span>
-                                                    <% } %>
-                                                </td>
-                                                <td class="px-6 py-4">
-    <% if (vac.scheduledDate) { %>
-        <div class="flex flex-col">
-            <span class="text-sm font-medium text-green-600 dark:text-green-400">
-                <i class="fas fa-calendar-check mr-1"></i>
-                <%= helpers?.formatDate ? helpers.formatDate(vac.scheduledDate) : new Date(vac.scheduledDate).toLocaleDateString() %>
-            </span>
-            <button onclick="scheduleDate('<%= vac._id %>')" 
-                    class="text-xs text-blue-600 hover:text-blue-800 mt-1 flex items-center">
-                <i class="fas fa-edit mr-1"></i>
-                Reschedule
-            </button>
+      <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-blue-500 hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Today's Schedule</p>
+            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400"><%= stats.todayScheduled || 0 %></p>
+          </div>
+          <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+            <i class="fas fa-calendar-day text-blue-600 dark:text-blue-400"></i>
+          </div>
         </div>
-    <% } else { %>
-        <button onclick="scheduleDate('<%= vac._id %>')" 
-                class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 flex items-center">
-            Set Date
+      </div>
+
+      <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-red-500 hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Overdue</p>
+            <p class="text-2xl font-bold text-red-600 dark:text-red-400"><%= stats.totalOverdue || 0 %></p>
+          </div>
+          <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-green-500 hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Completed</p>
+            <p class="text-2xl font-bold text-green-600 dark:text-green-400"><%= stats.totalCompleted || 0 %></p>
+          </div>
+          <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+            <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-purple-500 hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Untagged Animals</p>
+            <p class="text-2xl font-bold text-purple-600 dark:text-purple-400"><%= tagStats.untagged || 0 %></p>
+          </div>
+          <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+            <i class="fas fa-tag text-purple-600 dark:text-purple-400"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 md:p-6 mb-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <i class="fas fa-filter mr-2 text-blue-500"></i>
+          Filters
+        </h2>
+        <button onclick="clearFilters()" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
+          Clear All Filters
         </button>
+      </div>
+
+      <form id="filterForm" method="GET" action="/vaccination/schedule" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Area</label>
+          <select name="area" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All Areas</option>
+            <% (areas || []).forEach(area => { %>
+              <option value="<%= area.village || area.taluka || area.district %>" 
+                      <%= (filters.area === (area.village || area.taluka || area.district)) ? 'selected' : '' %>>
+                <%= area.village || area.taluka || area.district || 'N/A' %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+          <select name="status" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All Status</option>
+            <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+            <option value="Scheduled" <%= filters.status === 'Scheduled' ? 'selected' : '' %>>Scheduled</option>
+            <option value="Payment Pending" <%= filters.status === 'Payment Pending' ? 'selected' : '' %>>Payment Pending</option>
+            <option value="overdue" <%= filters.status === 'overdue' ? 'selected' : '' %>>Overdue</option>
+            <option value="today" <%= filters.status === 'today' ? 'selected' : '' %>>Today</option>
+            <option value="week" <%= filters.status === 'week' ? 'selected' : '' %>>This Week</option>
+            <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>Completed</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Due Date</label>
+          <select name="dueDate" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Any Time</option>
+            <option value="overdue" <%= filters.dueDate === 'overdue' ? 'selected' : '' %>>Overdue</option>
+            <option value="today" <%= filters.dueDate === 'today' ? 'selected' : '' %>>Today</option>
+            <option value="week" <%= filters.dueDate === 'week' ? 'selected' : '' %>>This Week</option>
+            <option value="month" <%= filters.dueDate === 'month' ? 'selected' : '' %>>This Month</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Species</label>
+          <select name="species" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All Species</option>
+            <option value="Cow" <%= filters.species === 'Cow' ? 'selected' : '' %>>Cow</option>
+            <option value="Buffalo" <%= filters.species === 'Buffalo' ? 'selected' : '' %>>Buffalo</option>
+            <option value="Goat" <%= filters.species === 'Goat' ? 'selected' : '' %>>Goat</option>
+            <option value="Sheep" <%= filters.species === 'Sheep' ? 'selected' : '' %>>Sheep</option>
+            <option value="Dog" <%= filters.species === 'Dog' ? 'selected' : '' %>>Dog</option>
+            <option value="Cat" <%= filters.species === 'Cat' ? 'selected' : '' %>>Cat</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tag Status</label>
+          <select name="tagStatus" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All</option>
+            <option value="tagged" <%= filters.tagStatus === 'tagged' ? 'selected' : '' %>>Tagged</option>
+            <option value="untagged" <%= filters.tagStatus === 'untagged' ? 'selected' : '' %>>Untagged</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assigned To</label>
+          <select name="paravet" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All Paravets</option>
+            <option value="unassigned" <%= filters.paravet === 'unassigned' ? 'selected' : '' %>>Unassigned</option>
+            <% (paravets || []).forEach(p => { %>
+              <option value="<%= p._id %>" <%= filters.paravet === p._id.toString() ? 'selected' : '' %>>
+                <%= p.user?.name || 'Unknown' %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
+          <input type="text" name="search" value="<%= filters.search || '' %>" 
+                 placeholder="Farmer/Animal/Vaccine..."
+                 class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div class="flex items-end">
+          <button type="submit" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+            <i class="fas fa-search mr-2"></i>
+            Apply Filters
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Bulk Selection Bar -->
+    <div id="bulkSelectionBar" class="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 hidden">
+      <div class="flex items-center space-x-4">
+        <span id="selectedCount">0</span>
+        <span>selected</span>
+        <button onclick="openBulkAssignModal()" class="bg-white text-blue-600 px-3 py-1 rounded-lg hover:bg-gray-100">
+          Assign Paravet
+        </button>
+        <button onclick="clearBulkSelection()" class="text-white/80 hover:text-white">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- UNTAGGED ANIMALS ALERT SECTION -->
+    <% if (untaggedAnimals && untaggedAnimals.length > 0) { %>
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+          <div class="flex items-start">
+            <i class="fas fa-tag text-yellow-600 dark:text-yellow-400 mt-1 mr-3"></i>
+            <div>
+              <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
+                Animals Need Tagging (<%= untaggedAnimals.length %>)
+              </h3>
+              <p class="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
+                These animals don't have tag numbers. Please assign tags to them.
+              </p>
+            </div>
+          </div>
+          <button onclick="showUntaggedAnimalsModal()" class="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm transition-colors">
+            View All
+          </button>
+        </div>
+      </div>
     <% } %>
-</td>
-                                                <td class="px-6 py-4">
-                                                    <div class="flex space-x-2">
-                                                        <button onclick="viewDetails('<%= vac._id %>')" 
-                                                                class="action-btn text-blue-600 hover:text-blue-800" title="View Details">
-                                                            <i class="fas fa-eye"></i>
-                                                        </button>
-                                                        <button onclick="viewHistory('<%= vac.animal?._id %>')" 
-                                                                class="action-btn text-purple-600 hover:text-purple-800" title="View History">
-                                                            <i class="fas fa-history"></i>
-                                                        </button>
-                                                        <button onclick="markComplete('<%= vac._id %>')" 
-                                                                class="action-btn text-green-600 hover:text-green-800" title="Mark Complete">
-                                                            <i class="fas fa-check-circle"></i>
-                                                        </button>
-                                                        <button onclick="deleteVaccination('<%= vac._id %>')" 
-                                                                class="action-btn text-red-600 hover:text-red-800" title="Delete">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        <% }); %>
-                                    <% } else { %>
-                                        <tr>
-                                            <td colspan="9" class="px-6 py-8 text-center text-gray-500">
-                                                No vaccinations found for this farmer
-                                            </td>
-                                        </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
-                        </div>
 
-                        <!-- Farmer Footer -->
-                        <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700 flex items-center justify-between">
-                            <div class="text-sm text-gray-600 dark:text-gray-300">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Select animals to assign in bulk
-                            </div>
-                            <div class="flex space-x-2">
-                                <button onclick="assignParavetToFarmer('<%= group.farmer?._id %>')" 
-                                        class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200">
-                                    <i class="fas fa-user-md mr-1"></i>
-                                    Assign Paravet
-                                </button>
-                                <button onclick="scheduleFarmer('<%= group.farmer?._id %>')" 
-                                        class="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm hover:bg-green-200">
-                                    <i class="fas fa-calendar-plus mr-1"></i>
-                                    Schedule All
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                <% }); %>
-            <% } %>
+    <!-- ANIMALS NEEDING VACCINATION ALERT SECTION -->
+    <% if (animalsNeedingVaccination && animalsNeedingVaccination.length > 0) { %>
+      <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-6">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+          <div class="flex items-start">
+            <i class="fas fa-syringe text-red-600 dark:text-red-400 mt-1 mr-3"></i>
+            <div>
+              <h3 class="text-sm font-semibold text-red-800 dark:text-red-300">
+                Animals Need Vaccination (<%= animalsNeedingVaccination.length %>)
+              </h3>
+              <p class="text-xs text-red-700 dark:text-red-400 mt-1">
+                These animals haven't received their required vaccinations.
+              </p>
+              <div class="mt-3 flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                <% animalsNeedingVaccination.slice(0, 10).forEach(animal => { %>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="needing-animal-checkbox mr-1.5 rounded border-gray-300 dark:border-gray-600" value="<%= animal._id %>" data-name="<%= animal.name || 'Unnamed' %>">
+                    <span class="inline-flex items-center px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-lg text-xs">
+                      <i class="fas fa-paw mr-1"></i>
+                      <%= animal.name || 'Unnamed' %> 
+                      <span class="ml-1 bg-red-200 dark:bg-red-800 px-1 rounded-full text-[10px]"><%= animal.pendingCount || 1 %> due</span>
+                    </span>
+                  </label>
+                <% }) %>
+                <% if (animalsNeedingVaccination.length > 10) { %>
+                  <span class="text-xs text-red-600 dark:text-red-400">+<%= animalsNeedingVaccination.length - 10 %> more</span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+          <div class="flex space-x-2">
+            <button onclick="selectAllNeedingAnimals()" 
+                    class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-colors">
+              Select All
+            </button>
+            <button onclick="openBulkScheduleNeedingModal()" 
+                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm flex items-center transition-colors">
+              <i class="fas fa-calendar-plus mr-1"></i>
+              Schedule Selected
+            </button>
+          </div>
         </div>
+      </div>
+    <% } %>
 
-        <!-- Pagination -->
-        <% if (pagination && pagination.pages > 1) { %>
-            <div class="mt-8 flex items-center justify-between">
-                <div class="text-sm text-gray-700 dark:text-gray-300">
-                    Showing <span class="font-medium"><%= (pagination.page - 1) * pagination.limit + 1 %></span> to 
-                    <span class="font-medium"><%= Math.min(pagination.page * pagination.limit, pagination.total) %></span> of 
-                    <span class="font-medium"><%= pagination.total %></span> results
+    <!-- Main Content - Grouped by Farmer -->
+    <div class="space-y-6">
+      <% if (!groupedVaccinations || groupedVaccinations.length === 0) { %>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-12 text-center">
+          <i class="fas fa-calendar-check text-6xl text-gray-400 dark:text-gray-500 mb-4"></i>
+          <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No Vaccinations Found</h3>
+          <p class="text-gray-500 dark:text-gray-400">No vaccinations match your current filters.</p>
+          <a href="/vaccination/new" class="inline-block mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+            <i class="fas fa-plus mr-2"></i>
+            Add New Vaccination
+          </a>
+        </div>
+      <% } else { %>
+        <% groupedVaccinations.forEach(group => { %>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <!-- Farmer Header -->
+            <div class="px-4 md:px-6 py-4 bg-gradient-to-r from-blue-500 to-green-500">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user text-sm md:text-base text-white"></i>
+                  </div>
+                  <div>
+                    <h2 class="text-base md:text-lg font-semibold text-white">
+                      <%= group.farmer?.name || 'Unknown Farmer' %>
+                      <span class="text-xs md:text-sm bg-white/20 px-2 py-0.5 rounded-full ml-2">
+                        <%= group.farmer?.uniqueFarmerId || 'No ID' %>
+                      </span>
+                    </h2>
+                    <p class="text-xs md:text-sm text-white/80">
+                      <i class="fas fa-phone mr-1"></i> <%= group.farmer?.mobileNumber || 'N/A' %> |
+                      <i class="fas fa-map-marker-alt ml-2 mr-1"></i> 
+                      <%= group.farmer?.address?.village || 'N/A' %>
+                    </p>
+                  </div>
                 </div>
-                <div class="flex space-x-2">
-                    <% if (pagination.page > 1) { %>
-                        <a href="?<%= new URLSearchParams({...filters, page: pagination.page - 1}).toString() %>" 
-                           class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                            Previous
-                        </a>
-                    <% } %>
-                    
-                    <% for(let i = 1; i <= pagination.pages; i++) { %>
-                        <% if (i === pagination.page) { %>
-                            <span class="px-4 py-2 bg-blue-600 text-white rounded-lg"><%= i %></span>
-                        <% } else if (i === 1 || i === pagination.pages || (i >= pagination.page - 2 && i <= pagination.page + 2)) { %>
-                            <a href="?<%= new URLSearchParams({...filters, page: i}).toString() %>" 
-                               class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                                <%= i %>
-                            </a>
-                        <% } else if (i === pagination.page - 3 || i === pagination.page + 3) { %>
-                            <span class="px-4 py-2">...</span>
+                <div class="flex items-center space-x-3">
+                  <button onclick="openFarmerAssignModal('<%= group.farmer?._id %>')" 
+                          class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm flex items-center transition-colors">
+                    <i class="fas fa-user-md mr-1"></i>
+                    Assign Paravet to All
+                  </button>
+                  <span class="bg-white/20 text-white px-2 py-1 rounded-full text-xs">
+                    <%= group.pendingCount %> pending / <%= group.totalAnimals %> animals
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vaccinations Table -->
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-8">
+                      <input type="checkbox" id="selectAll_<%= group.farmer?._id %>" onchange="toggleSelectAll('<%= group.farmer?._id %>', this.checked)" class="rounded border-gray-300 dark:border-gray-600">
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Animal</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Vaccine</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Scheduled Date</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Next Due</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Assigned To</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                    <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <% group.vaccinations.forEach(vac => { %>
+                   <% const isOverdue = vac.nextDueDate && new Date(vac.nextDueDate) < new Date(); %>
+                   <% const isTodayScheduled = vac.scheduledDate && new Date(vac.scheduledDate).toDateString() === new Date().toDateString(); %>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors vaccination-row" data-id="<%= vac._id %>" data-farmer="<%= group.farmer?._id %>">
+                  
+                      <td class="px-3 py-3">
+                        <input type="checkbox" class="vaccination-checkbox farmer-<%= group.farmer?._id %> rounded border-gray-300 dark:border-gray-600" value="<%= vac._id %>">
+                      </td>
+                      <td class="px-3 py-3">
+                        <div class="flex items-center">
+                          <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-paw text-gray-500 dark:text-gray-400 text-xs"></i>
+                          </div>
+                          <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">
+                              <%= vac.animal?.name || 'Unnamed' %>
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                              <%= vac.animal?.animalType %> | Tag: <%= vac.animal?.tagNumber || 'No Tag' %>
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-3 py-3">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white"><%= vac.vaccine?.name || vac.vaccineName %></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400"><%= vac.vaccine?.diseaseTarget || 'N/A' %></p>
+                      </td>
+                      <td class="px-3 py-3">
+                        <% if (vac.scheduledDate) { %>
+                          <div class="text-sm <%= isTodayScheduled ? 'text-green-600 dark:text-green-400 font-semibold' : 'text-gray-700 dark:text-gray-300' %>">
+                            <%= new Date(vac.scheduledDate).toLocaleDateString('en-IN') %>
+                            <% if (isTodayScheduled) { %>
+                              <span class="ml-1 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-1 rounded">Today</span>
+                            <% } %>
+                          </div>
+                        <% } else { %>
+                          <span class="text-sm text-gray-400 dark:text-gray-500">Not scheduled</span>
                         <% } %>
-                    <% } %>
-                    
-                    <% if (pagination.page < pagination.pages) { %>
-                        <a href="?<%= new URLSearchParams({...filters, page: pagination.page + 1}).toString() %>" 
-                           class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                            Next
-                        </a>
-                    <% } %>
-                </div>
+                      </td>
+                      <td class="px-3 py-3">
+                        <% if (vac.nextDueDate) { %>
+                          <div class="text-sm <%= isOverdue ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-gray-700 dark:text-gray-300' %>">
+                            <%= new Date(vac.nextDueDate).toLocaleDateString('en-IN') %>
+                            <% if (isOverdue) { %>
+                              <span class="ml-1 text-xs bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-1 rounded">Overdue</span>
+                            <% } %>
+                          </div>
+                        <% } else { %>
+                          <span class="text-sm text-gray-400 dark:text-gray-500">Not set</span>
+                        <% } %>
+                      </td>
+                      <td class="px-3 py-3">
+                        <% if (vac.assignedParavet && vac.assignedParavet.user) { %>
+                          <span class="text-sm text-green-600 dark:text-green-400">
+                            <i class="fas fa-user-md mr-1"></i><%= vac.assignedParavet.user.name %>
+                          </span>
+                        <% } else { %>
+                          <span class="text-sm text-gray-400 dark:text-gray-500">Unassigned</span>
+                        <% } %>
+                        <button onclick="openAssignModal('<%= vac._id %>')" class="ml-2 text-xs text-blue-600 hover:text-blue-800">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                      </td>
+                      <td class="px-3 py-3">
+                        <% 
+                          let statusClass = '';
+                          if (vac.status === 'Scheduled') statusClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+                          else if (vac.status === 'Completed' || vac.status === 'Administered') statusClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+                          else if (vac.status === 'Payment Pending') statusClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+                          else if (isOverdue) statusClass = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+                          else statusClass = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+                        %>
+                        <span class="px-2 py-1 rounded-full text-xs font-medium <%= statusClass %>">
+                          <%= vac.status || 'Pending' %>
+                        </span>
+                      </td>
+                      <td class="px-3 py-3 text-center">
+                        <div class="flex justify-center space-x-2">
+                          <button onclick="viewVaccinationDetails('<%= vac._id %>')" class="text-blue-600 dark:text-blue-400 hover:text-blue-800" title="View">
+                            <i class="fas fa-eye"></i>
+                          </button>
+                          <button onclick="openAssignModal('<%= vac._id %>')" class="text-purple-600 dark:text-purple-400 hover:text-purple-800" title="Assign Paravet">
+                            <i class="fas fa-user-md"></i>
+                          </button>
+                          <button onclick="openScheduleModal('<%= vac._id %>')" class="text-orange-600 dark:text-orange-400 hover:text-orange-800" title="Schedule Date">
+                            <i class="fas fa-calendar-alt"></i>
+                          </button>
+                          <button onclick="markComplete('<%= vac._id %>', '<%= vac.vaccine?._id %>')" class="text-green-600 dark:text-green-400 hover:text-green-800" title="Mark Complete">
+                            <i class="fas fa-check-circle"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
             </div>
-        <% } %>
+
+            <!-- Farmer Footer Actions -->
+            <div class="px-4 md:px-6 py-3 bg-gray-50 dark:bg-gray-700 flex flex-wrap justify-between items-center gap-2">
+              <div class="flex space-x-2">
+                <button onclick="selectFarmerVaccinations('<%= group.farmer?._id %>')" 
+                        class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs hover:bg-blue-200 transition-colors">
+                  <i class="fas fa-check-double mr-1"></i>
+                  Select All
+                </button>
+                <button onclick="assignFarmerToParavet('<%= group.farmer?._id %>')" 
+                        class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg text-xs hover:bg-purple-200 transition-colors">
+                  <i class="fas fa-user-md mr-1"></i>
+                  Assign Paravet to Selected
+                </button>
+                <a href="/vaccination/new?farmerId=<%= group.farmer?._id %>" 
+                   class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-xs hover:bg-green-200 transition-colors">
+                  <i class="fas fa-plus mr-1"></i>
+                  Add Vaccination
+                </a>
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                <%= group.vaccinations.length %> vaccination(s)
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      <% } %>
     </div>
+
+    <!-- Pagination -->
+    <% if (pagination && pagination.pages && pagination.pages > 1) { %>
+      <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="text-sm text-gray-700 dark:text-gray-300">
+          Showing <span class="font-medium"><%= (pagination.page - 1) * pagination.limit + 1 %></span> to 
+          <span class="font-medium"><%= Math.min(pagination.page * pagination.limit, pagination.total) %></span> of 
+          <span class="font-medium"><%= pagination.total %></span> results
+        </div>
+        <div class="flex flex-wrap justify-center gap-1">
+          <% if (pagination.page > 1) { %>
+            <a href="?<%= new URLSearchParams({...(filters || {}), page: pagination.page - 1}).toString() %>" 
+               class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors">
+              Previous
+            </a>
+          <% } %>
+          
+          <% let startPage = Math.max(1, pagination.page - 2); %>
+           <% let endPage = Math.min(pagination.pages, pagination.page + 2); %>
+           <% if (startPage > 1) {  %>
+          
+            <a href="?<%= new URLSearchParams({...(filters || {}), page: 1}).toString() %>" 
+               class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">1</a>
+            <% if (startPage > 2) { %>
+              <span class="px-2 text-gray-500">...</span>
+            <% } %>
+          <% } %>
+          
+          <% for(let i = startPage; i <= endPage; i++) { %>
+            <% if (i === pagination.page) { %>
+              <span class="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm"><%= i %></span>
+            <% } else { %>
+              <a href="?<%= new URLSearchParams({...(filters || {}), page: i}).toString() %>" 
+                 class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"><%= i %></a>
+            <% } %>
+          <% } %>
+          
+          <% if (endPage < pagination.pages) { %>
+            <% if (endPage < pagination.pages - 1) { %>
+              <span class="px-2 text-gray-500">...</span>
+            <% } %>
+            <a href="?<%= new URLSearchParams({...(filters || {}), page: pagination.pages}).toString() %>" 
+               class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"><%= pagination.pages %></a>
+          <% } %>
+          
+          <% if (pagination.page < pagination.pages) { %>
+            <a href="?<%= new URLSearchParams({...(filters || {}), page: pagination.page + 1}).toString() %>" 
+               class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">
+              Next
+            </a>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+  </div>
 </div>
 
-<!-- Assignment Modal -->
-<div id="assignModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Assign Paravet</h3>
-            <button onclick="closeModal('assignModal')" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <form id="assignForm" onsubmit="submitAssignment(event)">
-            <input type="hidden" id="assignVaccinationIds" name="vaccinationIds">
-            
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Select Paravet
-                </label>
-                <select id="assignParavetId" name="paravetId" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
-                    <option value="">Choose paravet...</option>
-                    <% (paravets || []).forEach(p => { %>
-                        <option value="<%= p._id %>">
-                            <%= p.user?.name || 'Unknown' %> - <%= p.qualification || 'N/A' %>
-                        </option>
-                    <% }) %>
-                </select>
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Scheduled Date
-                </label>
-                <input type="date" id="assignScheduledDate" name="scheduledDate" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                       min="<%= new Date().toISOString().split('T')[0] %>">
-            </div>
-            
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeModal('assignModal')" 
-                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    Cancel
-                </button>
-                <button type="submit" 
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Assign
-                </button>
-            </div>
-        </form>
+<!-- Schedule Modal -->
+<div id="scheduleModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Schedule Vaccination</h3>
+      <button onclick="closeScheduleModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+    <form id="scheduleForm" onsubmit="submitSchedule(event)">
+      <input type="hidden" id="scheduleVaccinationId">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Schedule Date</label>
+        <input type="date" id="scheduleDate" required 
+               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+               min="<%= new Date().toISOString().split('T')[0] %>">
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeScheduleModal()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+          Schedule
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<!-- Schedule Date Modal -->
-<div id="scheduleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Schedule Vaccination</h3>
-            <button onclick="closeModal('scheduleModal')" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <form id="scheduleForm" onsubmit="submitSchedule(event)">
-            <input type="hidden" id="scheduleVaccinationIds" name="vaccinationIds">
-            
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Scheduled Date
-                </label>
-                <input type="date" id="scheduleDate" name="scheduledDate" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                       min="<%= new Date().toISOString().split('T')[0] %>" required>
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Notes (Optional)
-                </label>
-                <textarea id="scheduleNotes" name="notes" rows="3"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                          placeholder="Any instructions or notes..."></textarea>
-            </div>
-            
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeModal('scheduleModal')" 
-                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    Cancel
-                </button>
-                <button type="submit" 
-                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    Schedule
-                </button>
-            </div>
-        </form>
+<!-- Assign Paravet Modal -->
+<div id="assignModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white dark:bg-gray-800">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <i class="fas fa-user-md mr-2 text-purple-600"></i>
+        Assign to Paravet
+      </h3>
+      <button onclick="closeAssignModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+    
+    <form id="assignForm" onsubmit="submitAssignment(event)">
+      <input type="hidden" id="assignVaccinationIds" name="vaccinationIds">
+      
+      <div class="mb-4">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2" id="assignInfo">Selected: 0 vaccination(s)</p>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Select Paravet *
+        </label>
+        <select id="assignParavetId" name="paravetId" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+          <option value="">Choose paravet...</option>
+          <% (paravets || []).forEach(p => { %>
+            <option value="<%= p._id %>">
+              <%= p.user?.name || 'Unknown' %> - <%= p.qualification || 'N/A' %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Scheduled Date (Optional)
+        </label>
+        <input type="date" id="assignScheduledDate" 
+               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+               min="<%= new Date().toISOString().split('T')[0] %>">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave empty to keep existing schedule</p>
+      </div>
+      
+      <div class="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+        <p class="text-sm text-purple-800 dark:text-purple-300">
+          <i class="fas fa-info-circle mr-1"></i>
+          The selected paravet will be assigned to these vaccinations and will see them in their dashboard.
+        </p>
+      </div>
+      
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeAssignModal()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" 
+                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center">
+          <i class="fas fa-user-md mr-2"></i>
+          Assign
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Bulk Assign Modal -->
-<div id="bulkAssignModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-lg bg-white dark:bg-gray-800 assignment-modal">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Bulk Assign Paravets</h3>
-            <button onclick="closeModal('bulkAssignModal')" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="mb-4 p-4 bg-blue-50 rounded-lg">
-            <p class="text-sm text-blue-800">
-                <i class="fas fa-info-circle mr-1"></i>
-                Select paravets and assign them to multiple vaccinations at once.
-            </p>
-        </div>
-        
-        <form id="bulkAssignForm" onsubmit="submitBulkAssignment(event)">
-            <div id="bulkAssignments" class="space-y-4 max-h-96 overflow-y-auto mb-4">
-                <!-- Dynamic assignment rows will be added here -->
-            </div>
-            
-            <button type="button" onclick="addAssignmentRow()" 
-                    class="mb-4 px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-                <i class="fas fa-plus mr-1"></i>
-                Add Assignment
-            </button>
-            
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeModal('bulkAssignModal')" 
-                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    Cancel
-                </button>
-                <button type="submit" 
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Process Bulk Assignments
-                </button>
-            </div>
-        </form>
+<div id="bulkAssignModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-lg bg-white dark:bg-gray-800">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <i class="fas fa-tasks mr-2 text-purple-600"></i>
+        Bulk Assign Paravets
+      </h3>
+      <button onclick="closeBulkAssignModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+    
+    <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+      <p class="text-sm text-blue-800 dark:text-blue-300">
+        <i class="fas fa-info-circle mr-1"></i>
+        You can create multiple assignments for different paravets.
+      </p>
+    </div>
+    
+    <div id="bulkAssignmentsList" class="space-y-4 max-h-96 overflow-y-auto mb-4">
+      <!-- Dynamic assignment rows will be added here -->
+    </div>
+    
+    <button type="button" onclick="addBulkAssignmentRow()" 
+            class="mb-4 px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+      <i class="fas fa-plus mr-1"></i>
+      Add Another Assignment
+    </button>
+    
+    <form id="bulkAssignForm" onsubmit="submitBulkAssignments(event)">
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeBulkAssignModal()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" 
+                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+          Process Assignments
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Complete Vaccination Modal -->
+<div id="completeModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Complete Vaccination</h3>
+      <button onclick="closeCompleteModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <form id="completeForm" onsubmit="submitComplete(event)">
+      <input type="hidden" id="completeVaccinationId">
+      <input type="hidden" id="completeVaccineId">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Completion Date</label>
+        <input type="date" id="completeDate" required 
+               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+               value="<%= new Date().toISOString().split('T')[0] %>">
+      </div>
+      <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <p class="text-sm text-gray-600 dark:text-gray-400">Next Due Date Preview:</p>
+        <p class="text-lg font-bold text-blue-600 dark:text-blue-400" id="nextDuePreview">--</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400" id="boosterInfo">Based on vaccine schedule</p>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Batch Number (Optional)</label>
+        <input type="text" id="completeBatchNumber" 
+               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+               placeholder="Enter batch number">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes (Optional)</label>
+        <textarea id="completeNotes" rows="3" 
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Any observations..."></textarea>
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeCompleteModal()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+          Mark Complete
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Bulk Schedule Modal -->
+<div id="bulkScheduleNeedingModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white dark:bg-gray-800">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <i class="fas fa-calendar-plus mr-2 text-green-600"></i>
+        Schedule Vaccinations
+      </h3>
+      <button onclick="closeBulkScheduleNeedingModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <form id="bulkScheduleNeedingForm" onsubmit="submitBulkScheduleNeeding(event)">
+      <input type="hidden" id="needingAnimalIds" name="animalIds">
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Select Paravet *
+        </label>
+        <select id="needingParavetId" name="paravetId" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <option value="">Choose paravet...</option>
+          <% (paravets || []).forEach(p => { %>
+            <option value="<%= p._id %>">
+              <%= p.user?.name || 'Unknown' %> - <%= p.qualification || 'N/A' %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Schedule Date *
+        </label>
+        <input type="date" id="needingScheduledDate" name="scheduledDate" required 
+               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+               min="<%= new Date().toISOString().split('T')[0] %>">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Recommended: Schedule within 5-7 days</p>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Notes (Optional)
+        </label>
+        <textarea id="needingNotes" name="notes" rows="3" 
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Any special instructions for the paravet..."></textarea>
+      </div>
+      
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeBulkScheduleNeedingModal()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" 
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center transition-colors">
+          <i class="fas fa-calendar-check mr-2"></i>
+          Schedule & Assign
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- View Details Modal -->
-<div id="detailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-lg bg-white dark:bg-gray-800">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Vaccination Details</h3>
-            <button onclick="closeModal('detailsModal')" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div id="detailsContent" class="space-y-4">
-            <!-- Content will be loaded dynamically -->
-        </div>
-        
-        <div class="mt-6 flex justify-end">
-            <button onclick="closeModal('detailsModal')" 
-                    class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
-                Close
-            </button>
-        </div>
+<div id="detailsModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-lg bg-white dark:bg-gray-800">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Vaccination Details</h3>
+      <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+    <div id="detailsContent" class="space-y-4 max-h-96 overflow-y-auto"></div>
+    <div class="mt-6 flex justify-end">
+      <button onclick="closeDetailsModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+        Close
+      </button>
+    </div>
+  </div>
 </div>
 
-<!-- Mark Complete Modal -->
-<div id="completeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mark Vaccination Complete</h3>
-            <button onclick="closeModal('completeModal')" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <form id="completeForm" onsubmit="submitComplete(event)">
-            <input type="hidden" id="completeVaccinationId" name="vaccinationId">
-            
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Completed Date
-                </label>
-                <input type="date" id="completeDate" name="completedDate" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                       value="<%= new Date().toISOString().split('T')[0] %>" required>
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Notes (Optional)
-                </label>
-                <textarea id="completeNotes" name="notes" rows="3"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                          placeholder="Any observations or notes..."></textarea>
-            </div>
-            
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeModal('completeModal')" 
-                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    Cancel
-                </button>
-                <button type="submit" 
-                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    Mark Complete
-                </button>
-            </div>
-        </form>
+<!-- Untagged Animals Modal -->
+<div id="untaggedModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-lg bg-white dark:bg-gray-800">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <i class="fas fa-tag mr-2 text-yellow-600"></i>
+        Untagged Animals (<%= untaggedAnimals ? untaggedAnimals.length : 0 %>)
+      </h3>
+      <button onclick="closeUntaggedModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+    <div class="overflow-x-auto max-h-96">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Animal Name</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Type</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Farmer</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Village</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <% if (untaggedAnimals && untaggedAnimals.length > 0) { %>
+            <% untaggedAnimals.forEach(animal => { %>
+              <tr>
+                <td class="px-4 py-3 text-sm text-gray-900 dark:text-white"><%= animal.name || 'Unnamed' %></td>
+                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400"><%= animal.animalType %></td>
+                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400"><%= animal.farmer?.name || 'N/A' %></td>
+                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400"><%= animal.farmer?.address?.village || 'N/A' %></td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="4" class="px-4 py-8 text-center text-gray-500">No untagged animals found</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-6 flex justify-end">
+      <button onclick="closeUntaggedModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+        Close
+      </button>
+    </div>
+  </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-let selectedVaccinations = new Set();
+  let selectedVaccinations = new Set();
+  let currentVaccinationId = null;
+  let bulkAssignmentCounter = 0;
 
-$(document).ready(function() {
-    // Update selected count
-    updateSelectedCount();
-    
-    // Handle checkbox changes
-    $(document).on('change', '.animal-checkbox', function() {
-        const vacId = $(this).val();
-        if ($(this).is(':checked')) {
-            selectedVaccinations.add(vacId);
-        } else {
-            selectedVaccinations.delete(vacId);
-        }
-        updateSelectedCount();
+  // ================ SELECTION FUNCTIONS ================
+  
+  function toggleSelectAll(farmerId, checked) {
+    document.querySelectorAll(`.farmer-${farmerId}`).forEach(cb => {
+      cb.checked = checked;
+      const vacId = cb.value;
+      if (checked) {
+        selectedVaccinations.add(vacId);
+      } else {
+        selectedVaccinations.delete(vacId);
+      }
     });
-});
+    updateBulkSelectionBar();
+  }
 
-
-// Toggle all animals for a farmer
-function toggleFarmerAnimals(farmerId, checked) {
-    if (!farmerId) return;
-    $(`.farmer-${farmerId}`).each(function() {
-        $(this).prop('checked', checked);
-        const vacId = $(this).val();
-        if (checked) {
-            selectedVaccinations.add(vacId);
-        } else {
-            selectedVaccinations.delete(vacId);
-        }
+  function selectFarmerVaccinations(farmerId) {
+    const checkboxes = document.querySelectorAll(`.farmer-${farmerId}`);
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => {
+      cb.checked = !allChecked;
+      const vacId = cb.value;
+      if (!allChecked) {
+        selectedVaccinations.add(vacId);
+      } else {
+        selectedVaccinations.delete(vacId);
+      }
     });
-    updateSelectedCount();
-}
+    updateBulkSelectionBar();
+  }
 
-// Update selected count in UI
-function updateSelectedCount() {
+  function updateBulkSelectionBar() {
     const count = selectedVaccinations.size;
+    const bar = document.getElementById('bulkSelectionBar');
+    const countSpan = document.getElementById('selectedCount');
+    
     if (count > 0) {
-        if (!$('#selectedCountBadge').length) {
-            const badgeHtml = 
-                '<div id="selectedCountBadge" class="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center z-50">' +
-                '<span class="mr-2">' + count + ' selected</span>' +
-                '<button onclick="clearSelection()" class="ml-2 text-white/80 hover:text-white">' +
-                '<i class="fas fa-times"></i>' +
-                '</button>' +
-                '<button onclick="openBulkActions()" class="ml-4 bg-white text-blue-600 px-3 py-1 rounded-lg hover:bg-gray-100">' +
-                'Bulk Actions' +
-                '</button>' +
-                '</div>';
-            
-            $('body').append(badgeHtml);
-        } else {
-            $('#selectedCountBadge span').first().text(count + ' selected');
-        }
+      countSpan.textContent = count;
+      bar.classList.remove('hidden');
     } else {
-        $('#selectedCountBadge').remove();
+      bar.classList.add('hidden');
     }
-}
+  }
 
-// Clear selection
-function clearSelection() {
-    $('.animal-checkbox').prop('checked', false);
+  function clearBulkSelection() {
+    document.querySelectorAll('.vaccination-checkbox').forEach(cb => {
+      cb.checked = false;
+    });
     selectedVaccinations.clear();
-    updateSelectedCount();
-}
+    updateBulkSelectionBar();
+  }
 
-// Open bulk actions menu
-function openBulkActions() {
-    const count = selectedVaccinations.size;
-    if (count === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'No Selection',
-            text: 'Please select at least one vaccination record'
-        });
-        return;
-    }
-    
-    const actions = [
-        { label: 'Assign to Paravet', action: 'assign', icon: 'user-md' },
-        { label: 'Schedule Date', action: 'schedule', icon: 'calendar-alt' },
-        { label: 'Mark as Completed', action: 'complete', icon: 'check-circle' },
-        { label: 'Export Selected', action: 'export', icon: 'download' }
-    ];
-    
-    let actionsHtml = '<div class="grid grid-cols-2 gap-2">';
-    actions.forEach(a => {
-        actionsHtml += 
-            '<button onclick="performBulkAction(\'' + a.action + '\')" ' +
-            'class="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg flex flex-col items-center w-full">' +
-            '<i class="fas fa-' + a.icon + ' text-xl mb-1"></i>' +
-            '<span class="text-sm">' + a.label + '</span>' +
-            '</button>';
-    });
-    actionsHtml += '</div>';
-    
-    Swal.fire({
-        title: 'Bulk Actions (' + count + ' selected)',
-        html: actionsHtml,
-        showConfirmButton: false,
-        showCloseButton: true,
-        width: '500px'
-    });
-}
+  // ================ SCHEDULE FUNCTIONS ================
+  
+  function openScheduleModal(vaccinationId) {
+    currentVaccinationId = vaccinationId;
+    document.getElementById('scheduleVaccinationId').value = vaccinationId;
+    document.getElementById('scheduleModal').classList.remove('hidden');
+  }
 
-// Perform bulk action
-function performBulkAction(action) {
-    Swal.close();
-    
-    const vaccinationIds = Array.from(selectedVaccinations);
-    
-    switch(action) {
-        case 'assign':
-            openAssignModal(vaccinationIds);
-            break;
-        case 'schedule':
-            openBulkScheduleModal(vaccinationIds);
-            break;
-        case 'complete':
-            openBulkCompleteModal(vaccinationIds);
-            break;
-        case 'export':
-            exportSelected(vaccinationIds);
-            break;
-    }
-}
+  function closeScheduleModal() {
+    document.getElementById('scheduleModal').classList.add('hidden');
+    currentVaccinationId = null;
+  }
 
-// Select all animals for a farmer
-function selectFarmer(farmerId) {
-    if (!farmerId) return;
-    toggleFarmerAnimals(farmerId, true);
-}
-
-// Open assignment modal
-function openAssignModal(vaccinationIds) {
-    $('#assignVaccinationIds').val(JSON.stringify(vaccinationIds));
-    $('#assignModal').removeClass('hidden');
-}
-
-// Submit assignment
-function submitAssignment(event) {
+  async function submitSchedule(event) {
     event.preventDefault();
     
-    const vaccinationIds = JSON.parse($('#assignVaccinationIds').val());
-    const paravetId = $('#assignParavetId').val();
-    const scheduledDate = $('#assignScheduledDate').val();
-    
-    if (!paravetId) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'No Paravet Selected',
-            text: 'Please select a paravet'
-        });
-        return;
-    }
-    
-    Swal.fire({
-        title: 'Processing...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-    
-    $.ajax({
-        url: '/vaccination/api/assign-paravet',
-        method: 'POST',
-        data: JSON.stringify({
-            paravetId,
-            vaccinationIds,
-            scheduledDate
-        }),
-        contentType: 'application/json',
-        success: function(response) {
-            if (response.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: response.message,
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: response.message || 'Failed to assign paravet'
-                });
-            }
-        },
-        error: function(xhr) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: xhr.responseJSON?.message || 'Failed to assign paravet'
-            });
-        }
-    });
-}
-
-// Open schedule modal
-function scheduleDate(vaccinationId) {
-    $('#scheduleVaccinationIds').val(JSON.stringify([vaccinationId]));
-    $('#scheduleModal').removeClass('hidden');
-}
-
-// Open bulk schedule modal
-function openBulkScheduleModal(vaccinationIds) {
-    $('#scheduleVaccinationIds').val(JSON.stringify(vaccinationIds));
-    $('#scheduleModal').removeClass('hidden');
-    $('#scheduleModal h3').text('Schedule ' + vaccinationIds.length + ' Vaccinations');
-}
-
-// Submit schedule
-function submitSchedule(event) {
-    event.preventDefault();
-    
-    const vaccinationIdsInput = $('#scheduleVaccinationIds').val();
-    const scheduledDate = $('#scheduleDate').val();
-    const notes = $('#scheduleNotes').val();
-    
-    console.log('Schedule input - vaccinationIds:', vaccinationIdsInput);
-    console.log('Schedule input - scheduledDate:', scheduledDate);
-    
-    // Parse vaccinationIds
-    let vaccinationIds;
-    try {
-        vaccinationIds = JSON.parse(vaccinationIdsInput);
-    } catch (e) {
-        // If it's not JSON, treat as comma-separated or single ID
-        vaccinationIds = vaccinationIdsInput.split(',').map(id => id.trim());
-    }
-    
-    if (!vaccinationIds || vaccinationIds.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'No Vaccinations',
-            text: 'No vaccinations selected'
-        });
-        return;
-    }
+    const vaccinationId = document.getElementById('scheduleVaccinationId').value;
+    const scheduledDate = document.getElementById('scheduleDate').value;
     
     if (!scheduledDate) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'No Date Selected',
-            text: 'Please select a date'
-        });
-        return;
+      Swal.fire({ icon: 'warning', title: 'Required', text: 'Please select a date' });
+      return;
     }
     
-    // Prepare request data
-    const requestData = {
-        vaccinationIds: vaccinationIds,
-        scheduledDate: scheduledDate,
-        notes: notes || ''
-    };
+    Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     
-    console.log('Sending schedule request:', requestData);
-    
-    Swal.fire({
-        title: 'Processing...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-    
-    $.ajax({
-        url: '/vaccination/api/schedule-date',
+    try {
+      const response = await fetch('/vaccination/api/schedule-date', {
         method: 'POST',
-        data: JSON.stringify(requestData),
-        contentType: 'application/json',
-        dataType: 'json',
-        success: function(response) {
-            console.log('Schedule success response:', response);
-            if (response.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Scheduled!',
-                    text: response.message,
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: response.message || 'Failed to schedule'
-                });
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Schedule error - status:', status);
-            console.error('Schedule error - response:', xhr.responseText);
-            console.error('Schedule error - error:', error);
-            
-            let errorMsg = 'Failed to schedule';
-            try {
-                const response = JSON.parse(xhr.responseText);
-                errorMsg = response.message || errorMsg;
-            } catch(e) {
-                errorMsg = error || errorMsg;
-            }
-            
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: errorMsg
-            });
-        }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          vaccinationIds: [vaccinationId], 
+          scheduledDate: scheduledDate 
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        Swal.fire({ icon: 'success', title: 'Scheduled!', text: data.message, timer: 2000 })
+          .then(() => location.reload());
+      } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Failed to schedule' });
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to schedule vaccination' });
+    }
+    closeScheduleModal();
+  }
+
+  // ================ ASSIGN PARAVET FUNCTIONS ================
+  
+  function openAssignModal(vaccinationId) {
+    document.getElementById('assignVaccinationIds').value = JSON.stringify([vaccinationId]);
+    document.getElementById('assignInfo').textContent = 'Selected: 1 vaccination';
+    document.getElementById('assignModal').classList.remove('hidden');
+  }
+
+  function openFarmerAssignModal(farmerId) {
+    const selectedIds = [];
+    document.querySelectorAll(`.farmer-${farmerId}:checked`).forEach(cb => {
+      selectedIds.push(cb.value);
     });
-}
-// Open bulk assign modal
-function openBulkAssignModal() {
-    $('#bulkAssignModal').removeClass('hidden');
-    addAssignmentRow();
-}
-
-// Add assignment row in bulk modal
-function addAssignmentRow() {
-    const paravetOptions = '<option value="">Select Paravet</option>' +
-        '<% (paravets || []).forEach(p => { %>' +
-            '<option value="<%= p._id %>"><%= p.user?.name || "Unknown" %></option>' +
-        '<% }); %>';
     
+    if (selectedIds.length === 0) {
+      Swal.fire({ icon: 'warning', title: 'No Selection', text: 'Please select at least one vaccination' });
+      return;
+    }
+    
+    document.getElementById('assignVaccinationIds').value = JSON.stringify(selectedIds);
+    document.getElementById('assignInfo').textContent = `Selected: ${selectedIds.length} vaccination(s)`;
+    document.getElementById('assignModal').classList.remove('hidden');
+  }
+
+  function assignFarmerToParavet(farmerId) {
+    const selectedIds = [];
+    document.querySelectorAll(`.farmer-${farmerId}:checked`).forEach(cb => {
+      selectedIds.push(cb.value);
+    });
+    
+    if (selectedIds.length === 0) {
+      Swal.fire({ icon: 'warning', title: 'No Selection', text: 'Please select at least one vaccination' });
+      return;
+    }
+    
+    document.getElementById('assignVaccinationIds').value = JSON.stringify(selectedIds);
+    document.getElementById('assignInfo').textContent = `Selected: ${selectedIds.length} vaccination(s)`;
+    document.getElementById('assignModal').classList.remove('hidden');
+  }
+
+  function closeAssignModal() {
+    document.getElementById('assignModal').classList.add('hidden');
+    document.getElementById('assignParavetId').value = '';
+    document.getElementById('assignScheduledDate').value = '';
+  }
+
+  async function submitAssignment(event) {
+    event.preventDefault();
+    
+    const vaccinationIdsInput = document.getElementById('assignVaccinationIds').value;
+    let vaccinationIds;
+    try {
+      vaccinationIds = JSON.parse(vaccinationIdsInput);
+    } catch(e) {
+      vaccinationIds = vaccinationIdsInput.split(',').map(id => id.trim());
+    }
+    
+    const paravetId = document.getElementById('assignParavetId').value;
+    const scheduledDate = document.getElementById('assignScheduledDate').value;
+    
+    if (!paravetId) {
+      Swal.fire({ icon: 'warning', title: 'Required', text: 'Please select a paravet' });
+      return;
+    }
+    
+    Swal.fire({ title: 'Assigning...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
+    try {
+      const response = await fetch('/vaccination/api/assign-paravet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vaccinationIds: vaccinationIds,
+          paravetId: paravetId,
+          scheduledDate: scheduledDate || null
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        Swal.fire({ icon: 'success', title: 'Assigned!', text: data.message, timer: 2000 })
+          .then(() => location.reload());
+      } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Failed to assign' });
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to assign paravet' });
+    }
+    closeAssignModal();
+  }
+
+  // ================ BULK ASSIGN FUNCTIONS ================
+  
+  function openBulkAssignModal() {
+    document.getElementById('bulkAssignmentsList').innerHTML = '';
+    addBulkAssignmentRow();
+    document.getElementById('bulkAssignModal').classList.remove('hidden');
+  }
+
+  function closeBulkAssignModal() {
+    document.getElementById('bulkAssignModal').classList.add('hidden');
+  }
+
+  function addBulkAssignmentRow() {
+    const paravetOptions = '<option value="">Select Paravet...</option>' +
+      '<% (paravets || []).forEach(p => { %>' +
+        '<option value="<%= p._id %>"><%= p.user?.name || "Unknown" %> - <%= p.qualification || "N/A" %></option>' +
+      '<% }); %>';
+    
+    const rowId = `bulk_row_${Date.now()}_${bulkAssignmentCounter++}`;
     const row = `
-        <div class="assignment-row bg-gray-50 p-4 rounded-lg relative">
-            <button type="button" onclick="removeAssignmentRow(this)" 
-                    class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Paravet</label>
-                    <select name="paravetIds[]" class="w-full px-3 py-2 border rounded-lg" required>
-                        ${paravetOptions}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Date</label>
-                    <input type="date" name="scheduledDates[]" class="w-full px-3 py-2 border rounded-lg"
-                           min="<%= new Date().toISOString().split('T')[0] %>">
-                </div>
-            </div>
-            <div class="mt-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Vaccination IDs (comma separated)</label>
-                <input type="text" name="vaccinationIdLists[]" class="w-full px-3 py-2 border rounded-lg"
-                       placeholder="e.g. id1,id2,id3" required>
-            </div>
+      <div id="${rowId}" class="bulk-assignment-row bg-gray-50 dark:bg-gray-700 p-4 rounded-lg relative">
+        <button type="button" onclick="removeBulkAssignmentRow('${rowId}')" 
+                class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Paravet *</label>
+            <select class="bulk-paravet w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+              ${paravetOptions}
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Schedule Date</label>
+            <input type="date" class="bulk-date w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                   min="<%= new Date().toISOString().split('T')[0] %>">
+          </div>
         </div>
+        <div class="mt-3">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vaccination IDs (comma separated) *</label>
+          <textarea class="bulk-ids w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                    rows="2" placeholder="e.g., id1, id2, id3"></textarea>
+        </div>
+      </div>
     `;
-    
-    $('#bulkAssignments').append(row);
-}
+    document.getElementById('bulkAssignmentsList').insertAdjacentHTML('beforeend', row);
+  }
 
-// Remove assignment row
-function removeAssignmentRow(button) {
-    $(button).closest('.assignment-row').remove();
-}
+  function removeBulkAssignmentRow(rowId) {
+    document.getElementById(rowId).remove();
+  }
 
-// Submit bulk assignment
-function submitBulkAssignment(event) {
+  async function submitBulkAssignments(event) {
     event.preventDefault();
     
     const assignments = [];
+    const rows = document.querySelectorAll('.bulk-assignment-row');
     
-    $('.assignment-row').each(function() {
-        const paravetId = $(this).find('select[name="paravetIds[]"]').val();
-        const scheduledDate = $(this).find('input[name="scheduledDates[]"]').val();
-        const vaccinationIdList = $(this).find('input[name="vaccinationIdLists[]"]').val();
-        
-        if (paravetId && vaccinationIdList) {
-            const vaccinationIds = vaccinationIdList.split(',').map(id => id.trim());
-            assignments.push({
-                paravetId,
-                scheduledDate,
-                vaccinationIds
-            });
-        }
-    });
+    for (const row of rows) {
+      const paravetId = row.querySelector('.bulk-paravet').value;
+      const scheduledDate = row.querySelector('.bulk-date').value;
+      const idsText = row.querySelector('.bulk-ids').value;
+      
+      if (!paravetId) continue;
+      
+      const vaccinationIds = idsText.split(',').map(id => id.trim()).filter(id => id);
+      if (vaccinationIds.length === 0) continue;
+      
+      assignments.push({
+        paravetId: paravetId,
+        scheduledDate: scheduledDate || null,
+        vaccinationIds: vaccinationIds
+      });
+    }
     
     if (assignments.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'No Assignments',
-            text: 'Please add at least one assignment'
-        });
-        return;
+      Swal.fire({ icon: 'warning', title: 'No Assignments', text: 'Please add at least one valid assignment' });
+      return;
     }
     
-    Swal.fire({
-        title: 'Processing...',
-        text: 'Please wait while we process your request',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+    Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     
-    $.ajax({
-        url: '/vaccination/api/bulk-assign',
+    try {
+      const response = await fetch('/vaccination/api/bulk-assign', {
         method: 'POST',
-        data: JSON.stringify({ assignments }),
-        contentType: 'application/json',
-        success: function(response) {
-            if (response.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: response.message,
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: response.message || 'Failed to process bulk assignments'
-                });
-            }
-        },
-        error: function(xhr) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: xhr.responseJSON?.message || 'Failed to process bulk assignments'
-            });
-        }
-    });
-}
-
-// View details
-function viewDetails(vaccinationId) {
-    $.get('/vaccination/api/vaccination/' + vaccinationId)
-        .done(function(response) {
-            if (response.success) {
-                const vac = response.vaccination;
-                let html = `
-                    <div class="border-b pb-4">
-                        <h4 class="font-semibold mb-2">Animal Information</h4>
-                        <p><span class="text-gray-600">Name:</span> ${vac.animal?.name || 'N/A'}</p>
-                        <p><span class="text-gray-600">Tag:</span> ${vac.animal?.tagNumber || 'No Tag'}</p>
-                        <p><span class="text-gray-600">Species:</span> ${vac.animal?.animalType || 'N/A'}</p>
-                    </div>
-                    <div class="border-b pb-4">
-                        <h4 class="font-semibold mb-2">Vaccine Information</h4>
-                        <p><span class="text-gray-600">Vaccine:</span> ${vac.vaccine?.name || vac.vaccineName || 'N/A'}</p>
-                        <p><span class="text-gray-600">Batch:</span> ${vac.batchNumber || 'N/A'}</p>
-                        <p><span class="text-gray-600">Dose:</span> ${vac.doseNumber || 1}/${vac.totalDosesRequired || 1}</p>
-                    </div>
-                    <div class="border-b pb-4">
-                        <h4 class="font-semibold mb-2">Dates</h4>
-                        <p><span class="text-gray-600">Administered:</span> ${vac.dateAdministered ? moment(vac.dateAdministered).format('DD/MM/YYYY') : 'Not yet'}</p>
-                        <p><span class="text-gray-600">Next Due:</span> ${vac.nextDueDate ? moment(vac.nextDueDate).format('DD/MM/YYYY') : 'Not set'}</p>
-                        <p><span class="text-gray-600">Scheduled:</span> ${vac.scheduledDate ? moment(vac.scheduledDate).format('DD/MM/YYYY') : 'Not scheduled'}</p>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold mb-2">Status & Payment</h4>
-                        <p><span class="text-gray-600">Status:</span> ${vac.status || 'N/A'}</p>
-                        <p><span class="text-gray-600">Payment:</span> ${vac.payment?.paymentStatus || 'N/A'}</p>
-                        <p><span class="text-gray-600">Amount:</span> ₹${vac.payment?.totalAmount || 0}</p>
-                    </div>
-                `;
-                $('#detailsContent').html(html);
-                $('#detailsModal').removeClass('hidden');
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to load details'
-                });
-            }
-        })
-        .fail(function() {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Failed to load details'
-            });
-        });
-}
-
-// View animal vaccination history
-function viewHistory(animalId) {
-    if (!animalId) {
-        Swal.fire({
-            icon: 'info',
-            title: 'No History',
-            text: 'No animal ID provided'
-        });
-        return;
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignments: assignments })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 2000 })
+          .then(() => location.reload());
+      } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Failed to process assignments' });
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to process assignments' });
     }
-    
-    $.get('/vaccination/api/animal/' + animalId + '/history')
-        .done(function(response) {
-            if (response.success && response.history && response.history.length > 0) {
-                let historyHtml = '<div class="space-y-4 max-h-96 overflow-y-auto">';
-                response.history.forEach(vac => {
-                    historyHtml += `
-                        <div class="border-b pb-3">
-                            <div class="flex justify-between">
-                                <span class="font-semibold">${vac.vaccine?.name || vac.vaccineName || 'Unknown'}</span>
-                                <span class="text-sm text-gray-500">${moment(vac.dateAdministered).format('DD/MM/YYYY')}</span>
-                            </div>
-                            <div class="text-sm text-gray-600">
-                                <p>Dose: ${vac.doseNumber || 1}/${vac.totalDosesRequired || 1}</p>
-                                <p>Status: ${vac.status || 'N/A'}</p>
-                                <p>Given by: ${vac.administeredBy || 'N/A'}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-                historyHtml += '</div>';
-                
-                Swal.fire({
-                    title: 'Vaccination History',
-                    html: historyHtml,
-                    width: '600px',
-                    showCloseButton: true,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'No History',
-                    text: 'No vaccination history found for this animal'
-                });
-            }
-        })
-        .fail(function() {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Failed to load vaccination history'
-            });
-        });
-}
+    closeBulkAssignModal();
+  }
 
-// Mark complete
-function markComplete(vaccinationId) {
-    $('#completeVaccinationId').val(vaccinationId);
-    $('#completeModal').removeClass('hidden');
-}
+  // ================ COMPLETE FUNCTIONS ================
+  
+  async function markComplete(vaccinationId, vaccineId) {
+    document.getElementById('completeVaccinationId').value = vaccinationId;
+    document.getElementById('completeVaccineId').value = vaccineId;
+    document.getElementById('completeModal').classList.remove('hidden');
+  }
 
-// Submit complete
-function submitComplete(event) {
+  function closeCompleteModal() {
+    document.getElementById('completeModal').classList.add('hidden');
+  }
+
+  async function submitComplete(event) {
     event.preventDefault();
     
-    const vaccinationId = $('#completeVaccinationId').val();
-    const completedDate = $('#completeDate').val();
-    const notes = $('#completeNotes').val();
+    const vaccinationId = document.getElementById('completeVaccinationId').value;
+    const completionDate = document.getElementById('completeDate').value;
+    const batchNumber = document.getElementById('completeBatchNumber').value;
+    const notes = document.getElementById('completeNotes').value;
     
-    if (!completedDate) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'No Date Selected',
-            text: 'Please select a completion date'
-        });
-        return;
+    if (!completionDate) {
+      Swal.fire({ icon: 'warning', title: 'Required', text: 'Please select a completion date' });
+      return;
     }
     
-    Swal.fire({
-        title: 'Processing...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+    Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     
-    $.ajax({
-        url: '/vaccination/api/vaccination/' + vaccinationId + '/status',
-        method: 'PATCH',
-        data: JSON.stringify({
-            status: 'Completed',
-            completedDate: completedDate,
-            notes: notes
-        }),
-        contentType: 'application/json',
-        success: function(response) {
-            if (response.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Completed!',
-                    text: response.message,
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: response.message || 'Failed to mark complete'
-                });
-            }
-        },
-        error: function(xhr) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: xhr.responseJSON?.message || 'Failed to mark complete'
-            });
-        }
-    });
-}
+    try {
+      const response = await fetch(`/vaccination/${vaccinationId}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          completionDate: completionDate,
+          batchNumber: batchNumber,
+          notes: notes
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        Swal.fire({ icon: 'success', title: 'Completed!', text: data.message, timer: 2000 })
+          .then(() => location.reload());
+      } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Failed to complete' });
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to complete vaccination' });
+    }
+    closeCompleteModal();
+  }
 
-// Delete vaccination
-function deleteVaccination(vaccinationId) {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Deleting...',
-                text: 'Please wait',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            $.ajax({
-                url: '/vaccination/api/vaccination/' + vaccinationId,
-                method: 'DELETE',
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Deleted!',
-                            text: response.message,
-                            timer: 2000
-                        }).then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.message || 'Failed to delete'
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: xhr.responseJSON?.message || 'Failed to delete'
-                    });
-                }
-            });
-        }
-    });
-}
+  // ================ VIEW DETAILS ================
+  
+  async function viewVaccinationDetails(vaccinationId) {
+    try {
+      const response = await fetch(`/vaccination/api/vaccination/${vaccinationId}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        const vac = data.vaccination;
+        const detailsHtml = `
+          <div class="border-b pb-3">
+            <h4 class="font-semibold mb-2 text-gray-900 dark:text-white">Animal Information</h4>
+            <p><span class="text-gray-600">Name:</span> ${vac.animal?.name || 'N/A'}</p>
+            <p><span class="text-gray-600">Tag:</span> ${vac.animal?.tagNumber || 'No Tag'}</p>
+            <p><span class="text-gray-600">Species:</span> ${vac.animal?.animalType || 'N/A'}</p>
+          </div>
+          <div class="border-b pb-3">
+            <h4 class="font-semibold mb-2">Vaccine Information</h4>
+            <p><span class="text-gray-600">Vaccine:</span> ${vac.vaccine?.name || vac.vaccineName || 'N/A'}</p>
+            <p><span class="text-gray-600">Batch:</span> ${vac.batchNumber || 'N/A'}</p>
+            <p><span class="text-gray-600">Dose:</span> ${vac.doseNumber || 1}/${vac.totalDosesRequired || 1}</p>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-2">Dates</h4>
+            <p><span class="text-gray-600">Administered:</span> ${vac.dateAdministered ? new Date(vac.dateAdministered).toLocaleDateString() : 'Not yet'}</p>
+            <p><span class="text-gray-600">Next Due:</span> ${vac.nextDueDate ? new Date(vac.nextDueDate).toLocaleDateString() : 'Not set'}</p>
+            <p><span class="text-gray-600">Scheduled:</span> ${vac.scheduledDate ? new Date(vac.scheduledDate).toLocaleDateString() : 'Not scheduled'}</p>
+          </div>
+        `;
+        document.getElementById('detailsContent').innerHTML = detailsHtml;
+        document.getElementById('detailsModal').classList.remove('hidden');
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load details' });
+    }
+  }
 
-// Assign paravet to farmer
-function assignParavetToFarmer(farmerId) {
-    if (!farmerId) return;
+  function closeDetailsModal() {
+    document.getElementById('detailsModal').classList.add('hidden');
+  }
+
+  // ================ BULK SCHEDULE FUNCTIONS ================
+  
+  function selectAllNeedingAnimals() {
+    const checkboxes = document.querySelectorAll('.needing-animal-checkbox');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => cb.checked = !allChecked);
+  }
+
+  function openBulkScheduleNeedingModal() {
+    const selectedCheckboxes = document.querySelectorAll('.needing-animal-checkbox:checked');
+    const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
     
-    const vaccinationIds = [];
-    $(`.farmer-${farmerId}`).each(function() {
-        if ($(this).is(':checked')) {
-            vaccinationIds.push($(this).val());
-        }
-    });
-    
-    if (vaccinationIds.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'No Selection',
-            text: 'Please select at least one animal for this farmer'
-        });
-        return;
+    if (selectedIds.length === 0) {
+      Swal.fire({ icon: 'warning', title: 'No Selection', text: 'Please select at least one animal' });
+      return;
     }
     
-    openAssignModal(vaccinationIds);
-}
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 7);
+    document.getElementById('needingScheduledDate').value = defaultDate.toISOString().split('T')[0];
+    document.getElementById('needingAnimalIds').value = JSON.stringify(selectedIds);
+    document.getElementById('bulkScheduleNeedingModal').classList.remove('hidden');
+  }
 
-// Schedule all for farmer
-function scheduleFarmer(farmerId) {
-    if (!farmerId) return;
+  function closeBulkScheduleNeedingModal() {
+    document.getElementById('bulkScheduleNeedingModal').classList.add('hidden');
+  }
+
+  async function submitBulkScheduleNeeding(event) {
+    event.preventDefault();
     
-    const vaccinationIds = [];
-    $(`.farmer-${farmerId}`).each(function() {
-        $(this).prop('checked', true);
-        vaccinationIds.push($(this).val());
-        selectedVaccinations.add($(this).val());
-    });
-    updateSelectedCount();
-    
-    openBulkScheduleModal(vaccinationIds);
-}
-
-// Open bulk complete modal
-function openBulkCompleteModal(vaccinationIds) {
-    $('#completeVaccinationId').val(JSON.stringify(vaccinationIds));
-    $('#completeModal').removeClass('hidden');
-    $('#completeModal h3').text('Mark ' + vaccinationIds.length + ' Vaccinations Complete');
-}
-
-// Close modal
-function closeModal(modalId) {
-    $('#' + modalId).addClass('hidden');
-}
-
-// Remove filter
-function removeFilter(filterName) {
-    const url = new URL(window.location);
-    url.searchParams.delete(filterName);
-    window.location = url.toString();
-}
-
-// Clear all filters
-function clearFilters() {
-    window.location = '/vaccination/schedule';
-}
-
-// Export selected
-function exportSelected(vaccinationIds) {
-    window.location = '/vaccination/export/selected?ids=' + vaccinationIds.join(',');
-}
-
-// Handle keyboard escape key
-$(document).keydown(function(e) {
-    if (e.key === 'Escape') {
-        $('.fixed').addClass('hidden');
+    const animalIdsInput = document.getElementById('needingAnimalIds').value;
+    let animalIds;
+    try {
+      animalIds = JSON.parse(animalIdsInput);
+    } catch(e) {
+      animalIds = animalIdsInput.split(',').map(id => id.trim());
     }
-});
+    
+    const paravetId = document.getElementById('needingParavetId').value;
+    const scheduledDate = document.getElementById('needingScheduledDate').value;
+    const notes = document.getElementById('needingNotes').value;
+    
+    if (!paravetId) {
+      Swal.fire({ icon: 'warning', title: 'Required', text: 'Please select a paravet' });
+      return;
+    }
+    
+    if (!scheduledDate) {
+      Swal.fire({ icon: 'warning', title: 'Required', text: 'Please select a date' });
+      return;
+    }
+    
+    Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
+    try {
+      const response = await fetch('/vaccination/api/bulk-schedule-needing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          animalIds: animalIds,
+          paravetId: paravetId,
+          scheduledDate: scheduledDate,
+          notes: notes
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        Swal.fire({ icon: 'success', title: 'Scheduled!', text: data.message, timer: 3000 })
+          .then(() => location.reload());
+      } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Failed to schedule' });
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to schedule vaccinations' });
+    }
+    closeBulkScheduleNeedingModal();
+  }
+
+  // ================ UNTAGGED MODAL ================
+  
+  function showUntaggedAnimalsModal() {
+    document.getElementById('untaggedModal').classList.remove('hidden');
+  }
+
+  function closeUntaggedModal() {
+    document.getElementById('untaggedModal').classList.add('hidden');
+  }
+
+  // ================ FILTER FUNCTIONS ================
+  
+  function clearFilters() {
+    window.location.href = '/vaccination/schedule';
+  }
+
+  // Initialize checkbox listeners
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.vaccination-checkbox').forEach(cb => {
+      cb.addEventListener('change', function() {
+        const vacId = this.value;
+        if (this.checked) {
+          selectedVaccinations.add(vacId);
+        } else {
+          selectedVaccinations.delete(vacId);
+        }
+        updateBulkSelectionBar();
+      });
+    });
+  });
 </script>
 
 <style>
-/* Additional styles for the schedule page */
-.assignment-row {
-    transition: all 0.3s ease;
-}
-.assignment-row:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.status-badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-.status-pending {
-    background-color: #fef3c7;
-    color: #92400e;
-}
-.status-scheduled {
-    background-color: #dbeafe;
-    color: #1e40af;
-}
-.status-completed {
-    background-color: #d1fae5;
-    color: #065f46;
-}
-.status-overdue {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
-.fade-enter {
-    opacity: 0;
-    transform: translateY(-10px);
-}
-.fade-enter-active {
-    opacity: 1;
-    transform: translateY(0);
-    transition: all 0.3s ease;
-}
-.action-btn {
-    transition: all 0.2s ease;
-}
-.action-btn:hover {
-    transform: scale(1.1);
-}
+  .stat-card { transition: all 0.3s ease; }
+  .stat-card:hover { transform: translateY(-2px); }
+  .status-pending { background-color: #fef3c7; color: #92400e; }
+  .status-scheduled { background-color: #dbeafe; color: #1e40af; }
+  .status-today { background-color: #d1fae5; color: #065f46; }
+  .status-completed { background-color: #d1fae5; color: #065f46; }
+  .status-overdue { background-color: #fee2e2; color: #991b1b; }
+  .dark .status-pending { background-color: #fef3c7; color: #92400e; }
+  .dark .status-scheduled { background-color: #dbeafe; color: #1e40af; }
+  .dark .status-today { background-color: #d1fae5; color: #065f46; }
+  .dark .status-completed { background-color: #d1fae5; color: #065f46; }
+  .dark .status-overdue { background-color: #fee2e2; color: #991b1b; }
 </style>

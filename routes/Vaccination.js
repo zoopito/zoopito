@@ -127,4 +127,9 @@ router.delete("/api/vaccination/:id", taskController.deleteVaccination);
 // Export schedule
 router.get("/export/schedule", taskController.exportSchedule);
 
+// In routes/Vaccination.js - Add this route
+
+// Bulk schedule animals needing vaccination
+router.post("/api/bulk-schedule-needing", isLoggedIn, isAdmin, taskController.bulkScheduleNeedingVaccination);
+
 module.exports = router;

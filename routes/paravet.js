@@ -236,4 +236,37 @@ router.get("/reports/daily", paravetController.getDailyReport);
 router.get("/reports/weekly", paravetController.getWeeklyReport);
 router.get("/reports/monthly", paravetController.getMonthlyReport);
 
+
+
+
+router.get("/api/dashboard-stats", paravetController.getDashboardStats);
+
+// ================ FARMER MANAGEMENT ================
+router.get("/farmers", paravetController.getFarmers);
+router.get("/farmers/:farmerId", paravetController.getFarmerDetails);
+router.get("/api/farmers/:farmerId/location", paravetController.getFarmerLocation);
+
+// ================ BULK VACCINATION ================
+router.get("/farmers/:farmerId/vaccinate", paravetController.getBulkVaccinationForm);
+router.post("/farmers/:farmerId/vaccinate", paravetController.submitBulkVaccination);
+
+// ================ ANIMAL MANAGEMENT ================
+router.get("/animals/needing-care", paravetController.getAnimalsNeedingVaccination);
+router.post("/animals/:animalId/tag", paravetController.markAnimalTagged);
+
+// ================ VACCINATION HISTORY ================
+router.get("/vaccinations/history/:animalId", paravetController.getVaccinationHistory);
+router.put("/vaccinations/:id", paravetController.updateVaccinationRecord);
+
+// ================ SCHEDULES ================
+router.get("/schedules", paravetController.getUpcomingSchedules);
+
+// ================ REPORTS ================
+router.get("/reports", paravetController.getReports);
+
+// Redirect root to dashboard
+router.get("/", (req, res) => {
+  res.redirect("/paravet/dashboard");
+});
+
 module.exports = router;

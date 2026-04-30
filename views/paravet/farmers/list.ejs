@@ -1,0 +1,257 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            My Farmers
+          </h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Manage and monitor all farmers assigned to you
+          </p>
+        </div>
+        <div class="flex space-x-3">
+          <a href="/paravet/animals/needing-care" 
+             class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 flex items-center">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            Needing Attention
+          </a>
+          <a href="/paravet/schedules" 
+             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
+            <i class="fas fa-calendar-alt mr-2"></i>
+            View Schedules
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1 relative">
+          <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+          <input type="text" id="searchInput" placeholder="Search by name, mobile, or village..." 
+                 class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
+        </div>
+        <select id="villageFilter" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
+          <option value="">All Villages</option>
+        </select>
+        <select id="statusFilter" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
+          <option value="">All Status</option>
+          <option value="pending">Has Pending Vaccinations</option>
+          <option value="completed">All Completed</option>
+        </select>
+        <button onclick="resetFilters()" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+          <i class="fas fa-redo-alt mr-1"></i> Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Farmers Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="farmersGrid">
+      <% farmers.forEach(farmer => { %>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow farmer-card"
+             data-name="<%= farmer.name.toLowerCase() %>"
+             data-mobile="<%= farmer.mobileNumber %>"
+             data-village="<%= farmer.address?.village?.toLowerCase() || '' %>"
+             data-pending="<%= farmer.pendingVaccinations > 0 %>">
+          
+          <!-- Farmer Header -->
+          <div class="bg-gradient-to-r from-blue-500 to-green-500 px-6 py-4 text-white">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <i class="fas fa-user text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-lg"><%= farmer.name %></h3>
+                  <p class="text-sm text-white/80">
+                    <i class="fas fa-map-marker-alt mr-1"></i>
+                    <%= farmer.address?.village || 'Location not set' %>
+                  </p>
+                </div>
+              </div>
+              <% if (farmer.pendingVaccinations > 0) { %>
+                <span class="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs">
+                  <%= farmer.pendingVaccinations %> pending
+                </span>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Farmer Details -->
+          <div class="p-6">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Farmer ID</span>
+                <span class="font-mono text-sm"><%= farmer.uniqueFarmerId || 'N/A' %></span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Mobile</span>
+                <a href="tel:<%= farmer.mobileNumber %>" class="text-blue-600 hover:text-blue-700">
+                  <i class="fas fa-phone mr-1"></i> <%= farmer.mobileNumber || 'N/A' %>
+                </a>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Total Animals</span>
+                <span class="font-semibold"><%= farmer.animalCount || 0 %></span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Vaccinations</span>
+                <div class="text-right">
+                  <span class="text-green-600 font-semibold"><%= farmer.completedVaccinations || 0 %></span>
+                  <span class="text-gray-400"> / </span>
+                  <span class="text-yellow-600 font-semibold"><%= farmer.pendingVaccinations || 0 %></span>
+                </div>
+              </div>
+              <% if (farmer.lastVisit) { %>
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Last Visit</span>
+                  <span class="text-sm"><%= moment(farmer.lastVisit).format('DD MMM YYYY') %></span>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Progress Bar -->
+            <% const totalVax = (farmer.completedVaccinations || 0) + (farmer.pendingVaccinations || 0); %>
+            <% const progress = totalVax > 0 ? ((farmer.completedVaccinations || 0) / totalVax) * 100 : 0; %>
+            <div class="mt-4">
+              <div class="flex justify-between text-xs text-gray-500 mb-1">
+                <span>Vaccination Progress</span>
+                <span><%= Math.round(progress) %>%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-green-500 rounded-full h-2" style="width: <%= progress %>%"></div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-6 flex gap-3">
+              <a href="/paravet/farmers/<%= farmer._id %>" 
+                 class="flex-1 text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-eye mr-1"></i> View Details
+              </a>
+              <a href="/paravet/farmers/<%= farmer._id %>/vaccinate" 
+                 class="flex-1 text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                <i class="fas fa-syringe mr-1"></i> Vaccinate
+              </a>
+            </div>
+            
+            <!-- Location Button (if coordinates available) -->
+            <% if (farmer.location?.coordinates && farmer.location.coordinates[0] !== 0 && farmer.location.coordinates[1] !== 0) { %>
+              <button onclick="openLocation(<%= farmer._id %>)" 
+                      class="mt-3 w-full text-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition">
+                <i class="fas fa-map-marker-alt mr-1"></i> View Location
+              </button>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- No Results -->
+    <div id="noResults" class="hidden text-center py-12">
+      <i class="fas fa-search text-6xl text-gray-400 mb-4"></i>
+      <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No farmers found</h3>
+      <p class="text-gray-500">Try adjusting your search or filter criteria</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Search and filter functionality
+  const searchInput = document.getElementById('searchInput');
+  const villageFilter = document.getElementById('villageFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  const farmersGrid = document.getElementById('farmersGrid');
+  const noResults = document.getElementById('noResults');
+
+  // Populate village filter
+  const villages = new Set();
+  document.querySelectorAll('.farmer-card').forEach(card => {
+    const village = card.dataset.village;
+    if (village) villages.add(village);
+  });
+  villages.forEach(village => {
+    const option = document.createElement('option');
+    option.value = village;
+    option.textContent = village.charAt(0).toUpperCase() + village.slice(1);
+    villageFilter.appendChild(option);
+  });
+
+  function filterFarmers() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedVillage = villageFilter.value.toLowerCase();
+    const selectedStatus = statusFilter.value;
+    
+    let visibleCount = 0;
+    
+    document.querySelectorAll('.farmer-card').forEach(card => {
+      const name = card.dataset.name;
+      const mobile = card.dataset.mobile;
+      const village = card.dataset.village;
+      const hasPending = card.dataset.pending === 'true';
+      
+      let show = true;
+      
+      if (searchTerm && !name.includes(searchTerm) && !mobile.includes(searchTerm)) {
+        show = false;
+      }
+      
+      if (selectedVillage && village !== selectedVillage) {
+        show = false;
+      }
+      
+      if (selectedStatus === 'pending' && !hasPending) {
+        show = false;
+      }
+      
+      if (selectedStatus === 'completed' && hasPending) {
+        show = false;
+      }
+      
+      card.style.display = show ? 'block' : 'none';
+      if (show) visibleCount++;
+    });
+    
+    noResults.classList.toggle('hidden', visibleCount > 0);
+  }
+
+  searchInput.addEventListener('input', filterFarmers);
+  villageFilter.addEventListener('change', filterFarmers);
+  statusFilter.addEventListener('change', filterFarmers);
+
+  function resetFilters() {
+    searchInput.value = '';
+    villageFilter.value = '';
+    statusFilter.value = '';
+    filterFarmers();
+  }
+
+  async function openLocation(farmerId) {
+    try {
+      const response = await fetch(`/paravet/api/farmers/${farmerId}/location`);
+      const data = await response.json();
+      
+      if (data.success && data.farmer.location) {
+        window.open(data.farmer.mapUrl, '_blank');
+      } else {
+        Swal.fire({
+          icon: 'info',
+          title: 'Location Not Available',
+          text: 'This farmer has not set their location yet'
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to load location'
+      });
+    }
+  }
+</script>

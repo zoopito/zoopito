@@ -1,0 +1,336 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Animals Needing Attention
+          </h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Animals that require vaccination or tagging
+          </p>
+        </div>
+        <a href="/paravet/farmers" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+          <i class="fas fa-arrow-left mr-2"></i>
+          Back to Farmers
+        </a>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
+      <nav class="flex space-x-8">
+        <button onclick="showTab('vaccination')" id="vaccinationTab" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm transition">
+          <i class="fas fa-syringe mr-2"></i>
+          Need Vaccination (<%= needingVaccination.length %>)
+        </button>
+        <button onclick="showTab('tagging')" id="taggingTab" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm transition">
+          <i class="fas fa-tag mr-2"></i>
+          Need Tagging (<%= needingTagging.length %>)
+        </button>
+        <button onclick="showTab('all')" id="allTab" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm transition">
+          <i class="fas fa-list mr-2"></i>
+          All Animals (<%= allAnimals.length %>)
+        </button>
+      </nav>
+    </div>
+
+    <!-- Need Vaccination Tab -->
+    <div id="vaccinationContent" class="tab-content">
+      <% if (needingVaccination.length > 0) { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <% needingVaccination.forEach(animal => { %>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+              <div class="bg-gradient-to-r from-yellow-500 to-orange-500 px-6 py-4 text-white">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-semibold text-lg"><%= animal.name || 'Unnamed' %></h3>
+                  <span class="bg-white/20 px-2 py-0.5 rounded-full text-xs"><%= animal.animalType %></span>
+                </div>
+              </div>
+              <div class="p-6">
+                <div class="space-y-3">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Farmer</span>
+                    <span class="font-medium"><%= animal.farmer?.name %></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Location</span>
+                    <span><%= animal.farmer?.address?.village || 'N/A' %></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Tag Status</span>
+                    <% if (animal.tagNumber) { %>
+                      <span class="text-green-600"><i class="fas fa-check-circle"></i> Tagged</span>
+                    <% } else { %>
+                      <span class="text-yellow-600"><i class="fas fa-exclamation-triangle"></i> Not Tagged</span>
+                    <% } %>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-600 mb-2">Pending Vaccines:</p>
+                    <div class="flex flex-wrap gap-2">
+                      <% animal.recommendedVaccines?.forEach(vaccine => { %>
+                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                          <%= vaccine.name %>
+                        </span>
+                      <% }); %>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-6 flex gap-3">
+                  <a href="/paravet/farmers/<%= animal.farmer?._id %>/vaccinate" 
+                     class="flex-1 text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    <i class="fas fa-syringe mr-1"></i> Vaccinate
+                  </a>
+                  <a href="/paravet/farmers/<%= animal.farmer?._id %>" 
+                     class="flex-1 text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-eye mr-1"></i> View
+                  </a>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+          <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
+          <h3 class="text-xl font-medium mb-2">All Vaccinations Up to Date!</h3>
+          <p class="text-gray-500">No animals need vaccination at this time.</p>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Need Tagging Tab -->
+    <div id="taggingContent" class="tab-content hidden">
+      <% if (needingTagging.length > 0) { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <% needingTagging.forEach(animal => { %>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+              <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4 text-white">
+                <h3 class="font-semibold text-lg"><%= animal.name || 'Unnamed' %></h3>
+              </div>
+              <div class="p-6">
+                <div class="space-y-3">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Farmer</span>
+                    <span class="font-medium"><%= animal.farmer?.name %></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Animal Type</span>
+                    <span><%= animal.animalType %></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Age</span>
+                    <span><%= animal.age?.value ? `${animal.age.value} ${animal.age.unit}` : 'N/A' %></span>
+                  </div>
+                </div>
+                <div class="mt-6">
+                  <button onclick="openTagModal('<%= animal._id %>', '<%= animal.name || 'Animal' %>')" 
+                          class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    <i class="fas fa-tag mr-2"></i>
+                    Add Tag ID
+                  </button>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+          <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
+          <h3 class="text-xl font-medium mb-2">All Animals Tagged!</h3>
+          <p class="text-gray-500">No animals need tagging at this time.</p>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- All Animals Tab -->
+    <div id="allContent" class="tab-content hidden">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Animal</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Farmer</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tag</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vaccination Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+			                </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <% allAnimals.forEach(animal => { %>
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="px-6 py-4">
+                      <div class="flex items-center">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          <i class="fas fa-paw text-gray-500"></i>
+                        </div>
+                        <div class="ml-3">
+                          <p class="font-medium text-gray-900 dark:text-white">
+                            <%= animal.name || 'Unnamed' %>
+                          </p>
+                          <p class="text-xs text-gray-500"><%= animal.animalType %> | <%= animal.gender || 'Unknown' %></p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div>
+                        <p class="text-sm font-medium"><%= animal.farmer?.name %></p>
+                        <p class="text-xs text-gray-500"><%= animal.farmer?.address?.village || 'N/A' %></p>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <% if (animal.tagNumber) { %>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                          <i class="fas fa-tag mr-1"></i><%= animal.tagNumber %>
+                        </span>
+                      <% } else { %>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                          <i class="fas fa-exclamation-triangle mr-1"></i>Not Tagged
+                        </span>
+                      <% } %>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex flex-col">
+                        <div class="flex items-center">
+                          <span class="text-sm"><%= animal.vaccinationCount || 0 %> vaccines</span>
+                          <% if (animal.recommendedVaccines && animal.recommendedVaccines.length > 0) { %>
+                            <span class="ml-2 text-xs text-yellow-600">
+                              (<%= animal.recommendedVaccines.length %> due)
+                            </span>
+                          <% } %>
+                        </div>
+                        <div class="w-24 h-1.5 bg-gray-200 rounded-full mt-1">
+                          <div class="bg-green-500 rounded-full h-1.5" 
+                               style="width: <%= animal.vaccinationProgress?.percentage || 0 %>%"></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex space-x-2">
+                        <a href="/paravet/vaccinations/history/<%= animal._id %>" 
+                           class="text-blue-600 hover:text-blue-800" title="View History">
+                          <i class="fas fa-history"></i>
+                        </a>
+                        <% if (!animal.tagNumber) { %>
+                          <button onclick="openTagModal('<%= animal._id %>', '<%= animal.name || 'Animal' %>')" 
+                                  class="text-purple-600 hover:text-purple-800" title="Add Tag">
+                            <i class="fas fa-tag"></i>
+                          </button>
+                        <% } %>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tag Modal -->
+<div id="tagModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Tag ID</h3>
+      <button onclick="closeTagModal()" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <form id="tagForm" onsubmit="submitTag(event)">
+      <input type="hidden" id="tagAnimalId">
+      <div class="mb-4">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Animal: <span id="tagAnimalName" class="font-semibold dark:text-white"></span></p>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tag Number</label>
+        <input type="text" id="tagNumber" required 
+               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+               placeholder="Enter unique tag number (e.g., ZPT-001)">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Use uppercase letters and numbers only</p>
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeTagModal()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+          Cancel
+        </button>
+        <button type="submit" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          Save Tag
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function showTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.add('hidden');
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('border-blue-500', 'text-blue-600');
+      btn.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    // Show selected tab
+    document.getElementById(`${tabName}Content`).classList.remove('hidden');
+    
+    // Activate selected tab
+    const activeTab = document.getElementById(`${tabName}Tab`);
+    activeTab.classList.remove('border-transparent', 'text-gray-500');
+    activeTab.classList.add('border-blue-500', 'text-blue-600');
+  }
+  
+  function openTagModal(animalId, animalName) {
+    document.getElementById('tagAnimalId').value = animalId;
+    document.getElementById('tagAnimalName').textContent = animalName;
+    document.getElementById('tagModal').classList.remove('hidden');
+    document.getElementById('tagNumber').value = '';
+  }
+  
+  function closeTagModal() {
+    document.getElementById('tagModal').classList.add('hidden');
+  }
+  
+  async function submitTag(event) {
+    event.preventDefault();
+    const animalId = document.getElementById('tagAnimalId').value;
+    const tagNumber = document.getElementById('tagNumber').value.toUpperCase();
+    
+    if (!tagNumber) {
+      Swal.fire({ icon: 'warning', title: 'Required', text: 'Please enter a tag number' });
+      return;
+    }
+    
+    Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
+    try {
+      const response = await fetch(`/paravet/animals/${animalId}/tag`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tagNumber })
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 2000 })
+          .then(() => location.reload());
+      } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to add tag' });
+    }
+    closeTagModal();
+  }
+</script>

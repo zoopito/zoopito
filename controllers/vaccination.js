@@ -269,12 +269,11 @@ exports.renderNewForm = async (req, res) => {
     // ================= ADMIN =================
     if (admin) {
       farmers = await Farmer.find({ isActive: true })
-        .select("name address.village uniqueFarmerId phone")
-        .sort({ name: 1 });
-    }
-
-    // ================= PARAVET =================
-    if (paravet) {
+        .select("name address.village uniqueFarmerId")
+        .sort({ name: 1 })
+        .lean();
+      console.log("only admin")
+    } else if (paravet) {
       const districts = paravet.assignedAreas.map((area) => area.district);
       const villages = paravet.assignedAreas
         .map((area) => area.village)
@@ -291,6 +290,11 @@ exports.renderNewForm = async (req, res) => {
       farmers = await Farmer.find(farmerQuery)
         .select("name address.village uniqueFarmerId phone")
         .sort({ name: 1 });
+    } else {
+      farmers = await Farmer.find({ isActive: true })
+        .select("name address.village uniqueFarmerId")
+        .sort({ name: 1 })
+        .lean();
     }
 
     // ================= VACCINES =================

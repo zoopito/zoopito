@@ -1,0 +1,536 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            <i class="fas fa-stethoscope mr-3 text-blue-500"></i>
+            Paravet Dashboard
+          </h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Welcome back, <span class="font-semibold"><%= paravet.user.name %></span>! Here's your overview.
+          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <i class="fas fa-map-marker-alt mr-1"></i> 
+            <%= paravet.assignedAreas && paravet.assignedAreas.length > 0 ? 
+              `Assigned to: ${paravet.assignedAreas.map(a => a.village || a.district).join(', ')}` : 
+              'No areas assigned' %>
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a href="/paravet/tasks" 
+             class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center transition-colors">
+            <i class="fas fa-tasks mr-2"></i>
+            My Tasks
+          </a>
+          <a href="/paravet/reports" 
+             class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center transition-colors">
+            <i class="fas fa-chart-line mr-2"></i>
+            My Reports
+          </a>
+          <a href="/paravet/schedules" 
+             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center transition-colors">
+            <i class="fas fa-calendar-alt mr-2"></i>
+            View Schedules
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
+      <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-blue-500 hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Total Farmers</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= stats.totalFarmers || 0 %></p>
+          </div>
+          <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+            <i class="fas fa-users text-blue-600 dark:text-blue-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-green-500 hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Total Animals</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= stats.totalAnimals || 0 %></p>
+          </div>
+          <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+            <i class="fas fa-paw text-green-600 dark:text-green-400"></i>
+          </div>
+        </div>
+        <div class="mt-1 text-xs">
+          <span class="text-green-600 dark:text-green-400"><%= stats.taggedAnimals || 0 %></span> tagged, 
+          <span class="text-yellow-600 dark:text-yellow-400"><%= stats.untaggedAnimals || 0 %></span> untagged
+        </div>
+      </div>
+
+      <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-yellow-500 hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Pending Tasks</p>
+            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400"><%= stats.pendingVaccinations || 0 %></p>
+          </div>
+          <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+            <i class="fas fa-clock text-yellow-600 dark:text-yellow-400"></i>
+          </div>
+        </div>
+        <div class="mt-1 text-xs">
+          <span class="text-red-600 dark:text-red-400"><%= stats.overdueVaccinations || 0 %></span> overdue
+        </div>
+      </div>
+
+      <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-purple-500 hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Total Vaccinations</p>
+            <p class="text-2xl font-bold text-purple-600 dark:text-purple-400"><%= stats.totalVaccinationsGiven || 0 %></p>
+          </div>
+          <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+            <i class="fas fa-syringe text-purple-600 dark:text-purple-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-teal-500 hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Completion Rate</p>
+            <p class="text-2xl font-bold text-teal-600 dark:text-teal-400">
+              <%= stats.totalVaccinationsGiven && stats.totalAnimals ? 
+                Math.round((stats.totalVaccinationsGiven / (stats.totalAnimals * 5)) * 100) : 0 %>%
+            </p>
+          </div>
+          <div class="w-10 h-10 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center">
+            <i class="fas fa-chart-line text-teal-600 dark:text-teal-400"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Schedule & Urgent Tasks Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      
+      <!-- Today's Schedule Card -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="px-5 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold flex items-center">
+              <i class="fas fa-calendar-day mr-2"></i>
+              Today's Schedule
+            </h2>
+            <span class="bg-white/20 px-2 py-0.5 rounded-full text-sm"><%= stats.todaySchedules || 0 %></span>
+          </div>
+        </div>
+        <div class="p-5 max-h-96 overflow-y-auto">
+          <% const todaySchedulesList = (schedules || []).filter(s => moment(s.scheduledDate).isSame(moment(), "day")); %>
+          <% if (todaySchedulesList.length > 0) { %>
+            <div class="space-y-3">
+              <% todaySchedulesList.forEach(schedule => { %>
+                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:shadow-md transition-all">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                      <i class="fas fa-paw text-blue-600"></i>
+                    </div>
+                    <div>
+                      <p class="font-medium text-gray-900 dark:text-white">
+                        <%= schedule.animal?.name || 'Unnamed' %>
+                      </p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-syringe mr-1"></i><%= schedule.vaccine?.name %>
+                        <span class="mx-1">•</span>
+                        <i class="fas fa-map-marker-alt mr-1"></i><%= schedule.farmer?.address?.village || 'N/A' %>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                      <%= moment(schedule.scheduledDate).format('hh:mm A') %>
+                    </p>
+                    <a href="/paravet/farmers/<%= schedule.farmer?._id %>/vaccinate" 
+                       class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors inline-block mt-1">
+                      <i class="fas fa-play mr-1"></i>Start
+                    </a>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="text-center py-8">
+              <i class="fas fa-calendar-check text-5xl text-gray-300 dark:text-gray-600 mb-3"></i>
+              <p class="text-gray-500 dark:text-gray-400">No vaccinations scheduled for today</p>
+              <p class="text-xs text-gray-400 mt-1">You're all caught up!</p>
+            </div>
+          <% } %>
+        </div>
+        <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+          <a href="/paravet/schedules?period=today" class="text-sm text-blue-600 hover:text-blue-700 flex items-center justify-end">
+            View all <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Urgent Tasks Card -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="px-5 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold flex items-center">
+              <i class="fas fa-exclamation-triangle mr-2"></i>
+              Urgent Tasks
+            </h2>
+            <span class="bg-white/20 px-2 py-0.5 rounded-full text-sm"><%= (animalsNeedingVaccination && animalsNeedingVaccination.length) || 0 %></span>
+          </div>
+        </div>
+        <div class="p-5 max-h-96 overflow-y-auto">
+          <% if ((animalsNeedingVaccination && animalsNeedingVaccination.length > 0) || (stats.overdueVaccinations > 0)) { %>
+            <div class="space-y-4">
+              
+              <!-- Overdue Vaccinations -->
+              <% if (stats.overdueVaccinations > 0) { %>
+                <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-3">
+                  <h3 class="text-sm font-semibold text-red-700 dark:text-red-300 mb-2 flex items-center">
+                    <i class="fas fa-clock mr-1"></i>
+                    Overdue Vaccinations (<%= stats.overdueVaccinations %>)
+                  </h3>
+                  <div class="space-y-2">
+                    <% (schedules || []).filter(s => s.nextDueDate && new Date(s.nextDueDate) < new Date()).slice(0, 3).forEach(schedule => { %>
+                      <div class="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-lg">
+                        <div>
+                          <p class="text-sm font-medium"><%= schedule.animal?.name || 'Unnamed' %></p>
+                          <p class="text-xs text-gray-500"><%= schedule.vaccine?.name %> - <%= schedule.farmer?.name %></p>
+                        </div>
+                        <a href="/paravet/farmers/<%= schedule.farmer?._id %>/vaccinate" 
+                           class="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">
+                          Vaccinate Now
+                        </a>
+                      </div>
+                    <% }); %>
+                  </div>
+                </div>
+              <% } %>
+              
+              <!-- Animals Needing Vaccination -->
+              <% if (animalsNeedingVaccination && animalsNeedingVaccination.length > 0) { %>
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
+                  <h3 class="text-sm font-semibold text-yellow-700 dark:text-yellow-300 mb-2 flex items-center">
+                    <i class="fas fa-syringe mr-1"></i>
+                    Need First Vaccination (<%= animalsNeedingVaccination.length %>)
+                  </h3>
+                  <div class="space-y-2">
+                    <% animalsNeedingVaccination.slice(0, 3).forEach(animal => { %>
+                      <div class="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-lg">
+                        <div>
+                          <p class="text-sm font-medium"><%= animal.name || 'Unnamed' %></p>
+                          <p class="text-xs text-gray-500"><%= animal.animalType %> - <%= animal.farmer?.name %></p>
+                        </div>
+                        <a href="/paravet/farmers/<%= animal.farmer?._id %>/vaccinate" 
+                           class="text-xs bg-yellow-600 text-white px-2 py-1 rounded hover:bg-yellow-700">
+                          Schedule
+                        </a>
+                      </div>
+                    <% }); %>
+                  </div>
+                </div>
+              <% } %>
+              
+              <!-- Untagged Animals -->
+              <% if (stats.untaggedAnimals > 0) { %>
+                <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
+                  <h3 class="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center">
+                    <i class="fas fa-tag mr-1"></i>
+                    Need Tagging (<%= stats.untaggedAnimals %>)
+                  </h3>
+                  <div class="space-y-2">
+                    <% (untaggedAnimalsList || []).slice(0, 3).forEach(animal => { %>
+                      <div class="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-lg">
+                        <div>
+                          <p class="text-sm font-medium"><%= animal.name || 'Unnamed' %></p>
+                          <p class="text-xs text-gray-500"><%= animal.animalType %> - No Tag ID</p>
+                        </div>
+                        <button onclick="openTagModal('<%= animal._id %>', '<%= animal.name %>')" 
+                                class="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700">
+                          Add Tag
+                        </button>
+                      </div>
+                    <% }); %>
+                  </div>
+                </div>
+              <% } %>
+              
+            </div>
+          <% } else { %>
+            <div class="text-center py-8">
+              <i class="fas fa-check-circle text-5xl text-green-300 dark:text-green-600 mb-3"></i>
+              <p class="text-gray-500 dark:text-gray-400">No urgent tasks!</p>
+              <p class="text-xs text-gray-400 mt-1">All animals are up to date</p>
+            </div>
+          <% } %>
+        </div>
+        <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+          <a href="/paravet/tasks" class="text-sm text-orange-600 hover:text-orange-700 flex items-center justify-end">
+            View all tasks <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Bar -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-8">
+      <h3 class="text-md font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+        <i class="fas fa-bolt mr-2 text-yellow-500"></i>
+        Quick Actions
+      </h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <a href="/paravet/farmers" class="flex items-center justify-center space-x-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-colors">
+          <i class="fas fa-users text-blue-600"></i>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">View Farmers</span>
+        </a>
+        <a href="/paravet/schedules?period=today" class="flex items-center justify-center space-x-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-800/30 transition-colors">
+          <i class="fas fa-calendar-day text-green-600"></i>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Today's Tasks</span>
+        </a>
+        <a href="/paravet/tasks?filter=overdue" class="flex items-center justify-center space-x-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-800/30 transition-colors">
+          <i class="fas fa-exclamation-triangle text-red-600"></i>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Overdue Tasks</span>
+        </a>
+        <button onclick="window.location.href='/paravet/reports'" class="flex items-center justify-center space-x-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800/30 transition-colors">
+          <i class="fas fa-chart-bar text-purple-600"></i>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">View Reports</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Vaccination Progress & Recent Activity Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- Vaccination Progress Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+          <i class="fas fa-chart-pie mr-2 text-blue-500"></i>
+          Vaccination Progress Overview
+        </h3>
+        
+        <div class="space-y-5">
+          <!-- Overall Progress -->
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-gray-600 dark:text-gray-400">Overall Vaccination Coverage</span>
+              <span class="font-semibold text-gray-900 dark:text-white">
+                <%= stats.totalVaccinationsGiven && stats.totalAnimals ? 
+                  Math.round((stats.totalVaccinationsGiven / (stats.totalAnimals * 5)) * 100) : 0 %>%
+              </span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+              <div class="bg-blue-600 rounded-full h-2.5 transition-all duration-500" 
+                   style="width: <%= Math.min((stats.totalVaccinationsGiven / (stats.totalAnimals * 5)) * 100, 100) || 0 %>%"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-1"><%= stats.totalVaccinationsGiven %> doses given out of <%= stats.totalAnimals * 5 %> recommended</p>
+          </div>
+          
+          <!-- Tagged Progress -->
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-gray-600 dark:text-gray-400">Tagged Animals</span>
+              <span class="font-semibold text-gray-900 dark:text-white">
+                <%= stats.taggedAnimals && stats.totalAnimals ? 
+                  Math.round((stats.taggedAnimals / stats.totalAnimals) * 100) : 0 %>%
+              </span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+              <div class="bg-purple-600 rounded-full h-2.5 transition-all duration-500" 
+                   style="width: <%= (stats.taggedAnimals / stats.totalAnimals) * 100 || 0 %>%"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-1"><%= stats.taggedAnimals %> animals tagged out of <%= stats.totalAnimals %></p>
+          </div>
+          
+          <!-- Healthy Animals -->
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-gray-600 dark:text-gray-400">Healthy Animals</span>
+              <span class="font-semibold text-gray-900 dark:text-white">
+                <%= stats.healthyAnimals && stats.totalAnimals ? 
+                  Math.round((stats.healthyAnimals / stats.totalAnimals) * 100) : 0 %>%
+              </span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+              <div class="bg-green-600 rounded-full h-2.5 transition-all duration-500" 
+                   style="width: <%= (stats.healthyAnimals / stats.totalAnimals) * 100 || 0 %>%"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Based on latest health records</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activities Timeline -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+            <i class="fas fa-history mr-2 text-green-500"></i>
+            Recent Activities
+          </h3>
+          <a href="/paravet/tasks?filter=completed" class="text-sm text-blue-600 hover:text-blue-700">View all</a>
+        </div>
+        
+        <div class="space-y-3 max-h-96 overflow-y-auto">
+          <% if (recentActivities && recentActivities.length > 0) { %>
+            <% recentActivities.forEach(activity => { %>
+              <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:shadow-sm transition-all">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                  <%= activity.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-blue-100 dark:bg-blue-900/30' %>">
+                  <i class="fas <%= activity.status === 'completed' ? 'fa-check-circle text-green-600' : 'fa-syringe text-blue-600' %> text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
+                    <%= activity.vaccine?.name || activity.vaccineName || 'Vaccination' %>
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <%= activity.animal?.name || 'Animal' %> • <%= activity.farmer?.name || 'Farmer' %>
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <%= moment(activity.dateAdministered || activity.createdAt).fromNow() %>
+                  </p>
+                  <p class="text-xs text-green-600 dark:text-green-400 mt-1">Completed</p>
+                </div>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <div class="text-center py-8">
+              <i class="fas fa-history text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+              <p class="text-gray-500 dark:text-gray-400">No recent activities</p>
+              <p class="text-xs text-gray-400 mt-1">Start vaccinating to see activity here</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Performance Summary -->
+    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+        <i class="fas fa-chart-line mr-2 text-orange-500"></i>
+        Weekly Performance Summary
+      </h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p class="text-2xl font-bold text-blue-600 dark:text-blue-400"><%= stats.completedThisWeek || 0 %></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">This Week</p>
+        </div>
+        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p class="text-2xl font-bold text-green-600 dark:text-green-400"><%= stats.lastWeekCompleted || 0 %></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Last Week</p>
+        </div>
+        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p class="text-2xl font-bold text-purple-600 dark:text-purple-400"><%= stats.farmersServed || 0 %></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Farmers Served</p>
+        </div>
+        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p class="text-2xl font-bold text-orange-600 dark:text-orange-400"><%= stats.animalsServed || 0 %></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Animals Served</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Tag Animal Modal -->
+<div id="tagModal" class="fixed inset-0 bg-black/50 z-50 hidden overflow-y-auto">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <i class="fas fa-tag mr-2 text-purple-600"></i>
+        Add Tag ID
+      </h3>
+      <button onclick="closeTagModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <form id="tagForm" onsubmit="submitTag(event)">
+      <input type="hidden" id="tagAnimalId">
+      <div class="mb-4">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Animal: <span id="tagAnimalName" class="font-semibold dark:text-white"></span></p>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tag Number</label>
+        <input type="text" id="tagNumber" required 
+               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+               placeholder="Enter unique tag number (e.g., ZPT-001)">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Use uppercase letters and numbers only</p>
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeTagModal()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" 
+                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+          Save Tag
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function openTagModal(animalId, animalName) {
+    document.getElementById('tagAnimalId').value = animalId;
+    document.getElementById('tagAnimalName').textContent = animalName;
+    document.getElementById('tagModal').classList.remove('hidden');
+    document.getElementById('tagNumber').value = '';
+  }
+
+  function closeTagModal() {
+    document.getElementById('tagModal').classList.add('hidden');
+  }
+
+  async function submitTag(event) {
+    event.preventDefault();
+    
+    const animalId = document.getElementById('tagAnimalId').value;
+    const tagNumber = document.getElementById('tagNumber').value.toUpperCase();
+    
+    if (!tagNumber) {
+      Swal.fire({ icon: 'warning', title: 'Required', text: 'Please enter a tag number' });
+      return;
+    }
+    
+    Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
+    try {
+      const response = await fetch(`/paravet/animals/${animalId}/tag`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tagNumber })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 2000 })
+          .then(() => location.reload());
+      } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to add tag' });
+    }
+    
+    closeTagModal();
+  }
+</script>
+
+<style>
+  .stat-card {
+    transition: all 0.3s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+  }
+</style>

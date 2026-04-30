@@ -1,0 +1,293 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Bulk Vaccination
+          </h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Farmer: <span class="font-semibold"><%= farmer.name %></span> 
+            (<%= farmer.address?.village || 'Location not set' %>)
+          </p>
+        </div>
+        <a href="/paravet/farmers/<%= farmer._id %>" 
+           class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center">
+          <i class="fas fa-arrow-left mr-2"></i>
+          Back to Farmer
+        </a>
+      </div>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+      <div class="flex items-start">
+        <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-3"></i>
+        <div class="text-sm text-blue-800 dark:text-blue-300">
+          <p class="font-medium">Bulk Vaccination Mode</p>
+          <p>Select animals and vaccines to record multiple vaccinations at once. 
+             Use "Apply to All" to set common date and batch number for all selected vaccines.</p>
+        </div>
+      </div>
+    </div>
+
+    <form id="bulkVaccinationForm" onsubmit="submitBulkVaccination(event)">
+      <!-- Common Options -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+          <i class="fas fa-cog mr-2 text-gray-500"></i>
+          Common Options
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Common Vaccination Date
+            </label>
+            <input type="date" id="commonDate" class="w-full px-3 py-2 border rounded-lg" 
+                   value="<%= new Date().toISOString().split('T')[0] %>">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Common Batch Number
+            </label>
+            <input type="text" id="commonBatch" class="w-full px-3 py-2 border rounded-lg" 
+                   placeholder="Batch number (optional)">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Common Notes
+            </label>
+            <input type="text" id="commonNotes" class="w-full px-3 py-2 border rounded-lg" 
+                   placeholder="Additional notes (optional)">
+          </div>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <button type="button" onclick="applyCommonToAll()" 
+                  class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200">
+            <i class="fas fa-check-double mr-2"></i>
+            Apply to All Selected
+          </button>
+        </div>
+      </div>
+
+      <!-- Animals Grid -->
+      <div class="space-y-6">
+        <% animals.forEach((animal, index) => { %>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden" data-animal-id="<%= animal._id %>">
+            <!-- Animal Header -->
+            <div class="px-6 py-4 bg-gradient-to-r from-green-500 to-teal-500 text-white">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center space-x-3">
+                  <input type="checkbox" class="animal-select-checkbox w-5 h-5 rounded" 
+                         onchange="toggleAnimal(<%= index %>, this.checked)">
+                  <div>
+                    <h3 class="text-lg font-semibold">
+                      <%= animal.name || 'Unnamed' %>
+                      <span class="text-sm bg-white/20 px-2 py-0.5 rounded-full ml-2">
+                        <%= animal.animalType %>
+                      </span>
+                    </h3>
+                    <p class="text-sm text-white/80">
+                      Tag: <%= animal.tagNumber || 'Not tagged' %> | 
+                      Age: <%= animal.age?.value ? `${animal.age.value} ${animal.age.unit}` : 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+                <div class="flex space-x-2">
+                  <span class="px-2 py-1 bg-white/20 rounded-lg text-xs">
+                    <%= animal.vaccinationCount || 0 %> vaccines given
+                  </span>
+                  <button type="button" onclick="selectAllVaccines(<%= index %>)" 
+                          class="px-2 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs">
+                    Select All Vaccines
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vaccines Table -->
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Select</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vaccine</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target Disease</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Given</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <% vaccines.forEach(vaccine => { 
+                    const isExisting = animal.existingVaccineIds && animal.existingVaccineIds.includes(vaccine._id.toString());
+                    const isPending = animal.pendingVaccinations && animal.pendingVaccinations.some(p => p.vaccine?._id?.toString() === vaccine._id.toString());
+                  %>
+                    <tr class="vaccine-row-<%= index %>" data-vaccine-id="<%= vaccine._id %>">
+                      <td class="px-4 py-3">
+                        <input type="checkbox" 
+                               name="vaccinations[<%= animal._id %>][<%= vaccine._id %>][administered]"
+                               class="vaccine-checkbox-<%= index %> rounded"
+                               <%= (!isExisting && !isPending) ? '' : 'disabled' %>
+                               onchange="toggleVaccine(<%= index %>, this.checked)">
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="font-medium text-gray-900 dark:text-white"><%= vaccine.name %></div>
+                        <div class="text-xs text-gray-500"><%= vaccine.vaccineType %></div>
+                      </td>
+                      <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        <%= vaccine.diseaseTarget || 'N/A' %>
+                      </td>
+                      <td class="px-4 py-3">
+                        <% if (isExisting) { %>
+                          <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                            <i class="fas fa-check-circle mr-1"></i>Completed
+                          </span>
+                        <% } else if (isPending) { %>
+                          <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                            <i class="fas fa-clock mr-1"></i>Scheduled
+                          </span>
+                        <% } else { %>
+                          <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                            <i class="fas fa-syringe mr-1"></i>Due
+                          </span>
+                        <% } %>
+                      </td>
+                      <td class="px-4 py-3 text-sm text-gray-500">
+                        <%= isExisting ? 'Already given' : 'Not given' %>
+                      </td>
+                      <td class="px-4 py-3">
+                        <input type="date" 
+                               name="vaccinations[<%= animal._id %>][<%= vaccine._id %>][dateAdministered]"
+                               class="vaccine-date-<%= index %> w-32 px-2 py-1 border rounded text-sm"
+                               value="<%= new Date().toISOString().split('T')[0] %>"
+                               <%= (!isExisting && !isPending) ? '' : 'disabled' %>>
+                      </td>
+                      <td class="px-4 py-3">
+                        <input type="text" 
+                               name="vaccinations[<%= animal._id %>][<%= vaccine._id %>][batchNumber]"
+                               class="vaccine-batch-<%= index %> w-32 px-2 py-1 border rounded text-sm"
+                               placeholder="Batch #"
+                               <%= (!isExisting && !isPending) ? '' : 'disabled' %>>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="mt-8 flex justify-end">
+        <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center">
+          <i class="fas fa-save mr-2"></i>
+          Save All Vaccinations
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function toggleAnimal(index, checked) {
+    const checkboxes = document.querySelectorAll(`.vaccine-checkbox-${index}`);
+    checkboxes.forEach(cb => {
+      if (!cb.disabled) cb.checked = checked;
+    });
+  }
+
+  function selectAllVaccines(index) {
+    const checkboxes = document.querySelectorAll(`.vaccine-checkbox-${index}`);
+    checkboxes.forEach(cb => {
+      if (!cb.disabled) cb.checked = true;
+    });
+  }
+
+  function toggleVaccine(index, checked) {
+    const inputs = document.querySelectorAll(`.vaccine-row-${index} input, .vaccine-row-${index} select`);
+    // No additional action needed
+  }
+
+  function applyCommonToAll() {
+    const commonDate = document.getElementById('commonDate').value;
+    const commonBatch = document.getElementById('commonBatch').value;
+    const commonNotes = document.getElementById('commonNotes').value;
+    
+    const allDateInputs = document.querySelectorAll('input[type="date"][name*="[dateAdministered]"]');
+    const allBatchInputs = document.querySelectorAll('input[name*="[batchNumber]"]');
+    
+    allDateInputs.forEach(input => {
+      if (!input.disabled) input.value = commonDate;
+    });
+    
+    allBatchInputs.forEach(input => {
+      if (!input.disabled) input.value = commonBatch;
+    });
+    
+    Swal.fire({
+      icon: 'success',
+      title: 'Applied!',
+      text: 'Common values applied to all selected vaccinations',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  }
+
+  async function submitBulkVaccination(event) {
+    event.preventDefault();
+    
+    // Check if any vaccines are selected
+    const selectedVaccines = document.querySelectorAll('input[type="checkbox"][name*="[administered]"]:checked');
+    if (selectedVaccines.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'No Selection',
+        text: 'Please select at least one vaccine to record'
+      });
+      return;
+    }
+    
+    Swal.fire({
+      title: 'Confirm Action',
+      text: `You are about to record ${selectedVaccines.length} vaccination(s). Continue?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, proceed',
+      cancelButtonText: 'Cancel'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        
+        const form = document.getElementById('bulkVaccinationForm');
+        const formData = new FormData(form);
+        
+        try {
+          const response = await fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+          });
+          
+          const html = await response.text();
+          
+          if (response.redirected || response.url) {
+            Swal.fire({ icon: 'success', title: 'Success!', text: 'Vaccinations recorded successfully', timer: 2000 })
+              .then(() => { window.location.href = response.url; });
+          } else {
+            Swal.fire({ icon: 'success', title: 'Completed!', text: 'Vaccinations recorded successfully' })
+              .then(() => { window.location.reload(); });
+          }
+        } catch (error) {
+          Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to record vaccinations' });
+        }
+      }
+    });
+  }
+</script>
