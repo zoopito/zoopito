@@ -1,0 +1,251 @@
+<% layout("layouts/boilerplate", {
+    title: 'Complete Vaccination Task - Zoopito',
+    description: 'Record vaccination details and update animal health records',
+    pageStyles: `
+        .form-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .dark .form-section {
+            background: #1f2937;
+        }
+        .info-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .dark .info-card {
+            background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%);
+        }
+        .vaccine-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+        .dark .vaccine-tag {
+            background: #1e3a5f;
+            color: #93c5fd;
+        }
+    `
+}) %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <div class="mb-6">
+            <a href="/paravet/tasks" class="text-blue-600 hover:text-blue-700 mb-2 inline-block">
+                <i class="fas fa-arrow-left mr-1"></i> Back to Tasks
+            </a>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Complete Vaccination</h1>
+            <p class="text-gray-600 dark:text-gray-400">Record vaccination details and update animal health records</p>
+        </div>
+        
+        <!-- Task Information Card -->
+        <div class="info-card mb-6">
+            <div class="flex flex-wrap gap-4">
+                <div class="flex-1">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Farmer</p>
+                    <p class="font-semibold text-gray-900 dark:text-white"><%= task.farmer?.name %></p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300"><%= task.farmer?.address?.village %>, <%= task.farmer?.address?.district %></p>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Animal</p>
+                    <p class="font-semibold text-gray-900 dark:text-white"><%= task.animal?.name || task.animal?.tagNumber || 'Unnamed' %></p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300"><%= task.animal?.animalType %> | <%= task.animal?.breed || 'Unknown breed' %></p>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Vaccine</p>
+                    <div class="vaccine-tag mt-1">
+                        <i class="fas fa-syringe"></i>
+                        <span><%= task.vaccine?.name || task.vaccineName %></span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Scheduled Date</p>
+                    <p class="font-semibold text-gray-900 dark:text-white">
+                        <%= moment(task.scheduledDate).format('DD MMM YYYY') %>
+                        <% if(new Date(task.scheduledDate) < new Date()) { %>
+                            <span class="text-red-600 text-sm ml-2">(Overdue)</span>
+                        <% } %>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vaccination Form -->
+        <form id="vaccinationForm" method="POST" action="/paravet/tasks/<%= task._id %>/complete">
+            <input type="hidden" name="_method" value="POST">
+            
+            <!-- Animal Selection (if farmer has multiple animals) -->
+            <div class="form-section">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-paw text-blue-600 mr-2"></i> Select Animal
+                </h2>
+                <div id="animalSelectContainer">
+                    <% if (farmerAnimals && farmerAnimals.length > 1) { %>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                            This farmer has multiple animals. Select which animal received the vaccination:
+                        </p>
+                        <select name="selectedAnimalId" id="selectedAnimalId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600">
+                            <option value="<%= task.animal._id %>" selected>
+                                <%= task.animal.name || task.animal.tagNumber %> (Current task animal) - <%= task.animal.animalType %>
+                            </option>
+                            <% farmerAnimals.forEach(animal => { %>
+                                <% if(animal._id.toString() !== task.animal._id.toString()) { %>
+                                    <option value="<%= animal._id %>">
+                                        <%= animal.name || animal.tagNumber || 'Unnamed' %> - <%= animal.animalType %> <%= animal.breed ? `(${animal.breed})` : '' %>
+                                    </option>
+                                <% } %>
+                            <% }); %>
+                        </select>
+                    <% } else { %>
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <i class="fas fa-paw text-blue-600 text-xl"></i>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">
+                                    <%= task.animal.name || task.animal.tagNumber || 'Unnamed' %>
+                                </p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    <%= task.animal.animalType %> | <%= task.animal.breed || 'Unknown breed' %>
+                                </p>
+                            </div>
+                        </div>
+                        <input type="hidden" name="selectedAnimalId" value="<%= task.animal._id %>">
+                    <% } %>
+                </div>
+            </div>
+            
+            <!-- Vaccination Details -->
+            <div class="form-section">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-syringe text-green-600 mr-2"></i> Vaccination Details
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Completion Date <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" name="completionDate" value="<%= moment().format('YYYY-MM-DD') %>" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Batch Number
+                        </label>
+                        <input type="text" name="batchNumber" placeholder="Enter vaccine batch number" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Animal Condition -->
+            <div class="form-section">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-heartbeat text-red-600 mr-2"></i> Animal Condition
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Temperature (°C)
+                        </label>
+                        <input type="number" step="0.1" name="animalCondition[temperature]" placeholder="e.g., 38.5" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Weight (kg)
+                        </label>
+                        <input type="number" step="0.1" name="animalCondition[weight]" placeholder="e.g., 250" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Body Condition Score (1-5)
+                        </label>
+                        <select name="animalCondition[bodyConditionScore]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600">
+                            <option value="">Select</option>
+                            <option value="1">1 - Emaciated</option>
+                            <option value="2">2 - Thin</option>
+                            <option value="3">3 - Moderate</option>
+                            <option value="4">4 - Fleshy</option>
+                            <option value="5">5 - Obese</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="animalCondition[isPregnant]" value="true" class="rounded border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Animal is Pregnant</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="animalCondition[isLactating]" value="true" class="rounded border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Animal is Lactating</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Health Notes
+                    </label>
+                    <textarea name="animalCondition[healthNotes]" rows="2" placeholder="Any observations or health concerns..." 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600"></textarea>
+                </div>
+            </div>
+            
+            <!-- Additional Notes -->
+            <div class="form-section">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-sticky-note text-yellow-600 mr-2"></i> Additional Notes
+                </h2>
+                <textarea name="notes" rows="3" placeholder="Any additional notes about this vaccination..." 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600"></textarea>
+            </div>
+            
+            <!-- Submit Buttons -->
+            <div class="flex gap-3 justify-end">
+                <a href="/paravet/tasks" class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md">
+                    <i class="fas fa-check-circle mr-2"></i> Complete Vaccination
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('vaccinationForm').addEventListener('submit', function(e) {
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+    submitBtn.disabled = true;
+    
+    // Re-enable after submission (in case of error)
+    setTimeout(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }, 5000);
+});
+</script>

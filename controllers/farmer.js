@@ -18,23 +18,168 @@ exports.getDashboard = async (req, res) => {
     if (!user) {
       req.flash("error", "User not found");
       return res.redirect("/");
-    };
-    // Get farmer profile linked to this user
-    const farmer = await Farmer.findOne({ mobileNumber: user.mobile })
-      .populate("assignedParavet", "qualification licenseNumber rating")
-      .populate({
-        path: "assignedParavet",
-        populate: { path: "user", select: "name email mobile" }
-      })
-      .lean();
+    }
 
+    // Role-based logic
+    let farmer = null;
+    let farmersList = [];
+    let isParavetView = false;
+    let isAdminView = false;
+
+    // Check if user is Paravet
+    if (req.user.role === "PARAVET") {
+      isParavetView = true;
+      
+      // Get paravet profile with assigned farmers
+      const paravet = await Paravet.findOne({ user: userId })
+        .populate({
+          path: "assignedFarmers",
+          populate: {
+            path: "assignedParavet",
+            populate: { path: "user", select: "name" }
+          }
+        })
+        .lean();
+
+      if (!paravet) {
+        req.flash("error", "Paravet profile not found");
+        return res.redirect("/");
+      }
+
+      // Get all assigned farmers
+      farmersList = paravet.assignedFarmers || [];
+      
+      // If there's a specific farmer selected from filters
+      const selectedFarmerId = req.query.farmerId;
+      if (selectedFarmerId && selectedFarmerId !== 'all') {
+        farmer = farmersList.find(f => f._id.toString() === selectedFarmerId);
+      } else if (farmersList.length === 1) {
+        // If only one farmer assigned, show that farmer's dashboard
+        farmer = farmersList[0];
+      }
+      // If multiple farmers, show summary view with farmer selector
+      
+    } else if (req.user.role === "ADMIN" || req.user.role === "SALES") {
+      isAdminView = true;
+      
+      // Get specific farmer if selected from query
+      const selectedFarmerId = req.query.farmerId;
+      if (selectedFarmerId && selectedFarmerId !== 'all') {
+        farmer = await Farmer.findById(selectedFarmerId)
+          .populate("assignedParavet", "qualification licenseNumber rating")
+          .populate({
+            path: "assignedParavet",
+            populate: { path: "user", select: "name email mobile" }
+          })
+          .lean();
+      } else {
+        // Get all farmers for dropdown
+        farmersList = await Farmer.find({ isActive: true })
+          .select("name mobileNumber address.village uniqueFarmerId")
+          .sort({ name: 1 })
+          .lean();
+        
+        // If no specific farmer selected, show first farmer or summary
+        if (farmersList.length > 0 && !farmer) {
+          farmer = farmersList[0];
+        }
+      }
+    } else {
+      // Original farmer user logic
+      farmer = await Farmer.findOne({ mobileNumber: user.mobile })
+        .populate("assignedParavet", "qualification licenseNumber rating")
+        .populate({
+          path: "assignedParavet",
+          populate: { path: "user", select: "name email mobile" }
+        })
+        .lean();
+
+      if (!farmer) {
+        req.flash("error", "Farmer profile not found. Please contact support.");
+        return res.redirect("/");
+      }
+    }
+
+    // Get filter parameters for tasks
+    const taskFilter = req.query.taskFilter || 'all';
+    const statusFilter = req.query.status || 'all';
+    const animalTypeFilter = req.query.animalType || 'all';
+    
+    // If no farmer selected (paravet with multiple farmers), show summary view
+    if (!farmer && farmersList.length > 0 && isParavetView) {
+      // Get summary statistics for all assigned farmers
+      const allAnimals = await Animal.find({
+        farmer: { $in: farmersList.map(f => f._id) },
+        isActive: true
+      }).lean();
+      
+      const allVaccinations = await Vaccination.find({
+        farmer: { $in: farmersList.map(f => f._id) }
+      }).lean();
+      
+      // Build farmers with stats
+      const farmersWithStats = await Promise.all(farmersList.map(async (f) => {
+        const farmerAnimals = allAnimals.filter(a => a.farmer.toString() === f._id.toString());
+        const farmerVaccinations = allVaccinations.filter(v => v.farmer.toString() === f._id.toString());
+        
+        return {
+          ...f,
+          animalCount: farmerAnimals.length,
+          pendingVaccinations: farmerVaccinations.filter(v => 
+            v.status === "Scheduled" || v.status === "Payment Pending"
+          ).length,
+          completedVaccinations: farmerVaccinations.filter(v => 
+            v.status === "Completed"
+          ).length,
+          overdueVaccinations: farmerVaccinations.filter(v => 
+            v.nextDueDate && new Date(v.nextDueDate) < new Date() && v.status !== "Completed"
+          ).length
+        };
+      }));
+      
+      return res.render("paravet/farmers-summary", {
+        title: "Assigned Farmers - Zoopito",
+        farmers: farmersWithStats,
+        totalFarmers: farmersList.length,
+        totalAnimals: allAnimals.length,
+        totalPendingTasks: allVaccinations.filter(v => 
+          v.status === "Scheduled" || v.status === "Payment Pending"
+        ).length,
+        paravet: await Paravet.findOne({ user: userId }).lean(),
+        user: req.user,
+        moment
+      });
+    }
+    
+    // If no farmer found
     if (!farmer) {
-      req.flash("error", "Farmer profile not found. Please contact support.");
+      req.flash("error", "No farmer data available");
       return res.redirect("/");
     }
 
-    // Get all animals for this farmer
-    const animals = await Animal.find({ farmer: farmer._id, isActive: true })
+    // Build query for animals with filters
+    let animalQuery = { farmer: farmer._id, isActive: true };
+    
+    // Animal type filter
+    if (animalTypeFilter !== 'all') {
+      animalQuery.animalType = animalTypeFilter;
+    }
+    
+    // Health status filter
+    if (statusFilter === 'healthy') {
+      animalQuery['healthStatus.currentStatus'] = 'Healthy';
+    } else if (statusFilter === 'sick') {
+      animalQuery['healthStatus.currentStatus'] = { $in: ['Sick', 'Under Treatment'] };
+    } else if (statusFilter === 'pregnant') {
+      animalQuery['pregnancyStatus.isPregnant'] = true;
+    } else if (statusFilter === 'vaccinated') {
+      animalQuery['vaccinationSummary.isUpToDate'] = true;
+    } else if (statusFilter === 'unvaccinated') {
+      animalQuery['vaccinationSummary.isUpToDate'] = false;
+    }
+
+    // Get all animals for this farmer with filters
+    const animals = await Animal.find(animalQuery)
       .sort({ createdAt: -1 })
       .lean();
 
@@ -46,7 +191,14 @@ exports.getDashboard = async (req, res) => {
       pendingVaccinations: 0,
       pregnant: 0,
       healthy: 0,
-      underTreatment: 0
+      underTreatment: 0,
+      byHealthStatus: {
+        healthy: 0,
+        sick: 0,
+        underTreatment: 0,
+        recovered: 0,
+        critical: 0
+      }
     };
 
     animals.forEach(animal => {
@@ -63,31 +215,87 @@ exports.getDashboard = async (req, res) => {
         animalStats.pregnant++;
       }
       
-      // Health status
-      if (animal.healthStatus?.currentStatus === "Healthy") {
+      // Health status with detailed breakdown
+      const healthStatus = animal.healthStatus?.currentStatus || "Unknown";
+      if (healthStatus === "Healthy") {
         animalStats.healthy++;
-      } else if (animal.healthStatus?.currentStatus === "Under Treatment") {
+        animalStats.byHealthStatus.healthy++;
+      } else if (healthStatus === "Sick") {
+        animalStats.byHealthStatus.sick++;
+      } else if (healthStatus === "Under Treatment") {
         animalStats.underTreatment++;
+        animalStats.byHealthStatus.underTreatment++;
+      } else if (healthStatus === "Recovered") {
+        animalStats.byHealthStatus.recovered++;
+      } else if (healthStatus === "Critical") {
+        animalStats.byHealthStatus.critical++;
       }
     });
 
-    // Get recent vaccinations (last 10)
-    const recentVaccinations = await Vaccination.find({ farmer: farmer._id })
+    // Build vaccination query based on task filter
+    let vaccinationQuery = { farmer: farmer._id };
+    const now = new Date();
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+    if (taskFilter === 'today') {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59);
+      vaccinationQuery.scheduledDate = { $gte: todayStart, $lte: todayEnd };
+    } else if (taskFilter === 'week') {
+      vaccinationQuery.nextDueDate = { $gte: now, $lte: sevenDaysFromNow };
+    } else if (taskFilter === 'month') {
+      vaccinationQuery.nextDueDate = { $gte: now, $lte: thirtyDaysFromNow };
+    } else if (taskFilter === 'overdue') {
+      vaccinationQuery.nextDueDate = { $lt: now };
+      vaccinationQuery.status = { $ne: "Completed" };
+    } else if (taskFilter === 'pending') {
+      vaccinationQuery.status = { $in: ["Scheduled", "Payment Pending"] };
+    } else if (taskFilter === 'completed') {
+      vaccinationQuery.status = "Completed";
+    }
+
+    // Get recent vaccinations with filters
+    let recentVaccinationsQuery = Vaccination.find({ farmer: farmer._id })
       .populate("animal", "name tagNumber animalType")
       .populate("vaccine", "name diseaseTarget")
       .sort({ dateAdministered: -1 })
-      .limit(10)
-      .lean();
+      .limit(10);
+    
+    if (taskFilter === 'completed') {
+      recentVaccinationsQuery = Vaccination.find(vaccinationQuery)
+        .populate("animal", "name tagNumber animalType")
+        .populate("vaccine", "name diseaseTarget")
+        .sort({ dateAdministered: -1 })
+        .limit(10);
+    }
+    
+    const recentVaccinations = await recentVaccinationsQuery.lean();
 
-    // Get upcoming vaccinations (next 30 days)
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-
-    const upcomingVaccinations = await Vaccination.find({
+    // Get upcoming vaccinations with filters
+    let upcomingQuery = {
       farmer: farmer._id,
-      nextDueDate: { $gte: new Date(), $lte: thirtyDaysFromNow },
+      nextDueDate: { $gte: now, $lte: thirtyDaysFromNow },
       status: { $in: ["Scheduled", "Payment Pending", "Administered"] }
-    })
+    };
+    
+    if (taskFilter === 'week') {
+      upcomingQuery.nextDueDate = { $gte: now, $lte: sevenDaysFromNow };
+    } else if (taskFilter === 'month') {
+      upcomingQuery.nextDueDate = { $gte: now, $lte: thirtyDaysFromNow };
+    } else if (taskFilter === 'overdue') {
+      upcomingQuery = {
+        farmer: farmer._id,
+        nextDueDate: { $lt: now },
+        status: { $ne: "Completed" }
+      };
+    }
+    
+    const upcomingVaccinations = await Vaccination.find(upcomingQuery)
       .populate("animal", "name tagNumber animalType")
       .populate("vaccine", "name diseaseTarget")
       .sort({ nextDueDate: 1 })
@@ -97,13 +305,25 @@ exports.getDashboard = async (req, res) => {
     // Get overdue vaccinations
     const overdueVaccinations = await Vaccination.find({
       farmer: farmer._id,
-      nextDueDate: { $lt: new Date() },
+      nextDueDate: { $lt: now },
       status: { $ne: "Completed" }
     })
       .populate("animal", "name tagNumber animalType")
       .populate("vaccine", "name diseaseTarget")
       .sort({ nextDueDate: 1 })
       .lean();
+
+    // Get pending count for summary cards
+    const pendingCount = await Vaccination.countDocuments({
+      farmer: farmer._id,
+      status: { $in: ["Scheduled", "Payment Pending"] }
+    });
+    
+    const overdueCount = await Vaccination.countDocuments({
+      farmer: farmer._id,
+      nextDueDate: { $lt: now },
+      status: { $ne: "Completed" }
+    });
 
     // Get recent payments
     const recentPayments = await Payment.find({ farmerId: farmer._id })
@@ -118,8 +338,7 @@ exports.getDashboard = async (req, res) => {
     ]);
 
     // Get services summary
-    let servicesSummary = null;
-    servicesSummary = await Service.aggregate([
+    let servicesSummary = await Service.aggregate([
       { $match: { farmer: farmer._id } },
       { $group: { _id: "$serviceType", count: { $sum: 1 } } }
     ]);
@@ -128,6 +347,7 @@ exports.getDashboard = async (req, res) => {
     const animalsNeedingAttention = animals.filter(a => 
       a.healthStatus?.currentStatus === "Sick" || 
       a.healthStatus?.currentStatus === "Under Treatment" ||
+      a.healthStatus?.currentStatus === "Critical" ||
       (a.vaccinationSummary?.nextVaccinationDate && new Date(a.vaccinationSummary.nextVaccinationDate) < new Date())
     ).length;
 
@@ -149,6 +369,9 @@ exports.getDashboard = async (req, res) => {
       });
     }
 
+    // Get unique animal types for filter dropdown
+    const animalTypes = await Animal.distinct("animalType", { farmer: farmer._id, isActive: true });
+
     res.render("farmer/dashboard", {
       title: "Farmer Dashboard - Zoopito",
       farmer,
@@ -162,13 +385,24 @@ exports.getDashboard = async (req, res) => {
       servicesSummary,
       animalsNeedingAttention,
       vaccinationTrends,
+      // Filter values
+      taskFilter,
+      statusFilter,
+      animalTypeFilter,
+      animalTypes,
+      pendingCount,
+      overdueCount,
+      // Role info
+      isParavetView,
+      isAdminView,
+      farmersList: isParavetView || isAdminView ? farmersList : [],
       moment,
       user: req.user
     });
     
   } catch (error) {
-    console.error("Error loading farmer dashboard:", error);
-    req.flash("error", "Error loading dashboard");
+    console.error("Error loading dashboard:", error);
+    req.flash("error", "Error loading dashboard: " + error.message);
     res.redirect("/");
   }
 };
@@ -401,10 +635,117 @@ module.exports.farmersIndex = async (req, res) => {
     const paravetId = req.query.paravet || '';
     const sortBy = req.query.sortBy || 'createdAt';
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+    const taskFilter = req.query.taskFilter || 'all';
 
     // Build query
     let query = {};
+    let farmerIdsForParavet = null;
     
+    // 🔥 ROLE-BASED FILTERING FOR PARAVET
+    if (req.user.role === "PARAVET") {
+      const paravet = await Paravet.findOne({ user: req.user._id });
+      
+      if (!paravet) {
+        req.flash("error", "Paravet profile not found");
+        return res.redirect(`/${role}`);
+      }
+      
+      console.log("🔍 Paravet ID:", paravet._id);
+      
+      // METHOD 1: Direct assignment via Farmer.assignedParavet field
+      const directlyAssignedFarmers = await Farmer.find({ 
+        assignedParavet: paravet._id,
+        isActive: true 
+      }).distinct('_id');
+      
+      console.log(`📌 Directly assigned farmers: ${directlyAssignedFarmers.length}`);
+      
+      // METHOD 2: Through vaccinations (animals assigned to paravet)
+      const assignedVaccinations = await Vaccination.find({ 
+        assignedParavet: paravet._id 
+      }).distinct('animal');
+      
+      let farmersFromVaccinations = [];
+      if (assignedVaccinations.length > 0) {
+        const animalsWithFarmers = await Animal.find({
+          _id: { $in: assignedVaccinations },
+          isActive: true
+        }).select('farmer').lean();
+        
+        farmersFromVaccinations = [...new Set(
+          animalsWithFarmers
+            .map(a => a.farmer)
+            .filter(id => id)
+            .map(id => id.toString())
+        )];
+      }
+      
+      console.log(`📌 Farmers from vaccinations: ${farmersFromVaccinations.length}`);
+      
+      // METHOD 3: Through assignedAreas (area-based assignment)
+      let farmersFromAreas = [];
+      if (paravet.assignedAreas && paravet.assignedAreas.length > 0) {
+        const villages = paravet.assignedAreas.map(area => area.village).filter(v => v);
+        const districts = paravet.assignedAreas.map(area => area.district).filter(d => d);
+        
+        let areaQuery = {};
+        if (villages.length > 0) {
+          areaQuery['address.village'] = { $in: villages };
+        } else if (districts.length > 0) {
+          areaQuery['address.district'] = { $in: districts };
+        }
+        
+        if (Object.keys(areaQuery).length > 0) {
+          farmersFromAreas = await Farmer.find(areaQuery).distinct('_id');
+          farmersFromAreas = farmersFromAreas.map(id => id.toString());
+        }
+      }
+      
+      console.log(`📌 Farmers from areas: ${farmersFromAreas.length}`);
+      
+      // Combine all unique farmer IDs
+      const allFarmerIds = [...new Set([
+        ...directlyAssignedFarmers.map(id => id.toString()),
+        ...farmersFromVaccinations,
+        ...farmersFromAreas
+      ])];
+      
+      console.log(`✅ Total unique farmers for this paravet: ${allFarmerIds.length}`);
+      console.log("Farmer IDs:", allFarmerIds);
+      
+      if (allFarmerIds.length === 0) {
+        // No farmers assigned - show empty state
+        return res.render("admin/farmer/index", {
+          currentUser: req.user,
+          farmers: [],
+          currentPage: page,
+          totalPages: 1,
+          totalCount: 0,
+          limit,
+          activeCount: 0,
+          monthlyCount: 0,
+          avgAnimals: 0,
+          searchQuery: search,
+          selectedVillage: village,
+          statusFilter: status,
+          selectedParavet: paravetId,
+          uniqueVillages: [],
+          paravets: [],
+          sortBy,
+          sortOrder: sortOrder === 1 ? 'asc' : 'desc',
+          taskFilter,
+          isParavet: true,
+          paravetInfo: paravet,
+          moment
+        });
+      }
+      
+      // Set query to only these farmers
+      query._id = { $in: allFarmerIds };
+      farmerIdsForParavet = allFarmerIds;
+    }
+    
+    // Apply search filters
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -423,7 +764,7 @@ module.exports.farmersIndex = async (req, res) => {
       query.isActive = false;
     }
     
-    if (paravetId) {
+    if (paravetId && req.user.role !== "PARAVET") {
       query.assignedParavet = paravetId;
     }
 
@@ -439,60 +780,179 @@ module.exports.farmersIndex = async (req, res) => {
       sortObj = { createdAt: -1 };
     }
 
-    // Get farmers with populated data
-    const [farmers, totalCount] = await Promise.all([
-      Farmer.find(query)
-        .populate('assignedParavet', 'user')
-        .populate('assignedParavet.user', 'name')
-        .sort(sortObj)
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Farmer.countDocuments(query),
-    ]);
+    // Get total count
+    let totalCount = await Farmer.countDocuments(query);
+    
+    // Get farmers with pagination
+    let farmers = await Farmer.find(query)
+      .populate('assignedParavet', 'user')
+      .populate('assignedParavet.user', 'name')
+      .sort(sortObj)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    console.log(`📊 Final: Showing ${farmers.length} farmers out of ${totalCount} total`);
+
+    // For each farmer, get additional stats
+    const farmersWithStats = await Promise.all(farmers.map(async (farmer) => {
+      const now = new Date();
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+      
+      // Get animal count
+      const animalCount = await Animal.countDocuments({ farmer: farmer._id, isActive: true });
+      
+      // Get vaccination stats (only for this paravet if applicable)
+      let vaccinationQuery = { farmer: farmer._id };
+      if (req.user.role === "PARAVET") {
+        const paravet = await Paravet.findOne({ user: req.user._id });
+        vaccinationQuery.assignedParavet = paravet._id;
+      }
+      
+      const pendingVaccinations = await Vaccination.countDocuments({
+        ...vaccinationQuery,
+        status: { $in: ["Scheduled", "Payment Pending"] }
+      });
+      
+      const overdueVaccinations = await Vaccination.countDocuments({
+        ...vaccinationQuery,
+        nextDueDate: { $lt: now },
+        status: { $ne: "Completed" }
+      });
+      
+      const upcomingVaccinations = await Vaccination.countDocuments({
+        ...vaccinationQuery,
+        nextDueDate: { $gte: now, $lte: thirtyDaysFromNow },
+        status: { $ne: "Completed" }
+      });
+      
+      const completedVaccinations = await Vaccination.countDocuments({
+        ...vaccinationQuery,
+        status: "Completed"
+      });
+      
+      // Get last visit date
+      const lastVaccination = await Vaccination.findOne({
+        ...vaccinationQuery,
+        dateAdministered: { $exists: true }
+      }).sort({ dateAdministered: -1 }).select("dateAdministered").lean();
+      
+      // Get location for map
+      const hasLocation = farmer.location?.coordinates && 
+        farmer.location.coordinates[0] !== 0 && 
+        farmer.location.coordinates[1] !== 0;
+      
+      return {
+        ...farmer,
+        animalCount,
+        pendingVaccinations,
+        overdueVaccinations,
+        upcomingVaccinations,
+        completedVaccinations,
+        lastVisitDate: lastVaccination?.dateAdministered,
+        hasLocation,
+        location: hasLocation ? {
+          lat: farmer.location.coordinates[1],
+          lng: farmer.location.coordinates[0]
+        } : null
+      };
+    }));
+    
+    // Apply task filter if needed
+    let filteredFarmers = farmersWithStats;
+    if (taskFilter === 'pending') {
+      filteredFarmers = farmersWithStats.filter(f => f.pendingVaccinations > 0);
+    } else if (taskFilter === 'overdue') {
+      filteredFarmers = farmersWithStats.filter(f => f.overdueVaccinations > 0);
+    } else if (taskFilter === 'upcoming') {
+      filteredFarmers = farmersWithStats.filter(f => f.upcomingVaccinations > 0);
+    }
 
     const totalPages = Math.ceil(totalCount / limit) || 1;
 
     // Calculate statistics
-    const activeCount = await Farmer.countDocuments({ isActive: true });
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-    const monthlyCount = await Farmer.countDocuments({
-      createdAt: { $gte: startOfMonth }
-    });
+    let activeCount = 0;
+    let monthlyCount = 0;
+    let avgAnimals = 0;
+    let uniqueVillages = [];
+    let paravets = [];
     
-    const animalCounts = await Animal.aggregate([
-      { $group: { _id: '$farmer', count: { $sum: 1 } } }
-    ]);
-    const totalAnimals = animalCounts.reduce((sum, a) => sum + a.count, 0);
-    const avgAnimals = totalCount > 0 ? totalAnimals / totalCount : 0;
-
-    // Get unique villages for filter
-    const uniqueVillages = await Farmer.distinct('address.village', {
-      'address.village': { $ne: null, $ne: '' }
-    });
-
-    // Get paravets for filter
-    const paravets = await Paravet.find({ isActive: true })
-      .populate('user', 'name')
-      .lean();
+    if (req.user.role === "PARAVET" && farmerIdsForParavet) {
+      // For paravet, calculate stats only for assigned farmers
+      activeCount = await Farmer.countDocuments({ 
+        _id: { $in: farmerIdsForParavet },
+        isActive: true 
+      });
+      
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      monthlyCount = await Farmer.countDocuments({
+        _id: { $in: farmerIdsForParavet },
+        createdAt: { $gte: startOfMonth }
+      });
+      
+      const animalCounts = await Animal.aggregate([
+        { $match: { farmer: { $in: farmerIdsForParavet }, isActive: true } },
+        { $group: { _id: '$farmer', count: { $sum: 1 } } }
+      ]);
+      const totalAnimals = animalCounts.reduce((sum, a) => sum + a.count, 0);
+      avgAnimals = farmerIdsForParavet.length > 0 ? totalAnimals / farmerIdsForParavet.length : 0;
+      
+      // Get unique villages
+      uniqueVillages = await Farmer.distinct('address.village', {
+        _id: { $in: farmerIdsForParavet },
+        'address.village': { $ne: null, $ne: '' }
+      });
+    } else {
+      activeCount = await Farmer.countDocuments({ isActive: true });
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      monthlyCount = await Farmer.countDocuments({
+        createdAt: { $gte: startOfMonth }
+      });
+      
+      const animalCounts = await Animal.aggregate([
+        { $group: { _id: '$farmer', count: { $sum: 1 } } }
+      ]);
+      const totalAnimals = animalCounts.reduce((sum, a) => sum + a.count, 0);
+      avgAnimals = totalCount > 0 ? totalAnimals / totalCount : 0;
+      
+      uniqueVillages = await Farmer.distinct('address.village', {
+        'address.village': { $ne: null, $ne: '' }
+      });
+      
+      // Get paravets for filter (admin only)
+      paravets = await Paravet.find({ isActive: true })
+        .populate('user', 'name')
+        .lean();
+    }
 
     if (page > totalPages && totalPages > 0) {
       return res.redirect(`/${role}/farmers?page=${totalPages}`);
     }
 
+    // Get paravet info for Paravet users
+    let paravetInfo = null;
+    if (req.user.role === "PARAVET") {
+      paravetInfo = await Paravet.findOne({ user: req.user._id })
+        .populate('user', 'name email')
+        .lean();
+    }
+
     res.render("admin/farmer/index", {
       currentUser: req.user,
-      farmers,
+      farmers: filteredFarmers,
       currentPage: page,
       totalPages,
-      totalCount,
+      totalCount: filteredFarmers.length,
       limit,
       // Statistics
       activeCount,
       monthlyCount,
-      avgAnimals,
+      avgAnimals: avgAnimals.toFixed(1),
       // Filters
       searchQuery: search,
       selectedVillage: village,
@@ -503,10 +963,16 @@ module.exports.farmersIndex = async (req, res) => {
       // Sorting
       sortBy,
       sortOrder: sortOrder === 1 ? 'asc' : 'desc',
+      taskFilter,
+      // Role info
+      isParavet: req.user.role === "PARAVET",
+      paravetInfo,
+      // Helper functions
+      moment
     });
   } catch (error) {
     console.error("Farmer Index Error:", error);
-    req.flash("error", "Unable to load farmer data");
+    req.flash("error", "Unable to load farmer data: " + error.message);
     res.redirect(`/${role}`);
   }
 };

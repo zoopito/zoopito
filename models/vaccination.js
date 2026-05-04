@@ -351,7 +351,6 @@ vaccinationSchema.statics.verifyPayment = async function (
 // Indexes
 vaccinationSchema.index({ "payment.paymentStatus": 1, createdAt: -1 });
 vaccinationSchema.index({ "payment.utrNumber": 1 });
-vaccinationSchema.index({ "payment.receiptNumber": 1 });
 vaccinationSchema.index({ status: 1, "payment.paymentStatus": 1 });
 vaccinationSchema.index({ assignedParavet: 1, status: 1 });
 vaccinationSchema.index({ assignedParavet: 1, scheduledDate: 1 });

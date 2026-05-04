@@ -2,6 +2,7 @@ const User = require("../models/user");
 const Farmer = require("../models/farmer");
 const Animal = require("../models/animal");
 const Paravet = require("../models/paravet");
+const Vaccine = require("../models/vaccine");
 const Vaccination = require("../models/vaccination");
 const Servise = require("../models/services");
 const SalesTeam = require("../models/salesteam");
@@ -3580,5 +3581,188 @@ exports.getReports = async (req, res) => {
     console.error("Error generating reports:", error);
     req.flash("error", "Error generating reports");
     res.redirect("/paravet/dashboard");
+  }
+};
+
+// Add this method to your paravet.js controller
+
+// Get task details for vaccination form (pre-fill with farmer and animal)
+exports.getTaskForVaccination = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const userId = req.user._id;
+    
+    const paravet = await Paravet.findOne({ user: userId });
+    if (!paravet) {
+      req.flash("error", "Paravet profile not found");
+      return res.redirect("/paravet/tasks");
+    }
+    
+    // Find the vaccination task
+    const task = await Vaccination.findById(taskId)
+      .populate("farmer", "name mobileNumber address uniqueFarmerId")
+      .populate("animal", "name tagNumber animalType breed age gender")
+      .populate("vaccine", "name diseaseTarget boosterIntervalWeeks")
+      .lean();
+    
+    if (!task) {
+      req.flash("error", "Task not found");
+      return res.redirect("/paravet/tasks");
+    }
+    
+    // Verify task is assigned to this paravet
+    if (task.assignedParavet && task.assignedParavet.toString() !== paravet._id.toString()) {
+      req.flash("error", "You are not authorized to complete this task");
+      return res.redirect("/paravet/tasks");
+    }
+    
+    // Get all animals for this farmer (for the form dropdown)
+    const farmerAnimals = await Animal.find({
+      farmer: task.farmer._id,
+      isActive: true
+    })
+      .select("name tagNumber animalType breed age")
+      .lean();
+    
+    // Get all active vaccines
+    const vaccines = await Vaccine.find({ isActive: true })
+      .select("name vaccineType diseaseTarget vaccineCharge boosterIntervalWeeks")
+      .sort({ name: 1 })
+      .lean();
+    
+    res.render("paravet/vaccinations/complete-from-task", {
+      title: "Complete Vaccination Task",
+      task,
+      farmerAnimals,
+      vaccines,
+      paravet,
+      moment,
+      user: req.user
+    });
+    
+  } catch (error) {
+    console.error("Error getting task for vaccination:", error);
+    req.flash("error", "Error loading task details");
+    res.redirect("/paravet/tasks");
+  }
+};
+
+// Submit vaccination from task (with multi-animal support)
+exports.submitTaskVaccination = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { 
+      completionDate, batchNumber, notes, 
+      animalCondition, selectedAnimalId,
+      additionalVaccinations // For adding more vaccines to the same animal
+    } = req.body;
+    
+    const userId = req.user._id;
+    const paravet = await Paravet.findOne({ user: userId });
+    
+    // Find the original task
+    const originalTask = await Vaccination.findById(taskId)
+      .populate("vaccine")
+      .populate("animal");
+    
+    if (!originalTask) {
+      req.flash("error", "Task not found");
+      return res.redirect("/paravet/tasks");
+    }
+    
+    const completeDate = completionDate ? new Date(completionDate) : new Date();
+    completeDate.setHours(0, 0, 0, 0);
+    
+    // Use selected animal or fallback to task's animal
+    const animalId = selectedAnimalId || originalTask.animal._id;
+    const animal = await Animal.findById(animalId);
+    
+    if (!animal) {
+      req.flash("error", "Animal not found");
+      return res.redirect("/paravet/tasks");
+    }
+    
+    // Update the original task
+    let nextDueDate = new Date(completeDate);
+    if (originalTask.vaccine) {
+      const vaccine = originalTask.vaccine;
+      if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
+        nextDueDate.setDate(nextDueDate.getDate() + (vaccine.boosterIntervalWeeks * 7));
+      } else if (vaccine.immunityDurationMonths && vaccine.immunityDurationMonths > 0) {
+        nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.immunityDurationMonths);
+      } else {
+        nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+      }
+    }
+    
+    originalTask.status = "Completed";
+    originalTask.dateAdministered = completeDate;
+    originalTask.nextDueDate = nextDueDate;
+    originalTask.administeredBy = req.user.name;
+    originalTask.batchNumber = batchNumber;
+    originalTask.notes = notes;
+    originalTask.verifiedBy = userId;
+    originalTask.verifiedAt = new Date();
+    
+    if (animalCondition) {
+      originalTask.animalCondition = {
+        ...originalTask.animalCondition,
+        temperature: animalCondition.temperature,
+        weight: animalCondition.weight,
+        bodyConditionScore: animalCondition.bodyConditionScore,
+        isPregnant: animalCondition.isPregnant === "true",
+        isLactating: animalCondition.isLactating === "true",
+        healthNotes: animalCondition.healthNotes
+      };
+    }
+    
+    await originalTask.save();
+    
+    // Process additional vaccinations if any
+    if (additionalVaccinations && Array.isArray(additionalVaccinations)) {
+      for (const vacData of additionalVaccinations) {
+        if (vacData.vaccineId && vacData.administered === "on") {
+          const vaccine = await Vaccine.findById(vacData.vaccineId);
+          if (vaccine) {
+            let vacNextDue = new Date(completeDate);
+            if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
+              vacNextDue.setDate(vacNextDue.getDate() + (vaccine.boosterIntervalWeeks * 7));
+            } else {
+              vacNextDue.setFullYear(vacNextDue.getFullYear() + 1);
+            }
+            
+            const newVaccination = new Vaccination({
+              farmer: originalTask.farmer,
+              animal: animalId,
+              vaccine: vaccine._id,
+              vaccineName: vaccine.name,
+              vaccineType: vaccine.vaccineType,
+              dateAdministered: completeDate,
+              nextDueDate: vacNextDue,
+              administeredBy: req.user.name,
+              batchNumber: batchNumber,
+              notes: vacData.notes || "",
+              status: "Completed",
+              verifiedBy: userId,
+              verifiedAt: new Date(),
+              createdBy: userId,
+              source: "from_task"
+            });
+            await newVaccination.save();
+          }
+        }
+      }
+    }
+    
+    // Update animal's vaccination summary
+    await updateAnimalVaccinationSummary(animalId, originalTask);
+    
+    req.flash("success", `Vaccination completed successfully! Next due: ${nextDueDate.toLocaleDateString()}`);
+    res.redirect("/paravet/tasks");
+    
+  } catch (error) {
+    console.error("Error submitting task vaccination:", error);
+    req.flash("error", "Error completing vaccination: " + error.message);
+    res.redirect(`/paravet/tasks/${taskId}/complete`);
   }
 };

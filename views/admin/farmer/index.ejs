@@ -9,6 +9,11 @@
         <div>
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
             Farmers Management
+            <% if(isParavet && paravetInfo) { %>
+              <span class="text-lg font-normal text-gray-500 dark:text-gray-400 ml-2">
+                (Assigned to <%= paravetInfo.user?.name %>)
+              </span>
+            <% } %>
           </h1>
           <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Manage all registered farmers, track their animals, and monitor health records
@@ -41,7 +46,7 @@
     <div class="mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <!-- Search and Filters -->
-        <div class="flex flex-col sm:flex-row gap-3">
+        <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
           <div class="relative">
             <input 
               type="text" 
@@ -70,21 +75,31 @@
             <option value="inactive" <%= statusFilter === 'inactive' ? 'selected' : '' %>>Inactive</option>
           </select>
 
-          <select id="paravetFilter" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            <option value="">All Paravets</option>
-            <% if (paravets && paravets.length > 0) { %>
-              <% paravets.forEach(paravet => { %>
-                <option value="<%= paravet._id %>" <%= selectedParavet === paravet._id.toString() ? 'selected' : '' %>><%= paravet.user?.name || 'Unknown' %></option>
-              <% }) %>
-            <% } %>
+          <% if(!isParavet) { %>
+            <select id="paravetFilter" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">All Paravets</option>
+              <% if (paravets && paravets.length > 0) { %>
+                <% paravets.forEach(paravet => { %>
+                  <option value="<%= paravet._id %>" <%= selectedParavet === paravet._id.toString() ? 'selected' : '' %>><%= paravet.user?.name || 'Unknown' %></option>
+                <% }) %>
+              <% } %>
+            </select>
+          <% } %>
+
+          <!-- Task Filter Dropdown -->
+          <select id="taskFilter" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="all" <%= taskFilter === 'all' ? 'selected' : '' %>>All Tasks</option>
+            <option value="pending" <%= taskFilter === 'pending' ? 'selected' : '' %>>Pending Vaccinations</option>
+            <option value="overdue" <%= taskFilter === 'overdue' ? 'selected' : '' %>>Overdue Vaccinations</option>
+            <option value="upcoming" <%= taskFilter === 'upcoming' ? 'selected' : '' %>>Upcoming (30 days)</option>
           </select>
         </div>
 
         <!-- Action Buttons -->
         <div class="flex flex-wrap gap-3">
-          <% if(['ADMIN', 'SALES'].includes(currUser.role)){ %>
+          <% if(['ADMIN', 'SALES'].includes(currentUser.role)){ %>
             <a 
-              href="<%= currUser.role === 'ADMIN' ? '/admin/farmers/new' : '/sales/farmers/new' %>"
+              href="<%= currentUser.role === 'ADMIN' ? '/admin/farmers/new' : '/sales/farmers/new' %>"
               class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,9 +171,9 @@
                   </div>
                   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No farmers found</h3>
                   <p class="text-gray-500 dark:text-gray-400 mb-4">Get started by adding your first farmer</p>
-                  <% if(['ADMIN', 'SALES'].includes(currUser.role)){ %>
+                  <% if(['ADMIN', 'SALES'].includes(currentUser.role)){ %>
                     <a 
-                      href="<%= currUser.role === 'ADMIN' ? '/admin/farmers/new' : '/sales/farmers/new' %>"
+                      href="<%= currentUser.role === 'ADMIN' ? '/admin/farmers/new' : '/sales/farmers/new' %>"
                       class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +182,7 @@
                       Add First Farmer
                     </a>
                   <% } %>
-                </td>
+                </span>
               </tr>
             <% } %>
 
@@ -216,7 +231,7 @@
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                           </svg>
-                          <%= new Date(farmer.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                          <%= moment(farmer.createdAt).format('DD MMM YYYY') %>
                         </span>
                       </div>
                     </div>
@@ -241,12 +256,15 @@
                       <span class="text-gray-400 italic">Location not set</span>
                     <% } %>
                     
-                    <% if(farmer.totalAnimals > 0) { %>
-                      <div class="mt-2">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                          <%= farmer.totalAnimals %> animal<%= farmer.totalAnimals !== 1 ? 's' : '' %>
-                        </span>
-                      </div>
+                    <!-- View on Map Button -->
+                    <% if(farmer.hasLocation && farmer.location) { %>
+                      <button onclick="viewOnMap('<%= farmer.location.lat %>', '<%= farmer.location.lng %>', '<%= farmer.name %>')" 
+                              class="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                        </svg>
+                        View on Map
+                      </button>
                     <% } %>
                   </div>
                 </td>
@@ -264,41 +282,46 @@
                       <%= farmer.mobileNumber || 'Not provided' %>
                     </a>
                     
-                    <% if(farmer.assignedParavet && farmer.assignedParavet.user) { %>
-                      <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                        </svg>
-                        Paravet: <%= farmer.assignedParavet.user.name %>
-                      </div>
-                    <% } %>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                      <% if(farmer.assignedParavet && farmer.assignedParavet.user) { %>
+                        <span class="flex items-center gap-1">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                          </svg>
+                          Paravet: <%= farmer.assignedParavet.user.name %>
+                        </span>
+                      <% } %>
+                    </div>
                   </div>
                 </td>
 
                 <!-- Stats Column -->
                 <td class="px-6 py-4 hidden md:table-cell">
                   <div class="space-y-2">
+                    <!-- Animal Count -->
                     <div class="flex items-center gap-2">
-                      <% if(farmer.totalAnimals > 0) { %>
-                        <div class="flex -space-x-2">
-                          <% for(let i = 0; i < Math.min(farmer.totalAnimals, 4); i++) { %>
-                            <div class="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-green-500 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[10px] font-bold">
-                              <%= ['🐄','🐃','🐐','🐑'][i % 4] %>
-                            </div>
-                          <% } %>
-                          <% if(farmer.totalAnimals > 4) { %>
-                            <div class="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs font-medium">
-                              +<%= farmer.totalAnimals - 4 %>
-                            </div>
-                          <% } %>
-                        </div>
-                      <% } else { %>
-                        <span class="text-sm text-gray-400">No animals</span>
+                      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <%= farmer.animalCount || 0 %> Animals
+                      </span>
+                    </div>
+                    
+                    <!-- Vaccination Stats -->
+                    <div class="flex gap-2 text-xs">
+                      <% if(farmer.pendingVaccinations > 0) { %>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                          ⏳ <%= farmer.pendingVaccinations %> Pending
+                        </span>
+                      <% } %>
+                      <% if(farmer.overdueVaccinations > 0) { %>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                          ⚠️ <%= farmer.overdueVaccinations %> Overdue
+                        </span>
                       <% } %>
                     </div>
+                    
                     <% if(farmer.lastVisitDate) { %>
                       <div class="text-xs text-gray-500 dark:text-gray-400">
-                        Last visit: <%= new Date(farmer.lastVisitDate).toLocaleDateString() %>
+                        Last visit: <%= moment(farmer.lastVisitDate).format('DD MMM YYYY') %>
                       </div>
                     <% } %>
                   </div>
@@ -309,7 +332,7 @@
                   <div class="flex items-center gap-2">
                     <!-- View Button -->
                     <a 
-                      href="<%= currUser.role === 'ADMIN' ? '/admin/farmers/' + farmer._id : '/sales/farmers/' + farmer._id %>"
+                      href="<%= currentUser.role === 'ADMIN' ? '/admin/farmers/' + farmer._id : (currentUser.role === 'PARAVET' ? '/paravet/farmers/' + farmer._id : '/sales/farmers/' + farmer._id) %>"
                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                       title="View Details"
                     >
@@ -319,6 +342,23 @@
                       </svg>
                       View
                     </a>
+
+                    <!-- Paravet-specific Actions -->
+                    <% if(isParavet) { %>
+                      <!-- Complete Vaccination Button -->
+                      <% if(farmer.pendingVaccinations > 0 || farmer.overdueVaccinations > 0) { %>
+                        <button 
+                          onclick="completeFarmerVaccination('<%= farmer._id %>')"
+                          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                          title="Complete Vaccination"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                          Vaccinate
+                        </button>
+                      <% } %>
+                    <% } %>
 
                     <!-- More Actions Dropdown -->
                     <div class="relative" data-dropdown-container="<%= farmer._id %>">
@@ -333,10 +373,10 @@
                       
                       <div 
                         id="dropdown-<%= farmer._id %>" 
-                        class="hidden fixed w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
+                        class="hidden fixed w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
                       >
                         <a 
-                          href="<%= currUser.role === 'ADMIN' ? '/admin/farmers/' + farmer._id + '/animals' : '/sales/farmers/' + farmer._id + '/animals' %>"
+                          href="<%= currentUser.role === 'ADMIN' ? '/admin/farmers/' + farmer._id + '/animals' : (currentUser.role === 'PARAVET' ? '/paravet/farmers/' + farmer._id + '/animals' : '/sales/farmers/' + farmer._id + '/animals') %>"
                           class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,7 +386,7 @@
                         </a>
                         
                         <a 
-                          href="<%= currUser.role === 'ADMIN' ? '/admin/farmers/' + farmer._id + '/edit' : '/sales/farmers/' + farmer._id + '/edit' %>"
+                          href="<%= currentUser.role === 'ADMIN' ? '/admin/farmers/' + farmer._id + '/edit' : (currentUser.role === 'PARAVET' ? '/paravet/farmers/' + farmer._id + '/edit' : '/sales/farmers/' + farmer._id + '/edit') %>"
                           class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -356,7 +396,7 @@
                         </a>
                         
                         <a 
-                          href="<%= currUser.role === 'ADMIN' ? '/admin/farmers/' + farmer._id + '/vaccinations' : '/sales/farmers/' + farmer._id + '/vaccinations' %>"
+                          href="<%= currentUser.role === 'ADMIN' ? '/admin/farmers/' + farmer._id + '/vaccinations' : (currentUser.role === 'PARAVET' ? '/paravet/farmers/' + farmer._id + '/vaccinations' : '/sales/farmers/' + farmer._id + '/vaccinations') %>"
                           class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -364,8 +404,22 @@
                           </svg>
                           Vaccination History
                         </a>
+
+                        <!-- Location Directions -->
+                        <% if(farmer.hasLocation && farmer.location) { %>
+                          <a 
+                            href="https://www.google.com/maps/dir//<%= farmer.location.lat %>,<%= farmer.location.lng %>"
+                            target="_blank"
+                            class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                            </svg>
+                            Get Directions
+                          </a>
+                        <% } %>
                         
-                        <% if(currUser.role === 'ADMIN'){ %>
+                        <% if(currentUser.role === 'ADMIN'){ %>
                           <hr class="border-gray-200 dark:border-gray-700">
                           
                           <button 
@@ -410,7 +464,7 @@
 
             <div class="flex items-center justify-center gap-2 flex-wrap">
               <a 
-                href="?page=1<%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= selectedVillage ? '&village=' + encodeURIComponent(selectedVillage) : '' %><%= statusFilter ? '&status=' + statusFilter : '' %><%= selectedParavet ? '&paravet=' + selectedParavet : '' %>"
+                href="?page=1<%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= selectedVillage ? '&village=' + encodeURIComponent(selectedVillage) : '' %><%= statusFilter ? '&status=' + statusFilter : '' %><%= selectedParavet ? '&paravet=' + selectedParavet : '' %><%= taskFilter ? '&taskFilter=' + taskFilter : '' %>"
                 class="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 <%= currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '' %>"
                 <%= currentPage === 1 ? 'aria-disabled="true"' : '' %>>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -419,7 +473,7 @@
               </a>
 
               <a 
-                href="?page=<%= currentPage - 1 %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= selectedVillage ? '&village=' + encodeURIComponent(selectedVillage) : '' %><%= statusFilter ? '&status=' + statusFilter : '' %><%= selectedParavet ? '&paravet=' + selectedParavet : '' %>"
+                href="?page=<%= currentPage - 1 %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= selectedVillage ? '&village=' + encodeURIComponent(selectedVillage) : '' %><%= statusFilter ? '&status=' + statusFilter : '' %><%= selectedParavet ? '&paravet=' + selectedParavet : '' %><%= taskFilter ? '&taskFilter=' + taskFilter : '' %>"
                 class="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 <%= currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '' %>"
                 <%= currentPage === 1 ? 'aria-disabled="true"' : '' %>>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -427,17 +481,16 @@
                 </svg>
               </a>
 
-              <% 
-                let startPage = Math.max(1, currentPage - 2);
-                let endPage = Math.min(totalPages, currentPage + 2);
+              <% let startPage = Math.max(1, currentPage - 2); %>
+               <% let endPage = Math.min(totalPages, currentPage + 2); %>
                 
-                if (startPage > 1) { %>
+              <%  if (startPage > 1) { %>
                   <span class="px-3 py-2 text-gray-500">...</span>
               <% } %>
               
               <% for (let i = startPage; i <= endPage; i++) { %>
                 <a 
-                  href="?page=<%= i %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= selectedVillage ? '&village=' + encodeURIComponent(selectedVillage) : '' %><%= statusFilter ? '&status=' + statusFilter : '' %><%= selectedParavet ? '&paravet=' + selectedParavet : '' %>"
+                  href="?page=<%= i %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= selectedVillage ? '&village=' + encodeURIComponent(selectedVillage) : '' %><%= statusFilter ? '&status=' + statusFilter : '' %><%= selectedParavet ? '&paravet=' + selectedParavet : '' %><%= taskFilter ? '&taskFilter=' + taskFilter : '' %>"
                   class="inline-flex items-center justify-center w-10 h-10 rounded-lg <%= i === currentPage ? 'bg-blue-600 text-white' : 'border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' %>"
                 >
                   <%= i %>
@@ -449,7 +502,7 @@
               <% } %>
 
               <a 
-                href="?page=<%= currentPage + 1 %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= selectedVillage ? '&village=' + encodeURIComponent(selectedVillage) : '' %><%= statusFilter ? '&status=' + statusFilter : '' %><%= selectedParavet ? '&paravet=' + selectedParavet : '' %>"
+                href="?page=<%= currentPage + 1 %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= selectedVillage ? '&village=' + encodeURIComponent(selectedVillage) : '' %><%= statusFilter ? '&status=' + statusFilter : '' %><%= selectedParavet ? '&paravet=' + selectedParavet : '' %><%= taskFilter ? '&taskFilter=' + taskFilter : '' %>"
                 class="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 <%= currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '' %>"
                 <%= currentPage === totalPages ? 'aria-disabled="true"' : '' %>>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -458,7 +511,7 @@
               </a>
 
               <a 
-                href="?page=<%= totalPages %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= selectedVillage ? '&village=' + encodeURIComponent(selectedVillage) : '' %><%= statusFilter ? '&status=' + statusFilter : '' %><%= selectedParavet ? '&paravet=' + selectedParavet : '' %>"
+                href="?page=<%= totalPages %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= selectedVillage ? '&village=' + encodeURIComponent(selectedVillage) : '' %><%= statusFilter ? '&status=' + statusFilter : '' %><%= selectedParavet ? '&paravet=' + selectedParavet : '' %><%= taskFilter ? '&taskFilter=' + taskFilter : '' %>"
                 class="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 <%= currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '' %>"
                 <%= currentPage === totalPages ? 'aria-disabled="true"' : '' %>>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -473,6 +526,26 @@
           </div>
         </div>
       <% } %>
+    </div>
+  </div>
+</div>
+
+<!-- Map Modal -->
+<div id="mapModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-xl max-w-3xl w-full mx-4 overflow-hidden">
+    <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Farmer Location</h3>
+      <button onclick="closeMapModal()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="p-4">
+      <iframe id="mapIframe" width="100%" height="400" frameborder="0" style="border:0; border-radius: 8px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <div class="mt-4 flex justify-end">
+        <a id="directionsLink" href="#" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Get Directions</a>
+      </div>
     </div>
   </div>
 </div>
@@ -497,7 +570,7 @@
       // Position dropdown relative to button
       const rect = button.getBoundingClientRect();
       dropdown.style.top = (rect.bottom + 5) + 'px';
-      dropdown.style.left = (rect.left - 200 + button.offsetWidth) + 'px';
+      dropdown.style.left = (rect.left - 250 + button.offsetWidth) + 'px';
       dropdown.style.position = 'fixed';
     }
   }
@@ -511,6 +584,34 @@
     }
   });
 
+  // ================ MAP FUNCTIONS ================
+  
+  function viewOnMap(lat, lng, farmerName) {
+    const mapFrame = document.getElementById('mapIframe');
+    const directionsLink = document.getElementById('directionsLink');
+    const encodedName = encodeURIComponent(farmerName);
+    
+    mapFrame.src = `https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${lat},${lng}&zoom=15`;
+    directionsLink.href = `https://www.google.com/maps/dir//${lat},${lng}`;
+    
+    document.getElementById('mapModal').classList.remove('hidden');
+    document.getElementById('mapModal').classList.add('flex');
+  }
+
+  function closeMapModal() {
+    const modal = document.getElementById('mapModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.getElementById('mapIframe').src = '';
+  }
+
+  // ================ COMPLETE VACCINATION ================
+  
+  function completeFarmerVaccination(farmerId) {
+    // Redirect to vaccination page with farmer pre-selected
+    window.location.href = `/paravet/farmers/${farmerId}/vaccinate`;
+  }
+
   // ================ FILTER FUNCTIONS ================
 
   let searchTimeout;
@@ -520,6 +621,7 @@
     const villageFilter = document.getElementById('villageFilter');
     const statusFilter = document.getElementById('statusFilter');
     const paravetFilter = document.getElementById('paravetFilter');
+    const taskFilter = document.getElementById('taskFilter');
 
     function applyFilters() {
       const params = new URLSearchParams();
@@ -537,6 +639,9 @@
       const paravet = paravetFilter?.value;
       if (paravet) params.set('paravet', paravet);
       
+      const task = taskFilter?.value;
+      if (task && task !== 'all') params.set('taskFilter', task);
+      
       window.location.href = `?${params.toString()}`;
     }
 
@@ -550,6 +655,7 @@
     if (villageFilter) villageFilter.addEventListener('change', applyFilters);
     if (statusFilter) statusFilter.addEventListener('change', applyFilters);
     if (paravetFilter) paravetFilter.addEventListener('change', applyFilters);
+    if (taskFilter) taskFilter.addEventListener('change', applyFilters);
   });
 
   // ================ SORTING FUNCTIONS ================

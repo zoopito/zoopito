@@ -9,15 +9,9 @@
             transform: translateY(-3px);
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
         }
-        .priority-high {
-            border-left-color: #ef4444;
-        }
-        .priority-medium {
-            border-left-color: #f59e0b;
-        }
-        .priority-low {
-            border-left-color: #10b981;
-        }
+        .priority-high { border-left-color: #ef4444; }
+        .priority-medium { border-left-color: #f59e0b; }
+        .priority-low { border-left-color: #10b981; }
         .task-status {
             padding: 0.25rem 0.75rem;
             border-radius: 9999px;
@@ -25,6 +19,7 @@
             font-weight: 600;
         }
         .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-in-progress { background-color: #dbeafe; color: #1e40af; }
         .status-completed { background-color: #d1fae5; color: #065f46; }
         .status-overdue { background-color: #fee2e2; color: #991b1b; }
         .filter-btn {
@@ -33,9 +28,6 @@
         .filter-btn.active {
             background-color: #3b82f6;
             color: white;
-        }
-        .filter-btn.active:hover {
-            background-color: #2563eb;
         }
         .date-group {
             position: sticky;
@@ -47,6 +39,13 @@
         .dark .date-group {
             background: #1f2937;
         }
+        .complete-btn {
+            transition: all 0.3s ease;
+        }
+        .complete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
     `
 }) -%>
 
@@ -55,7 +54,7 @@
         <!-- Page Header -->
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Tasks</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-2">Manage your daily schedule and pending vaccinations</p>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Complete vaccination tasks and record details</p>
         </div>
 
         <!-- Stats Overview -->
@@ -109,49 +108,46 @@
         <!-- Filters -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
             <div class="flex flex-wrap gap-2">
-                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= !currentFilter || currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>" onclick="filterTasks('all')">
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= !currentFilter || currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' %>" onclick="filterTasks('all')">
                     <i class="fas fa-list mr-1"></i>All Tasks
                 </button>
-                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'today' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>" onclick="filterTasks('today')">
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'today' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' %>" onclick="filterTasks('today')">
                     <i class="fas fa-calendar-day mr-1"></i>Today
                 </button>
-                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>" onclick="filterTasks('upcoming')">
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' %>" onclick="filterTasks('upcoming')">
                     <i class="fas fa-calendar-week mr-1"></i>Upcoming
                 </button>
-                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'overdue' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>" onclick="filterTasks('overdue')">
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'overdue' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' %>" onclick="filterTasks('overdue')">
                     <i class="fas fa-exclamation-circle mr-1"></i>Overdue
                 </button>
-                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'completed' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>" onclick="filterTasks('completed')">
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'completed' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' %>" onclick="filterTasks('completed')">
                     <i class="fas fa-check-circle mr-1"></i>Completed
                 </button>
             </div>
         </div>
 
-
         <!-- Area Filter -->
-<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Area</label>
-    <div class="flex flex-wrap gap-2">
-        <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all <%= !selectedArea || selectedArea === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200' %>" 
-                onclick="filterByArea('all')">
-            All Areas
-        </button>
-        <% if(availableAreas && availableAreas.length > 0) { %>
-            <% availableAreas.forEach(area => { %>
-                <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all <%= selectedArea === (area.village || area) ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200' %>" 
-                        onclick="filterByArea('<%= area.village || area %>')">
-                    <i class="fas fa-map-marker-alt mr-1"></i>
-                    <%= area.village || area %>
-                    <% if(pendingByArea && pendingByArea.find(a => a._id === (area.village || area))) { %>
-                        <span class="ml-1 px-1.5 py-0.5 bg-red-500 text-white rounded-full text-xs">
-                            <%= pendingByArea.find(a => a._id === (area.village || area)).count %>
-                        </span>
-                    <% } %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Area</label>
+            <div class="flex flex-wrap gap-2">
+                <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all <%= !selectedArea || selectedArea === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700' %>" onclick="filterByArea('all')">
+                    All Areas
                 </button>
-            <% }); %>
-        <% } %>
-    </div>
-</div>
+                <% if(availableAreas && availableAreas.length > 0) { %>
+                    <% availableAreas.forEach(area => { %>
+                        <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all <%= selectedArea === (area.village || area) ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700' %>" onclick="filterByArea('<%= area.village || area %>')">
+                            <i class="fas fa-map-marker-alt mr-1"></i>
+                            <%= area.village || area %>
+                            <% if(pendingByArea && pendingByArea.find(a => a._id === (area.village || area))) { %>
+                                <span class="ml-1 px-1.5 py-0.5 bg-red-500 text-white rounded-full text-xs">
+                                    <%= pendingByArea.find(a => a._id === (area.village || area)).count %>
+                                </span>
+                            <% } %>
+                        </button>
+                    <% }); %>
+                <% } %>
+            </div>
+        </div>
 
         <!-- Tasks List -->
         <div id="tasksList" class="space-y-6">
@@ -172,41 +168,57 @@
                                         <div class="p-5">
                                             <div class="flex items-start justify-between">
                                                 <div class="flex-1">
-                                                    <div class="flex items-center gap-2 mb-2">
+                                                    <div class="flex items-center gap-2 mb-2 flex-wrap">
                                                         <span class="task-status status-<%= task.status %>">
                                                             <i class="fas <%= task.status === 'completed' ? 'fa-check-circle' : 'fa-clock' %> mr-1"></i>
-                                                            <%= task.status.charAt(0).toUpperCase() + task.status.slice(1) %>
+                                                            <%= task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : 'Pending' %>
                                                         </span>
                                                         <span class="text-xs px-2 py-1 rounded-full <%= task.priority === 'high' ? 'bg-red-100 text-red-700' : task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700' %>">
-                                                            <i class="fas fa-flag mr-1"></i><%= task.priority %>
+                                                            <i class="fas fa-flag mr-1"></i><%= task.priority || 'normal' %>
+                                                        </span>
+                                                        <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                                                            <i class="fas fa-syringe mr-1"></i>Vaccination
                                                         </span>
                                                     </div>
                                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2"><%= task.title %></h3>
-                                                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3"><%= task.description %></p>
+                                                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3"><%= task.description || 'No description provided' %></p>
                                                     <div class="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                                                         <span><i class="fas fa-user mr-1"></i><%= task.farmer?.name || 'N/A' %></span>
-                                                        <span><i class="fas fa-map-marker-alt mr-1"></i><%= task.location || 'Not specified' %></span>
+                                                        <span><i class="fas fa-map-marker-alt mr-1"></i><%= task.farmer?.address?.village || task.location || 'Not specified' %></span>
                                                         <span><i class="fas fa-clock mr-1"></i><%= moment(task.scheduledDate).format('DD MMM YYYY, hh:mm A') %></span>
-                                                        <% if (task.estimatedDuration) { %>
-                                                            <span><i class="fas fa-hourglass-half mr-1"></i><%= task.estimatedDuration %> mins</span>
+                                                        <% if (task.scheduledDate && new Date(task.scheduledDate) < new Date() && task.status !== 'completed') { %>
+                                                            <span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>Overdue</span>
                                                         <% } %>
                                                     </div>
-                                                </div>
-                                                <div class="flex flex-col space-y-2 ml-4">
-                                                    <% if (task.status !== 'completed') { %>
-                                                        <button onclick="completeTask('<%= task.id %>', '<%= task.type %>')" 
-                                                                class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm">
-                                                            <i class="fas fa-check mr-1"></i> Complete
-                                                        </button>
-                                                        <button onclick="openRescheduleModal('<%= task.id %>', '<%= moment(task.scheduledDate).format(`YYYY-MM-DD`) %>', '<%= moment(task.scheduledDate).format(`HH:mm`) %>')" 
-                                                                class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm">
-                                                            <i class="fas fa-calendar-alt mr-1"></i> Reschedule
-                                                        </button>
-                                                    <% } else { %>
-                                                        <button class="px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed text-sm" disabled>
-                                                            <i class="fas fa-check-circle mr-1"></i> Completed
-                                                        </button>
+                                                    
+                                                    <!-- Vaccines to Administer -->
+                                                    <% if (task.vaccines && task.vaccines.length > 0) { %>
+                                                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Vaccines to administer:</p>
+                                                            <div class="flex flex-wrap gap-1">
+                                                                <% task.vaccines.forEach(vaccine => { %>
+                                                                    <span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
+                                                                        <i class="fas fa-syringe mr-1 text-green-600"></i>
+                                                                        <%= vaccine.vaccineId?.name || vaccine.name || 'Unknown Vaccine' %>
+                                                                        <% if(vaccine.doseNumber) { %> (Dose <%= vaccine.doseNumber %>)<% } %>
+                                                                    </span>
+                                                                <% }); %>
+                                                            </div>
+                                                        </div>
                                                     <% } %>
+                                                </div>
+                                                
+                                                <div class="flex items-center ml-4">
+                                                    <% if (task.status !== 'completed') { %>
+    <button onclick="completeTask('<%= task._id %>')" 
+            class="complete-btn px-6 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md">
+        <i class="fas fa-syringe mr-2"></i> Complete Vaccination
+    </button>
+<% } else { %>
+    <button class="px-6 py-2.5 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed text-sm font-medium" disabled>
+        <i class="fas fa-check-circle mr-2"></i> Completed
+    </button>
+<% } %>
                                                 </div>
                                             </div>
                                         </div>
@@ -221,53 +233,11 @@
                     <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Tasks Found</h3>
                     <p class="text-gray-600 dark:text-gray-400">
-                        <% if (currentFilter === 'completed') { %>
-                            You haven't completed any tasks yet. Start working on your pending tasks!
-                        <% } else if (currentFilter === 'overdue') { %>
-                            Great! No overdue tasks. Keep up the good work!
-                        <% } else { %>
-                            You have no pending tasks in this category. Great job! 🎉
-                        <% } %>
+                        You have no pending tasks. Great job! 🎉
                     </p>
-                    <% if (currentFilter !== 'all') { %>
-                        <button onclick="filterTasks('all')" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                            View All Tasks
-                        </button>
-                    <% } %>
                 </div>
             <% } %>
         </div>
-    </div>
-</div>
-
-<!-- Reschedule Modal -->
-<div id="rescheduleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Reschedule Task</h3>
-            <button onclick="closeModal('rescheduleModal')" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <form id="rescheduleForm" onsubmit="submitReschedule(event)">
-            <input type="hidden" id="rescheduleTaskId">
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Date</label>
-                <input type="date" id="rescheduleDate" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Time</label>
-                <input type="time" id="rescheduleTime" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason (Optional)</label>
-                <textarea id="rescheduleReason" rows="2" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Why are you rescheduling?"></textarea>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeModal('rescheduleModal')" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Reschedule</button>
-            </div>
-        </form>
     </div>
 </div>
 
@@ -277,112 +247,13 @@ function filterTasks(filter) {
     window.location.href = `/paravet/tasks?filter=${filter}`;
 }
 
-function completeTask(taskId, taskType) {
-    window.location.href = `/paravet/vaccination/${taskId}/complete`;
+function filterByArea(area) {
+    const currentFilter = new URLSearchParams(window.location.search).get('filter') || 'all';
+    window.location.href = `/paravet/tasks?filter=${currentFilter}&area=${area}`;
 }
 
-let currentTaskId = null;
-
-function openRescheduleModal(taskId, currentDate, currentTime) {
-    currentTaskId = taskId;
-    document.getElementById('rescheduleTaskId').value = taskId;
-    document.getElementById('rescheduleDate').value = currentDate;
-    document.getElementById('rescheduleTime').value = currentTime;
-    document.getElementById('rescheduleModal').classList.remove('hidden');
-}
-
-function submitReschedule(event) {
-    event.preventDefault();
-    
-    const taskId = document.getElementById('rescheduleTaskId').value;
-    const newDate = document.getElementById('rescheduleDate').value;
-    const newTime = document.getElementById('rescheduleTime').value;
-    const reason = document.getElementById('rescheduleReason').value;
-    
-    if (!newDate || !newTime) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Missing Information',
-            text: 'Please select both date and time'
-        });
-        return;
-    }
-    
-    Swal.fire({
-        title: 'Reschedule Task?',
-        text: 'Are you sure you want to reschedule this task?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#f59e0b',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, reschedule it!'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Processing...',
-                text: 'Please wait',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            try {
-                const response = await fetch(`/paravet/tasks/${taskId}/reschedule`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ newDate, newTime, reason })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Task Rescheduled!',
-                        text: data.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'Failed to reschedule task'
-                    });
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Network error. Please try again.'
-                });
-            }
-        }
-    });
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.add('hidden');
-}
-
-// Close modal on Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const modal = document.getElementById('rescheduleModal');
-        if (modal) modal.classList.add('hidden');
-    }
-});
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    if (event.target.classList.contains('fixed')) {
-        event.target.classList.add('hidden');
-    }
+function completeTask(taskId, farmerId, animalId) {
+    // Directly redirect to vaccination form with task details
+    window.location.href = `/paravet/tasks/${taskId}/complete`;
 }
 </script>

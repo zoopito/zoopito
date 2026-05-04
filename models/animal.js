@@ -790,8 +790,6 @@ animalSchema.methods.activatePlan = async function(planType, price, durationYear
 
 // Optimized indexes for common queries
 animalSchema.index({ farmer: 1, isActive: 1, createdAt: -1 });
-animalSchema.index({ tagNumber: 1 }, { unique: true, sparse: true });
-animalSchema.index({ uniqueAnimalId: 1 }, { unique: true });
 animalSchema.index({ animalType: 1, gender: 1 });
 animalSchema.index({ "healthStatus.currentStatus": 1, isActive: 1 });
 animalSchema.index({ "pregnancyStatus.isPregnant": 1, isActive: 1 });
@@ -802,6 +800,5 @@ animalSchema.index({
 animalSchema.index({ "vaccinationSummary.isUpToDate": 1, isActive: 1 });
 animalSchema.index({ status: 1, isActive: 1 });
 animalSchema.index({ createdAt: -1 });
-animalSchema.index({ registrationBatchId: 1 }); // NEW: For bulk registration
 
 module.exports = mongoose.model("Animal", animalSchema);

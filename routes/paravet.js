@@ -215,7 +215,9 @@ router.get("/api/performance-metrics", paravetController.getPerformanceMetrics);
 // Task management
 router.get("/tasks", paravetController.getTasks);
 router.get("/vaccination/:id/complete", paravetController.getVaccinationCompletionForm);
-router.post("/tasks/:id/complete", paravetController.completeTask);
+// router.post("/tasks/:id/complete", paravetController.completeTask);
+router.get("/tasks/:taskId/complete", paravetController.getTaskForVaccination);
+router.post("/tasks/:taskId/complete", paravetController.submitTaskVaccination);
 router.post("/tasks/:id/reschedule", paravetController.rescheduleTask);
 
 // Farmer visit routes
