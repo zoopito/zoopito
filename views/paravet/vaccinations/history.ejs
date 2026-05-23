@@ -1,183 +1,225 @@
 <% layout("layouts/boilerplate") %>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
     <!-- Header -->
     <div class="mb-8">
-      <div class="flex items-center justify-between">
-        <div>
-          <div class="flex items-center space-x-3">
-            <a href="javascript:history.back()" class="text-gray-600 hover:text-gray-800">
-              <i class="fas fa-arrow-left text-xl"></i>
-            </a>
-            <div>
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                Vaccination History
-              </h1>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                <%= animal.name || 'Unnamed' %> - <%= animal.tagNumber || 'No Tag' %>
-              </p>
-            </div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Vaccination History</h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-1">Complete record of all vaccinations performed by you</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p class="text-2xl font-bold text-blue-600"><%= stats.total %></p>
+        <p class="text-xs text-gray-500">Total</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p class="text-2xl font-bold text-green-600"><%= stats.completed %></p>
+        <p class="text-xs text-gray-500">Completed</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p class="text-2xl font-bold text-yellow-600"><%= stats.pending %></p>
+        <p class="text-xs text-gray-500">Pending</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p class="text-2xl font-bold text-red-600"><%= stats.overdue %></p>
+        <p class="text-xs text-gray-500">Overdue</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p class="text-2xl font-bold text-purple-600"><%= stats.thisMonth %></p>
+        <p class="text-xs text-gray-500">This Month</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p class="text-2xl font-bold text-indigo-600"><%= completionRate %>%</p>
+        <p class="text-xs text-gray-500">Completion Rate</p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6">
+      <div class="p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Filter Dropdown -->
+          <select id="filterSelect" class="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+            <option value="all" <%= filter === 'all' ? 'selected' : '' %>>All Records</option>
+            <option value="completed" <%= filter === 'completed' ? 'selected' : '' %>>Completed</option>
+            <option value="pending" <%= filter === 'pending' ? 'selected' : '' %>>Pending</option>
+            <option value="overdue" <%= filter === 'overdue' ? 'selected' : '' %>>Overdue</option>
+            <option value="today" <%= filter === 'today' ? 'selected' : '' %>>Today's Schedule</option>
+            <option value="week" <%= filter === 'week' ? 'selected' : '' %>>Last 7 Days</option>
+          </select>
+          
+          <!-- Farmer Filter -->
+          <select id="farmerFilter" class="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+            <option value="">All Farmers</option>
+            <% farmersForFilter.forEach(f => { %>
+              <option value="<%= f._id %>" <%= farmerId === f._id.toString() ? 'selected' : '' %>><%= f.name %> (<%= f.uniqueFarmerId %>)</option>
+            <% }) %>
+          </select>
+          
+          <!-- Animal Filter -->
+          <select id="animalFilter" class="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+            <option value="">All Animals</option>
+            <% animalsForFilter.forEach(a => { %>
+              <option value="<%= a._id %>" <%= animalId === a._id.toString() ? 'selected' : '' %>><%= a.name || a.tagNumber %> (<%= a.animalType %>)</option>
+            <% }) %>
+          </select>
+          
+          <!-- Date Range -->
+          <div class="flex gap-2">
+            <input type="date" id="fromDate" value="<%= fromDate %>" class="flex-1 px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" placeholder="From">
+            <input type="date" id="toDate" value="<%= toDate %>" class="flex-1 px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" placeholder="To">
           </div>
         </div>
-        <div class="flex space-x-3">
-          <a href="/paravet/farmers/<%= animal.farmer?._id %>" 
-             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            <i class="fas fa-tractor mr-2"></i>
-            View Farmer
-          </a>
+        
+        <div class="flex justify-end gap-3 mt-4">
+          <button onclick="applyFilters()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Apply Filters
+          </button>
+          <button onclick="resetFilters()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+            Reset
+          </button>
+          <button onclick="exportHistory()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            Export CSV
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Animal Info Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <div class="flex items-center">
-          <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-paw text-blue-600"></i>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm text-gray-500">Species</p>
-            <p class="font-semibold"><%= animal.animalType %></p>
-          </div>
-        </div>
+    <!-- Vaccination Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-100 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase">Date</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase">Vaccine</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase">Animal</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase">Farmer</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase hidden md:table-cell">Batch No.</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase">Status</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase hidden lg:table-cell">Next Due</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y dark:divide-gray-700">
+            <% if (vaccinations.length === 0) { %>
+              <tr>
+                <td colspan="7" class="px-4 py-12 text-center text-gray-500">
+                  <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                  </svg>
+                  No vaccination records found
+                </td>
+              </tr>
+            <% } %>
+            <% vaccinations.forEach(vac => { %>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="px-4 py-3">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
+                    <%= moment(vac.dateAdministered || vac.createdAt).format('DD MMM YYYY') %>
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    <%= moment(vac.dateAdministered || vac.createdAt).format('hh:mm A') %>
+                  </p>
+                </td>
+                <td class="px-4 py-3">
+                  <p class="font-medium text-gray-900 dark:text-white"><%= vac.vaccine?.name || vac.vaccineName %></p>
+                  <p class="text-xs text-gray-500"><%= vac.vaccineType %></p>
+                </td>
+                <td class="px-4 py-3">
+                  <p class="text-gray-900 dark:text-white"><%= vac.animal?.name || vac.animal?.tagNumber %></p>
+                  <p class="text-xs text-gray-500"><%= vac.animal?.animalType %></p>
+                </td>
+                <td class="px-4 py-3">
+                  <p class="text-gray-900 dark:text-white"><%= vac.farmer?.name %></p>
+                  <p class="text-xs text-gray-500"><%= vac.farmer?.address?.village %></p>
+                </td>
+                <td class="px-4 py-3 hidden md:table-cell">
+                  <code class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"><%= vac.batchNumber || 'N/A' %></code>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (vac.status === 'Completed') { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                      <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                      Completed
+                    </span>
+                  <% } else if (vac.status === 'Scheduled') { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                      <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                      Scheduled
+                    </span>
+                  <% } else if (vac.status === 'Payment Pending') { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+                      <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+                      Payment Pending
+                    </span>
+                  <% } else { %>
+                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full"><%= vac.status %></span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 hidden lg:table-cell">
+                  <% if (vac.nextDueDate) { %>
+                    <p class="text-sm <%= new Date(vac.nextDueDate) < new Date() ? 'text-red-600' : 'text-gray-900 dark:text-white' %>">
+                      <%= moment(vac.nextDueDate).format('DD MMM YYYY') %>
+                    </p>
+                    <p class="text-xs text-gray-500"><%= moment(vac.nextDueDate).fromNow() %></p>
+                  <% } else { %>
+                    <span class="text-gray-400">-</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
       </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <div class="flex items-center">
-          <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-syringe text-green-600"></i>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm text-gray-500">Total Vaccinations</p>
-            <p class="text-2xl font-bold"><%= vaccinations.length %></p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <div class="flex items-center">
-          <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-calendar-alt text-purple-600"></i>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm text-gray-500">Last Vaccination</p>
-            <p class="font-semibold"><%= vaccinations[0] ? moment(vaccinations[0].dateAdministered).format('DD MMM YYYY') : 'Never' %></p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <div class="flex items-center">
-          <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-clock text-yellow-600"></i>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm text-gray-500">Next Due</p>
-            <p class="font-semibold"><%= vaccinations[0]?.nextDueDate ? moment(vaccinations[0].nextDueDate).format('DD MMM YYYY') : 'Not scheduled' %></p>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Vaccination Timeline -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-      <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-        <h2 class="text-lg font-semibold flex items-center">
-          <i class="fas fa-timeline mr-2 text-blue-500"></i>
-          Vaccination Timeline
-        </h2>
-      </div>
-      
-      <div class="p-6">
-        <% if (vaccinations.length > 0) { %>
-          <div class="relative">
-            <!-- Timeline line -->
-            <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-600"></div>
-            
-            <div class="space-y-8">
-              <% vaccinations.forEach((vac, index) => { 
-                const isOverdue = vac.nextDueDate && new Date(vac.nextDueDate) < new Date();
-              %>
-                <div class="relative flex items-start">
-                  <!-- Timeline dot -->
-                  <div class="absolute left-4 w-4 h-4 rounded-full transform -translate-x-1/2 mt-1 
-                              <%= vac.status === 'Administered' || vac.status === 'Completed' ? 'bg-green-500' : 'bg-yellow-500' %>">
-                  </div>
-                  
-                  <div class="ml-12 flex-1">
-                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                      <div class="flex flex-wrap justify-between items-start gap-2">
-                        <div>
-                          <h3 class="font-semibold text-gray-900 dark:text-white">
-                            <%= vac.vaccine?.name || vac.vaccineName || 'Unknown Vaccine' %>
-                          </h3>
-                          <p class="text-sm text-gray-500 mt-1">
-                            <%= vac.vaccine?.diseaseTarget || 'Preventive vaccination' %>
-                          </p>
-                        </div>
-                        <span class="px-2 py-1 rounded-full text-xs <%= 
-                          vac.status === 'Administered' || vac.status === 'Completed' ? 'bg-green-100 text-green-800' : 
-                          vac.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' %>">
-                          <%= vac.status || 'Pending' %>
-                        </span>
-                      </div>
-                      
-                      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
-                        <div>
-                          <p class="text-gray-500">Administered Date</p>
-                          <p class="font-medium"><%= vac.dateAdministered ? moment(vac.dateAdministered).format('DD MMM YYYY') : 'Not yet' %></p>
-                        </div>
-                        <div>
-                          <p class="text-gray-500">Next Due Date</p>
-                          <p class="font-medium <%= isOverdue ? 'text-red-600' : '' %>">
-                            <%= vac.nextDueDate ? moment(vac.nextDueDate).format('DD MMM YYYY') : 'Not set' %>
-                          </p>
-                        </div>
-                        <div>
-                          <p class="text-gray-500">Dose</p>
-                          <p class="font-medium"><%= vac.doseNumber || 1 %>/<%= vac.totalDosesRequired || 1 %></p>
-                        </div>
-                        <div>
-                          <p class="text-gray-500">Batch Number</p>
-                          <p class="font-medium"><%= vac.batchNumber || 'N/A' %></p>
-                        </div>
-                      </div>
-                      
-                      <% if (vac.administeredBy) { %>
-                        <p class="text-xs text-gray-500 mt-3">
-                          <i class="fas fa-user-md mr-1"></i>
-                          Administered by: <%= vac.administeredBy %>
-                        </p>
-                      <% } %>
-                      
-                      <% if (vac.notes) { %>
-                        <p class="text-sm text-gray-600 mt-2 p-2 bg-gray-100 rounded">
-                          <i class="fas fa-comment mr-1"></i>
-                          <%= vac.notes %>
-                        </p>
-                      <% } %>
-                    </div>
-                  </div>
-                </div>
-              <% }); %>
-            </div>
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex justify-between items-center">
+          <span class="text-sm text-gray-600">Page <%= currentPage %> of <%= totalPages %></span>
+          <div class="flex gap-2">
+            <% if (currentPage > 1) { %>
+              <a href="?page=<%= currentPage - 1 %><%= filter ? '&filter=' + filter : '' %><%= animalId ? '&animalId=' + animalId : '' %><%= farmerId ? '&farmerId=' + farmerId : '' %><%= fromDate ? '&fromDate=' + fromDate : '' %><%= toDate ? '&toDate=' + toDate : '' %>" 
+                 class="px-3 py-1 border rounded-lg hover:bg-gray-100">Previous</a>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+              <a href="?page=<%= currentPage + 1 %><%= filter ? '&filter=' + filter : '' %><%= animalId ? '&animalId=' + animalId : '' %><%= farmerId ? '&farmerId=' + farmerId : '' %><%= fromDate ? '&fromDate=' + fromDate : '' %><%= toDate ? '&toDate=' + toDate : '' %>" 
+                 class="px-3 py-1 border rounded-lg hover:bg-gray-100">Next</a>
+            <% } %>
           </div>
-        <% } else { %>
-          <div class="text-center py-12">
-            <i class="fas fa-syringe text-6xl text-gray-400 mb-4"></i>
-            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No Vaccination Records</h3>
-            <p class="text-gray-500">This animal has not received any vaccinations yet.</p>
-            <a href="/paravet/farmers/<%= animal.farmer?._id %>/vaccinate" 
-               class="inline-block mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-              <i class="fas fa-plus mr-2"></i>
-              Schedule First Vaccination
-            </a>
-          </div>
-        <% } %>
-      </div>
+        </div>
+      <% } %>
     </div>
   </div>
 </div>
+
+<script>
+  function applyFilters() {
+    const params = new URLSearchParams();
+    const filter = document.getElementById('filterSelect')?.value;
+    const farmerId = document.getElementById('farmerFilter')?.value;
+    const animalId = document.getElementById('animalFilter')?.value;
+    const fromDate = document.getElementById('fromDate')?.value;
+    const toDate = document.getElementById('toDate')?.value;
+    
+    if (filter && filter !== 'all') params.set('filter', filter);
+    if (farmerId) params.set('farmerId', farmerId);
+    if (animalId) params.set('animalId', animalId);
+    if (fromDate) params.set('fromDate', fromDate);
+    if (toDate) params.set('toDate', toDate);
+    
+    window.location.href = `/paravet/vaccinations/history?${params.toString()}`;
+  }
+  
+  function resetFilters() {
+    window.location.href = '/paravet/vaccinations/history';
+  }
+  
+  function exportHistory() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('export', 'csv');
+    window.location.href = `/paravet/vaccinations/history/export?${params.toString()}`;
+  }
+</script>

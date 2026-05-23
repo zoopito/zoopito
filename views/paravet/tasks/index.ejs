@@ -1,53 +1,7 @@
 <% layout("layouts/boilerplate", {
     title: 'My Tasks - Zoopito',
-    description: 'Manage your daily tasks and schedules',
-    pageStyles: `
-        .task-card {
-            transition: all 0.3s ease;
-        }
-        .task-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-        }
-        .priority-high { border-left-color: #ef4444; }
-        .priority-medium { border-left-color: #f59e0b; }
-        .priority-low { border-left-color: #10b981; }
-        .task-status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .status-pending { background-color: #fef3c7; color: #92400e; }
-        .status-in-progress { background-color: #dbeafe; color: #1e40af; }
-        .status-completed { background-color: #d1fae5; color: #065f46; }
-        .status-overdue { background-color: #fee2e2; color: #991b1b; }
-        .filter-btn {
-            transition: all 0.2s ease;
-        }
-        .filter-btn.active {
-            background-color: #3b82f6;
-            color: white;
-        }
-        .date-group {
-            position: sticky;
-            top: 0;
-            background: white;
-            z-index: 10;
-            padding: 12px 0;
-        }
-        .dark .date-group {
-            background: #1f2937;
-        }
-        .complete-btn {
-            transition: all 0.3s ease;
-        }
-        .complete-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-        }
-    `
-}) -%>
+    description: 'Manage your daily tasks and schedules'
+}) %>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -108,19 +62,19 @@
         <!-- Filters -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
             <div class="flex flex-wrap gap-2">
-                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= !currentFilter || currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' %>" onclick="filterTasks('all')">
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all" onclick="filterTasks('all')">
                     <i class="fas fa-list mr-1"></i>All Tasks
                 </button>
-                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'today' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' %>" onclick="filterTasks('today')">
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all" onclick="filterTasks('today')">
                     <i class="fas fa-calendar-day mr-1"></i>Today
                 </button>
-                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' %>" onclick="filterTasks('upcoming')">
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all" onclick="filterTasks('upcoming')">
                     <i class="fas fa-calendar-week mr-1"></i>Upcoming
                 </button>
-                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'overdue' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' %>" onclick="filterTasks('overdue')">
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all" onclick="filterTasks('overdue')">
                     <i class="fas fa-exclamation-circle mr-1"></i>Overdue
                 </button>
-                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all <%= currentFilter === 'completed' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' %>" onclick="filterTasks('completed')">
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all" onclick="filterTasks('completed')">
                     <i class="fas fa-check-circle mr-1"></i>Completed
                 </button>
             </div>
@@ -130,19 +84,14 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Area</label>
             <div class="flex flex-wrap gap-2">
-                <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all <%= !selectedArea || selectedArea === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700' %>" onclick="filterByArea('all')">
+                <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all" onclick="filterByArea('all')">
                     All Areas
                 </button>
                 <% if(availableAreas && availableAreas.length > 0) { %>
-                    <% availableAreas.forEach(area => { %>
-                        <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all <%= selectedArea === (area.village || area) ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700' %>" onclick="filterByArea('<%= area.village || area %>')">
+                    <% availableAreas.forEach(function(area) { %>
+                        <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all" onclick="filterByArea('<%= area.village || area %>')">
                             <i class="fas fa-map-marker-alt mr-1"></i>
                             <%= area.village || area %>
-                            <% if(pendingByArea && pendingByArea.find(a => a._id === (area.village || area))) { %>
-                                <span class="ml-1 px-1.5 py-0.5 bg-red-500 text-white rounded-full text-xs">
-                                    <%= pendingByArea.find(a => a._id === (area.village || area)).count %>
-                                </span>
-                            <% } %>
                         </button>
                     <% }); %>
                 <% } %>
@@ -152,7 +101,11 @@
         <!-- Tasks List -->
         <div id="tasksList" class="space-y-6">
             <% if (groupedTasks && Object.keys(groupedTasks).length > 0) { %>
-                <% Object.entries(groupedTasks).forEach(([date, tasks]) => { %>
+                <% Object.entries(groupedTasks).forEach(function(entry) { %>
+                  <%  var date = entry[0];
+                    var tasks = entry[1];
+                %>
+                
                     <% if (tasks && tasks.length > 0) { %>
                         <div>
                             <div class="date-group mb-3">
@@ -163,18 +116,15 @@
                                 </h2>
                             </div>
                             <div class="space-y-3">
-                                <% tasks.forEach(task => { %>
-                                    <div class="task-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-l-4 priority-<%= task.priority %>">
+                                <% tasks.forEach(function(task) { %>
+                                    <div class="task-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-l-4">
                                         <div class="p-5">
-                                            <div class="flex items-start justify-between">
+                                            <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
                                                 <div class="flex-1">
                                                     <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                                        <span class="task-status status-<%= task.status %>">
-                                                            <i class="fas <%= task.status === 'completed' ? 'fa-check-circle' : 'fa-clock' %> mr-1"></i>
+                                                        <span class="task-status">
+                                                            <i class="fas fa-clock mr-1"></i>
                                                             <%= task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : 'Pending' %>
-                                                        </span>
-                                                        <span class="text-xs px-2 py-1 rounded-full <%= task.priority === 'high' ? 'bg-red-100 text-red-700' : task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700' %>">
-                                                            <i class="fas fa-flag mr-1"></i><%= task.priority || 'normal' %>
                                                         </span>
                                                         <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
                                                             <i class="fas fa-syringe mr-1"></i>Vaccination
@@ -182,43 +132,59 @@
                                                     </div>
                                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2"><%= task.title %></h3>
                                                     <p class="text-gray-600 dark:text-gray-400 text-sm mb-3"><%= task.description || 'No description provided' %></p>
+                                                    
                                                     <div class="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                                        <span><i class="fas fa-user mr-1"></i><%= task.farmer?.name || 'N/A' %></span>
-                                                        <span><i class="fas fa-map-marker-alt mr-1"></i><%= task.farmer?.address?.village || task.location || 'Not specified' %></span>
-                                                        <span><i class="fas fa-clock mr-1"></i><%= moment(task.scheduledDate).format('DD MMM YYYY, hh:mm A') %></span>
-                                                        <% if (task.scheduledDate && new Date(task.scheduledDate) < new Date() && task.status !== 'completed') { %>
-                                                            <span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>Overdue</span>
-                                                        <% } %>
+                                                        <span class="flex items-center gap-1">
+                                                            <i class="fas fa-user mr-1"></i>
+                                                            <a href="/paravet/farmers/<%= task.farmer?._id %>" class="hover:text-blue-600 hover:underline">
+                                                                <%= task.farmer?.name || 'N/A' %>
+                                                            </a>
+                                                        </span>
+                                                        <span class="flex items-center gap-1">
+                                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                                            <span><%= task.farmer?.address?.village || task.location || 'Not specified' %></span>
+                                                        </span>
+                                                        <span class="flex items-center gap-1">
+                                                            <i class="fas fa-clock mr-1"></i>
+                                                            <%= moment(task.scheduledDate).format('DD MMM YYYY, hh:mm A') %>
+                                                        </span>
                                                     </div>
                                                     
-                                                    <!-- Vaccines to Administer -->
-                                                    <% if (task.vaccines && task.vaccines.length > 0) { %>
-                                                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Vaccines to administer:</p>
-                                                            <div class="flex flex-wrap gap-1">
-                                                                <% task.vaccines.forEach(vaccine => { %>
-                                                                    <span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
-                                                                        <i class="fas fa-syringe mr-1 text-green-600"></i>
-                                                                        <%= vaccine.vaccineId?.name || vaccine.name || 'Unknown Vaccine' %>
-                                                                        <% if(vaccine.doseNumber) { %> (Dose <%= vaccine.doseNumber %>)<% } %>
-                                                                    </span>
-                                                                <% }); %>
-                                                            </div>
-                                                        </div>
-                                                    <% } %>
+                                                    <!-- Location and Actions -->
+                                                    <div class="mt-3 flex flex-wrap gap-2">
+                                                        <% if (task.farmer?.location?.coordinates && task.farmer.location.coordinates[0] !== 0 && task.farmer.location.coordinates[1] !== 0) { %>
+                                                         <%   var lat = task.farmer.location.coordinates[1]; %>
+                                                         <%   var lng = task.farmer.location.coordinates[0];  %>
+                                                            <button onclick='openMapModal(`<%= lat %>`, `<%= lng %>`, `<%= task.farmer.name.replace(/\\'/g, "\\\\'") %>`)' 
+                                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition">
+                                                                <i class="fas fa-map-marked-alt"></i>
+                                                                View on Map
+                                                            </button>
+                                                            <a href="https://www.google.com/maps/dir//<%= lat %>,<%= lng %>" target="_blank"
+                                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition">
+                                                                <i class="fas fa-directions"></i>
+                                                                Get Directions
+                                                            </a>
+                                                        <% } %>
+                                                        <a href="/paravet/farmers/<%= task.farmer._id %>" 
+                                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition">
+                                                            <i class="fas fa-user-circle"></i>
+                                                            View Farmer Details
+                                                        </a>
+                                                    </div>
                                                 </div>
                                                 
-                                                <div class="flex items-center ml-4">
+                                                <div class="flex flex-col items-end gap-2">
                                                     <% if (task.status !== 'completed') { %>
-    <button onclick="completeTask('<%= task._id %>')" 
-            class="complete-btn px-6 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md">
-        <i class="fas fa-syringe mr-2"></i> Complete Vaccination
-    </button>
-<% } else { %>
-    <button class="px-6 py-2.5 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed text-sm font-medium" disabled>
-        <i class="fas fa-check-circle mr-2"></i> Completed
-    </button>
-<% } %>
+                                                        <button onclick="completeTask('<%= task._id %>')" 
+                                                                class="complete-btn w-full lg:w-auto px-6 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md">
+                                                            <i class="fas fa-syringe mr-2"></i> Complete Vaccination
+                                                        </button>
+                                                    <% } else { %>
+                                                        <button class="w-full lg:w-auto px-6 py-2.5 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed text-sm font-medium" disabled>
+                                                            <i class="fas fa-check-circle mr-2"></i> Completed
+                                                        </button>
+                                                    <% } %>
                                                 </div>
                                             </div>
                                         </div>
@@ -232,28 +198,359 @@
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
                     <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Tasks Found</h3>
-                    <p class="text-gray-600 dark:text-gray-400">
-                        You have no pending tasks. Great job! 🎉
-                    </p>
+                    <p class="text-gray-600 dark:text-gray-400">You have no pending tasks. Great job! 🎉</p>
                 </div>
             <% } %>
         </div>
     </div>
 </div>
 
+<!-- Map Modal with Advanced Features -->
+<div id="mapModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-xl max-w-5xl w-full mx-4 overflow-hidden max-h-[90vh]">
+        <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modalTitle">Farmer Location</h3>
+            <button onclick="closeMapModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="p-4">
+            <!-- Map Controls -->
+            <div class="flex flex-wrap gap-2 mb-3">
+                <button onclick="showMyLocationOnModal()" class="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    My Location
+                </button>
+                <button onclick="showRouteOnModal()" class="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                    Show Route
+                </button>
+                <button onclick="openGoogleMapsModal()" class="px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                    Google Maps
+                </button>
+                <button onclick="copyCoordinatesModal()" class="px-3 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                    </svg>
+                    Copy Coordinates
+                </button>
+            </div>
+            
+            <!-- Map Container -->
+            <div id="modalMap" style="height: 400px; width: 100%; border-radius: 12px;"></div>
+            
+            <!-- Distance Info -->
+            <div id="modalDistanceInfo" class="mt-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-center text-sm">
+                📍 Click "My Location" to see distance
+            </div>
+            
+            <div class="mt-4 flex justify-end gap-3">
+                <a id="directionsLink" href="#" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-directions mr-2"></i>Get Directions
+                </a>
+                <button onclick="closeMapModal()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
 <script>
-function filterTasks(filter) {
-    window.location.href = `/paravet/tasks?filter=${filter}`;
-}
-
-function filterByArea(area) {
-    const currentFilter = new URLSearchParams(window.location.search).get('filter') || 'all';
-    window.location.href = `/paravet/tasks?filter=${currentFilter}&area=${area}`;
-}
-
-function completeTask(taskId, farmerId, animalId) {
-    // Directly redirect to vaccination form with task details
-    window.location.href = `/paravet/tasks/${taskId}/complete`;
-}
+    var modalMap = null;
+    var currentMarker = null;
+    var routingControl = null;
+    var userLocation = null;
+    var currentLat = null;
+    var currentLng = null;
+    var currentFarmerName = null;
+    
+    function filterTasks(filter) {
+        window.location.href = '/paravet/tasks?filter=' + filter;
+    }
+    
+    function filterByArea(area) {
+        var currentFilter = new URLSearchParams(window.location.search).get('filter') || 'all';
+        window.location.href = '/paravet/tasks?filter=' + currentFilter + '&area=' + area;
+    }
+    
+    function completeTask(taskId) {
+        window.location.href = '/paravet/tasks/' + taskId + '/complete';
+    }
+    
+    function openMapModal(lat, lng, farmerName) {
+        currentLat = lat;
+        currentLng = lng;
+        currentFarmerName = farmerName;
+        
+        var modal = document.getElementById('mapModal');
+        var title = document.getElementById('modalTitle');
+        var directionsLink = document.getElementById('directionsLink');
+        
+        title.innerHTML = '<i class="fas fa-map-marker-alt mr-2"></i>' + farmerName + ' - Location';
+        directionsLink.href = 'https://www.google.com/maps/dir//' + lat + ',' + lng;
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        setTimeout(function() {
+            if (modalMap) {
+                modalMap.remove();
+            }
+            if (routingControl) {
+                routingControl = null;
+            }
+            
+            initModalMap(lat, lng, farmerName);
+        }, 100);
+    }
+    
+    function initModalMap(lat, lng, farmerName) {
+        modalMap = L.map('modalMap').setView([lat, lng], 16);
+        
+        var streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
+        });
+        
+        var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; Esri',
+            maxZoom: 18
+        });
+        
+        var darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap & CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
+        });
+        
+        satelliteLayer.addTo(modalMap);
+        
+        var baseMaps = {
+            "🛰️ Satellite": satelliteLayer,
+            "🗺️ Street": streetLayer,
+            "🌙 Dark": darkLayer
+        };
+        
+        L.control.layers(baseMaps).addTo(modalMap);
+        
+        var customIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: '<div style="background-color: #3b82f6; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"><svg width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="white"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></div>',
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40]
+        });
+        
+        currentMarker = L.marker([lat, lng], { icon: customIcon }).addTo(modalMap);
+        currentMarker.bindPopup('<b>' + farmerName + '</b><br>📍 Farmer Location').openPopup();
+        
+        L.control.scale({ metric: true, imperial: false }).addTo(modalMap);
+    }
+    
+    function showMyLocationOnModal() {
+        var statusDiv = document.getElementById('modalDistanceInfo');
+        statusDiv.innerHTML = '📍 Fetching your location...';
+        statusDiv.className = 'mt-3 p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-center text-sm';
+        
+        modalMap.locate({ setView: true, maxZoom: 15, enableHighAccuracy: true });
+        
+        modalMap.once('locationfound', function(e) {
+            userLocation = e.latlng;
+            
+            var userIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div style="background-color: #10b981; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="white"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="white"/></svg></div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+            
+            L.marker(userLocation, { icon: userIcon }).addTo(modalMap).bindPopup('📍 You are here').openPopup();
+            
+            var distance = userLocation.distanceTo(L.latLng(currentLat, currentLng)) / 1000;
+            
+            statusDiv.innerHTML = '📏 Distance to farmer: <strong>' + distance.toFixed(2) + ' KM</strong>';
+            statusDiv.className = 'mt-3 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg text-center text-sm';
+        });
+        
+        modalMap.once('locationerror', function() {
+            statusDiv.innerHTML = '❌ Unable to fetch your location. Please enable GPS.';
+            statusDiv.className = 'mt-3 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg text-center text-sm';
+        });
+    }
+    
+    function showRouteOnModal() {
+        if (!userLocation) {
+            alert('⚠️ Please enable your location first (Click "My Location")');
+            return;
+        }
+        
+        if (routingControl) {
+            modalMap.removeControl(routingControl);
+        }
+        
+        routingControl = L.Routing.control({
+            waypoints: [
+                L.latLng(userLocation.lat, userLocation.lng),
+                L.latLng(currentLat, currentLng)
+            ],
+            routeWhileDragging: false,
+            draggableWaypoints: false,
+            addWaypoints: false,
+            showAlternatives: true,
+            fitSelectedRoutes: true,
+            show: true,
+            lineOptions: {
+                styles: [{ color: '#3b82f6', weight: 5, opacity: 0.8 }],
+                extendToWaypoints: true,
+                missingRouteTolerance: 10
+            },
+            altLineOptions: {
+                styles: [{ color: '#6b7280', weight: 4, opacity: 0.5, dashArray: '10, 10' }]
+            },
+            router: L.Routing.osrmv1({
+                serviceUrl: 'https://router.project-osrm.org/route/v1'
+            })
+        }).addTo(modalMap);
+        
+        var statusDiv = document.getElementById('modalDistanceInfo');
+        statusDiv.innerHTML = '🛣️ Calculating best route...';
+        statusDiv.className = 'mt-3 p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-center text-sm';
+        
+        setTimeout(function() {
+            statusDiv.innerHTML = '🛣️ Route displayed on map. Follow blue line.';
+        }, 2000);
+    }
+    
+    function openGoogleMapsModal() {
+        window.open('https://www.google.com/maps/dir//' + currentLat + ',' + currentLng, '_blank');
+    }
+    
+    function copyCoordinatesModal() {
+        var coords = currentLat.toFixed(6) + ', ' + currentLng.toFixed(6);
+        navigator.clipboard.writeText(coords);
+        
+        var statusDiv = document.getElementById('modalDistanceInfo');
+        var originalText = statusDiv.innerHTML;
+        statusDiv.innerHTML = '✅ Coordinates copied!';
+        statusDiv.className = 'mt-3 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg text-center text-sm';
+        
+        setTimeout(function() {
+            statusDiv.innerHTML = originalText;
+        }, 2000);
+        
+        alert('📍 Coordinates copied:\n' + coords);
+    }
+    
+    function closeMapModal() {
+        var modal = document.getElementById('mapModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        if (modalMap) {
+            modalMap.remove();
+            modalMap = null;
+        }
+        if (routingControl) {
+            routingControl = null;
+        }
+        userLocation = null;
+    }
+    
+    document.getElementById('mapModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeMapModal();
+        }
+    });
 </script>
+
+<style>
+    .task-card {
+        transition: all 0.3s ease;
+    }
+    .task-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    }
+    .task-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    .filter-btn {
+        transition: all 0.2s ease;
+        background-color: #f3f4f6;
+        color: #374151;
+        cursor: pointer;
+    }
+    .dark .filter-btn {
+        background-color: #374151;
+        color: #9ca3af;
+    }
+    .filter-btn:hover {
+        background-color: #e5e7eb;
+    }
+    .dark .filter-btn:hover {
+        background-color: #4b5563;
+    }
+    .area-filter-btn {
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        background-color: #f3f4f6;
+        color: #374151;
+        cursor: pointer;
+    }
+    .dark .area-filter-btn {
+        background-color: #374151;
+        color: #9ca3af;
+    }
+    .area-filter-btn:hover {
+        background-color: #e5e7eb;
+    }
+    .date-group {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        padding: 12px 0;
+    }
+    .dark .date-group {
+        background: #1f2937;
+    }
+    .complete-btn {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .complete-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    }
+    .leaflet-container {
+        border-radius: 12px;
+        z-index: 1;
+    }
+    .custom-div-icon {
+        background: transparent;
+        border: none;
+    }
+</style>

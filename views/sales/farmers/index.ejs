@@ -1,0 +1,225 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            My Farmers
+          </h1>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Farmers registered by you - <%= farmers.length %> total
+          </p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total Farmers</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= totalCount || 0 %></p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Active</p>
+            <p class="text-2xl font-bold text-green-600"><%= activeCount || 0 %></p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+            <p class="text-sm text-gray-500 dark:text-gray-400">This Month</p>
+            <p class="text-2xl font-bold text-blue-600"><%= monthlyCount || 0 %></p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Avg Animals</p>
+            <p class="text-2xl font-bold text-purple-600"><%= avgAnimals || 0 %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="mb-6 flex flex-wrap gap-3">
+      <div class="relative">
+        <input type="text" id="searchInput" placeholder="Search by name, mobile..." 
+               value="<%= searchQuery %>"
+               class="pl-10 pr-4 py-2 w-64 border rounded-lg dark:bg-gray-800">
+        <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+
+      <select id="villageFilter" class="px-4 py-2 border rounded-lg dark:bg-gray-800">
+        <option value="">All Villages</option>
+        <% uniqueVillages.forEach(v => { %>
+          <option value="<%= v %>" <%= selectedVillage === v ? 'selected' : '' %>><%= v %></option>
+        <% }) %>
+      </select>
+
+      <select id="statusFilter" class="px-4 py-2 border rounded-lg dark:bg-gray-800">
+        <option value="">All Status</option>
+        <option value="active" <%= statusFilter === 'active' ? 'selected' : '' %>>Active</option>
+        <option value="inactive" <%= statusFilter === 'inactive' ? 'selected' : '' %>>Inactive</option>
+      </select>
+
+      <button onclick="applyFilters()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        Apply Filters
+      </button>
+      
+      
+      
+      <a href="/sales/farmers/new" class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700">
+        + Add New Farmer
+      </a>
+    </div>
+
+    <!-- Farmers Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-100 dark:bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold uppercase cursor-pointer" onclick="sortBy('name')">Farmer</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold uppercase hidden lg:table-cell">Location</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Contact</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold uppercase hidden md:table-cell">Stats</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y dark:divide-gray-700">
+            <% if (farmers.length === 0) { %>
+              <tr>
+                <td colspan="5" class="px-6 py-12 text-center">
+                  <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                  </svg>
+                  <p class="text-gray-500">No farmers found. Add your first farmer!</p>
+                  <a href="/sales/farmers/new" class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg">Add Farmer</a>
+                </td>
+              </tr>
+            <% } %>
+            
+            <% farmers.forEach(farmer => { %>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold">
+                      <%= farmer.name.charAt(0).toUpperCase() %>
+                    </div>
+                    <div>
+                      <p class="font-medium"><%= farmer.name %></p>
+                      <p class="text-xs text-gray-500">ID: <%= farmer.uniqueFarmerId %></p>
+                    </div>
+                  </div>
+                 </td>
+                <td class="px-6 py-4 hidden lg:table-cell">
+                  <p><%= farmer.address?.village || '-' %></p>
+                  <p class="text-xs text-gray-500"><%= farmer.address?.district || '' %></p>
+                </td>
+                <td class="px-6 py-4">
+                  <p><%= farmer.mobileNumber %></p>
+                  <p class="text-xs text-gray-500"><%= farmer.assignedParavet?.user?.name ? `Paravet: ${farmer.assignedParavet.user.name}` : 'No paravet assigned' %></p>
+                </td>
+                <td class="px-6 py-4 hidden md:table-cell">
+                  <div class="flex gap-2">
+                    <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"><%= farmer.animalCount || 0 %> Animals</span>
+                    <% if (farmer.pendingVaccinations > 0) { %>
+                      <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded"><%= farmer.pendingVaccinations %> Pending</span>
+                    <% } %>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <a href="/sales/farmers/<%= farmer._id %>" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg" title="View">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                    </a>
+                    <a href="/sales/farmers/<%= farmer._id %>/edit" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg" title="Edit">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </a>
+                    <button onclick="toggleStatus('<%= farmer._id %>', '<%= farmer.isActive %>')" class="p-2 <%= farmer.isActive ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50' %> rounded-lg" title="<%= farmer.isActive ? 'Deactivate' : 'Activate' %>">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <div class="px-6 py-4 border-t flex justify-between items-center">
+          <span>Page <%= currentPage %> of <%= totalPages %></span>
+          <div class="flex gap-2">
+            <% if (currentPage > 1) { %>
+              <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 border rounded-lg hover:bg-gray-100">Previous</a>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+              <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 border rounded-lg hover:bg-gray-100">Next</a>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+  let searchTimeout;
+  
+  document.getElementById('searchInput')?.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(applyFilters, 500);
+  });
+  
+  function applyFilters() {
+    const params = new URLSearchParams();
+    const search = document.getElementById('searchInput')?.value;
+    const village = document.getElementById('villageFilter')?.value;
+    const status = document.getElementById('statusFilter')?.value;
+    
+    if (search) params.set('search', search);
+    if (village) params.set('village', village);
+    if (status) params.set('status', status);
+    
+    window.location.href = `/sales/farmers?${params.toString()}`;
+  }
+  
+  function sortBy(field) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('sortBy', field);
+    params.set('sortOrder', params.get('sortOrder') === 'asc' ? 'desc' : 'asc');
+    window.location.href = `/sales/farmers?${params.toString()}`;
+  }
+  
+  function exportFarmers() {
+    window.location.href = '/sales/farmers/export';
+  }
+  
+  async function toggleStatus(id, currentStatus) {
+    const action = currentStatus ? 'deactivate' : 'activate';
+    if (!confirm(`Are you sure you want to ${action} this farmer?`)) return;
+    
+    try {
+      const res = await fetch(`/sales/farmers/${id}/toggle-status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      alert('Failed to update status');
+    }
+  }
+</script>

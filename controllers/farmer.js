@@ -952,7 +952,7 @@ module.exports.farmersIndex = async (req, res) => {
       // Statistics
       activeCount,
       monthlyCount,
-      avgAnimals: avgAnimals.toFixed(1),
+      avgAnimals,
       // Filters
       searchQuery: search,
       selectedVillage: village,

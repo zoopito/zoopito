@@ -327,6 +327,38 @@ router.get(
   adminController.renderAddAdmin,
 );
 router.post("/settings", isLoggedIn, isAdmin, adminController.createAdmin);
+
+// NEW: Edit and Delete Admin Routes
+router.get("/settings/:id/edit", isLoggedIn, isAdmin, adminController.renderEditAdminForm);
+router.put("/settings/:id", isLoggedIn, isAdmin, adminController.updateAdmin);
+router.delete("/settings/:id", isLoggedIn, isAdmin, adminController.deleteAdmin);
+
+// NEW: API Routes for Admin Details
+router.get("/api/admin/:id/details", isLoggedIn, isAdmin, adminController.getAdminDetails);
+router.get("/api/admin/:id/login-history", isLoggedIn, isAdmin, adminController.getAdminLoginHistory);
+
+// NEW: Activity Logs
+router.get("/activity-logs", isLoggedIn, isAdmin, adminController.getActivityLogs);
+
+// NEW: System Settings
+router.get("/system-settings", isLoggedIn, isAdmin, adminController.getSystemSettings);
+
+// Existing routes
+router.get("/contacts", isLoggedIn, isAdmin, othersController.showContacts);
+router.get("/allusers", isLoggedIn, isAdmin, adminController.allUsers);
+router.get("/users/export", isLoggedIn, isAdmin, adminController.exportUsers);
+router.get("/users/:id", isLoggedIn, isAdmin, adminController.viewUser);
+
+// User Status Management
+router.post("/users/:id/activate", isLoggedIn, isAdmin, adminController.activateUser);
+router.post("/users/:id/deactivate", isLoggedIn, isAdmin, adminController.deactivateUser);
+router.post("/users/:id/block", isLoggedIn, isAdmin, adminController.blockUser);
+router.post("/users/:id/unblock", isLoggedIn, isAdmin, adminController.unblockUser);
+
+// User Management Routes
+router.post("/users/:id/verify-email", adminController.verifyUserEmail);
+router.post("/users/:id/resend-verification", adminController.resendVerificationEmail);
+router.post("/users/:id/reset-password", adminController.resetUserPassword);
 router.get("/contacts", isLoggedIn, isAdmin, othersController.showContacts);
 router.get("/allusers", isLoggedIn, isAdmin, adminController.allUsers);
 

@@ -12,12 +12,12 @@ const multer = require("multer");
 const { cloudinary, storage } = require("../Cloudconfig.js");
 const upload = multer({ storage });
 
-router
-  .route("/farmers")
-  .get(isLoggedIn, isParavet, formerController.farmersIndex);
-router
-  .route("/farmers/:id")
-  .get(isLoggedIn, isParavet, formerController.viewFarmer);
+// router
+//   .route("/farmers")
+//   .get(isLoggedIn, isParavet, paravetController.getAssignedFarmers);
+// router
+//   .route("/farmers/:id")
+//   .get(isLoggedIn, isParavet, paravetController.getFarmerDetails2);
 
 router
   .route("/paravets/:id")
@@ -27,7 +27,7 @@ router.get(
   "/animals",
   isLoggedIn,
   isParavet,
-  animalController.animalsIndexPage,
+  paravetController.getAssignedAnimals,
 );
 router.get(
   "/animals/new",
@@ -221,6 +221,7 @@ router.post("/tasks/:taskId/complete", paravetController.submitTaskVaccination);
 router.post("/tasks/:id/reschedule", paravetController.rescheduleTask);
 
 // Farmer visit routes
+
 router.get("/farmer/:farmerId/animals", paravetController.getFarmerAnimals);
 router.post("/visit/start", paravetController.startVisit);
 router.post("/visit/complete", paravetController.completeVisit);
@@ -244,8 +245,8 @@ router.get("/reports/monthly", paravetController.getMonthlyReport);
 router.get("/api/dashboard-stats", paravetController.getDashboardStats);
 
 // ================ FARMER MANAGEMENT ================
-router.get("/farmers", paravetController.getFarmers);
-router.get("/farmers/:farmerId", paravetController.getFarmerDetails);
+router.get("/farmers", paravetController.getAssignedFarmers);
+router.get("/farmers/:farmerId", paravetController.getFarmerDetails2);
 router.get("/api/farmers/:farmerId/location", paravetController.getFarmerLocation);
 
 // ================ BULK VACCINATION ================
@@ -257,7 +258,7 @@ router.get("/animals/needing-care", paravetController.getAnimalsNeedingVaccinati
 router.post("/animals/:animalId/tag", paravetController.markAnimalTagged);
 
 // ================ VACCINATION HISTORY ================
-router.get("/vaccinations/history/:animalId", paravetController.getVaccinationHistory);
+router.get("/vaccination-history", paravetController.getVaccinationHistory2);
 router.put("/vaccinations/:id", paravetController.updateVaccinationRecord);
 
 // ================ SCHEDULES ================

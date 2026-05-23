@@ -1,110 +1,609 @@
 <% layout("layouts/boilerplate") %>
 
 <div class="max-w-7xl mx-auto px-4 py-6">
-
-  <!-- HEADER -->
-  <div class="flex items-center justify-between mb-6">
+  
+  <!-- HEADER SECTION -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
         Admin Settings
       </h1>
-      <p class="text-sm text-gray-500 dark:text-gray-400">
-        Manage admin users, access & activity
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Manage administrators, view activity logs, and configure system settings
       </p>
     </div>
-
-    <a href="/admin/settings/newadmin"
-       class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-      + Add New Admin
+    
+    <div class="flex gap-3">
+      <a href="/admin/settings/newadmin"
+         class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition shadow-md hover:shadow-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add New Admin
+      </a>
+      
+      <div class="relative" id="moreOptionsDropdown">
+  <button onclick="toggleMoreOptions()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+    More Options
+  </button>
+  
+  <div id="moreOptionsMenu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+    <a href="/admin/contacts" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg>
+      Contact Messages
     </a>
-    <a href="/admin/contacts" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">See Contacts</a>
-    <a href="/admin/allusers" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">All Users</a>
+    <a href="/admin/allusers" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+      </svg>
+      All Users
+    </a>
+    <a href="/admin/activity-logs" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      Activity Logs
+    </a>
+    <hr class="border-gray-200 dark:border-gray-700">
+    <a href="/admin/system-settings" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      System Settings
+    </a>
   </div>
-
-  <!-- CURRENT ADMIN -->
-  <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl p-5 mb-6">
-    <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
-      Logged in as
-    </h3>
-    <p class="text-gray-800 dark:text-white font-medium">
-      <%= currUser.name %> — <%= currUser.email %>
-    </p>
-    <p class="text-xs text-gray-500">
-      Last login: <%= currUser.lastLogin ? new Date(currUser.lastLogin).toLocaleString() : "First login" %>
-    </p>
-  </div>
-
-  <!-- ADMIN LIST -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 dark:border-gray-700 overflow-x-auto">
-    <table class="min-w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left">Name</th>
-          <th class="px-4 py-3 text-left">Email</th>
-          <th class="px-4 py-3 text-left">Last Login</th>
-          <th class="px-4 py-3 text-left">Status</th>
-          <th class="px-4 py-3 text-right">Actions</th>
-        </tr>
-      </thead>
-
-      <tbody class="divide-y dark:divide-gray-700">
-        <% admins.forEach(admin => { %>
-          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-            <td class="px-4 py-3 font-medium text-gray-800 dark:text-white">
-              <%= admin.name %>
-            </td>
-
-            <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
-              <%= admin.email %>
-            </td>
-
-            <td class="px-4 py-3 text-gray-500">
-              <%= admin.lastLogin ? new Date(admin.lastLogin).toLocaleString() : "Never" %>
-            </td>
-
-            <td class="px-4 py-3">
-              <% if (admin.isActive) { %>
-                <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
-                  Active
-                </span>
-              <% } else { %>
-                <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
-                  Inactive
-                </span>
-              <% } %>
-            </td>
-
-            <td class="px-4 py-3 text-right space-x-2">
-
-              <!-- VIEW HISTORY -->
-              <a href="/admin/settings/<%= admin._id %>/history"
-                 class="text-blue-600 hover:underline text-xs">
-                View History
-              </a>
-
-              <!-- EDIT -->
-              <a href="/admin/settings/<%= admin._id %>/edit"
-                 class="text-gray-700 dark:text-gray-300 hover:underline text-xs">
-                Edit
-              </a>
-
-              <!-- PREVENT SELF DELETE -->
-              <% if (admin._id.toString() !== currUser._id.toString()) { %>
-                <form action="/admin/settings/<%= admin._id %>?_method=DELETE"
-                      method="POST"
-                      class="inline"
-                      onsubmit="return confirm('Delete this admin?')">
-                  <button class="text-red-600 hover:underline text-xs">
-                    Delete
-                  </button>
-                </form>
-              <% } %>
-
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
-
 </div>
+    </div>
+  </div>
+
+  <!-- STATS CARDS -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Total Admins</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= admins.length %></p>
+        </div>
+        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Active This Week</p>
+          <p class="text-2xl font-bold text-green-600 dark:text-green-400"><%= activeThisWeek || 0 %></p>
+        </div>
+        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Total Logins</p>
+          <p class="text-2xl font-bold text-purple-600 dark:text-purple-400"><%= totalLogins || 0 %></p>
+        </div>
+        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">System Version</p>
+          <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">v2.0.0</p>
+        </div>
+        <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CURRENT ADMIN CARD -->
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 mb-8 border border-blue-200 dark:border-blue-800">
+    <div class="flex items-start justify-between flex-wrap gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+          <%= currUser.name ? currUser.name.charAt(0).toUpperCase() : 'A' %>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
+            <%= currUser.name %>
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300"><%= currUser.email %></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Role: <span class="font-medium text-blue-600 dark:text-blue-400">Super Administrator</span>
+          </p>
+        </div>
+      </div>
+      
+      <div class="text-right">
+        <p class="text-sm text-gray-500 dark:text-gray-400">Last Login</p>
+        <p class="text-base font-medium text-gray-800 dark:text-white">
+          <%= currUser.lastLogin ? new Date(currUser.lastLogin).toLocaleString() : "First login" %>
+        </p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          IP: <%= currUser.lastLoginIP || 'Unknown' %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN LIST TABLE -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          Administrators List
+        </h2>
+        <div class="relative">
+          <input type="text" id="searchAdmin" placeholder="Search admins..." 
+                 class="pl-9 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+          <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="w-full" id="adminsTable">
+        <thead class="bg-gray-100 dark:bg-gray-700">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Admin</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Contact</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Last Login</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">2FA</th>
+            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Actions</th>
+          </tr>
+        </thead>
+        
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700" id="adminsTableBody">
+          <% admins.forEach(admin => { %>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition admin-row" data-admin-name="<%= admin.name.toLowerCase() %>" data-admin-email="<%= admin.email.toLowerCase() %>">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                    <%= admin.name ? admin.name.charAt(0).toUpperCase() : 'A' %>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-900 dark:text-white"><%= admin.name %></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">ID: <%= admin._id.toString().slice(-8) %></p>
+                  </div>
+                </div>
+              </td>
+              
+              <td class="px-6 py-4">
+                <p class="text-sm text-gray-600 dark:text-gray-300"><%= admin.email %></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400"><%= admin.mobile || 'No phone' %></p>
+              </td>
+              
+              <td class="px-6 py-4">
+                <p class="text-sm text-gray-900 dark:text-white">
+                  <%= admin.lastLogin ? new Date(admin.lastLogin).toLocaleDateString() : 'Never' %>
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <%= admin.lastLogin ? new Date(admin.lastLogin).toLocaleTimeString() : '' %>
+                </p>
+              </td>
+              
+              <td class="px-6 py-4">
+                <% if (admin.isActive) { %>
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full dark:bg-green-900/30 dark:text-green-300">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                    Active
+                  </span>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full dark:bg-red-900/30 dark:text-red-300">
+                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                    Inactive
+                  </span>
+                <% } %>
+              </td>
+              
+              <td class="px-6 py-4">
+                <% if (admin.twoFactorEnabled) { %>
+                  <span class="text-xs text-green-600 dark:text-green-400">✓ Enabled</span>
+                <% } else { %>
+                  <span class="text-xs text-gray-500">Disabled</span>
+                <% } %>
+              </td>
+              
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button onclick="viewAdminDetails('<%= admin._id %>')" 
+                          class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition" title="View Details">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
+                  
+                  <button onclick="viewLoginHistory('<%= admin._id %>')" 
+                          class="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition" title="Login History">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </button>
+                  
+                  <button onclick="editAdmin('<%= admin._id %>')" 
+                          class="p-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition" title="Edit">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  
+                  <% if (admin._id.toString() !== currUser._id.toString()) { %>
+                    <button onclick="deleteAdmin('<%= admin._id %>', '<%= admin.name %>')" 
+                            class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition" title="Delete">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- RECENT ACTIVITIES SECTION -->
+  <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent Activities -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          Recent Activities
+        </h2>
+      </div>
+      <div class="divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
+        <% if (recentActivities && recentActivities.length > 0) { %>
+          <% recentActivities.forEach(activity => { %>
+            <div class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                  <% if (activity.type === 'create') { %>
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                  <% } else if (activity.type === 'edit') { %>
+                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  <% } else if (activity.type === 'delete') { %>
+                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  <% } else { %>
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  <% } %>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm text-gray-900 dark:text-white"><%= activity.description %></p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    By <span class="font-medium"><%= activity.performedBy %></span> • <%= moment(activity.createdAt).fromNow() %>
+                  </p>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="px-6 py-8 text-center">
+            <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            <p class="text-gray-500 dark:text-gray-400">No recent activities</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+    
+    <!-- System Info -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          System Information
+        </h2>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Node.js Version</span>
+          <span class="font-medium text-gray-900 dark:text-white"><%= process.version %></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Database Status</span>
+          <span class="inline-flex items-center gap-1 text-green-600">
+            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+            Connected
+          </span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Environment</span>
+          <span class="font-medium text-gray-900 dark:text-white"><%= process.env.NODE_ENV || 'development' %></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Last Backup</span>
+          <span class="font-medium text-gray-900 dark:text-white"><%= lastBackup || 'Not performed' %></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Total Users</span>
+          <span class="font-medium text-gray-900 dark:text-white"><%= totalUsers || 0 %></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Storage Used</span>
+          <span class="font-medium text-gray-900 dark:text-white"><%= storageUsed || '0 MB' %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Details Modal -->
+<div id="adminModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="sticky top-0 bg-white dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modalTitle">Admin Details</h3>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="p-6" id="modalContent">
+      <!-- Dynamic content -->
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Search functionality
+  document.getElementById('searchAdmin').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('.admin-row');
+    
+    rows.forEach(row => {
+      const name = row.dataset.adminName;
+      const email = row.dataset.adminEmail;
+      
+      if (name.includes(searchTerm) || email.includes(searchTerm)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+  
+  // View Admin Details
+  async function viewAdminDetails(adminId) {
+    showLoading();
+    try {
+      const res = await fetch(`/admin/api/admin/${adminId}/details`);
+      const data = await res.json();
+      hideLoading();
+      
+      if (data.success) {
+        const modalContent = `
+          <div class="space-y-4">
+            <div class="flex items-center gap-4">
+              <div class="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold">
+                ${data.admin.name ? data.admin.name.charAt(0).toUpperCase() : 'A'}
+              </div>
+              <div>
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white">${data.admin.name}</h4>
+                <p class="text-gray-600 dark:text-gray-300">${data.admin.email}</p>
+                <p class="text-sm text-gray-500">Role: ${data.admin.role}</p>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div>
+                <p class="text-xs text-gray-500">Mobile</p>
+                <p class="text-sm font-medium">${data.admin.mobile || 'Not provided'}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Status</p>
+                <p class="text-sm font-medium">${data.admin.isActive ? 'Active' : 'Inactive'}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Verified</p>
+                <p class="text-sm font-medium">${data.admin.isVerified ? 'Yes' : 'No'}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Account Created</p>
+                <p class="text-sm font-medium">${new Date(data.admin.createdAt).toLocaleDateString()}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Last Login</p>
+                <p class="text-sm font-medium">${data.admin.lastLogin ? new Date(data.admin.lastLogin).toLocaleString() : 'Never'}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Total Logins</p>
+                <p class="text-sm font-medium">${data.admin.totalLogins || 0}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('modalTitle').innerText = 'Admin Details';
+        document.getElementById('modalContent').innerHTML = modalContent;
+        document.getElementById('adminModal').classList.remove('hidden');
+        document.getElementById('adminModal').classList.add('flex');
+      }
+    } catch (error) {
+      hideLoading();
+      Swal.fire('Error', 'Failed to load admin details', 'error');
+    }
+  }
+  
+  // View Login History
+  async function viewLoginHistory(adminId) {
+    showLoading();
+    try {
+      const res = await fetch(`/admin/api/admin/${adminId}/login-history`);
+      const data = await res.json();
+      hideLoading();
+      
+      if (data.success && data.history.length > 0) {
+        let historyHtml = '<div class="space-y-3 max-h-96 overflow-y-auto">';
+        data.history.forEach(login => {
+          historyHtml += `
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div>
+                <p class="text-sm font-medium">${new Date(login.loginAt).toLocaleString()}</p>
+                <p class="text-xs text-gray-500">IP: ${login.ip || 'Unknown'}</p>
+              </div>
+              <div class="text-xs text-gray-500">${login.userAgent ? login.userAgent.substring(0, 50) + '...' : 'Unknown device'}</div>
+            </div>
+          `;
+        });
+        historyHtml += '</div>';
+        
+        document.getElementById('modalTitle').innerText = 'Login History';
+        document.getElementById('modalContent').innerHTML = historyHtml;
+        document.getElementById('adminModal').classList.remove('hidden');
+        document.getElementById('adminModal').classList.add('flex');
+      } else {
+        Swal.fire('Info', 'No login history found', 'info');
+      }
+    } catch (error) {
+      hideLoading();
+      Swal.fire('Error', 'Failed to load login history', 'error');
+    }
+  }
+  
+  // Edit Admin
+  function editAdmin(adminId) {
+    window.location.href = `/admin/settings/${adminId}/edit`;
+  }
+  
+  // Delete Admin
+  async function deleteAdmin(adminId, adminName) {
+    const result = await Swal.fire({
+      title: 'Delete Administrator',
+      html: `Are you sure you want to delete <strong>${adminName}</strong>?<br>This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete',
+      cancelButtonText: 'Cancel'
+    });
+    
+    if (result.isConfirmed) {
+      showLoading();
+      try {
+        const res = await fetch(`/admin/settings/${adminId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        hideLoading();
+        
+        if (data.success) {
+          Swal.fire('Deleted!', 'Admin has been deleted.', 'success').then(() => {
+            window.location.reload();
+          });
+        } else {
+          Swal.fire('Error', data.message || 'Failed to delete admin', 'error');
+        }
+      } catch (error) {
+        hideLoading();
+        Swal.fire('Error', 'Failed to delete admin', 'error');
+      }
+    }
+  }
+  
+  function closeModal() {
+    document.getElementById('adminModal').classList.add('hidden');
+    document.getElementById('adminModal').classList.remove('flex');
+  }
+  
+  // Close modal on outside click
+  document.getElementById('adminModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+  
+  function showLoading() {
+    let loader = document.getElementById('globalLoader');
+    if (!loader) {
+      loader = document.createElement('div');
+      loader.id = 'globalLoader';
+      loader.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+      loader.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 flex items-center space-x-4 shadow-2xl">
+          <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="text-gray-700 dark:text-gray-300 font-medium">Loading...</span>
+        </div>
+      `;
+      document.body.appendChild(loader);
+    }
+    loader.classList.remove('hidden');
+  }
+  
+  function hideLoading() {
+    const loader = document.getElementById('globalLoader');
+    if (loader) loader.classList.add('hidden');
+  }
+</script>
+
+<style>
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+</style>
+
+<script>
+  function toggleMoreOptions() {
+    const menu = document.getElementById('moreOptionsMenu');
+    menu.classList.toggle('hidden');
+  }
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('moreOptionsDropdown');
+    const menu = document.getElementById('moreOptionsMenu');
+    
+    if (dropdown && !dropdown.contains(event.target)) {
+      if (menu && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+      }
+    }
+  });
+</script>

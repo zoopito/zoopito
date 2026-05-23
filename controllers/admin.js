@@ -5,6 +5,7 @@ const Paravet = require("../models/paravet");
 const Servise = require("../models/services");
 const SalesTeam = require("../models/salesteam");
 const Vaccination = require("../models/vaccination")
+const AdminActivity = require("../models/adminActivity");
 const crypto = require("crypto");
 const moment = require("moment");
 const brevo = require("@getbrevo/brevo");
@@ -1690,6 +1691,280 @@ module.exports.adminSettingPage = async (req, res) => {
   }
 };
 
+
+
+// Helper function to log admin activities
+async function logAdminActivity(userId, action, description, targetUserId = null, metadata = null, req = null) {
+  try {
+    await AdminActivity.create({
+      performedBy: userId,
+      action,
+      targetUser: targetUserId,
+      description,
+      ip: req ? req.ip : null,
+      userAgent: req ? req.headers['user-agent'] : null,
+      metadata
+    });
+  } catch (error) {
+    console.error("Failed to log activity:", error);
+  }
+}
+
+// Get admin details API
+module.exports.getAdminDetails = async (req, res) => {
+  try {
+    const admin = await User.findById(req.params.id)
+      .select("name email mobile role isActive isVerified createdAt lastLogin loginHistory")
+      .lean();
+    
+    if (!admin) {
+      return res.status(404).json({ success: false, message: "Admin not found" });
+    }
+    
+    const totalLogins = admin.loginHistory ? admin.loginHistory.length : 0;
+    
+    res.json({ 
+      success: true, 
+      admin: {
+        ...admin,
+        totalLogins
+      }
+    });
+  } catch (error) {
+    console.error("Error getting admin details:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get admin login history API
+module.exports.getAdminLoginHistory = async (req, res) => {
+  try {
+    const admin = await User.findById(req.params.id)
+      .select("loginHistory name email")
+      .lean();
+    
+    if (!admin) {
+      return res.status(404).json({ success: false, message: "Admin not found" });
+    }
+    
+    res.json({ 
+      success: true, 
+      history: admin.loginHistory || [],
+      adminName: admin.name,
+      adminEmail: admin.email
+    });
+  } catch (error) {
+    console.error("Error getting login history:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Edit admin form
+module.exports.renderEditAdminForm = async (req, res) => {
+  try {
+    const admin = await User.findById(req.params.id).lean();
+    if (!admin) {
+      req.flash("error", "Admin not found");
+      return res.redirect("/admin/settings");
+    }
+    
+    res.render("admin/edit-admin", { 
+      admin, 
+      title: "Edit Administrator",
+      currentUser: req.user
+    });
+  } catch (error) {
+    console.error("Error rendering edit form:", error);
+    req.flash("error", "Failed to load admin");
+    res.redirect("/admin/settings");
+  }
+};
+
+// Update admin
+module.exports.updateAdmin = async (req, res) => {
+  try {
+    const { name, email, mobile, isActive } = req.body;
+    
+    const admin = await User.findByIdAndUpdate(req.params.id, {
+      name,
+      email,
+      mobile,
+      isActive: isActive === 'true' || isActive === true
+    }, { new: true });
+    
+    if (!admin) {
+      return res.status(404).json({ success: false, message: "Admin not found" });
+    }
+    
+    // Log activity
+    await logAdminActivity(req.user._id, 'edit', `Updated admin ${admin.email}`, admin._id, null, req);
+    
+    if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+      return res.json({ success: true, message: "Admin updated successfully" });
+    }
+    
+    req.flash("success", "Admin updated successfully");
+    res.redirect("/admin/settings");
+  } catch (error) {
+    console.error("Error updating admin:", error);
+    if (req.xhr) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+    req.flash("error", error.message);
+    res.redirect(`/admin/settings/${req.params.id}/edit`);
+  }
+};
+
+// Delete admin
+module.exports.deleteAdmin = async (req, res) => {
+  try {
+    const admin = await User.findById(req.params.id);
+    
+    if (!admin) {
+      return res.status(404).json({ success: false, message: "Admin not found" });
+    }
+    
+    if (admin._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({ success: false, message: "Cannot delete yourself" });
+    }
+    
+    // Log before deleting
+    await logAdminActivity(req.user._id, 'delete', `Deleted admin ${admin.email}`, admin._id, null, req);
+    
+    await User.findByIdAndDelete(req.params.id);
+    
+    res.json({ success: true, message: "Admin deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting admin:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get activity logs page
+module.exports.getActivityLogs = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+    
+    const [activities, totalCount] = await Promise.all([
+      AdminActivity.find()
+        .populate('performedBy', 'name email')
+        .populate('targetUser', 'name email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      AdminActivity.countDocuments()
+    ]);
+    
+    const totalPages = Math.ceil(totalCount / limit);
+    
+    res.render("admin/activity-logs", {
+      activities,
+      currentPage: page,
+      totalPages,
+      totalCount,
+      limit,
+      title: "Activity Logs",
+      currentUser: req.user,
+      moment
+    });
+  } catch (error) {
+    console.error("Error getting activity logs:", error);
+    req.flash("error", "Failed to load activity logs");
+    res.redirect("/admin/settings");
+  }
+};
+
+// Get system settings page
+module.exports.getSystemSettings = async (req, res) => {
+  try {
+    // Get system stats
+    const totalUsers = await User.countDocuments();
+    const totalAdmins = await User.countDocuments({ role: "ADMIN" });
+    const totalFarmers = await User.countDocuments({ role: "FARMER" });
+    const totalParavets = await User.countDocuments({ role: "PARAVET" });
+    const totalSales = await User.countDocuments({ role: "SALES" });
+    
+    // Get last backup info (you can implement backup system)
+    const lastBackup = null;
+    
+    res.render("admin/system-settings", {
+      title: "System Settings",
+      currentUser: req.user,
+      stats: {
+        totalUsers,
+        totalAdmins,
+        totalFarmers,
+        totalParavets,
+        totalSales
+      },
+      lastBackup,
+      nodeVersion: process.version,
+      environment: process.env.NODE_ENV || 'development',
+      moment
+    });
+  } catch (error) {
+    console.error("Error loading system settings:", error);
+    req.flash("error", "Failed to load system settings");
+    res.redirect("/admin/settings");
+  }
+};
+
+// Update adminSettingsPage to include stats and activities
+module.exports.adminSettingPage = async (req, res) => {
+  try {
+    const admins = await User.find({ role: "ADMIN" })
+      .select("name email mobile lastLogin createdAt isActive isVerified")
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    // Get active admins this week
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    const activeThisWeek = await User.countDocuments({
+      role: "ADMIN",
+      lastLogin: { $gte: oneWeekAgo }
+    });
+    
+    // Get total logins
+    const allAdmins = await User.find({ role: "ADMIN" }).select("loginHistory");
+    let totalLogins = 0;
+    allAdmins.forEach(admin => {
+      totalLogins += (admin.loginHistory || []).length;
+    });
+    
+    // Get recent activities
+    const recentActivities = await AdminActivity.find()
+      .populate('performedBy', 'name email')
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+    
+    // Get total users for system info
+    const totalUsers = await User.countDocuments();
+    
+    res.render("admin/settings", {
+      admins,
+      activeThisWeek,
+      totalLogins,
+      recentActivities,
+      totalUsers,
+      lastBackup: null,
+      storageUsed: "0 MB",
+      currentUser: req.user,
+      moment,
+      title: "Admin Settings"
+    });
+  } catch (error) {
+    console.error("Error in Admin Settings:", error);
+    req.flash("error", "Unable to load admin settings.");
+    res.redirect("/admin");
+  }
+};
+
 module.exports.renderAddAdmin = (req, res) => {
   res.render("admin/addAdmin.ejs");
 };
@@ -1698,7 +1973,6 @@ module.exports.createAdmin = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // check existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       req.flash("error", "Email already registered");
@@ -1709,10 +1983,22 @@ module.exports.createAdmin = async (req, res) => {
       name,
       email,
       role: "ADMIN",
+      isActive: true,
+      isVerified: true
     });
 
-    // passport-local-mongoose magic
     await User.register(newAdmin, password);
+    
+    // Log activity
+    const AdminActivity = require("../models/adminActivity");
+    await AdminActivity.create({
+      performedBy: req.user._id,
+      action: "create",
+      targetUser: newAdmin._id,
+      description: `Created new admin: ${email}`,
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    });
 
     req.flash("success", "New admin created successfully");
     res.redirect("/admin/settings");

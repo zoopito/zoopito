@@ -1,0 +1,245 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Animals</h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-1">
+            <%= totalCount %> animals assigned to you
+          </p>
+        </div>
+        <div class="flex gap-3">
+          <a href="/paravet/animals/new" 
+             class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Register New Animal
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p class="text-2xl font-bold text-blue-600"><%= totalCount %></p>
+        <p class="text-xs text-gray-500">Total Animals</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p class="text-2xl font-bold text-green-600">
+          <%= animals.filter(a => a.healthStatus?.currentStatus === 'Healthy').length %>
+        </p>
+        <p class="text-xs text-gray-500">Healthy</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p class="text-2xl font-bold text-purple-600">
+          <%= animals.filter(a => a.vaccinationSummary?.isUpToDate).length %>
+        </p>
+        <p class="text-xs text-gray-500">Vaccinated</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p class="text-2xl font-bold text-orange-600">
+          <%= animals.filter(a => a.pregnancyStatus?.isPregnant).length %>
+        </p>
+        <p class="text-xs text-gray-500">Pregnant</p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+      <div class="flex flex-wrap gap-3">
+        <div class="relative flex-1 min-w-[200px]">
+          <input type="text" id="searchInput" placeholder="Search by name, tag number..." 
+                 value="<%= searchQuery %>"
+                 class="w-full pl-10 pr-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+          <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        
+        <select id="animalTypeFilter" class="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+          <option value="">All Types</option>
+          <% animalTypes.forEach(type => { %>
+            <option value="<%= type %>" <%= animalTypeFilter === type ? 'selected' : '' %>><%= type %></option>
+          <% }) %>
+        </select>
+        
+        <select id="statusFilter" class="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+          <option value="">All Status</option>
+          <option value="healthy" <%= statusFilter === 'healthy' ? 'selected' : '' %>>Healthy</option>
+          <option value="sick" <%= statusFilter === 'sick' ? 'selected' : '' %>>Sick/Treatment</option>
+          <option value="pregnant" <%= statusFilter === 'pregnant' ? 'selected' : '' %>>Pregnant</option>
+        </select>
+        
+        <button onclick="applyFilters()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Apply Filters
+        </button>
+        <button onclick="resetFilters()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Animals Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% if (animals.length === 0) { %>
+        <div class="col-span-full bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+          <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No animals found</h3>
+          <p class="text-gray-500">No animals are currently assigned to you</p>
+        </div>
+      <% } %>
+      
+      <% animals.forEach(animal => { %>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition">
+          <!-- Animal Header -->
+          <div class="bg-gradient-to-r from-green-500 to-green-600 px-4 py-3">
+            <div class="flex justify-between items-center">
+              <h3 class="font-semibold text-white truncate"><%= animal.name || 'Unnamed' %></h3>
+              <span class="text-xs bg-white/20 text-white px-2 py-1 rounded-full"><%= animal.animalType %></span>
+            </div>
+          </div>
+          
+          <!-- Animal Details -->
+          <div class="p-4 space-y-3">
+            <!-- Tag & ID -->
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Tag Number:</span>
+              <code class="font-mono text-gray-900 dark:text-white"><%= animal.tagNumber || 'Not tagged' %></code>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Animal ID:</span>
+              <code class="font-mono text-gray-900 dark:text-white"><%= animal.uniqueAnimalId %></code>
+            </div>
+            
+            <!-- Gender & Breed -->
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Gender:</span>
+              <span class="text-gray-900 dark:text-white"><%= animal.gender %></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Breed:</span>
+              <span class="text-gray-900 dark:text-white"><%= animal.breed || 'Unknown' %></span>
+            </div>
+            
+            <!-- Health Status -->
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Health:</span>
+              <% if (animal.healthStatus?.currentStatus === 'Healthy') { %>
+                <span class="text-green-600">✓ Healthy</span>
+              <% } else if (animal.healthStatus?.currentStatus === 'Under Treatment') { %>
+                <span class="text-yellow-600">⚠ Under Treatment</span>
+              <% } else { %>
+                <span class="text-gray-600"><%= animal.healthStatus?.currentStatus || 'Unknown' %></span>
+              <% } %>
+            </div>
+            
+            <!-- Vaccination Status -->
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Vaccination:</span>
+              <% if (animal.vaccinationSummary?.isUpToDate) { %>
+                <span class="text-green-600">✓ Up to date</span>
+              <% } else if (animal.nextVaccination) { %>
+                <span class="text-amber-600">Due: <%= moment(animal.nextVaccination.scheduledDate).format('DD MMM') %></span>
+              <% } else { %>
+                <span class="text-gray-500">No records</span>
+              <% } %>
+            </div>
+            
+            <!-- Total Vaccinations -->
+            <div class="flex justify-between text-sm pt-2 border-t border-gray-200 dark:border-gray-700">
+              <span class="text-gray-500">Total Vaccinations:</span>
+              <span class="font-medium text-gray-900 dark:text-white"><%= animal.totalVaccinations || 0 %></span>
+            </div>
+            
+            <!-- Farmer Info -->
+            <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <p class="text-xs text-gray-500 mb-1">Farmer</p>
+              <div class="flex justify-between items-center">
+                <div>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white"><%= animal.farmer?.name %></p>
+                  <p class="text-xs text-gray-500"><%= animal.farmer?.address?.village || 'No address' %></p>
+                </div>
+                <% if (animal.hasFarmerLocation) { %>
+                  <a href="https://www.google.com/maps/dir//<%= animal.farmerLocation.lat %>,<%= animal.farmerLocation.lng %>" 
+                     target="_blank" 
+                     class="text-blue-600 hover:text-blue-700" title="Get Directions">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                  </a>
+                <% } %>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 flex gap-2">
+            <a href="/paravet/animals/<%= animal._id %>" 
+               class="flex-1 text-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+              View Details
+            </a>
+            <% if (animal.nextVaccination) { %>
+              <a href="/paravet/tasks/<%= animal.nextVaccination._id %>/complete" 
+                 class="flex-1 text-center px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">
+                Complete Vaccination
+              </a>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- Pagination -->
+    <% if (totalPages > 1) { %>
+      <div class="mt-8 flex justify-center">
+        <nav class="flex gap-2">
+          <% if (currentPage > 1) { %>
+            <a href="?page=<%= currentPage - 1 %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= animalTypeFilter ? '&animalType=' + animalTypeFilter : '' %>" 
+               class="px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Previous</a>
+          <% } %>
+          
+          <span class="px-4 py-2 bg-blue-600 text-white rounded-lg"><%= currentPage %></span>
+          
+          <% if (currentPage < totalPages) { %>
+            <a href="?page=<%= currentPage + 1 %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %><%= animalTypeFilter ? '&animalType=' + animalTypeFilter : '' %>" 
+               class="px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Next</a>
+          <% } %>
+        </nav>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  let searchTimeout;
+  
+  document.getElementById('searchInput')?.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(applyFilters, 500);
+  });
+  
+  function applyFilters() {
+    const params = new URLSearchParams();
+    const search = document.getElementById('searchInput')?.value;
+    const animalType = document.getElementById('animalTypeFilter')?.value;
+    const status = document.getElementById('statusFilter')?.value;
+    
+    if (search) params.set('search', search);
+    if (animalType) params.set('animalType', animalType);
+    if (status) params.set('status', status);
+    
+    window.location.href = `/paravet/animals?${params.toString()}`;
+  }
+  
+  function resetFilters() {
+    window.location.href = '/paravet/animals';
+  }
+</script>

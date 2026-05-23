@@ -4,6 +4,7 @@ const { isLoggedIn, isSales } = require("../middleware");
 const adminController = require("../controllers/admin.js");
 const formerController = require("../controllers/farmer.js");
 const animalController = require("../controllers/animal.js");
+const salesTeamController = require("../controllers/salesteam.js");
 const multer = require("multer");
 const ParavetController = require("../controllers/paravet.js");
 
@@ -23,7 +24,7 @@ router.get(
 // farmer routes
 router
   .route("/farmers")
-  .get(isLoggedIn, isSales, formerController.farmersIndex)
+  .get(isLoggedIn, isSales, salesTeamController.farmersIndex)
   .post(
     upload.single("image"),
     isLoggedIn,
@@ -38,7 +39,7 @@ router.get(
 );
 router
   .route("/farmers/:id")
-  .get(isLoggedIn, isSales, formerController.viewFarmer)
+  .get(isLoggedIn, isSales, salesTeamController.viewFarmer)
   .put(
     upload.single("image"),
     isLoggedIn,
@@ -119,5 +120,6 @@ router.get(
 );
 router.get("/paravets", isLoggedIn, isSales, adminController.paravetsIndexpage);
 router.get("/paravets/:id", isLoggedIn, isSales, ParavetController.viewParavet);
+router.get("/farmers/:id/animals", isLoggedIn, isSales, salesTeamController.getFarmerAnimals);
 
 module.exports = router;

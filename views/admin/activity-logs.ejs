@@ -1,0 +1,223 @@
+<% layout("layouts/boilerplate", { title: 'Activity Logs - Admin Panel' }) %>
+
+<div class="max-w-7xl mx-auto px-4 py-6">
+  
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Activity Logs</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Track all admin actions and system activities
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="exportLogs()" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Export CSV
+        </button>
+        <button onclick="filterLogs()" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+          </svg>
+          Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Total Activities</p>
+      <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= totalCount || 0 %></p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Last 7 Days</p>
+      <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">0</p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Unique Admins</p>
+      <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">0</p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Most Active</p>
+      <p class="text-sm font-medium text-gray-900 dark:text-white truncate">-</p>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 p-4">
+    <div class="flex flex-wrap gap-3">
+      <select id="actionFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+        <option value="">All Actions</option>
+        <option value="create">Create</option>
+        <option value="edit">Edit</option>
+        <option value="delete">Delete</option>
+        <option value="login">Login</option>
+        <option value="logout">Logout</option>
+        <option value="settings_change">Settings Change</option>
+        <option value="status_toggle">Status Toggle</option>
+        <option value="password_reset">Password Reset</option>
+      </select>
+      
+      <input type="date" id="dateFrom" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+      <input type="date" id="dateTo" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+      
+      <button onclick="applyFilters()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+        Apply Filters
+      </button>
+      <button onclick="resetFilters()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Activities Table -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-100 dark:bg-gray-700">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Admin</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Action</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Description</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Target</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Time</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">IP Address</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <% if (activities && activities.length > 0) { %>
+            <% activities.forEach(activity => { %>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                      <%= activity.performedBy?.name ? activity.performedBy.name.charAt(0).toUpperCase() : 'U' %>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-gray-900 dark:text-white"><%= activity.performedBy?.name || 'Unknown' %></p>
+                      <p class="text-xs text-gray-500"><%= activity.performedBy?.email || '' %></p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <% if (activity.action === 'create') { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                      </svg>
+                      Create
+                    </span>
+                  <% } else if (activity.action === 'edit') { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                      Edit
+                    </span>
+                  <% } else if (activity.action === 'delete') { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                      Delete
+                    </span>
+                  <% } else if (activity.action === 'login') { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                      </svg>
+                      Login
+                    </span>
+                  <% } else { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                      <%= activity.action %>
+                    </span>
+                  <% } %>
+                </td>
+                <td class="px-6 py-4">
+                  <p class="text-sm text-gray-700 dark:text-gray-300"><%= activity.description %></p>
+                </td>
+                <td class="px-6 py-4">
+                  <% if (activity.targetUser) { %>
+                    <div>
+                      <p class="text-sm text-gray-900 dark:text-white"><%= activity.targetUser.name %></p>
+                      <p class="text-xs text-gray-500"><%= activity.targetUser.email %></p>
+                    </div>
+                  <% } else { %>
+                    <span class="text-sm text-gray-400">-</span>
+                  <% } %>
+                </td>
+                <td class="px-6 py-4">
+                  <p class="text-sm text-gray-700 dark:text-gray-300"><%= moment(activity.createdAt).format('DD MMM YYYY') %></p>
+                  <p class="text-xs text-gray-500"><%= moment(activity.createdAt).format('hh:mm A') %></p>
+                </td>
+                <td class="px-6 py-4">
+                  <code class="text-xs text-gray-600 dark:text-gray-400"><%= activity.ip || 'Unknown' %></code>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="6" class="px-6 py-12 text-center">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No activity logs found</h3>
+                <p class="text-gray-500 dark:text-gray-400">Activities will appear here when admins perform actions</p>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <% if (totalPages > 1) { %>
+      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            Showing page <%= currentPage %> of <%= totalPages %>
+          </div>
+          <div class="flex gap-2">
+            <% if (currentPage > 1) { %>
+              <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">Previous</a>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+              <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">Next</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  function applyFilters() {
+    const params = new URLSearchParams();
+    const action = document.getElementById('actionFilter').value;
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
+    
+    if (action) params.set('action', action);
+    if (dateFrom) params.set('from', dateFrom);
+    if (dateTo) params.set('to', dateTo);
+    
+    window.location.href = `/admin/activity-logs?${params.toString()}`;
+  }
+  
+  function resetFilters() {
+    window.location.href = '/admin/activity-logs';
+  }
+  
+  function exportLogs() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('export', 'csv');
+    window.location.href = `/admin/activity-logs/export?${params.toString()}`;
+  }
+</script>
