@@ -125,6 +125,14 @@
   <!-- App Script -->
   <script src="/js/script.js"></script>
 
+  <!-- Zoopito AI Chat Support -->
+  <script>
+    // Expose user context to chat widget (EJS renders this server-side)
+    window.ZOOPITO_USER_ROLE = '<%= typeof currUser !== "undefined" && currUser ? currUser.role : "GUEST" %>';
+    window.ZOOPITO_USER_NAME = '<%= typeof currUser !== "undefined" && currUser ? (currUser.name || currUser.username || "there") : "there" %>';
+  </script>
+  <script src="/js/chat-support.js" defer></script>
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <!-- SweetAlert2 -->
