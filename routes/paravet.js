@@ -225,6 +225,11 @@ router.post("/tasks/:id/reschedule", paravetController.rescheduleTask);
 router.get("/farmer/:farmerId/animals", paravetController.getFarmerAnimals);
 router.post("/visit/start", paravetController.startVisit);
 router.post("/visit/complete", paravetController.completeVisit);
+// Bulk complete tasks
+// router.post("/tasks/bulk-complete", paravetController.bulkCompleteTasks);
+router.post("/vaccinations/bulk-complete-all", paravetController.bulkCompleteAllVaccinations);
+// Bulk vaccination page for farmer
+router.get("/farmers/:farmerId/vaccinate/bulk", paravetController.getBulkVaccinationFormAll);
 
 // Vaccination routes for paravet
 router.get("/vaccination/pending", paravetController.getPendingVaccinations);
@@ -271,5 +276,8 @@ router.get("/reports", paravetController.getReports);
 router.get("/", (req, res) => {
   res.redirect("/paravet/dashboard");
 });
+
+// API route for getting pending animals
+router.get("/api/farmer/:farmerId/pending-animals", paravetController.getPendingAnimalsForFarmer);
 
 module.exports = router;

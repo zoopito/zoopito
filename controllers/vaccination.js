@@ -8,6 +8,7 @@ const Vaccine = require("../models/vaccine");
 const Vaccination = require("../models/vaccination");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
+const moment = require("moment");
 const salesteam = require("../models/salesteam");
 
 // controllers/vaccinationController.js
@@ -1470,90 +1471,147 @@ async function createNextScheduledVaccination(vaccination, nextDueDate, userId) 
  */
 exports.bulkCompleteVaccinations = async (req, res) => {
   try {
-    const { vaccinationIds, completionDate, batchNumber, notes } = req.body;
+    // Support two modes:
+    // 1) vaccinationIds: [id1, id2, ...] with common completionDate/batchNumber/notes
+    // 2) vaccinationDetails: [{ id, completionDate?, timeAdministered?, batchNumber?, notes? }, ...]
+    const { vaccinationIds, completionDate, batchNumber, notes, vaccinationDetails } = req.body;
 
-    if (!vaccinationIds || !Array.isArray(vaccinationIds) || vaccinationIds.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No vaccination IDs provided'
-      });
+    if ((!vaccinationIds || vaccinationIds.length === 0) && (!vaccinationDetails || vaccinationDetails.length === 0)) {
+      return res.status(400).json({ success: false, message: 'No vaccination data provided' });
     }
 
-    const results = {
-      success: [],
-      failed: [],
-      totalCompleted: 0
+    const results = { success: [], failed: [], totalCompleted: 0 };
+
+    // Helper to parse date + optional time string (HH:mm)
+    const parseDateTime = (baseDateStr, timeStr) => {
+      const base = baseDateStr ? new Date(baseDateStr) : new Date();
+      const d = new Date(base);
+      if (timeStr) {
+        const parts = ('' + timeStr).split(':').map(Number);
+        if (parts.length >= 2 && !Number.isNaN(parts[0]) && !Number.isNaN(parts[1])) {
+          d.setHours(parts[0], parts[1], 0, 0);
+          return d;
+        }
+      }
+      // keep only date component at midnight
+      d.setHours(0, 0, 0, 0);
+      return d;
     };
 
-    for (const vacId of vaccinationIds) {
-      try {
-        const vaccination = await Vaccination.findById(vacId)
-          .populate('vaccine')
-          .populate('animal');
+    // Process vaccinationDetails (per-item) first if provided
+    if (vaccinationDetails && Array.isArray(vaccinationDetails) && vaccinationDetails.length > 0) {
+      for (const item of vaccinationDetails) {
+        try {
+          const vacId = item.id || item._id;
+          const vaccination = await Vaccination.findById(vacId).populate('vaccine').populate('animal');
+          if (!vaccination) {
+            results.failed.push({ id: vacId, reason: 'Not found' });
+            continue;
+          }
+          if (vaccination.status === 'Completed') {
+            results.failed.push({ id: vacId, reason: 'Already completed' });
+            continue;
+          }
 
-        if (!vaccination) {
-          results.failed.push({ id: vacId, reason: 'Not found' });
-          continue;
-        }
+          const completeDate = parseDateTime(item.completionDate || completionDate, item.timeAdministered || item.time);
 
-        if (vaccination.status === 'Completed') {
-          results.failed.push({ id: vacId, reason: 'Already completed' });
-          continue;
-        }
-
-        const completeDate = completionDate ? new Date(completionDate) : new Date();
-        completeDate.setHours(0, 0, 0, 0);
-
-        // Calculate next due date
-        let nextDueDate = new Date(completeDate);
-        if (vaccination.vaccine) {
-          const vaccine = vaccination.vaccine;
-          if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
-            nextDueDate.setDate(nextDueDate.getDate() + (vaccine.boosterIntervalWeeks * 7));
-          } else if (vaccine.immunityDurationMonths && vaccine.immunityDurationMonths > 0) {
-            nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.immunityDurationMonths);
-          } else if (vaccine.defaultNextDueMonths && vaccine.defaultNextDueMonths > 0) {
-            nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.defaultNextDueMonths);
+          // Calculate next due date
+          let nextDueDate = new Date(completeDate);
+          if (vaccination.vaccine) {
+            const vaccine = vaccination.vaccine;
+            if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
+              nextDueDate.setDate(nextDueDate.getDate() + (vaccine.boosterIntervalWeeks * 7));
+            } else if (vaccine.immunityDurationMonths && vaccine.immunityDurationMonths > 0) {
+              nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.immunityDurationMonths);
+            } else if (vaccine.defaultNextDueMonths && vaccine.defaultNextDueMonths > 0) {
+              nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.defaultNextDueMonths);
+            } else {
+              nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+            }
           } else {
             nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
           }
-        } else {
-          nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+
+          // Update vaccination
+          vaccination.status = 'Completed';
+          vaccination.verificationStatus = 'Verified';
+          vaccination.dateAdministered = completeDate;
+          vaccination.nextDueDate = nextDueDate;
+          vaccination.verifiedBy = req.user._id;
+          vaccination.verifiedAt = new Date();
+          if (item.batchNumber) vaccination.batchNumber = item.batchNumber;
+          else if (batchNumber) vaccination.batchNumber = batchNumber;
+          if (item.notes) vaccination.notes = item.notes;
+          else if (notes) vaccination.notes = notes;
+
+          await vaccination.save();
+          await updateAnimalVaccinationSummary(vaccination.animal._id, vaccination);
+
+          results.success.push({ id: vacId, animalName: vaccination.animal?.name || 'Unknown', nextDueDate: nextDueDate.toISOString().split('T')[0] });
+          results.totalCompleted++;
+        } catch (error) {
+          console.error('Error completing vaccination item:', error);
+          results.failed.push({ id: item.id || item._id, reason: error.message });
         }
-
-        // Update vaccination
-        vaccination.status = 'Completed';
-        vaccination.verificationStatus = 'Verified';
-        vaccination.dateAdministered = completeDate;
-        vaccination.nextDueDate = nextDueDate;
-        vaccination.verifiedBy = req.user._id;
-        vaccination.verifiedAt = new Date();
-        if (batchNumber) vaccination.batchNumber = batchNumber;
-        if (notes) vaccination.notes = notes;
-
-        await vaccination.save();
-
-        // Update animal summary
-        await updateAnimalVaccinationSummary(vaccination.animal._id, vaccination);
-
-        results.success.push({
-          id: vacId,
-          animalName: vaccination.animal?.name || 'Unknown',
-          nextDueDate: nextDueDate.toISOString().split('T')[0]
-        });
-        results.totalCompleted++;
-
-      } catch (error) {
-        console.error(`Error completing vaccination ${vacId}:`, error);
-        results.failed.push({ id: vacId, reason: error.message });
       }
+      return res.json({ success: true, message: `Completed ${results.totalCompleted} vaccinations successfully`, results });
     }
 
-    res.json({
-      success: true,
-      message: `Completed ${results.totalCompleted} vaccinations successfully`,
-      results: results
-    });
+    // Fallback: vaccinationIds with common data
+    if (vaccinationIds && Array.isArray(vaccinationIds) && vaccinationIds.length > 0) {
+      for (const vacId of vaccinationIds) {
+        try {
+          const vaccination = await Vaccination.findById(vacId).populate('vaccine').populate('animal');
+          if (!vaccination) {
+            results.failed.push({ id: vacId, reason: 'Not found' });
+            continue;
+          }
+          if (vaccination.status === 'Completed') {
+            results.failed.push({ id: vacId, reason: 'Already completed' });
+            continue;
+          }
+
+          const completeDate = parseDateTime(completionDate, null);
+
+          // Calculate next due date
+          let nextDueDate = new Date(completeDate);
+          if (vaccination.vaccine) {
+            const vaccine = vaccination.vaccine;
+            if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
+              nextDueDate.setDate(nextDueDate.getDate() + (vaccine.boosterIntervalWeeks * 7));
+            } else if (vaccine.immunityDurationMonths && vaccine.immunityDurationMonths > 0) {
+              nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.immunityDurationMonths);
+            } else if (vaccine.defaultNextDueMonths && vaccine.defaultNextDueMonths > 0) {
+              nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.defaultNextDueMonths);
+            } else {
+              nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+            }
+          } else {
+            nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+          }
+
+          // Update vaccination
+          vaccination.status = 'Completed';
+          vaccination.verificationStatus = 'Verified';
+          vaccination.dateAdministered = completeDate;
+          vaccination.nextDueDate = nextDueDate;
+          vaccination.verifiedBy = req.user._id;
+          vaccination.verifiedAt = new Date();
+          if (batchNumber) vaccination.batchNumber = batchNumber;
+          if (notes) vaccination.notes = notes;
+
+          await vaccination.save();
+          await updateAnimalVaccinationSummary(vaccination.animal._id, vaccination);
+
+          results.success.push({ id: vacId, animalName: vaccination.animal?.name || 'Unknown', nextDueDate: nextDueDate.toISOString().split('T')[0] });
+          results.totalCompleted++;
+        } catch (error) {
+          console.error(`Error completing vaccination ${vacId}:`, error);
+          results.failed.push({ id: vacId, reason: error.message });
+        }
+      }
+      return res.json({ success: true, message: `Completed ${results.totalCompleted} vaccinations successfully`, results });
+    }
 
   } catch (error) {
     console.error('Error in bulk complete:', error);
@@ -1826,3 +1884,251 @@ exports.renderVaccinationVerifyPage = async (req, res) => {
     res.redirect("/admin/vaccinations");
   }
 };
+
+
+// ================ ADMIN VERIFICATION CONTROLLERS ================
+
+// Render pending verifications page
+exports.renderPendingVerifications = async (req, res) => {
+    try {
+        const { status = 'pending', page = 1, limit = 20 } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        
+        let query = {};
+        if (status === 'pending') {
+            query.verificationStatus = 'Pending';
+        } else if (status === 'verified') {
+            query.verificationStatus = 'Verified';
+        } else if (status === 'rejected') {
+            query.verificationStatus = 'Rejected';
+        }
+        
+        const [requests, totalCount] = await Promise.all([
+            Vaccination.find(query)
+                .populate('farmer', 'name mobileNumber address')
+                .populate('animal', 'name tagNumber animalType')
+                .populate('vaccine', 'name vaccineType diseaseTarget')
+                .populate('submittedBy', 'name email')
+                .populate('assignedParavet')
+                .populate({
+                    path: 'assignedParavet',
+                    populate: { path: 'user', select: 'name email' }
+                })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(parseInt(limit))
+                .lean(),
+            Vaccination.countDocuments(query)
+        ]);
+        
+        const pendingCount = await Vaccination.countDocuments({ verificationStatus: 'Pending' });
+        const verifiedCount = await Vaccination.countDocuments({ verificationStatus: 'Verified' });
+        const rejectedCount = await Vaccination.countDocuments({ verificationStatus: 'Rejected' });
+        
+        // Calculate total amount for each request
+        const requestsWithAmount = requests.map(req => ({
+            ...req,
+            totalAmount: req.payment?.totalAmount || 0
+        }));
+        
+        const totalPages = Math.ceil(totalCount / parseInt(limit)) || 1;
+        const Moment = require('moment');
+        
+        res.render("admin/vaccinations/verify-requests", {
+            title: "Verify Vaccination Requests",
+            requests: requestsWithAmount,
+            pendingCount,
+            verifiedCount,
+            rejectedCount,
+            verifiedToday: 0,
+            totalThisMonth: 0,
+            currentStatus: status,
+            currentPage: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: totalPages,
+            moment: Moment,
+            user: req.user
+        });
+    } catch (error) {
+        console.error("Error rendering verifications:", error);
+        req.flash("error", "Error loading verifications: " + error.message);
+        res.redirect("/admin/dashboard");
+    }
+};
+
+// Get single verification details (API)
+exports.getVerificationDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const verification = await Vaccination.findById(id)
+            .populate('farmer', 'name mobileNumber address uniqueFarmerId')
+            .populate('animal', 'name tagNumber uniqueAnimalId animalType breed age gender')
+            .populate('vaccine', 'name vaccineType diseaseTarget boosterIntervalWeeks immunityDurationMonths vaccineCharge')
+            .populate('submittedBy', 'name email')
+            .populate('assignedParavet')
+            .populate({
+                path: 'assignedParavet',
+                populate: { path: 'user', select: 'name email mobile' }
+            })
+            .lean();
+        
+        if (!verification) {
+            return res.status(404).json({ success: false, message: "Verification not found" });
+        }
+        
+        res.json({ success: true, verification });
+    } catch (error) {
+        console.error("Error getting verification details:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Verify single vaccination (Admin action)
+exports.verifyVaccination = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { action, notes } = req.body;
+        
+        const vaccination = await Vaccination.findById(id)
+            .populate('vaccine')
+            .populate('animal');
+        
+        if (!vaccination) {
+            return res.status(404).json({ success: false, message: "Vaccination not found" });
+        }
+        
+        if (action === 'approve') {
+            vaccination.verificationStatus = 'Verified';
+            vaccination.status = 'Completed';
+            vaccination.verifiedBy = req.user._id;
+            vaccination.verifiedAt = new Date();
+            if (notes) vaccination.verificationNotes = notes;
+            await updateAnimalVaccinationSummaryHelper(vaccination.animal._id);
+        } else if (action === 'reject') {
+            vaccination.verificationStatus = 'Rejected';
+            vaccination.status = 'Scheduled';
+            vaccination.verificationNotes = notes || 'Rejected by admin';
+            vaccination.verifiedBy = req.user._id;
+            vaccination.verifiedAt = new Date();
+        }
+        
+        await vaccination.save();
+        
+        // Log activity (optional - if AdminActivity model exists)
+        try {
+            const AdminActivity = require("../models/adminActivity");
+            await AdminActivity.create({
+                performedBy: req.user._id,
+                action: 'verify',
+                targetUser: vaccination.submittedBy,
+                description: `${action === 'approve' ? 'Approved' : 'Rejected'} vaccination for ${vaccination.animal?.name || 'animal'}`,
+                ip: req.ip,
+                userAgent: req.headers['user-agent']
+            });
+        } catch (logError) {
+            console.log("Activity logging skipped:", logError.message);
+        }
+        
+        res.json({
+            success: true,
+            message: `Vaccination ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
+            verificationStatus: vaccination.verificationStatus
+        });
+        
+    } catch (error) {
+        console.error("Error verifying vaccination:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Bulk verify multiple vaccinations
+exports.bulkVerifyVaccinations = async (req, res) => {
+    try {
+        const { ids, action, notes } = req.body;
+        
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ success: false, message: "No vaccinations selected" });
+        }
+        
+        const results = { success: [], failed: [] };
+        
+        for (const id of ids) {
+            try {
+                const vaccination = await Vaccination.findById(id).populate('animal');
+                
+                if (!vaccination) {
+                    results.failed.push({ id, reason: "Not found" });
+                    continue;
+                }
+                
+                if (action === 'approve') {
+                    vaccination.verificationStatus = 'Verified';
+                    vaccination.status = 'Completed';
+                    vaccination.verifiedBy = req.user._id;
+                    vaccination.verifiedAt = new Date();
+                    await updateAnimalVaccinationSummaryHelper(vaccination.animal._id);
+                } else if (action === 'reject') {
+                    vaccination.verificationStatus = 'Rejected';
+                    vaccination.status = 'Scheduled';
+                    vaccination.verificationNotes = notes || 'Rejected by admin';
+                    vaccination.verifiedBy = req.user._id;
+                    vaccination.verifiedAt = new Date();
+                }
+                
+                await vaccination.save();
+                results.success.push({ id });
+                
+            } catch (error) {
+                results.failed.push({ id, reason: error.message });
+            }
+        }
+        
+        res.json({
+            success: true,
+            message: `${results.success.length} vaccinations ${action === 'approve' ? 'approved' : 'rejected'}, ${results.failed.length} failed`,
+            results
+        });
+        
+    } catch (error) {
+        console.error("Error in bulk verify:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Helper function to update animal vaccination summary
+async function updateAnimalVaccinationSummaryHelper(animalId) {
+    try {
+        const animal = await Animal.findById(animalId);
+        if (!animal) return;
+        
+        const allVaccinations = await Vaccination.find({
+            animal: animalId,
+            status: 'Completed'
+        }).sort({ dateAdministered: -1 });
+        
+        const latestVaccination = allVaccinations[0];
+        
+        let earliestNextDue = null;
+        for (const vac of allVaccinations) {
+            if (vac.nextDueDate && vac.nextDueDate > new Date()) {
+                if (!earliestNextDue || vac.nextDueDate < earliestNextDue) {
+                    earliestNextDue = vac.nextDueDate;
+                }
+            }
+        }
+        
+        animal.vaccinationSummary = {
+            lastVaccinationDate: latestVaccination?.dateAdministered || null,
+            nextVaccinationDate: earliestNextDue,
+            lastVaccineType: latestVaccination?.vaccineName || null,
+            totalVaccinations: allVaccinations.length,
+            isUpToDate: !earliestNextDue || earliestNextDue <= new Date(),
+            lastUpdated: new Date()
+        };
+        
+        await animal.save();
+    } catch (error) {
+        console.error("Error updating animal summary:", error);
+    }
+}

@@ -1,0 +1,698 @@
+<% layout("layouts/boilerplate", {
+    title: 'Verify Vaccination Requests - Zoopito Admin',
+    description: 'Review and verify vaccination requests submitted by paravets'
+}) %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                        <i class="fas fa-clipboard-list mr-3 text-blue-500"></i>
+                        Verify Vaccination Requests
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">
+                        Review and verify vaccination requests submitted by paravets
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="/admin/vaccinations" 
+                       class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Back to Vaccinations
+                    </a>
+                    <button onclick="refreshPage()" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl shadow-md p-5 border-l-4 border-yellow-500 transition-all hover:shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Pending Verification</p>
+                        <p class="text-3xl font-bold text-yellow-700 dark:text-yellow-300 mt-1"><%= pendingCount || 0 %></p>
+                    </div>
+                    <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+                        <i class="fas fa-clock text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-yellow-600 dark:text-yellow-400">
+                    <i class="fas fa-hourglass-half mr-1"></i> Awaiting your approval
+                </div>
+            </div>
+            
+            <div class="bg-green-50 dark:bg-green-900/20 rounded-xl shadow-md p-5 border-l-4 border-green-500 transition-all hover:shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-green-600 dark:text-green-400 font-medium">Verified</p>
+                        <p class="text-3xl font-bold text-green-700 dark:text-green-300 mt-1"><%= verifiedCount || 0 %></p>
+                    </div>
+                    <div class="p-3 rounded-full bg-green-100 dark:bg-green-900/30">
+                        <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-green-600 dark:text-green-400">
+                    <i class="fas fa-check mr-1"></i> Approved vaccinations
+                </div>
+            </div>
+            
+            <div class="bg-red-50 dark:bg-red-900/20 rounded-xl shadow-md p-5 border-l-4 border-red-500 transition-all hover:shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-red-600 dark:text-red-400 font-medium">Rejected</p>
+                        <p class="text-3xl font-bold text-red-700 dark:text-red-300 mt-1"><%= rejectedCount || 0 %></p>
+                    </div>
+                    <div class="p-3 rounded-full bg-red-100 dark:bg-red-900/30">
+                        <i class="fas fa-times-circle text-red-600 dark:text-red-400 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-red-600 dark:text-red-400">
+                    <i class="fas fa-ban mr-1"></i> Declined requests
+                </div>
+            </div>
+            
+            <div class="bg-purple-50 dark:bg-purple-900/20 rounded-xl shadow-md p-5 border-l-4 border-purple-500 transition-all hover:shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-purple-600 dark:text-purple-400 font-medium">This Month</p>
+                        <p class="text-3xl font-bold text-purple-700 dark:text-purple-300 mt-1"><%= totalThisMonth || 0 %></p>
+                    </div>
+                    <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30">
+                        <i class="fas fa-calendar-alt text-purple-600 dark:text-purple-400 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-purple-600 dark:text-purple-400">
+                    <i class="fas fa-chart-line mr-1"></i> Total this month
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md mb-6 p-4">
+            <div class="flex flex-wrap gap-2">
+                <a href="/admin/vaccinations/verify-requests?status=pending" 
+                   class="filter-tab px-5 py-2.5 rounded-lg text-sm font-medium transition-all <%= currentStatus === 'pending' ? 'bg-yellow-500 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>">
+                    <i class="fas fa-clock mr-2"></i> Pending
+                    <% if (pendingCount > 0) { %>
+                        <span class="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full"><%= pendingCount %></span>
+                    <% } %>
+                </a>
+                <a href="/admin/vaccinations/verify-requests?status=verified" 
+                   class="filter-tab px-5 py-2.5 rounded-lg text-sm font-medium transition-all <%= currentStatus === 'verified' ? 'bg-green-500 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>">
+                    <i class="fas fa-check-circle mr-2"></i> Verified
+                </a>
+                <a href="/admin/vaccinations/verify-requests?status=rejected" 
+                   class="filter-tab px-5 py-2.5 rounded-lg text-sm font-medium transition-all <%= currentStatus === 'rejected' ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>">
+                    <i class="fas fa-times-circle mr-2"></i> Rejected
+                </a>
+                <a href="/admin/vaccinations/verify-requests?status=all" 
+                   class="filter-tab px-5 py-2.5 rounded-lg text-sm font-medium transition-all <%= currentStatus === 'all' ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' %>">
+                    <i class="fas fa-list mr-2"></i> All Requests
+                </a>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <% if (requests && requests.length > 0 && currentStatus !== 'verified' && currentStatus !== 'rejected') { %>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md mb-6 p-4 sticky top-0 z-10">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="selectAllCheckbox" class="w-5 h-5 rounded border-gray-300">
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Select All</span>
+                        </label>
+                        <span id="selectedCount" class="text-sm font-semibold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full">0 selected</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="bulkReject()" 
+                                class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all flex items-center gap-2 disabled:opacity-50" id="bulkRejectBtn" disabled>
+                            <i class="fas fa-times"></i> Reject Selected
+                        </button>
+                        <button onclick="bulkApprove()" 
+                                class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center gap-2 disabled:opacity-50" id="bulkApproveBtn" disabled>
+                            <i class="fas fa-check"></i> Approve Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+
+        <!-- Requests List -->
+        <div id="requestsList" class="space-y-6">
+            <% if (requests && requests.length > 0) { %>
+                <% requests.forEach((request, index) => { %>
+                    <div class="request-card bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border-l-4 
+                        <%= request.verificationStatus === 'Pending' ? 'border-l-yellow-500' : (request.verificationStatus === 'Verified' ? 'border-l-green-500' : 'border-l-red-500') %>"
+                         data-request-id="<%= request._id %>"
+                         data-status="<%= request.verificationStatus %>">
+                        
+                        <!-- Request Header -->
+                        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex flex-wrap justify-between items-center gap-3">
+                                <div class="flex items-center gap-3">
+                                    <% if (request.verificationStatus === 'Pending') { %>
+                                        <input type="checkbox" class="request-checkbox w-5 h-5 rounded border-gray-300" data-id="<%= request._id %>">
+                                    <% } %>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold">
+                                                <%= (request.paravet?.user?.name || 'P').charAt(0).toUpperCase() %>
+                                            </div>
+                                            <div>
+                                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                    <%= request.paravet?.user?.name || 'Unknown Paravet' %>
+                                                    <span class="text-sm font-normal text-gray-500 ml-2">
+                                                        (<%= request.paravet?.employeeCode || 'No Code' %>)
+                                                    </span>
+                                                </h3>
+                                                <p class="text-sm text-gray-500">
+                                                    <i class="fas fa-envelope mr-1"></i> <%= request.paravet?.user?.email || 'No email' %>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium
+                                        <%= request.verificationStatus === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                           (request.verificationStatus === 'Verified' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') %>">
+                                        <i class="fas <%= request.verificationStatus === 'Pending' ? 'fa-clock' : (request.verificationStatus === 'Verified' ? 'fa-check' : 'fa-times') %> mr-1"></i>
+                                        <%= request.verificationStatus || 'Pending' %>
+                                    </span>
+                                    <span class="text-sm text-gray-500">
+                                        <i class="far fa-calendar-alt mr-1"></i>
+                                        Submitted: <%= moment(request.submittedAt || request.createdAt).format('DD MMM YYYY, hh:mm A') %>
+                                    </span>
+                                    <button onclick="viewRequestDetails('<%= request._id %>')" 
+                                            class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                                <div>
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Farmer</p>
+                                    <p class="font-medium text-gray-900 dark:text-white mt-1"><%= request.farmer?.name || 'N/A' %></p>
+                                    <p class="text-xs text-gray-400"><%= request.farmer?.address?.village || '' %></p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Contact</p>
+                                    <p class="font-medium text-gray-900 dark:text-white mt-1"><%= request.farmer?.mobileNumber || 'N/A' %></p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Total Animals</p>
+                                    <p class="font-medium text-gray-900 dark:text-white mt-1"><%= request.vaccinationsCount || 0 %></p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Total Vaccinations</p>
+                                    <p class="font-medium text-gray-900 dark:text-white mt-1"><%= request.vaccinations?.length || 0 %></p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Total Amount</p>
+                                    <p class="font-medium text-green-600 dark:text-green-400 mt-1 text-lg">₹<%= request.totalAmount || 0 %></p>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons for Pending Requests -->
+                            <% if (request.verificationStatus === 'Pending') { %>
+                                <div class="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+                                    <button onclick="confirmAction('<%= request._id %>', 'reject')" 
+                                            class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all flex items-center gap-2">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                    <button onclick="confirmAction('<%= request._id %>', 'approve')" 
+                                            class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center gap-2">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-16 text-center">
+                    <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <i class="fas fa-check-circle text-5xl text-green-500"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-3">No Requests Found</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-lg mb-2">
+                        <%= currentStatus === 'pending' ? 'All caught up! No pending verification requests.' : 
+                           (currentStatus === 'verified' ? 'No verified requests in this list.' : 
+                            (currentStatus === 'rejected' ? 'No rejected requests.' : 'No requests found.')) %>
+                    </p>
+                    <p class="text-gray-500 dark:text-gray-500 text-sm">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        <%= currentStatus === 'pending' ? 'New requests will appear here when paravets submit vaccinations.' : 'Change filter to see other requests.' %>
+                    </p>
+                    <% if (currentStatus !== 'pending') { %>
+                        <a href="/admin/vaccinations/verify-requests?status=pending" 
+                           class="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all">
+                            <i class="fas fa-clock"></i> View Pending Requests
+                        </a>
+                    <% } %>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+            <div class="mt-8 flex justify-center">
+                <div class="flex gap-2 flex-wrap">
+                    <% if (currentPage > 1) { %>
+                        <a href="?status=<%= currentStatus %>&page=<%= currentPage - 1 %>" 
+                           class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                    <% } %>
+                    
+                    <% for (var i = 1; i <= totalPages; i++) { %>
+                        <% if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) { %>
+                            <a href="?status=<%= currentStatus %>&page=<%= i %>" 
+                               class="px-4 py-2 <%= i === currentPage ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700' %> rounded-lg transition">
+                                <%= i %>
+                            </a>
+                        <% } else if (i === currentPage - 3 || i === currentPage + 3) { %>
+                            <span class="px-2 py-2 text-gray-400">...</span>
+                        <% } %>
+                    <% } %>
+                    
+                    <% if (currentPage < totalPages) { %>
+                        <a href="?status=<%= currentStatus %>&page=<%= currentPage + 1 %>" 
+                           class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Request Details Modal -->
+<div id="detailsModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-xl max-w-5xl w-full mx-4 overflow-hidden max-h-[90vh] shadow-2xl">
+        <div class="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-blue-700">
+            <h3 class="text-xl font-semibold text-white" id="modalTitle">
+                <i class="fas fa-clipboard-list mr-2"></i>Vaccination Request Details
+            </h3>
+            <button onclick="closeDetailsModal()" class="text-white hover:text-gray-200 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div id="modalContent" class="p-6 overflow-y-auto" style="max-height: calc(90vh - 80px);">
+            <div class="text-center py-12">
+                <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
+                <p class="mt-3 text-gray-500">Loading details...</p>
+            </div>
+        </div>
+        <div class="p-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-700/50">
+            <button onclick="closeDetailsModal()" class="px-5 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let currentRequestId = null;
+    let selectedRequests = new Set();
+    
+    // Filter function
+    function filterRequests(status) {
+        window.location.href = `/admin/vaccinations/verify-requests?status=${status}`;
+    }
+    
+    // Refresh page
+    function refreshPage() {
+        window.location.reload();
+    }
+    
+    // View request details
+    async function viewRequestDetails(requestId) {
+        currentRequestId = requestId;
+        const modal = document.getElementById('detailsModal');
+        const modalContent = document.getElementById('modalContent');
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        modalContent.innerHTML = '<div class="text-center py-12"><i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i><p class="mt-3 text-gray-500">Loading details...</p></div>';
+        
+        try {
+            const response = await fetch(`/admin/api/vaccination-request/${requestId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                renderRequestDetails(data.request);
+            } else {
+                modalContent.innerHTML = `<div class="text-center py-12 text-red-500"><i class="fas fa-exclamation-circle text-4xl mb-3"></i><p>${data.message}</p></div>`;
+            }
+        } catch (error) {
+            modalContent.innerHTML = `<div class="text-center py-12 text-red-500"><i class="fas fa-exclamation-circle text-4xl mb-3"></i><p>Error loading details</p></div>`;
+        }
+    }
+    
+    function renderRequestDetails(request) {
+        const modalContent = document.getElementById('modalContent');
+        
+        let vaccinationsHtml = '';
+        if (request.vaccinations && request.vaccinations.length > 0) {
+            const grouped = {};
+            request.vaccinations.forEach(v => {
+                const animalId = v.animal?._id;
+                if (!grouped[animalId]) {
+                    grouped[animalId] = {
+                        animal: v.animal,
+                        vaccinations: []
+                    };
+                }
+                grouped[animalId].vaccinations.push(v);
+            });
+            
+            vaccinationsHtml = Object.values(grouped).map(group => `
+                <div class="mb-6 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                    <div class="px-5 py-3 bg-gray-100 dark:bg-gray-700 font-semibold flex items-center gap-2">
+                        <i class="fas fa-paw text-green-600"></i>
+                        <span>${group.animal?.name || 'Unnamed'}</span>
+                        <span class="text-sm font-normal text-gray-500 ml-2">(${group.animal?.tagNumber || 'No Tag'})</span>
+                        <span class="text-xs bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded-full ml-2">${group.animal?.animalType || 'Unknown'}</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vaccine</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Administered</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Next Due Date</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch Number</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                ${group.vaccinations.map(v => `
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                        <td class="px-4 py-3">
+                                            <div class="font-medium">${v.vaccine?.name || v.vaccineName}</div>
+                                            <div class="text-xs text-gray-500">${v.vaccine?.vaccineType || ''}</div>
+                                        </td>
+                                        <td class="px-4 py-3">${v.dateAdministered ? new Date(v.dateAdministered).toLocaleDateString() : 'N/A'}</td>
+                                        <td class="px-4 py-3">${v.nextDueDate ? new Date(v.nextDueDate).toLocaleDateString() : 'N/A'}</td>
+                                        <td class="px-4 py-3">${v.batchNumber || 'N/A'}</td>
+                                        <td class="px-4 py-3">${v.notes || 'N/A'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        modalContent.innerHTML = `
+            <div class="space-y-6">
+                <!-- Paravet Info -->
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5">
+                    <h4 class="font-semibold mb-3 flex items-center gap-2">
+                        <i class="fas fa-user-md text-blue-500"></i> Paravet Information
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div><span class="text-gray-500">Name:</span> ${request.paravet?.user?.name || 'N/A'}</div>
+                        <div><span class="text-gray-500">Employee Code:</span> ${request.paravet?.employeeCode || 'N/A'}</div>
+                        <div><span class="text-gray-500">Email:</span> ${request.paravet?.user?.email || 'N/A'}</div>
+                        <div><span class="text-gray-500">Submitted:</span> ${moment(request.submittedAt).format('DD MMM YYYY, hh:mm A')}</div>
+                    </div>
+                </div>
+                
+                <!-- Farmer Info -->
+                <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-5">
+                    <h4 class="font-semibold mb-3 flex items-center gap-2">
+                        <i class="fas fa-user text-green-500"></i> Farmer Information
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div><span class="text-gray-500">Name:</span> ${request.farmer?.name || 'N/A'}</div>
+                        <div><span class="text-gray-500">Mobile:</span> ${request.farmer?.mobileNumber || 'N/A'}</div>
+                        <div><span class="text-gray-500">Village:</span> ${request.farmer?.address?.village || 'N/A'}</div>
+                        <div><span class="text-gray-500">District:</span> ${request.farmer?.address?.district || 'N/A'}</div>
+                    </div>
+                </div>
+                
+                <!-- Vaccinations -->
+                <div>
+                    <h4 class="font-semibold mb-4 flex items-center gap-2">
+                        <i class="fas fa-syringe text-purple-500"></i> Vaccination Details (${request.vaccinations?.length || 0})
+                    </h4>
+                    ${vaccinationsHtml || '<p class="text-gray-500 text-center py-6">No vaccination details available</p>'}
+                </div>
+                
+                <!-- Payment Summary -->
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-5">
+                    <h4 class="font-semibold mb-3 flex items-center gap-2">
+                        <i class="fas fa-rupee-sign text-yellow-500"></i> Payment Summary
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div><span class="text-gray-500">Total Amount:</span> <span class="font-bold text-green-600">₹${request.totalAmount || 0}</span></div>
+                        <div><span class="text-gray-500">Status:</span> <span class="text-yellow-600">Pending Verification</span></div>
+                    </div>
+                </div>
+                
+                ${request.status === 'Pending' ? `
+                    <div class="flex gap-3 justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <button onclick="closeDetailsModal(); confirmAction('${request._id}', 'reject')" 
+                                class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                            <i class="fas fa-times mr-2"></i> Reject Request
+                        </button>
+                        <button onclick="closeDetailsModal(); confirmAction('${request._id}', 'approve')" 
+                                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            <i class="fas fa-check mr-2"></i> Approve Request
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    // Confirm single action
+    async function confirmAction(requestId, action) {
+        const actionText = action === 'approve' ? 'approve' : 'reject';
+        const confirmText = action === 'approve' ? 'Approve this vaccination request?' : 'Reject this vaccination request?';
+        
+        const result = await Swal.fire({
+            title: action === 'approve' ? 'Approve Request?' : 'Reject Request?',
+            text: confirmText,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: action === 'approve' ? 'Yes, Approve' : 'Yes, Reject',
+            cancelButtonText: 'Cancel'
+        });
+        
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Processing...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+            
+            try {
+                const response = await fetch(`/admin/api/vaccination-request/${requestId}/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: action === 'approve' ? 'verified' : 'rejected', notes: '' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: `Request ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to process request'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Network error. Please try again.'
+                });
+            }
+        }
+    }
+    
+    // Bulk approve
+    async function bulkApprove() {
+        if (selectedRequests.size === 0) {
+            Swal.fire({ icon: 'warning', title: 'No Selection', text: 'Please select at least one request to approve' });
+            return;
+        }
+        
+        const result = await Swal.fire({
+            title: 'Bulk Approve',
+            text: `You are about to approve ${selectedRequests.size} request(s). Continue?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Approve All',
+            cancelButtonText: 'Cancel'
+        });
+        
+        if (result.isConfirmed) {
+            Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            try {
+                const response = await fetch('/admin/verifications/bulk-verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: Array.from(selectedRequests), action: 'approve', notes: '' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 1500, showConfirmButton: false })
+                        .then(() => window.location.reload());
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                }
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Network error' });
+            }
+        }
+    }
+    
+    // Bulk reject
+    async function bulkReject() {
+        if (selectedRequests.size === 0) {
+            Swal.fire({ icon: 'warning', title: 'No Selection', text: 'Please select at least one request to reject' });
+            return;
+        }
+        
+        const result = await Swal.fire({
+            title: 'Bulk Reject',
+            text: `You are about to reject ${selectedRequests.size} request(s). Continue?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Reject All',
+            cancelButtonText: 'Cancel'
+        });
+        
+        if (result.isConfirmed) {
+            Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            try {
+                const response = await fetch('/admin/verifications/bulk-verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: Array.from(selectedRequests), action: 'reject', notes: '' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 1500, showConfirmButton: false })
+                        .then(() => window.location.reload());
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                }
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Network error' });
+            }
+        }
+    }
+    
+    // Update selected count
+    function updateSelectedCount() {
+        const checkboxes = document.querySelectorAll('.request-checkbox:checked');
+        selectedRequests.clear();
+        checkboxes.forEach(cb => selectedRequests.add(cb.dataset.id));
+        
+        const countSpan = document.getElementById('selectedCount');
+        const approveBtn = document.getElementById('bulkApproveBtn');
+        const rejectBtn = document.getElementById('bulkRejectBtn');
+        
+        if (countSpan) countSpan.innerText = `${selectedRequests.size} selected`;
+        if (approveBtn) approveBtn.disabled = selectedRequests.size === 0;
+        if (rejectBtn) rejectBtn.disabled = selectedRequests.size === 0;
+    }
+    
+    // Select all checkbox
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            document.querySelectorAll('.request-checkbox').forEach(cb => {
+                cb.checked = this.checked;
+            });
+            updateSelectedCount();
+        });
+    }
+    
+    // Add event listeners to checkboxes
+    document.addEventListener('change', function(e) {
+        if (e.target.classList && e.target.classList.contains('request-checkbox')) {
+            updateSelectedCount();
+        }
+    });
+    
+    function closeDetailsModal() {
+        const modal = document.getElementById('detailsModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        currentRequestId = null;
+    }
+    
+    document.getElementById('detailsModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeDetailsModal();
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeDetailsModal();
+    });
+    
+    updateSelectedCount();
+</script>
+
+<style>
+    .request-card {
+        transition: all 0.3s ease;
+    }
+    .request-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px -12px rgba(0,0,0,0.15);
+    }
+    .filter-tab {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .filter-tab:hover {
+        transform: translateY(-1px);
+    }
+    .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+</style>

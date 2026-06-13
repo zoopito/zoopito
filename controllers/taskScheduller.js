@@ -899,6 +899,55 @@ module.exports.assignParavetToVaccinations = async (req, res) => {
   }
 };
 
+// ================ SCHEDULE SINGLE VACCINATION ================
+module.exports.scheduleVaccination = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scheduledDate, assignedParavet } = req.body;
+
+    if (!scheduledDate) {
+      return res.status(400).json({
+        success: false,
+        message: "scheduledDate is required"
+      });
+    }
+
+    const vaccination = await Vaccination.findById(id);
+    if (!vaccination) {
+      return res.status(404).json({
+        success: false,
+        message: "Vaccination not found"
+      });
+    }
+
+    // Parse and set the datetime
+    const dateTime = new Date(scheduledDate);
+    
+    // Update vaccination
+    vaccination.scheduledDate = dateTime;
+    vaccination.status = "Scheduled";
+    vaccination.updatedBy = req.user._id;
+    
+    if (assignedParavet) {
+      vaccination.assignedParavet = assignedParavet;
+    }
+
+    await vaccination.save();
+
+    res.json({
+      success: true,
+      message: `Vaccination scheduled for ${dateTime.toLocaleString()}`,
+      vaccination: vaccination
+    });
+  } catch (error) {
+    console.error("Error scheduling vaccination:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error"
+    });
+  }
+};
+
 
 // ================ HELPER: GET ANIMALS NEEDING VACCINATION ================
 

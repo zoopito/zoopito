@@ -323,18 +323,6 @@ module.exports.createAnimalForm = async (req, res) => {
     // Clear session form data after retrieving it
     delete req.session.formData;
 
-    let salesAgentsList = [];
-    if (req.user.role === "SALES") {
-      salesAgentsList = req.user
-        ? [{ _id: req.user._id, name: req.user.name }]
-        : [];
-    } else {
-      salesAgentsList = salesAgents.map((agent) => ({
-        _id: agent.user._id,
-        name: agent.user.name,
-      }));
-    }
-
     // Get plan types for selection
         const planTypes = [
             { value: 'none', name: 'No Plan', price: 0, description: 'Basic animal registration without any plan benefits' },
@@ -342,9 +330,11 @@ module.exports.createAnimalForm = async (req, res) => {
             { value: 'premium', name: 'Premium Plan', price: 999, description: 'Comprehensive vaccination coverage, monthly health checkups, 24/7 emergency support, priority scheduling, free deworming, nutrition consultation' }
         ];
 
+    const paravets = await Paravet.find({ isActive: true }).populate("user").sort({ name: 1 }); 
+
     res.render("admin/animals/new", {
       farmers,
-      sales: salesAgentsList,
+      paravets,
       vaccines,
       formType,
       formData,
@@ -361,9 +351,9 @@ module.exports.createAnimalForm = async (req, res) => {
 
 module.exports.createAnimal = async (req, res) => {
   try {
-    const { farmer, registeredBy, applyVaccinationToAll, vaccination, selectedPlan, planPaymentMethod } =
+    const { farmer, applyVaccinationToAll, vaccination, selectedPlan, planPaymentMethod } =
       req.body;
-
+    const registeredBy = req.user._id;
     // Handle single animal registration
     if (!req.body.animals || !Array.isArray(req.body.animals)) {
       return await createSingleAnimal(req, res);

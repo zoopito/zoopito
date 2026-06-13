@@ -21,8 +21,20 @@
             outline: none;
             ring: 2px solid #3b82f6;
         }
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .animal-item {
+            transition: all 0.2s ease;
+        }
+        .animal-item:hover {
+            background-color: #f3f4f6;
+        }
+        .dark .animal-item:hover {
+            background-color: #374151;
+        }
     `
-}) -%>
+}) %>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -88,7 +100,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Pending Visits</p>
-                        <p class="text-2xl font-bold text-orange-600"><%= farmers.reduce((sum, f) => sum + (f.pendingCount || 0), 0) %></p>
+                        <p class="text-2xl font-bold text-orange-600"><%= farmers.filter(f => f.pendingCount > 0).length %></p>
                     </div>
                     <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
                         <i class="fas fa-clock text-orange-600"></i>
@@ -100,7 +112,8 @@
         <!-- Farmers Grid -->
         <div id="farmersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <% farmers.forEach(farmer => { %>
-                <div class="farmer-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden cursor-pointer" onclick="viewFarmer('<%= farmer._id %>')">
+                <% if (farmer.pendingCount === 0) return; %>
+                <div class="farmer-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden" data-farmer-id="<%= farmer._id %>">
                     <div class="p-5">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex items-center">
@@ -132,17 +145,17 @@
                             </div>
                             <div class="flex items-center text-gray-600 dark:text-gray-400">
                                 <i class="fas fa-syringe w-5"></i>
-                                <span><%= farmer.pendingCount || 0 %> pending vaccinations</span>
+                                <span class="text-red-600 font-semibold"><%= farmer.pendingCount || 0 %> pending vaccinations</span>
                             </div>
                         </div>
                         
                         <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between">
                             <div class="text-xs text-gray-500">
                                 <i class="far fa-calendar-alt mr-1"></i>
-                                Last visit: <%= farmer.lastVisit ? moment(farmer.lastVisit).format('DD MMM YYYY') : 'Never' %>
+                                Last visit: <%= farmer.lastVisitDate ? moment(farmer.lastVisitDate).format('DD MMM YYYY') : 'Never' %>
                             </div>
-                            <button onclick="event.stopPropagation(); startVisit('<%= farmer._id %>')" 
-                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            <button onclick="event.stopPropagation(); openVisitModal('<%= farmer._id %>', '<%= farmer.name.replace(/'/g, "\\'") %>')" 
+                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
                                 <i class="fas fa-play mr-1"></i>Start Visit
                             </button>
                         </div>
@@ -152,94 +165,426 @@
         </div>
 
         <!-- Empty State -->
-        <% if (farmers.length === 0) { %>
+        <% if (farmers.filter(f => f.pendingCount > 0).length === 0) { %>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
-                <i class="fas fa-users-slash text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Farmers Assigned</h3>
-                <p class="text-gray-600 dark:text-gray-400">You haven't been assigned any farmers yet.</p>
-                <p class="text-gray-500 dark:text-gray-500 text-sm mt-2">Contact your admin for assignments.</p>
+                <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Pending Visits</h3>
+                <p class="text-gray-600 dark:text-gray-400">All farmers are up to date with their vaccinations!</p>
+                <p class="text-gray-500 dark:text-gray-500 text-sm mt-2">Great job! 🎉</p>
             </div>
         <% } %>
     </div>
 </div>
 
+<!-- Visit Modal -->
+<div id="visitModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50" onclick="if(event.target === this) closeVisitModal()">
+    <div class="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full mx-4 overflow-hidden max-h-[90vh] shadow-2xl">
+        <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-600 to-teal-600">
+            <h3 class="text-lg font-semibold text-white" id="modalTitle">
+                <i class="fas fa-clinic-medical mr-2"></i>Complete Vaccinations
+            </h3>
+            <button onclick="closeVisitModal()" class="text-white hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div id="modalContent" class="p-6 overflow-y-auto" style="max-height: calc(90vh - 80px);">
+            <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-2xl"></i>
+                <p class="mt-2">Loading animals...</p>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <button onclick="closeVisitModal()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function viewFarmer(farmerId) {
-    window.location.href = `/paravet/farmer/${farmerId}/animals`;
-}
-
-function startVisit(farmerId) {
-    Swal.fire({
-        title: 'Start Visit?',
-        text: 'Begin visit with this farmer?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3b82f6',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, start now!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch('/paravet/visit/start', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ farmerId, purpose: 'routine' })
-            })
+    let currentFarmerId = null;
+    let currentFarmerName = null;
+    
+    function openVisitModal(farmerId, farmerName) {
+        currentFarmerId = farmerId;
+        currentFarmerName = farmerName;
+        
+        const modal = document.getElementById('visitModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        
+        modalTitle.innerHTML = `<i class="fas fa-clinic-medical mr-2"></i>${farmerName} - Complete Vaccinations`;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        modalContent.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl"></i><p class="mt-2">Loading animals...</p></div>';
+        
+        // Fetch animals with pending vaccinations
+        fetch(`/paravet/api/farmer/${farmerId}/pending-animals`)
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Visit Started!',
-                        text: 'Redirecting to farmer details...',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = `/paravet/farmer/${farmerId}/animals`;
-                    });
+                if (data.success && data.animals.length > 0) {
+                    renderAnimalList(data.animals);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'Failed to start visit'
-                    });
+                    modalContent.innerHTML = `
+                        <div class="text-center py-8">
+                            <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Pending Vaccinations</h3>
+                            <p class="text-gray-600 dark:text-gray-400">All animals are up to date!</p>
+                        </div>
+                    `;
                 }
             })
             .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Network error. Please try again.'
-                });
+                modalContent.innerHTML = `
+                    <div class="text-center py-8 text-red-500">
+                        <i class="fas fa-exclamation-circle text-4xl mb-2"></i>
+                        <p>Error loading animals. Please try again.</p>
+                    </div>
+                `;
             });
-        }
-    });
-}
-
-// Search functionality
-document.getElementById('searchInput').addEventListener('input', filterFarmers);
-document.getElementById('filterStatus').addEventListener('change', filterFarmers);
-
-function filterFarmers() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('filterStatus').value;
-    const cards = document.querySelectorAll('.farmer-card');
+    }
     
-    cards.forEach(card => {
-        const name = card.querySelector('h3')?.innerText.toLowerCase() || '';
-        const mobile = card.querySelector('.fa-phone')?.parentElement?.innerText.toLowerCase() || '';
-        const status = card.querySelector('.status-badge')?.innerText.toLowerCase() || '';
+  function renderAnimalList(animals) {
+    const modalContent = document.getElementById('modalContent');
+    
+    let animalsHtml = `
+        <div class="space-y-4">
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-3"></i>
+                    <div class="text-sm text-blue-800 dark:text-blue-300">
+                        <p class="font-medium">Select vaccines for each animal</p>
+                        <p>Next due date will be automatically calculated based on vaccine type.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="visitVaccinationForm">
+                <div class="space-y-6">
+    `;
+    
+    animals.forEach((animal, idx) => {
+        animalsHtml += `
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 font-semibold flex justify-between items-center">
+                    <div>
+                        <i class="fas fa-paw mr-2 text-green-600"></i>
+                        ${animal.name || 'Unnamed'} (${animal.animalType})
+                        <span class="text-sm font-normal ml-2 text-gray-500">Tag: ${animal.tagNumber || 'No tag'}</span>
+                        <span class="ml-2 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                            ${animal.pendingCount} pending
+                        </span>
+                    </div>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="select-all-animal rounded" data-animal-idx="${idx}">
+                        <span class="ml-2 text-sm">Select All</span>
+                    </label>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Select</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vaccine</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Disease</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Next Due</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Batch</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+        `;
         
-        let matchesSearch = name.includes(searchTerm) || mobile.includes(searchTerm);
-        let matchesStatus = statusFilter === 'all' || status === statusFilter;
+        animal.pendingVaccines.forEach(vaccine => {
+            let nextDuePreview = '';
+            let statusBadge = '';
+            
+            if (vaccine.isScheduled) {
+                statusBadge = '<span class="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full">Scheduled</span>';
+                if (vaccine.scheduledDate) {
+                    nextDuePreview = `Scheduled: ${new Date(vaccine.scheduledDate).toLocaleDateString()}`;
+                }
+            } else {
+                statusBadge = '<span class="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">Recommended</span>';
+                if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
+                    nextDuePreview = `+${vaccine.boosterIntervalWeeks} weeks`;
+                } else if (vaccine.immunityDurationMonths && vaccine.immunityDurationMonths > 0) {
+                    nextDuePreview = `+${vaccine.immunityDurationMonths} months`;
+                } else {
+                    nextDuePreview = '+1 year';
+                }
+            }
+            
+            animalsHtml += `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td class="px-3 py-2">
+                        <input type="checkbox" 
+                               class="vaccine-checkbox vaccine-checkbox-${idx} rounded"
+                               data-animal-id="${animal._id}"
+                               data-vaccine-id="${vaccine._id}"
+                               data-vaccine-name="${vaccine.name}"
+                               data-scheduled-id="${vaccine.scheduledId || ''}"
+                               data-is-scheduled="${vaccine.isScheduled}"
+                               data-booster-weeks="${vaccine.boosterIntervalWeeks || 0}"
+                               data-booster-months="${vaccine.immunityDurationMonths || 0}">
+                    </td>
+                    <td class="px-3 py-2">
+                        <div class="font-medium text-sm">${vaccine.name}</div>
+                        <div class="text-xs text-gray-500">${vaccine.vaccineType}</div>
+                    </td>
+                    <td class="px-3 py-2 text-xs">${vaccine.diseaseTarget || 'N/A'}</td>
+                    <td class="px-3 py-2">${statusBadge}</td>
+                    <td class="px-3 py-2">
+                        <span class="text-xs next-due-${animal._id}-${vaccine._id} ${vaccine.isScheduled ? 'text-yellow-600' : 'text-purple-600'}">
+                            ${nextDuePreview}
+                        </span>
+                    </td>
+                    <td class="px-3 py-2">
+                        <input type="date" 
+                               class="vaccine-date vaccine-date-${idx} w-28 px-2 py-1 border rounded text-xs"
+                               data-animal-id="${animal._id}"
+                               data-vaccine-id="${vaccine._id}"
+                               value="${new Date().toISOString().split('T')[0]}">
+                    </td>
+                    <td class="px-3 py-2">
+                        <input type="time" 
+                               class="vaccine-time vaccine-time-${idx} w-24 px-2 py-1 border rounded text-xs"
+                               value="${new Date().toTimeString().slice(0, 5)}">
+                    </td>
+                    <td class="px-3 py-2">
+                        <input type="text" class="vaccine-batch w-28 px-2 py-1 border rounded text-xs" placeholder="Batch #">
+                    </td>
+                </tr>
+            `;
+        });
         
-        if (matchesSearch && matchesStatus) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
+        animalsHtml += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    });
+    
+    animalsHtml += `
+                    </div>
+                    
+                    <!-- Common Options -->
+                    <div class="mt-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h4 class="font-semibold mb-3 text-sm">Common Options (Apply to All Selected)</h4>
+                        <div class="grid grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Common Date</label>
+                                <input type="date" id="commonDate" class="w-full px-2 py-1 border rounded text-sm"
+                                       value="${new Date().toISOString().split('T')[0]}">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Common Time</label>
+                                <input type="time" id="commonTime" class="w-full px-2 py-1 border rounded text-sm"
+                                       value="${new Date().toTimeString().slice(0, 5)}">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Common Batch</label>
+                                <input type="text" id="commonBatch" class="w-full px-2 py-1 border rounded text-sm" placeholder="Batch #">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" onclick="applyCommonToAll()" 
+                                        class="w-full px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+                                    Apply to All
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button type="button" onclick="closeVisitModal()" 
+                                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="submitVisitVaccinations()" 
+                                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                            <i class="fas fa-save mr-2"></i> Complete Selected Vaccinations
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+    
+    modalContent.innerHTML = animalsHtml;
+    
+    // Add event listeners for select-all checkboxes
+    document.querySelectorAll('.select-all-animal').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const animalIdx = this.getAttribute('data-animal-idx');
+            const checkboxes = document.querySelectorAll(`.vaccine-checkbox-${animalIdx}`);
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
     });
 }
+    function applyCommonToAll() {
+        const commonDate = document.getElementById('commonDate').value;
+        const commonTime = document.getElementById('commonTime').value;
+        const commonBatch = document.getElementById('commonBatch').value;
+        
+        document.querySelectorAll('.vaccine-date').forEach(input => {
+            input.value = commonDate;
+        });
+        document.querySelectorAll('.vaccine-time').forEach(input => {
+            input.value = commonTime;
+        });
+        document.querySelectorAll('.vaccine-batch').forEach(input => {
+            if (commonBatch) input.value = commonBatch;
+        });
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Applied!',
+            text: 'Common values applied to all vaccinations',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    }
+    
+    async function submitVisitVaccinations() {
+        const selectedCheckboxes = document.querySelectorAll('.vaccine-checkbox:checked');
+        
+        if (selectedCheckboxes.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Selection',
+                text: 'Please select at least one vaccine to complete'
+            });
+            return;
+        }
+        
+        Swal.fire({
+            title: 'Confirm Action',
+            text: `You are about to complete ${selectedCheckboxes.length} vaccination(s). Continue?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, proceed',
+            cancelButtonText: 'Cancel'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Processing...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+                
+                const vaccinations = {};
+                
+                selectedCheckboxes.forEach(cb => {
+                    const row = cb.closest('tr');
+                    const animalId = cb.getAttribute('data-animal-id');
+                    const vaccineId = cb.getAttribute('data-vaccine-id');
+                    
+                    if (!vaccinations[animalId]) vaccinations[animalId] = {};
+                    if (!vaccinations[animalId][vaccineId]) vaccinations[animalId][vaccineId] = {};
+                    
+                    vaccinations[animalId][vaccineId].selected = 'on';
+                    
+                    const dateInput = row.querySelector('.vaccine-date');
+                    const timeInput = row.querySelector('.vaccine-time');
+                    const batchInput = row.querySelector('.vaccine-batch');
+                    
+                    if (dateInput) vaccinations[animalId][vaccineId].dateAdministered = dateInput.value;
+                    if (timeInput) vaccinations[animalId][vaccineId].timeAdministered = timeInput.value;
+                    if (batchInput) vaccinations[animalId][vaccineId].batchNumber = batchInput.value;
+                });
+                
+                try {
+                    const response = await fetch('/paravet/vaccinations/bulk-complete-all', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            farmerId: currentFarmerId,
+                            vaccinations: vaccinations,
+                            commonDate: document.getElementById('commonDate').value,
+                            commonTime: document.getElementById('commonTime').value,
+                            commonBatch: document.getElementById('commonBatch').value
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: result.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            closeVisitModal();
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: result.message || 'Failed to complete vaccinations'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Network error. Please try again.'
+                    });
+                }
+            }
+        });
+    }
+    
+    function closeVisitModal() {
+        const modal = document.getElementById('visitModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        currentFarmerId = null;
+        currentFarmerName = null;
+    }
+    
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', filterFarmers);
+    document.getElementById('filterStatus').addEventListener('change', filterFarmers);
+    
+    function filterFarmers() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const statusFilter = document.getElementById('filterStatus').value;
+        const cards = document.querySelectorAll('.farmer-card');
+        
+        cards.forEach(card => {
+            const name = card.querySelector('h3')?.innerText.toLowerCase() || '';
+            const mobile = card.querySelector('.fa-phone')?.parentElement?.innerText.toLowerCase() || '';
+            const status = card.querySelector('.status-badge')?.innerText.toLowerCase() || '';
+            
+            let matchesSearch = name.includes(searchTerm) || mobile.includes(searchTerm);
+            let matchesStatus = statusFilter === 'all' || status === statusFilter;
+            
+            if (matchesSearch && matchesStatus) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeVisitModal();
+        }
+    });
 </script>

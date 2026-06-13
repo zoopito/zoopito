@@ -245,6 +245,23 @@ const vaccinationSchema = new Schema(
       ref: "User",
     },
 
+    // Add these fields if not already present in vaccination schema
+verifiedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+},
+verifiedAt: {
+    type: Date
+},
+submittedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+},
+submittedAt: {
+    type: Date,
+    default: Date.now
+},
+
     // Series completion
     isSeriesComplete: {
       type: Boolean,

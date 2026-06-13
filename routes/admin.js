@@ -399,4 +399,12 @@ router.post("/users/:id/reset-password", adminController.resetUserPassword);
 router.post("/users/:id/block", adminController.blockUser);
 router.post("/users/:id/unblock", adminController.unblockUser);
 
+// Add these routes in admin.js
+
+// Vaccination Verification Routes
+router.get("/vaccinations/verify-requests", isLoggedIn, isAdmin, vaccinationController.renderPendingVerifications);
+router.get("/api/vaccination-request/:requestId", isLoggedIn, isAdmin, vaccinationController.getVerificationDetails);
+router.post("/api/vaccination-request/:requestId/verify", isLoggedIn, isAdmin, vaccinationController.verifyVaccination);
+router.post("/verifications/bulk-verify", isLoggedIn, isAdmin, vaccinationController.bulkVerifyVaccinations);
+
 module.exports = router;

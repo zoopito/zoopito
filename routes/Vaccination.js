@@ -109,6 +109,7 @@ router.get(
 router.post("/api/bulk-assign", taskController.bulkAssignParavets);
 router.post("/api/bulk-complete", vaccinationController.bulkCompleteVaccinations);
 router.post("/api/schedule-date", taskController.scheduleDate);
+router.post("/:id/schedule", taskController.scheduleVaccination);
 
 // Update vaccination status
 router.patch(

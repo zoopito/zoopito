@@ -50,10 +50,14 @@
         <i class="fas fa-cog mr-2 text-gray-500"></i>
         Common Options (Apply to all selected vaccines)
       </h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Common Date</label>
           <input type="date" id="commonDate" class="w-full px-3 py-2 border rounded-lg" value="<%= new Date().toISOString().split('T')[0] %>">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Common Time</label>
+          <input type="time" id="commonTime" class="w-full px-3 py-2 border rounded-lg" value="<%= new Date().toTimeString().slice(0, 5) %>">
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Common Batch Number</label>
@@ -111,6 +115,7 @@
                   <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Given</th>
                   <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
                   <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Batch</th>
                 </tr>
               </thead>
@@ -149,14 +154,21 @@
                     <td class="px-3 py-2">
                       <input type="date" 
                              name="vaccinations[<%= animal._id %>][<%= vaccine._id %>][dateAdministered]"
-                             class="vaccine-date animal-<%= animalIndex %> w-32 px-2 py-1 border rounded text-sm"
+                             class="vaccine-date animal-<%= animalIndex %> w-28 px-2 py-1 border rounded text-sm"
                              value="<%= new Date().toISOString().split('T')[0] %>"
+                             <%= (!isGiven && !isScheduled) ? '' : 'disabled' %>>
+                    </td>
+                    <td class="px-3 py-2">
+                      <input type="time" 
+                             name="vaccinations[<%= animal._id %>][<%= vaccine._id %>][timeAdministered]"
+                             class="vaccine-time animal-<%= animalIndex %> w-24 px-2 py-1 border rounded text-sm"
+                             value="<%= new Date().toTimeString().slice(0, 5) %>"
                              <%= (!isGiven && !isScheduled) ? '' : 'disabled' %>>
                     </td>
                     <td class="px-3 py-2">
                       <input type="text" 
                              name="vaccinations[<%= animal._id %>][<%= vaccine._id %>][batchNumber]"
-                             class="vaccine-batch animal-<%= animalIndex %> w-32 px-2 py-1 border rounded text-sm"
+                             class="vaccine-batch animal-<%= animalIndex %> w-28 px-2 py-1 border rounded text-sm"
                              placeholder="Batch #"
                              <%= (!isGiven && !isScheduled) ? '' : 'disabled' %>>
                     </td>
@@ -214,11 +226,15 @@
 
   function applyCommonToAll() {
     const commonDate = document.getElementById('commonDate').value;
+    const commonTime = document.getElementById('commonTime').value;
     const commonBatch = document.getElementById('commonBatch').value;
     const commonNotes = document.getElementById('commonNotes').value;
     
     document.querySelectorAll('.vaccine-date').forEach(input => {
       if (!input.disabled) input.value = commonDate;
+    });
+    document.querySelectorAll('.vaccine-time').forEach(input => {
+      if (!input.disabled) input.value = commonTime;
     });
     document.querySelectorAll('.vaccine-batch').forEach(input => {
       if (!input.disabled) input.value = commonBatch;

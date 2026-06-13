@@ -87,13 +87,15 @@
                 <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all" onclick="filterByArea('all')">
                     All Areas
                 </button>
-                <% if(availableAreas && availableAreas.length > 0) { %>
-                    <% availableAreas.forEach(function(area) { %>
+                <% if (availableAreas && availableAreas.length > 0) { %>
+                    <% for (var i = 0; i < availableAreas.length; i++) { %>
+                       <% var area = availableAreas[i]; %>
+                  
                         <button class="area-filter-btn px-3 py-1.5 rounded-lg text-sm transition-all" onclick="filterByArea('<%= area.village || area %>')">
                             <i class="fas fa-map-marker-alt mr-1"></i>
                             <%= area.village || area %>
                         </button>
-                    <% }); %>
+                    <% } %>
                 <% } %>
             </div>
         </div>
@@ -101,13 +103,13 @@
         <!-- Tasks List -->
         <div id="tasksList" class="space-y-6">
             <% if (groupedTasks && Object.keys(groupedTasks).length > 0) { %>
-                <% Object.entries(groupedTasks).forEach(function(entry) { %>
-                  <%  var date = entry[0];
-                    var tasks = entry[1];
-                %>
-                
-                    <% if (tasks && tasks.length > 0) { %>
+              <%  var taskEntries = Object.entries(groupedTasks); %>
+              <%  for (var e = 0; e < taskEntries.length; e++) { %>
+                  <%  var date = taskEntries[e][0]; %>
+                  <%  var tasks = taskEntries[e][1]; %>
+                  <%  if (tasks && tasks.length > 0) { %>
                         <div>
+                            
                             <div class="date-group mb-3">
                                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                                     <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
@@ -116,85 +118,91 @@
                                 </h2>
                             </div>
                             <div class="space-y-3">
-                                <% tasks.forEach(function(task) { %>
-                                    <div class="task-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-l-4">
+                                <% 
+                                    var farmersMap = {}; %>
+                                  <%  for (var t = 0; t < tasks.length; t++) { %>
+                                     <%   var task = tasks[t]; %>
+                                     <%   var fid = (task.farmer && task.farmer._id) ? task.farmer._id.toString() : 'unknown'; %>
+                                      <%  if (!farmersMap[fid]) farmersMap[fid] = { farmer: task.farmer, tasks: [] }; %>
+                                       <% farmersMap[fid].tasks.push(task); %>
+                                  <%  } %>
+                                   <% var farmerGroups = Object.values(farmersMap); %>
+                                  <%  for (var g = 0; g < farmerGroups.length; g++) { %>
+                                     <%   var group = farmerGroups[g]; %>
+                                      <%  var farmer = group.farmer; %>
+                                      <%  var fTasks = group.tasks; %>
+                                
+                                    <div class="task-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-l-4 border-l-blue-500">
                                         <div class="p-5">
                                             <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
                                                 <div class="flex-1">
                                                     <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                                        <span class="task-status">
-                                                            <i class="fas fa-clock mr-1"></i>
-                                                            <%= task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : 'Pending' %>
-                                                        </span>
                                                         <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
-                                                            <i class="fas fa-syringe mr-1"></i>Vaccination
+                                                            <i class="fas fa-user mr-1"></i> Farmer
                                                         </span>
+                                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white ml-2">
+                                                            <a href="/paravet/farmers/<%= farmer ? farmer._id : '' %>" class="hover:underline"><%= farmer ? (farmer.name || 'Unknown Farmer') : 'Unknown Farmer' %></a>
+                                                        </h3>
                                                     </div>
-                                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2"><%= task.title %></h3>
-                                                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3"><%= task.description || 'No description provided' %></p>
-                                                    
-                                                    <div class="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                                        <span class="flex items-center gap-1">
-                                                            <i class="fas fa-user mr-1"></i>
-                                                            <a href="/paravet/farmers/<%= task.farmer?._id %>" class="hover:text-blue-600 hover:underline">
-                                                                <%= task.farmer?.name || 'N/A' %>
-                                                            </a>
-                                                        </span>
-                                                        <span class="flex items-center gap-1">
-                                                            <i class="fas fa-map-marker-alt mr-1"></i>
-                                                            <span><%= task.farmer?.address?.village || task.location || 'Not specified' %></span>
-                                                        </span>
-                                                        <span class="flex items-center gap-1">
-                                                            <i class="fas fa-clock mr-1"></i>
-                                                            <%= moment(task.scheduledDate).format('DD MMM YYYY, hh:mm A') %>
-                                                        </span>
+                                                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                                                        <%= (farmer && farmer.address && farmer.address.village) ? farmer.address.village : (farmer && farmer.address && farmer.address.district) ? farmer.address.district : 'Location not specified' %>
+                                                    </p>
+
+                                                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                                        <% for (var ft = 0; ft < Math.min(fTasks.length, 6); ft++) {  %>
+                                                           <% var tItem = fTasks[ft]; %>
+                                                            <div class="p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                                                                <div class="font-medium"><%= (tItem.animal && (tItem.animal.name || tItem.animal.tagNumber)) ? (tItem.animal.name || tItem.animal.tagNumber) : 'Animal' %></div>
+                                                                <div class="text-xs"><%= (tItem.vaccine && tItem.vaccine.name) ? tItem.vaccine.name : (tItem.vaccineName || 'Vaccine') %></div>
+                                                                <div class="text-xs text-gray-500"><%= moment(tItem.scheduledDate).format('DD MMM, hh:mm A') %></div>
+                                                            </div>
+                                                        <% } %>
+                                                        <% if (fTasks.length > 6) { %>
+                                                            <div class="p-2 flex items-center justify-center">
+                                                                <a href="/paravet/farmers/<%= farmer ? farmer._id : '' %>" class="text-sm text-blue-600 hover:underline">View all (<%= fTasks.length %>)</a>
+                                                            </div>
+                                                        <% } %>
                                                     </div>
-                                                    
-                                                    <!-- Location and Actions -->
+
                                                     <div class="mt-3 flex flex-wrap gap-2">
-                                                        <% if (task.farmer?.location?.coordinates && task.farmer.location.coordinates[0] !== 0 && task.farmer.location.coordinates[1] !== 0) { %>
-                                                         <%   var lat = task.farmer.location.coordinates[1]; %>
-                                                         <%   var lng = task.farmer.location.coordinates[0];  %>
-                                                            <button onclick='openMapModal(`<%= lat %>`, `<%= lng %>`, `<%= task.farmer.name.replace(/\\'/g, "\\\\'") %>`)' 
+                                                        <% if (farmer && farmer.location && farmer.location.coordinates && farmer.location.coordinates[0] !== 0 && farmer.location.coordinates[1] !== 0) {  %>
+                                                           <% var latF = farmer.location.coordinates[1]; %>
+                                                           <% var lngF = farmer.location.coordinates[0]; %>
+                                                       
+                                                            <button onclick="openMapModal(`<%= latF %>`, `<%= lngF %>`, '<%= (farmer.name || '').replace(/'/g, "\\'") %>')" 
                                                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition">
                                                                 <i class="fas fa-map-marked-alt"></i>
                                                                 View on Map
                                                             </button>
-                                                            <a href="https://www.google.com/maps/dir//<%= lat %>,<%= lng %>" target="_blank"
+                                                            <a href="https://www.google.com/maps/dir//<%= latF %>,<%= lngF %>" target="_blank"
                                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition">
                                                                 <i class="fas fa-directions"></i>
                                                                 Get Directions
                                                             </a>
                                                         <% } %>
-                                                        <a href="/paravet/farmers/<%= task.farmer._id %>" 
+                                                        <a href="/paravet/farmers/<%= farmer ? farmer._id : '' %>" 
                                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition">
                                                             <i class="fas fa-user-circle"></i>
                                                             View Farmer Details
                                                         </a>
                                                     </div>
                                                 </div>
-                                                
-                                                <div class="flex flex-col items-end gap-2">
-                                                    <% if (task.status !== 'completed') { %>
-                                                        <button onclick="completeTask('<%= task._id %>')" 
-                                                                class="complete-btn w-full lg:w-auto px-6 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md">
-                                                            <i class="fas fa-syringe mr-2"></i> Complete Vaccination
-                                                        </button>
-                                                    <% } else { %>
-                                                        <button class="w-full lg:w-auto px-6 py-2.5 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed text-sm font-medium" disabled>
-                                                            <i class="fas fa-check-circle mr-2"></i> Completed
-                                                        </button>
-                                                    <% } %>
-                                                </div>
+
+                                                <!-- DIRECT REDIRECT - NO POPUP -->
+                                                <a href="/paravet/farmers/<%= farmer._id %>/vaccinate/bulk" 
+                                                   class="complete-btn w-full lg:w-auto px-6 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md inline-flex items-center justify-center gap-2">
+                                                    <i class="fas fa-syringe"></i>
+                                                    Complete Vaccination
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
-                                <% }); %>
+                                <% } %>
                             </div>
                         </div>
-                    <% } %>
-                <% }); %>
-            <% } else { %>
+                <% } 
+                } 
+            } else { %>
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
                     <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Tasks Found</h3>
@@ -205,7 +213,7 @@
     </div>
 </div>
 
-<!-- Map Modal with Advanced Features -->
+<!-- Map Modal (Only for Location) -->
 <div id="mapModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
     <div class="bg-white dark:bg-gray-800 rounded-xl max-w-5xl w-full mx-4 overflow-hidden max-h-[90vh]">
         <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
@@ -217,7 +225,6 @@
             </button>
         </div>
         <div class="p-4">
-            <!-- Map Controls -->
             <div class="flex flex-wrap gap-2 mb-3">
                 <button onclick="showMyLocationOnModal()" class="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,10 +253,8 @@
                 </button>
             </div>
             
-            <!-- Map Container -->
             <div id="modalMap" style="height: 400px; width: 100%; border-radius: 12px;"></div>
             
-            <!-- Distance Info -->
             <div id="modalDistanceInfo" class="mt-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-center text-sm">
                 📍 Click "My Location" to see distance
             </div>
@@ -290,13 +295,9 @@
         window.location.href = '/paravet/tasks?filter=' + currentFilter + '&area=' + area;
     }
     
-    function completeTask(taskId) {
-        window.location.href = '/paravet/tasks/' + taskId + '/complete';
-    }
-    
     function openMapModal(lat, lng, farmerName) {
-        currentLat = lat;
-        currentLng = lng;
+        currentLat = parseFloat(lat);
+        currentLng = parseFloat(lng);
         currentFarmerName = farmerName;
         
         var modal = document.getElementById('mapModal');
@@ -316,8 +317,7 @@
             if (routingControl) {
                 routingControl = null;
             }
-            
-            initModalMap(lat, lng, farmerName);
+            initModalMap(parseFloat(lat), parseFloat(lng), farmerName);
         }, 100);
     }
     
@@ -477,6 +477,12 @@
             closeMapModal();
         }
     });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeMapModal();
+        }
+    });
 </script>
 
 <style>
@@ -486,14 +492,6 @@
     .task-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-    }
-    .task-status {
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        background-color: #fef3c7;
-        color: #92400e;
     }
     .filter-btn {
         transition: all 0.2s ease;
@@ -540,10 +538,15 @@
     .complete-btn {
         transition: all 0.3s ease;
         cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
     .complete-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        text-decoration: none;
     }
     .leaflet-container {
         border-radius: 12px;

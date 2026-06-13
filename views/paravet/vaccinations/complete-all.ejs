@@ -1,0 +1,479 @@
+<% layout("layouts/boilerplate", {
+    title: 'Complete Vaccinations - Zoopito',
+    description: 'Complete multiple vaccinations for farmer\'s animals'
+}) %>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                        <i class="fas fa-syringe mr-3 text-green-500"></i>
+                        Complete Vaccinations
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-1">
+                        Farmer: <span class="font-semibold"><%= farmer.name %></span>
+                        (<%= farmer.address?.village || farmer.address?.district || 'Location not set' %>)
+                    </p>
+                    <p class="text-sm text-gray-500 mt-1">
+                        <i class="fas fa-paw mr-1"></i> Total Animals: <%= animals.length %>
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="/paravet/tasks" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center transition">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Tasks
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-3"></i>
+                <div class="text-sm text-blue-800 dark:text-blue-300">
+                    <p class="font-medium">Bulk Vaccination Mode</p>
+                    <p>Select the vaccines you want to administer for each animal. 
+                       Next due date will be automatically calculated based on vaccine type.</p>
+                </div>
+            </div>
+        </div>
+
+        <form id="bulkVaccinationForm">
+            
+            <!-- Common Options Panel -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <i class="fas fa-sliders-h mr-2 text-gray-500"></i>
+                    Common Options (Apply to All)
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Common Date <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="commonDate" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" 
+                               value="<%= new Date().toISOString().split('T')[0] %>">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Common Time
+                        </label>
+                        <input type="time" id="commonTime" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" 
+                               value="<%= new Date().toTimeString().slice(0, 5) %>">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Common Batch Number
+                        </label>
+                        <input type="text" id="commonBatch" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" 
+                               placeholder="Enter batch number">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Common Notes
+                        </label>
+                        <input type="text" id="commonNotes" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" 
+                               placeholder="Additional notes">
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button type="button" onclick="applyCommonToAll()" 
+                            class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition">
+                        <i class="fas fa-check-double mr-2"></i> Apply to All Selected
+                    </button>
+                </div>
+            </div>
+
+            <!-- Animals List -->
+            <div class="space-y-6">
+                <% animals.forEach((animal, animalIdx) => { %>
+                  <% const pendingVaccines = animal.pendingVaccines || []; %>
+                  <% if (pendingVaccines.length === 0) return; %>
+                
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700" data-animal-id="<%= animal._id %>">
+                        <!-- Animal Header -->
+                        <div class="px-6 py-4 bg-gradient-to-r from-green-600 to-teal-600 text-white">
+                            <div class="flex items-center justify-between flex-wrap gap-3">
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" class="animal-select-checkbox w-5 h-5 rounded border-2 border-white" 
+                                           data-animal-index="<%= animalIdx %>" onchange="toggleAllVaccinesForAnimal(`<%= animalIdx %>`, this.checked)">
+                                    <div>
+                                        <h3 class="text-lg font-semibold">
+                                            <%= animal.name || 'Unnamed' %>
+                                            <span class="text-sm bg-white/20 px-2 py-0.5 rounded-full ml-2">
+                                                <%= animal.animalType %>
+                                            </span>
+                                        </h3>
+                                        <p class="text-sm text-white/80">
+                                            Tag: <%= animal.tagNumber || 'Not tagged' %> | 
+                                            ID: <%= animal.uniqueAnimalId %>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <span class="px-3 py-1 bg-white/20 rounded-lg text-sm">
+                                        <i class="fas fa-syringe mr-1"></i> <%= pendingVaccines.length %> Pending
+                                    </span>
+                                    <button type="button" onclick="selectAllVaccinesForAnimal(`<%= animalIdx %>`)" 
+                                            class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-sm transition">
+                                        <i class="fas fa-check-double mr-1"></i> Select All
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vaccines Table -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Select</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vaccine</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target Disease</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Booster Interval</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Next Due</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admin Date</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch #</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                    <% pendingVaccines.forEach((vaccine, vacIdx) => { %>
+                                      
+                                    <% let nextDuePreview = ''; %>
+                                    <% if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) { %>
+                                          <% nextDuePreview = `+${vaccine.boosterIntervalWeeks} weeks`; %>
+                                      <% } else if (vaccine.immunityDurationMonths && vaccine.immunityDurationMonths > 0) { %>
+                                           <% nextDuePreview = `+${vaccine.immunityDurationMonths} months`; %>
+                                      <% } else { %>
+                                          <% nextDuePreview = '+1 year'; %>
+                                       <% } %>
+                                   
+                                        <tr class="vaccine-row animal-<%= animalIdx %> hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                            <td class="px-4 py-3">
+                                                <input type="checkbox" 
+                                                       name="vaccinations[<%= animal._id %>][<%= vaccine._id %>][selected]"
+                                                       class="vaccine-checkbox vaccine-checkbox-<%= animalIdx %> rounded"
+                                                       data-vaccine-id="<%= vaccine._id %>"
+                                                       data-animal-id="<%= animal._id %>"
+                                                       data-booster-weeks="<%= vaccine.boosterIntervalWeeks || '' %>"
+                                                       data-booster-months="<%= vaccine.immunityDurationMonths || '' %>">
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="font-medium text-gray-900 dark:text-white"><%= vaccine.name %></div>
+                                                <div class="text-xs text-gray-500"><%= vaccine.vaccineType %></div>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                                                <%= vaccine.diseaseTarget || 'N/A' %>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                                                    <%= nextDuePreview %>
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <span class="next-due-display-<%= animal._id %>-<%= vaccine._id %> text-sm text-blue-600 font-medium">
+                                                    Will be calculated
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <input type="date" 
+                                                       class="vaccine-date vaccine-date-<%= animalIdx %> w-32 px-2 py-1 border rounded text-sm"
+                                                       data-animal-id="<%= animal._id %>"
+                                                       data-vaccine-id="<%= vaccine._id %>"
+                                                       onchange="updateNextDue(this, '<%= animal._id %>', '<%= vaccine._id %>', `<%= vaccine.boosterIntervalWeeks || 0 %>`, `<%= vaccine.immunityDurationMonths || 0 %>`)"
+                                                       value="<%= new Date().toISOString().split('T')[0] %>">
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <input type="time" 
+                                                       class="vaccine-time vaccine-time-<%= animalIdx %> w-24 px-2 py-1 border rounded text-sm"
+                                                       value="<%= new Date().toTimeString().slice(0, 5) %>">
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <input type="text" 
+                                                       class="vaccine-batch vaccine-batch-<%= animalIdx %> w-28 px-2 py-1 border rounded text-sm"
+                                                       placeholder="Batch #">
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <input type="text" 
+                                                       class="vaccine-notes w-32 px-2 py-1 border rounded text-sm"
+                                                       placeholder="Notes">
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                <% }); %>
+                
+                <% if (animals.length === 0 || animals.every(a => !a.pendingVaccines || a.pendingVaccines.length === 0)) { %>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-12 text-center">
+                        <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Pending Vaccinations</h3>
+                        <p class="text-gray-600 dark:text-gray-400">All animals are up to date with their vaccinations!</p>
+                        <a href="/paravet/tasks" class="mt-4 inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Back to Tasks
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Summary & Submit -->
+            <% if (animals.some(a => a.pendingVaccines && a.pendingVaccines.length > 0)) { %>
+                <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 sticky bottom-0 border border-gray-200 dark:border-gray-700">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Total Selected</p>
+                            <p class="text-2xl font-bold text-green-600" id="selectedCount">0</p>
+                            <p class="text-xs text-gray-500">vaccinations to complete</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" onclick="selectAll()" class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                                <i class="fas fa-check-double mr-2"></i> Select All
+                            </button>
+                            <button type="button" onclick="deselectAll()" class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                                <i class="fas fa-times mr-2"></i> Deselect All
+                            </button>
+                            <button type="button" onclick="submitVaccinations()" class="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition shadow-md">
+                                <i class="fas fa-save mr-2"></i> Save Selected Vaccinations
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let selectedCount = 0;
+    
+    // Calculate next due date
+    function calculateNextDueDate(adminDate, boosterWeeks, boosterMonths) {
+        const date = new Date(adminDate);
+        if (boosterWeeks && boosterWeeks > 0) {
+            date.setDate(date.getDate() + (boosterWeeks * 7));
+        } else if (boosterMonths && boosterMonths > 0) {
+            date.setMonth(date.getMonth() + boosterMonths);
+        } else {
+            date.setFullYear(date.getFullYear() + 1);
+        }
+        return date;
+    }
+    
+    // Format date for display
+    function formatDate(date) {
+        const d = new Date(date);
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    
+    // Update next due display
+    function updateNextDue(element, animalId, vaccineId, boosterWeeks, boosterMonths) {
+        const adminDate = element.value;
+        if (adminDate) {
+            const nextDue = calculateNextDueDate(adminDate, boosterWeeks, boosterMonths);
+            const displaySpan = document.querySelector(`.next-due-display-${animalId}-${vaccineId}`);
+            if (displaySpan) {
+                displaySpan.innerHTML = formatDate(nextDue);
+            }
+        }
+    }
+    
+    function updateSelectedCount() {
+        const checkboxes = document.querySelectorAll('.vaccine-checkbox:checked');
+        selectedCount = checkboxes.length;
+        const countElement = document.getElementById('selectedCount');
+        if (countElement) countElement.innerText = selectedCount;
+    }
+    
+    function toggleAllVaccinesForAnimal(animalIdx, isChecked) {
+        const checkboxes = document.querySelectorAll(`.vaccine-checkbox-${animalIdx}`);
+        checkboxes.forEach(cb => {
+            cb.checked = isChecked;
+        });
+        updateSelectedCount();
+    }
+    
+    function selectAllVaccinesForAnimal(animalIdx) {
+        const checkboxes = document.querySelectorAll(`.vaccine-checkbox-${animalIdx}`);
+        checkboxes.forEach(cb => {
+            cb.checked = true;
+        });
+        updateSelectedCount();
+    }
+    
+    function applyCommonToAll() {
+        const commonDate = document.getElementById('commonDate').value;
+        const commonTime = document.getElementById('commonTime').value;
+        const commonBatch = document.getElementById('commonBatch').value;
+        const commonNotes = document.getElementById('commonNotes').value;
+        
+        document.querySelectorAll('.vaccine-date').forEach(input => {
+            input.value = commonDate;
+            input.dispatchEvent(new Event('change'));
+        });
+        document.querySelectorAll('.vaccine-time').forEach(input => {
+            input.value = commonTime;
+        });
+        document.querySelectorAll('.vaccine-batch').forEach(input => {
+            if (commonBatch) input.value = commonBatch;
+        });
+        document.querySelectorAll('.vaccine-notes').forEach(input => {
+            if (commonNotes) input.value = commonNotes;
+        });
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Applied!',
+            text: 'Common values applied to all vaccinations',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    }
+    
+    function selectAll() {
+        document.querySelectorAll('.vaccine-checkbox').forEach(cb => {
+            cb.checked = true;
+        });
+        updateSelectedCount();
+    }
+    
+    function deselectAll() {
+        document.querySelectorAll('.vaccine-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
+        updateSelectedCount();
+    }
+    
+    // Initialize event listeners
+    document.querySelectorAll('.vaccine-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+    
+    document.querySelectorAll('.vaccine-date').forEach(input => {
+        const animalId = input.dataset.animalId;
+        const vaccineId = input.dataset.vaccineId;
+        const boosterWeeks = parseInt(input.getAttribute('data-booster-weeks')) || 0;
+        const boosterMonths = parseInt(input.getAttribute('data-booster-months')) || 0;
+        if (animalId && vaccineId) {
+            updateNextDue(input, animalId, vaccineId, boosterWeeks, boosterMonths);
+        }
+    });
+    
+    updateSelectedCount();
+    
+    // Submit function - NO HEALTH DATA
+    async function submitVaccinations() {
+        const selectedCheckboxes = document.querySelectorAll('.vaccine-checkbox:checked');
+        if (selectedCheckboxes.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Selection',
+                text: 'Please select at least one vaccine to complete'
+            });
+            return;
+        }
+        
+        Swal.fire({
+            title: 'Confirm Action',
+            text: `You are about to complete ${selectedCheckboxes.length} vaccination(s). Continue?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, proceed',
+            cancelButtonText: 'Cancel'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Processing...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+                
+                // Collect all selected vaccinations data
+                const vaccinations = {};
+                
+                selectedCheckboxes.forEach(cb => {
+                    const row = cb.closest('tr');
+                    const animalId = cb.getAttribute('data-animal-id');
+                    const vaccineId = cb.getAttribute('data-vaccine-id');
+                    
+                    if (!vaccinations[animalId]) vaccinations[animalId] = {};
+                    if (!vaccinations[animalId][vaccineId]) vaccinations[animalId][vaccineId] = {};
+                    
+                    vaccinations[animalId][vaccineId].selected = 'on';
+                    
+                    const dateInput = row.querySelector('.vaccine-date');
+                    const timeInput = row.querySelector('.vaccine-time');
+                    const batchInput = row.querySelector('.vaccine-batch');
+                    const notesInput = row.querySelector('.vaccine-notes');
+                    
+                    if (dateInput) vaccinations[animalId][vaccineId].dateAdministered = dateInput.value;
+                    if (timeInput) vaccinations[animalId][vaccineId].timeAdministered = timeInput.value;
+                    if (batchInput) vaccinations[animalId][vaccineId].batchNumber = batchInput.value;
+                    if (notesInput) vaccinations[animalId][vaccineId].notes = notesInput.value;
+                });
+                
+                try {
+                    const response = await fetch('/paravet/vaccinations/bulk-complete-all', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            farmerId: '<%= farmer._id %>',
+                            vaccinations: vaccinations,
+                            commonDate: document.getElementById('commonDate').value,
+                            commonTime: document.getElementById('commonTime').value,
+                            commonBatch: document.getElementById('commonBatch').value,
+                            commonNotes: document.getElementById('commonNotes').value
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: result.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = '/paravet/tasks';
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: result.message || 'Failed to complete vaccinations'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Network error. Please try again.'
+                    });
+                }
+            }
+        });
+    }
+</script>
+
+<style>
+    .vaccine-checkbox:checked + td {
+        background-color: #f0fdf4;
+    }
+    input:focus, select:focus {
+        outline: none;
+        ring: 2px solid #3b82f6;
+    }
+</style>
