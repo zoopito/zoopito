@@ -1959,9 +1959,9 @@ exports.renderPendingVerifications = async (req, res) => {
 // Get single verification details (API)
 exports.getVerificationDetails = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { requestId } = req.params;
         
-        const verification = await Vaccination.findById(id)
+        const verification = await Vaccination.findById(requestId)
             .populate('farmer', 'name mobileNumber address uniqueFarmerId')
             .populate('animal', 'name tagNumber uniqueAnimalId animalType breed age gender')
             .populate('vaccine', 'name vaccineType diseaseTarget boosterIntervalWeeks immunityDurationMonths vaccineCharge')
@@ -1987,10 +1987,10 @@ exports.getVerificationDetails = async (req, res) => {
 // Verify single vaccination (Admin action)
 exports.verifyVaccination = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { requestId } = req.params;
         const { action, notes } = req.body;
         
-        const vaccination = await Vaccination.findById(id)
+        const vaccination = await Vaccination.findById(requestId)
             .populate('vaccine')
             .populate('animal');
         
