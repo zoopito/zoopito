@@ -214,7 +214,7 @@ const vaccinationSchema = new Schema(
     // Bulk registration tracking
     source: {
       type: String,
-      enum: ["bulk_registration", "manual_entry", "schedule", "import"],
+      enum: ["bulk_registration","bulk_completion", "manual_entry", "schedule", "import"],
       default: "manual_entry",
       index: true,
     },

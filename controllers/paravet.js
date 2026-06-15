@@ -4446,7 +4446,7 @@ exports.bulkCompleteAllVaccinations = async (req, res) => {
             if (vaccination) {
               // UPDATE EXISTING RECORD
               vaccination.status = 'Completed';
-              vaccination.verificationStatus = 'Verified';
+              vaccination.verificationStatus = 'Pending';
               vaccination.dateAdministered = adminDate;
               vaccination.nextDueDate = nextDueDate;
               vaccination.administeredBy = req.user.name;
