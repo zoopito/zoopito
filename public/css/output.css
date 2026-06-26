@@ -1427,6 +1427,10 @@ video {
   min-width: max-content;
 }
 
+.min-w-\[100px\] {
+  min-width: 100px;
+}
+
 .max-w-2xl {
   max-width: 42rem;
 }
@@ -6764,12 +6768,20 @@ video {
     height: 2.5rem;
   }
 
+  .md\:h-48 {
+    height: 12rem;
+  }
+
   .md\:w-10 {
     width: 2.5rem;
   }
 
   .md\:w-72 {
     width: 18rem;
+  }
+
+  .md\:w-48 {
+    width: 12rem;
   }
 
   .md\:grid-cols-2 {
