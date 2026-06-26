@@ -14,13 +14,51 @@ module.exports.homePage = async (req, res, next) => {
         totalAnimals,
         totalParavets,
         totalSalesTeam,
+        uniqueVillages,
+      recentAnimalPhotos,
       ] = await Promise.all([
         User.countDocuments(),
         Farmer.countDocuments(),
         Animal.countDocuments(),
         Paravet.countDocuments(),
         SalesTeam.countDocuments(),
-      ]);
+        Farmer.distinct('address.village').then(villages => villages.filter(v => v && v !== '').length),
+        Animal.aggregate([
+          { $match: { isActive: true } },
+          { 
+            $match: { 
+              $or: [
+                { "photos.front.url": { $exists: true, $ne: "" } },
+                { "photos.left.url": { $exists: true, $ne: "" } },
+                { "photos.right.url": { $exists: true, $ne: "" } },
+                { "photos.back.url": { $exists: true, $ne: "" } },
+              ]
+            } 
+          },
+          { $sort: { createdAt: -1 } },
+          { $limit: 8 },
+          {
+            $lookup: {
+              from: 'farmers',
+              localField: 'farmer',
+              foreignField: '_id',
+              as: 'farmerData'
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              animalType: 1,
+              tagNumber: 1,
+              photos: 1,
+              healthStatus: '$healthStatus.currentStatus',
+              farmerName: { $arrayElemAt: ['$farmerData.name', 0] },
+              createdAt: 1
+            }
+          }
+        ])
+        ]);
 
       const totalAnimalImages = await Animal.countDocuments({
         $or: [
@@ -41,6 +79,8 @@ module.exports.homePage = async (req, res, next) => {
           totalParavets,
           totalSalesTeam,
           totalAnimalImages,
+          uniqueVillages,
+          recentAnimalPhotos: recentAnimalPhotos || [],
         },
       });
     } else if (req.user && req.user.role === "ADMIN") {

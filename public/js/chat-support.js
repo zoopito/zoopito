@@ -366,7 +366,7 @@ For more details like contact info and account settings, visit your <a href="/us
     <style>
       #zp-chat-root * { box-sizing: border-box; }
       #zp-fab {
-        position: fixed; bottom: 90px; right: 20px; z-index: 9998;
+        position: fixed; bottom: 40px; right: 20px; z-index: 9998;
         width: 52px; height: 52px; border-radius: 50%;
         background: ${cfg.gradient};
         color: #fff; border: none; cursor: pointer;
@@ -384,7 +384,7 @@ For more details like contact info and account settings, visit your <a href="/us
         font-weight: 700; color: #fff;
       }
       #zp-panel {
-        position: fixed; bottom: 150px; right: 20px; z-index: 9999;
+        position: fixed; bottom: 110px; right: 20px; z-index: 9999;
         width: 340px; height:70vh; max-height: 70vh !important;
         background: #fff; border-radius: 16px;
         box-shadow: 0 12px 48px rgba(0,0,0,0.18);

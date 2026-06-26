@@ -47,8 +47,8 @@
         <div class="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div class="absolute bottom-20 right-10 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
         
-        <div class="relative container mx-auto px-6 py-20 md:py-32">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div class="relative  mx-auto px-4 md:px-20 py-16 md:py-20">
+            <div class="grid md:grid-cols-2 gap-10 items-center">
                 <!-- Left Content -->
                 <div class="text-center md:text-left" data-aos="fade-right">
                     <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 mb-6">
@@ -84,7 +84,7 @@
                     </div>
                     
                     <!-- Trust Badges -->
-                    <div class="mt-12 flex flex-wrap items-center justify-center md:justify-start gap-8">
+                    <!-- <div class="mt-12 flex flex-wrap items-center justify-center md:justify-start gap-8">
                         <div class="flex items-center gap-3">
                             <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                                 <i class="fas fa-shield-alt text-green-600 dark:text-green-400 text-xl"></i>
@@ -104,7 +104,7 @@
                                 <p class="font-semibold text-gray-900 dark:text-white">Field Ready</p>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
                 
                 <!-- Right Content - Dashboard Preview -->
@@ -124,7 +124,7 @@
                         
                         <div class="p-6">
                             <!-- Stats Row -->
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                                 <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl">
                                     <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 stats-counter"><%= counts.totalFarmers %></p>
                                     <p class="text-sm text-gray-600 dark:text-gray-400">Farmers</p>
@@ -134,25 +134,122 @@
                                     <p class="text-sm text-gray-600 dark:text-gray-400">Animals</p>
                                 </div>
                                 <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl">
-                                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 stats-counter">10+</p>
+                                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 stats-counter"><%= counts.totalParavets %></p>
                                     <p class="text-sm text-gray-600 dark:text-gray-400">Paravets</p>
                                 </div>
                                 <div class="bg-orange-50 w-fit dark:bg-orange-900/20 p-4 rounded-xl">
-                                    <p class="text-2xl font-bold text-orange-600 dark:text-orange-400 stats-counter">45</p>
-                                    <p class=" text-sm text-gray-600 dark:text-gray-400">Villages Covered</p>
+                                    <p class="text-2xl font-bold text-orange-600 dark:text-orange-400 stats-counter"><%= counts.uniqueVillages %></p>
+                                    <p class=" text-sm text-gray-600 dark:text-gray-400">Villages</p>
                                 </div>
                             </div>
                             
                             <!-- Chart Preview -->
-                            <div class="h-40 bg-gradient-to-r from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-900 rounded-xl mb-4 flex items-end p-4">
-                                <div class="flex-1 flex items-end justify-between">
-                                    <div class="w-6 bg-blue-400 rounded-t h-16"></div>
-                                    <div class="w-6 bg-green-400 rounded-t h-24"></div>
-                                    <div class="w-6 bg-blue-400 rounded-t h-20"></div>
-                                    <div class="w-6 bg-green-400 rounded-t h-28"></div>
-                                    <div class="w-6 bg-blue-400 rounded-t h-18"></div>
-                                </div>
-                            </div>
+<!-- Animal Image Gallery - Real Photos -->
+<div class="bg-gradient-to-r from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 mb-4">
+    <div class="flex items-center justify-between mb-3">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <i class="fas fa-images text-blue-500"></i>
+            Recent Animal Photos
+            
+        </h4>
+        
+    </div>
+    
+    <div class="grid grid-cols-4 gap-2">
+        <% if (counts && counts.recentAnimalPhotos && counts.recentAnimalPhotos.length > 0) { %>
+            <% counts.recentAnimalPhotos.forEach(function(animal, index) { %>
+                <% 
+                    // Get the best available photo
+                    var photoUrl = null;
+                    if (animal.photos && animal.photos.front && animal.photos.front.url) {
+                        photoUrl = animal.photos.front.url;
+                    } else if (animal.photos && animal.photos.left && animal.photos.left.url) {
+                        photoUrl = animal.photos.left.url;
+                    } else if (animal.photos && animal.photos.right && animal.photos.right.url) {
+                        photoUrl = animal.photos.right.url;
+                    } else if (animal.photos && animal.photos.back && animal.photos.back.url) {
+                        photoUrl = animal.photos.back.url;
+                    }
+                    
+                    // Get animal type icon
+                    var icon = 'fa-paw';
+                    if (animal.animalType === 'Cow' || animal.animalType === 'Buffalo') icon = 'fa-cow';
+                    else if (animal.animalType === 'Goat' || animal.animalType === 'Sheep') icon = 'fa-🐐';
+                    else if (animal.animalType === 'Dog') icon = 'fa-dog';
+                    else if (animal.animalType === 'Cat') icon = 'fa-cat';
+                    else if (animal.animalType === 'Poultry') icon = 'fa-🐔';
+                %>
+                <div class="relative group aspect-square rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-sm hover:shadow-lg transition-all duration-300" 
+                     data-aos="fade-up" data-aos-delay="<%= index * 50 %>">
+                    <% if (photoUrl) { %>
+                        <img src="<%= photoUrl %>" 
+                             alt="<%= animal.name || 'Animal' %>" 
+                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                             loading="lazy"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2">
+                            <p class="text-white text-xs font-medium truncate">
+                                <%= animal.name || 'Unnamed' %>
+                            </p>
+                            <p class="text-white/80 text-xs truncate">
+                                <%= animal.animalType || 'Animal' %> 
+                                <%= animal.tagNumber ? '• ' + animal.tagNumber : '' %>
+                            </p>
+                            <p class="text-white/60 text-xs truncate">
+                                <i class="fas fa-user mr-1"></i><%= animal.farmerName || 'Unknown' %>
+                            </p>
+                        </div>
+                    <% } else { %>
+                        <div class="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                            <i class="fas <%= icon %> text-3xl mb-1"></i>
+                            <span class="text-xs"><%= animal.name || 'No Photo' %></span>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2">
+                            <p class="text-white text-xs truncate w-full">
+                                <%= animal.name || 'Unnamed' %> - <%= animal.animalType || 'Animal' %>
+                            </p>
+                        </div>
+                    <% } %>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <!-- No photos available - Show placeholders -->
+            <% 
+                var placeholders = [
+                    { icon: 'fa-cow', label: 'Cow', color: 'text-blue-400', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+                    { icon: 'fa-dog', label: 'Dog', color: 'text-orange-400', bg: 'bg-orange-100 dark:bg-orange-900/30' },
+                    { icon: 'fa-cat', label: 'Cat', color: 'text-purple-400', bg: 'bg-purple-100 dark:bg-purple-900/30' },
+                    { icon: 'fa-horse', label: 'Horse', color: 'text-green-400', bg: 'bg-green-100 dark:bg-green-900/30' },
+                ];
+            %>
+            <% for (var i = 0; i < 4; i++) { %>
+                <div class="aspect-square rounded-lg <%= placeholders[i].bg %> flex flex-col items-center justify-center">
+                    <i class="fas <%= placeholders[i].icon %> <%= placeholders[i].color %> text-3xl"></i>
+                    <span class="text-xs text-gray-400 mt-1"><%= placeholders[i].label %></span>
+                </div>
+            <% } %>
+            <div class="col-span-4 text-center text-sm text-gray-400 py-2">
+                <i class="fas fa-camera mr-2"></i>
+                No animal photos uploaded yet. 
+                <a href="/admin/animals/new" class="text-blue-500 hover:underline">Add your first animal →</a>
+            </div>
+        <% } %>
+    </div>
+    
+    <!-- Stats Footer -->
+    <div class="flex flex-wrap justify-between items-center mt-3 pt-3 border-t border-gray-200/50 dark:border-gray-700/50 text-xs text-gray-500">
+        <div class="flex items-center gap-4">
+            <span><i class="fas fa-camera mr-1 text-blue-500"></i> <span class="font-medium"><%= (counts && counts.totalAnimalImages) || 0 %></span> photos</span>
+            <span><i class="fas fa-paw mr-1 text-green-500"></i> <span class="font-medium"><%= (counts && counts.totalAnimals) || 0 %></span> animals</span>
+            <span><i class="fas fa-users mr-1 text-purple-500"></i> <span class="font-medium"><%= (counts && counts.totalFarmers) || 0 %></span> farmers</span>
+        </div>
+        <div>
+            <span class="text-gray-400">
+                <i class="fas fa-clock mr-1"></i> Latest uploads
+            </span>
+        </div>
+    </div>
+</div>
                             
                             <!-- Recent Activity -->
                             <div class="space-y-3">
@@ -196,29 +293,36 @@
     </section>
 
     <!-- Stats Section -->
-    <section class="py-16 bg-gray-50 dark:bg-gray-900/50">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div class="text-center" data-aos="fade-up">
-                    <p class="text-4xl md:text-5xl font-bold text-blue-600 dark:text-blue-400 mb-2 stats-counter">50,000+</p>
-                    <p class="text-gray-600 dark:text-gray-400">Animals Tracked</p>
-                </div>
-                <div class="text-center" data-aos="fade-up" data-aos-delay="100">
-                    <p class="text-4xl md:text-5xl font-bold text-green-600 dark:text-green-400 mb-2 stats-counter">10,000+</p>
-                    <p class="text-gray-600 dark:text-gray-400">Farmers Registered</p>
-                </div>
-                <div class="text-center" data-aos="fade-up" data-aos-delay="200">
-                    <p class="text-4xl md:text-5xl font-bold text-purple-600 dark:text-purple-400 mb-2 stats-counter">500+</p>
-                    <p class="text-gray-600 dark:text-gray-400">Villages Covered</p>
-                </div>
-                <div class="text-center" data-aos="fade-up" data-aos-delay="300">
-                    <p class="text-4xl md:text-5xl font-bold text-orange-600 dark:text-orange-400 mb-2 stats-counter">200+</p>
-                    <p class="text-gray-600 dark:text-gray-400">Veterinarians</p>
-                </div>
+   <section class="py-16 bg-gray-50 dark:bg-gray-900/50">
+    <div class="container mx-auto px-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="text-center" data-aos="fade-up">
+                <p class="text-4xl md:text-5xl font-bold text-blue-600 dark:text-blue-400 mb-2 stats-counter">
+                    <%= (counts && counts.totalAnimals) ? (counts.totalAnimals > 1000 ? (counts.totalAnimals/1000).toFixed(1) + 'K+' : counts.totalAnimals) : '0' %>
+                </p>
+                <p class="text-gray-600 dark:text-gray-400">Animals Tracked</p>
+            </div>
+            <div class="text-center" data-aos="fade-up" data-aos-delay="100">
+                <p class="text-4xl md:text-5xl font-bold text-green-600 dark:text-green-400 mb-2 stats-counter">
+                    <%= (counts && counts.totalFarmers) ? (counts.totalFarmers > 1000 ? (counts.totalFarmers/1000).toFixed(1) + 'K+' : counts.totalFarmers) : '0' %>
+                </p>
+                <p class="text-gray-600 dark:text-gray-400">Farmers Registered</p>
+            </div>
+            <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+                <p class="text-4xl md:text-5xl font-bold text-purple-600 dark:text-purple-400 mb-2 stats-counter">
+                    <%= (counts && counts.uniqueVillages) ? (counts.uniqueVillages > 1000 ? (counts.uniqueVillages/1000).toFixed(1) + 'K+' : counts.uniqueVillages) : (counts && counts.totalParavets ? Math.round(counts.totalParavets * 3) : '0') %>
+                </p>
+                <p class="text-gray-600 dark:text-gray-400">Villages Covered</p>
+            </div>
+            <div class="text-center" data-aos="fade-up" data-aos-delay="300">
+                <p class="text-4xl md:text-5xl font-bold text-orange-600 dark:text-orange-400 mb-2 stats-counter">
+                    <%= (counts && counts.totalParavets) ? (counts.totalParavets > 1000 ? (counts.totalParavets/1000).toFixed(1) + 'K+' : counts.totalParavets) : '0' %>
+                </p>
+                <p class="text-gray-600 dark:text-gray-400">Veterinarians</p>
             </div>
         </div>
-    </section>
-
+    </div>
+</section>
     <!-- Features Section -->
     <section id="features" class="py-20 bg-white dark:bg-gray-900">
         <div class="container mx-auto px-6">
@@ -453,13 +557,13 @@
                 </div>
             </div>
             
-            <div class="text-center mt-12">
+            <!-- <div class="text-center mt-12">
                 <a href="/register" 
                    class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300">
                     <i class="fas fa-play"></i>
                     Watch Demo Video
                 </a>
-            </div>
+            </div> -->
         </div>
     </section>
 
@@ -475,7 +579,7 @@
                 </p>
                 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="/register" 
+                    <a href="/signup" 
                        class="px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3">
                         <i class="fas fa-user-plus"></i>
                         Start Free Trial
@@ -496,51 +600,7 @@
     </section>
 
     <!-- Partners Section -->
-    <section class="py-16 bg-white dark:bg-gray-900">
-        <div class="container mx-auto px-6">
-            <div class="text-center mb-12">
-                <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                    Trusted By
-                </p>
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    Government Agencies & NGOs
-                </h3>
-            </div>
-            
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
-                <div class="partner-logo">
-                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                        <span class="text-gray-500 dark:text-gray-400 font-semibold">Govt. Dept</span>
-                    </div>
-                </div>
-                <div class="partner-logo">
-                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                        <span class="text-gray-500 dark:text-gray-400 font-semibold">Insurance Co.</span>
-                    </div>
-                </div>
-                <div class="partner-logo">
-                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                        <span class="text-gray-500 dark:text-gray-400 font-semibold">NGO Partner</span>
-                    </div>
-                </div>
-                <div class="partner-logo">
-                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                        <span class="text-gray-500 dark:text-gray-400 font-semibold">Animal Health</span>
-                    </div>
-                </div>
-                <div class="partner-logo">
-                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                        <span class="text-gray-500 dark:text-gray-400 font-semibold">Dairy Board</span>
-                    </div>
-                </div>
-                <div class="partner-logo">
-                    <div class="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                        <span class="text-gray-500 dark:text-gray-400 font-semibold">Agri-Tech</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    
 
     <!-- JavaScript for Counter Animation -->
     <script>

@@ -281,8 +281,46 @@
   </div>
 </footer>
 
-<!-- JavaScript for Enhanced Offline/Online Handling -->
+<!-- JavaScript for Enhanced Offline/Online Handling & Back to Top -->
 <script>
+  // ============ BACK TO TOP BUTTON ============
+  const backToTopBtn = document.getElementById('footerBackToTop');
+
+  function toggleBackToTopButton() {
+      if (!backToTopBtn) return;
+      
+      // Show button when scrolled down more than 200px
+      if (window.scrollY > 200) {
+          backToTopBtn.style.display = 'flex';
+          backToTopBtn.style.opacity = '1';
+      } else {
+          backToTopBtn.style.display = 'none';
+          backToTopBtn.style.opacity = '0';
+      }
+  }
+
+  // Initial check on page load
+  document.addEventListener('DOMContentLoaded', function() {
+      toggleBackToTopButton();
+  });
+
+  // Check on scroll
+  window.addEventListener('scroll', function() {
+      toggleBackToTopButton();
+  });
+
+  // Back to top click handler
+  if (backToTopBtn) {
+      backToTopBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+          });
+      });
+  }
+
+  // ============ OFFLINE/ONLINE HANDLING ============
   // Enhanced connection management
   let offlineTimer;
   let connectionCheckInterval;
@@ -403,37 +441,7 @@
     const offlineData = localStorage.getItem('zoopito_offline_data');
     if (offlineData) {
       console.log('Syncing offline data...');
-     try {
-            const res = await fetch("/subscribe", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Subscription failed");
-            }
-
-            // Show success
-            successMessage.querySelector("p").textContent = data.message;
-            successMessage.classList.remove("hidden");
-
-            newsletterForm.reset();
-
-            setTimeout(() => {
-                successMessage.classList.add("hidden");
-            }, 5000);
-
-        } catch (error) {
-            alert(error.message);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = "Subscribe Now";
-        }
+      // Add your sync logic here
     }
   }
 
@@ -446,11 +454,6 @@
 
   window.addEventListener('online', showOnlineBanner);
   window.addEventListener('offline', showOfflineBanner);
-
-  // Back to top functionality
-  document.getElementById('footerBackToTop')?.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
 
   // Newsletter form handling
   document.querySelector('footer input[type="email"]')?.addEventListener('keypress', (e) => {
@@ -526,4 +529,42 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
   }
+
+  /* Back to Top Button - Enhanced */
+#footerBackToTop {
+    position: fixed;
+    bottom: 120px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: none;  /* Initially hidden */
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+#footerBackToTop.visible {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#footerBackToTop:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
+    background: linear-gradient(135deg, #2563eb, #059669);
+}
+
+#footerBackToTop i {
+    font-size: 20px;
+}
 </style>
