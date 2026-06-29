@@ -1410,7 +1410,8 @@
           
           if (detailsDiv) {
             const dateInput = detailsDiv.querySelector('.vaccination-date');
-            const administeredByInput = detailsDiv.querySelector('input[name*="[administeredBy]"]');
+             const administeredByInput = detailsDiv.querySelector('input[name*="[administeredBy]"]') || 
+                                      detailsDiv.querySelector('select[name*="[administeredBy]"]');
             
             if (!dateInput || !dateInput.value) {
               e.preventDefault();
@@ -1419,7 +1420,7 @@
               return;
             }
             
-            if (!administeredByInput || !administeredByInput.value.trim()) {
+            if (!administeredByInput || !administeredByInput.value || administeredByInput.value === '') {
               e.preventDefault();
               alert(`Please enter who administered the vaccine for Animal ${parseInt(animalIndex) + 1}.`);
               administeredByInput?.focus();

@@ -64,7 +64,7 @@ exports.renderSchedulePage = async (req, res) => {
 
     console.log("Applied Filters:", JSON.stringify(filters, null, 2));
 
-    // 🔧 FIX: Get ALL vaccinations including Completed ones with nextDueDate
+    // Get ALL vaccinations including Completed ones with nextDueDate
     const [vaccinations, totalCount] = await Promise.all([
       Vaccination.find(filters)
         .populate({
@@ -99,18 +99,17 @@ exports.renderSchedulePage = async (req, res) => {
     })
       .populate("farmer", "name address mobileNumber uniqueFarmerId")
       .select("name tagNumber animalType breed farmer")
-      .limit(20)
       .lean();
 
     console.log(`Found ${untaggedAnimals.length} untagged animals`);
 
-    // 🔧 FIX: Get animals needing vaccination based on age and type
+    // ============ FIXED: Get ALL animals needing vaccination ============
     const allAnimals = await Animal.find({ isActive: true })
-      .populate("farmer", "name")
+      .populate('farmer', 'name address mobileNumber')
       .lean();
-    
+
     const animalsNeedingVaccination = [];
-    
+
     for (const animal of allAnimals) {
       // Get recommended vaccines for this animal
       const recommendedVaccines = await getRecommendedVaccinesForAnimal(animal);
@@ -119,24 +118,49 @@ exports.renderSchedulePage = async (req, res) => {
       const existingVaccinations = await Vaccination.find({ 
         animal: animal._id,
         status: { $in: ["Administered", "Completed", "Payment Verified"] }
-      }).distinct("vaccineName");
+      }).distinct('vaccineName');
       
-      // Filter out vaccines that are already given
-      const pendingRecommended = recommendedVaccines.filter(v => 
-        !existingVaccinations.some(ex => ex && ex.toLowerCase().includes(v.name.toLowerCase()))
-      );
+      // Get scheduled vaccinations
+      const scheduledVaccinations = await Vaccination.find({ 
+        animal: animal._id,
+        status: { $in: ["Scheduled", "Payment Pending"] }
+      }).distinct('vaccineName');
+      
+      // Filter out vaccines that are already given or scheduled
+      const pendingRecommended = recommendedVaccines.filter(v => {
+        const isGiven = existingVaccinations.some(ex => 
+          ex && ex.toLowerCase().includes(v.name.toLowerCase())
+        );
+        const isScheduled = scheduledVaccinations.some(sv => 
+          sv && sv.toLowerCase().includes(v.name.toLowerCase())
+        );
+        return !isGiven && !isScheduled;
+      });
+      
+      // Check if newly registered (within 7 days)
+      const isNewlyRegistered = animal.createdAt && 
+        (new Date() - new Date(animal.createdAt)) < 7 * 24 * 60 * 60 * 1000;
       
       if (pendingRecommended.length > 0) {
         animalsNeedingVaccination.push({
           ...animal,
-          pendingRecommended,
+          pendingRecommended: pendingRecommended,
           pendingCount: pendingRecommended.length,
-          reason: `${pendingRecommended.length} vaccine(s) pending`
+          isNewlyRegistered: isNewlyRegistered,
+          reason: isNewlyRegistered ? '🆕 Newly Registered' : `${pendingRecommended.length} vaccine(s) pending`
         });
       }
     }
-    
+
+    // Sort: Newly registered first, then by pending count
+    animalsNeedingVaccination.sort((a, b) => {
+      if (a.isNewlyRegistered && !b.isNewlyRegistered) return -1;
+      if (!a.isNewlyRegistered && b.isNewlyRegistered) return 1;
+      return b.pendingCount - a.pendingCount;
+    });
+
     console.log(`Found ${animalsNeedingVaccination.length} animals needing vaccination`);
+    console.log(`Newly registered: ${animalsNeedingVaccination.filter(a => a.isNewlyRegistered).length}`);
 
     // Group vaccinations by farmer
     const groupedByFarmer = {};
@@ -521,7 +545,8 @@ async function buildFilters(query) {
   return filters;
 }
 
-// ================ FIXED: bulkScheduleNeedingVaccination ================
+// controllers/taskScheduller.js - Updated bulkScheduleNeedingVaccination
+
 exports.bulkScheduleNeedingVaccination = async (req, res) => {
   try {
     const { animalIds, paravetId, scheduledDate, notes } = req.body;
@@ -567,8 +592,12 @@ exports.bulkScheduleNeedingVaccination = async (req, res) => {
     const results = {
       success: [],
       failed: [],
-      totalScheduled: 0
+      totalScheduled: 0,
+      newlyRegistered: 0
     };
+    
+    // Get all active vaccines
+    const allVaccines = await Vaccine.find({ isActive: true });
     
     for (const animalId of animalIds) {
       try {
@@ -579,6 +608,10 @@ exports.bulkScheduleNeedingVaccination = async (req, res) => {
         }
         
         console.log(`Processing animal: ${animal.name || animal.tagNumber} (${animal.animalType})`);
+        
+        // Check if this is a newly registered animal (created within last 7 days)
+        const isNewlyRegistered = animal.createdAt && 
+          (new Date() - new Date(animal.createdAt)) < 7 * 24 * 60 * 60 * 1000;
         
         // Get recommended vaccines for this animal
         const recommendedVaccines = await getRecommendedVaccinesForAnimal(animal);
@@ -593,7 +626,7 @@ exports.bulkScheduleNeedingVaccination = async (req, res) => {
           continue;
         }
         
-        // Get existing vaccinations for this animal
+        // Get existing vaccinations for this animal (all statuses except scheduled)
         const existingVaccinations = await Vaccination.find({
           animal: animalId,
           status: { $in: ['Administered', 'Completed', 'Payment Verified'] }
@@ -601,9 +634,18 @@ exports.bulkScheduleNeedingVaccination = async (req, res) => {
         
         const existingVaccineIds = existingVaccinations.map(id => id ? id.toString() : null).filter(Boolean);
         
-        // Filter vaccines that haven't been given yet
+        // Check for existing scheduled vaccinations
+        const scheduledVaccinations = await Vaccination.find({
+          animal: animalId,
+          status: { $in: ['Scheduled', 'Payment Pending'] }
+        }).distinct('vaccine');
+        
+        const scheduledVaccineIds = scheduledVaccinations.map(id => id ? id.toString() : null).filter(Boolean);
+        
+        // Filter vaccines that haven't been given yet AND not already scheduled
         const pendingVaccines = recommendedVaccines.filter(v => 
-          !existingVaccineIds.includes(v._id.toString())
+          !existingVaccineIds.includes(v._id.toString()) &&
+          !scheduledVaccineIds.includes(v._id.toString())
         );
         
         console.log(`Pending vaccines count: ${pendingVaccines.length}`);
@@ -612,12 +654,13 @@ exports.bulkScheduleNeedingVaccination = async (req, res) => {
           results.failed.push({ 
             animalId, 
             animalName: animal.name || animal.tagNumber,
-            reason: 'No pending vaccines - all recommended vaccines already given' 
+            reason: 'No pending vaccines - all recommended vaccines already given or scheduled' 
           });
           continue;
         }
         
         // Create scheduled vaccinations for each pending vaccine
+        const createdVaccinations = [];
         for (const vaccine of pendingVaccines) {
           // Calculate next due date
           let nextDueDate = new Date(scheduleDate);
@@ -646,13 +689,22 @@ exports.bulkScheduleNeedingVaccination = async (req, res) => {
             injectionSite: 'Subcutaneous',
             scheduledDate: scheduleDate,
             nextDueDate: nextDueDate,
-            assignedParavet: paravetId,
+            assignedParavet: paravetId, // 🔥 ASSIGN TO PARAVET
             status: 'Scheduled',
-            notes: notes || '',
+            verificationStatus: 'Pending',
+            notes: notes || (isNewlyRegistered ? '✅ Newly registered animal - First vaccination scheduled' : ''),
             createdBy: req.user._id,
-            source: 'schedule'
+            source: 'schedule',
+            payment: {
+              vaccinePrice: vaccine.vaccineCharge || 0,
+              serviceCharge: 200,
+              totalAmount: (vaccine.vaccineCharge || 0) + 200,
+              paymentStatus: 'Pending'
+            }
           });
+          
           await vaccination.save();
+          createdVaccinations.push(vaccination);
           console.log(`✅ Created scheduled vaccination for ${vaccine.name}`);
         }
         
@@ -663,11 +715,52 @@ exports.bulkScheduleNeedingVaccination = async (req, res) => {
           });
         }
         
+        // Update animal's vaccination summary
+        const earliestNextDue = createdVaccinations
+          .filter(v => v.nextDueDate)
+          .sort((a, b) => a.nextDueDate - b.nextDueDate)[0];
+        
+        if (earliestNextDue) {
+          // Ensure vaccinationSummary exists
+          if (!animal.vaccinationSummary) {
+            animal.vaccinationSummary = {
+              totalVaccinations: 0,
+              vaccinesGiven: [],
+              isUpToDate: false,
+              lastUpdated: new Date()
+            };
+          }
+          
+          animal.vaccinationSummary.nextVaccinationDate = earliestNextDue.nextDueDate;
+          animal.vaccinationSummary.totalVaccinations = (animal.vaccinationSummary.totalVaccinations || 0) + createdVaccinations.length;
+          animal.vaccinationSummary.lastUpdated = new Date();
+          animal.vaccinationSummary.isUpToDate = false;
+          
+          // Add pending vaccines to vaccinesGiven with scheduled status
+          for (const vac of createdVaccinations) {
+            animal.vaccinationSummary.vaccinesGiven.push({
+              vaccine: vac.vaccine,
+              vaccineName: vac.vaccineName,
+              lastDate: null,
+              nextDue: vac.nextDueDate,
+              status: 'due_soon'
+            });
+          }
+          
+          await animal.save();
+        }
+        
         results.success.push({
           animalId,
           animalName: animal.name || animal.tagNumber || 'Unnamed',
-          vaccinesCount: pendingVaccines.length
+          vaccinesCount: createdVaccinations.length,
+          isNewlyRegistered: isNewlyRegistered,
+          scheduledDate: scheduleDate
         });
+        
+        if (isNewlyRegistered) {
+          results.newlyRegistered++;
+        }
         results.totalScheduled++;
         
       } catch (error) {
@@ -677,10 +770,19 @@ exports.bulkScheduleNeedingVaccination = async (req, res) => {
     }
     
     console.log(`✅ Bulk schedule completed: ${results.success.length} success, ${results.failed.length} failed`);
+    console.log(`✅ Newly registered animals scheduled: ${results.newlyRegistered}`);
+    
+    let message = `Successfully scheduled ${results.totalScheduled} animals. `;
+    if (results.newlyRegistered > 0) {
+      message += `${results.newlyRegistered} newly registered animal(s) scheduled. `;
+    }
+    if (results.success.length > 0) {
+      message += `${results.success.length} animals processed.`;
+    }
     
     res.json({
       success: true,
-      message: `Successfully scheduled ${results.totalScheduled} animals. ${results.success.length} animals processed.`,
+      message: message,
       results: results
     });
     

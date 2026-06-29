@@ -251,6 +251,7 @@ router.get("/api/dashboard-stats", paravetController.getDashboardStats);
 
 // ================ FARMER MANAGEMENT ================
 router.get("/farmers", paravetController.getAssignedFarmers);
+router.get("/farmers/map", isLoggedIn, isParavet, paravetController.getFarmersMap);
 router.get("/farmers/:farmerId", paravetController.getFarmerDetails2);
 router.get("/api/farmers/:farmerId/location", paravetController.getFarmerLocation);
 

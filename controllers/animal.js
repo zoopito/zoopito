@@ -435,8 +435,8 @@ async function createSingleAnimal(req, res) {
   }
 }
 
-// Bulk animal registration
-// Bulk animal registration - UPDATED with common vaccination scheduling
+// controllers/animal.js - Updated createBulkAnimals function
+
 async function createBulkAnimals(req, res) {
   try {
     console.log("========== BULK ANIMAL REGISTRATION DEBUG ==========");
@@ -524,6 +524,7 @@ async function createBulkAnimals(req, res) {
 
     // Create all animals and schedule remaining vaccines if requested
     let totalScheduledVaccinations = 0;
+    let scheduleErrors = [];
     
     for (const { animalData, index, animalInput } of animalsData) {
       try {
@@ -538,17 +539,27 @@ async function createBulkAnimals(req, res) {
           await createVaccinationRecords(req, newAnimal, null, index);
         }
         
-        // Schedule remaining vaccines if common vaccination is enabled
+        // ============================================================
+        // 🔥 CRITICAL: Schedule remaining vaccines if requested
+        // ============================================================
         if (applyCommonVaccination && commonScheduledDate && commonAdministeredBy) {
           console.log(`📅 Scheduling remaining vaccines for animal ${newAnimal._id} on ${commonScheduledDate}`);
-          const scheduledVaccinations = await scheduleRemainingVaccines(
-            newAnimal._id,
-            commonScheduledDate,
-            commonAdministeredBy,
-            req.user._id
-          );
-          totalScheduledVaccinations += scheduledVaccinations.length;
-          console.log(`✅ Scheduled ${scheduledVaccinations.length} vaccines for animal ${newAnimal.name || newAnimal.tagNumber}`);
+          try {
+            const scheduledVaccinations = await scheduleRemainingVaccines(
+              newAnimal._id,
+              commonScheduledDate,
+              commonAdministeredBy,
+              req.user._id
+            );
+            totalScheduledVaccinations += scheduledVaccinations.length;
+            console.log(`✅ Scheduled ${scheduledVaccinations.length} vaccines for animal ${newAnimal.name || newAnimal.tagNumber}`);
+          } catch (scheduleError) {
+            console.error(`❌ Error scheduling vaccines for animal ${newAnimal._id}:`, scheduleError);
+            scheduleErrors.push({
+              animal: newAnimal.name || newAnimal.tagNumber,
+              error: scheduleError.message
+            });
+          }
         }
         
       } catch (animalError) {
@@ -592,6 +603,9 @@ async function createBulkAnimals(req, res) {
     let successMessage = `${createdAnimals.length} animal(s) registered successfully!`;
     if (applyCommonVaccination && totalScheduledVaccinations > 0) {
       successMessage += ` ${totalScheduledVaccinations} upcoming vaccinations scheduled for ${commonScheduledDate}.`;
+    }
+    if (scheduleErrors.length > 0) {
+      successMessage += ` Note: ${scheduleErrors.length} animal(s) had scheduling issues.`;
     }
 
     req.flash("success", successMessage);
@@ -1359,6 +1373,8 @@ async function prepareAnimalData(req, index) {
 }
 
 // Create vaccination records
+// controllers/animal.js - Fix createVaccinationRecords
+
 async function createVaccinationRecords(
   req,
   animal,
@@ -1409,17 +1425,23 @@ async function createVaccinationRecords(
         continue;
       }
 
-      // Validate required fields
-      if (!vaccineData.dateAdministered) {
-        throw new Error(
-          `Vaccination date is required for ${vaccine.vaccineName}`,
-        );
+      // ✅ FIX: Auto-fill administeredBy if missing
+      let administeredBy = vaccineData.administeredBy || req.user.name || req.user.username || "System";
+      
+      // ✅ FIX: Auto-fill dateAdministered if missing
+      let dateAdministered = vaccineData.dateAdministered 
+        ? new Date(vaccineData.dateAdministered) 
+        : new Date();
+
+      // Validate required fields - but don't throw error, auto-fill instead
+      if (!dateAdministered) {
+        dateAdministered = new Date();
+        console.log(`Auto-filled dateAdministered for ${vaccine.vaccineName}`);
       }
 
-      if (!vaccineData.administeredBy) {
-        throw new Error(
-          `Administered by is required for ${vaccine.vaccineName}`,
-        );
+      if (!administeredBy) {
+        administeredBy = req.user.name || "System";
+        console.log(`Auto-filled administeredBy for ${vaccine.vaccineName}`);
       }
 
       // Calculate next due date
@@ -1428,12 +1450,13 @@ async function createVaccinationRecords(
         nextDueDate = new Date(vaccineData.nextDueDate);
       } else if (vaccine.boosterIntervalWeeks) {
         nextDueDate = calculateNextDueDate(
-          vaccineData.dateAdministered,
+          dateAdministered,
           vaccine.boosterIntervalWeeks
         );
       } else {
         // Default to 1 year if no interval specified
-        nextDueDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        nextDueDate = new Date(dateAdministered);
+        nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
       }
 
       const vaccinationRecord = new Vaccination({
@@ -1442,14 +1465,14 @@ async function createVaccinationRecords(
         vaccine: vaccine._id,
         vaccineName: vaccine.vaccineName || vaccine.name,
         vaccineType: vaccine.vaccineType,
-        dateAdministered: new Date(vaccineData.dateAdministered),
+        dateAdministered: dateAdministered,
         nextDueDate: nextDueDate,
-        administeredBy: vaccineData.administeredBy,
+        administeredBy: administeredBy, // ✅ Now always has a value
         notes: vaccineData.notes || "",
         status: "Administered",
         batchNumber: vaccineData.batchNumber || null,
         dosageAmount: vaccineData.dosageAmount || vaccine.standardDosage || 1,
-        dosageUnit: vaccineData.dosageUnit || vaccine.dosageUnit || "ml", // FIX: Use proper default
+        dosageUnit: vaccineData.dosageUnit || vaccine.dosageUnit || "ml",
         createdBy: req.user._id,
       });
 
@@ -1458,7 +1481,7 @@ async function createVaccinationRecords(
       vaccinationRecords.push(vaccinationRecord);
 
       console.log(
-        `Vaccination record created for vaccine ${vaccine.vaccineName}`,
+        `Vaccination record created for vaccine ${vaccine.vaccineName} with administeredBy: ${administeredBy}`,
       );
 
       // Update animal's vaccination summary
@@ -1473,7 +1496,7 @@ async function createVaccinationRecords(
       animal.vaccinationSummary.vaccinesGiven.push({
         vaccine: vaccine._id,
         vaccineName: vaccine.vaccineName || vaccine.name,
-        lastDate: new Date(vaccineData.dateAdministered),
+        lastDate: dateAdministered,
         nextDue: nextDueDate,
         status: nextDueDate > new Date() ? "up_to_date" : "overdue",
       });
@@ -2939,3 +2962,134 @@ module.exports.exportAnimals = async (req, res) => {
     res.redirect(`/${req.user.role.toLowerCase()}/animals`);
   }
 };
+
+
+// controllers/animal.js - Add/modify this function
+
+/**
+ * Schedule remaining vaccines for an animal
+ * @param {ObjectId} animalId - Animal ID
+ * @param {Date} scheduledDate - Date to schedule remaining vaccines
+ * @param {string} administeredBy - Who will administer
+ * @param {ObjectId} userId - User ID
+ * @returns {Promise<Array>} - Created vaccination records
+ */
+async function scheduleRemainingVaccines(animalId, scheduledDate, administeredBy, userId) {
+    try {
+        // Get animal details
+        const animal = await Animal.findById(animalId).populate('farmer');
+        if (!animal) {
+            throw new Error('Animal not found');
+        }
+
+        // Get all active vaccines
+        const allVaccines = await Vaccine.find({ isActive: true });
+        
+        // Get existing vaccinations for this animal (completed/administered)
+        const existingVaccinations = await Vaccination.find({
+            animal: animalId,
+            status: { $in: ['Administered', 'Completed', 'Payment Verified'] }
+        }).distinct('vaccine');
+        
+        // Filter out vaccines that have already been given
+        const remainingVaccines = allVaccines.filter(v => 
+            !existingVaccinations.some(existingId => existingId.toString() === v._id.toString())
+        );
+        
+        if (remainingVaccines.length === 0) {
+            return [];
+        }
+        
+        const scheduleDate = new Date(scheduledDate);
+        scheduleDate.setHours(0, 0, 0, 0);
+        
+        // Calculate next due date (schedule date + booster interval)
+        const createdVaccinations = [];
+        
+        for (const vaccine of remainingVaccines) {
+            // Calculate next due date
+            let nextDueDate = new Date(scheduleDate);
+            if (vaccine.boosterIntervalWeeks && vaccine.boosterIntervalWeeks > 0) {
+                nextDueDate.setDate(nextDueDate.getDate() + (vaccine.boosterIntervalWeeks * 7));
+            } else if (vaccine.defaultNextDueMonths && vaccine.defaultNextDueMonths > 0) {
+                nextDueDate.setMonth(nextDueDate.getMonth() + vaccine.defaultNextDueMonths);
+            } else {
+                nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+            }
+            
+            // Check if vaccination already exists for this vaccine
+            const existing = await Vaccination.findOne({
+                animal: animalId,
+                vaccine: vaccine._id,
+                status: { $in: ['Scheduled', 'Payment Pending', 'Administered', 'Completed'] }
+            });
+            
+            if (existing) {
+                // Update existing scheduled vaccination
+                existing.scheduledDate = scheduleDate;
+                existing.nextDueDate = nextDueDate;
+                existing.administeredBy = administeredBy;
+                existing.updatedBy = userId;
+                existing.status = 'Scheduled';
+                existing.assignedParavet = null; // Will be assigned by admin
+                await existing.save();
+                createdVaccinations.push(existing);
+            } else {
+                // Create new scheduled vaccination
+                const vaccination = new Vaccination({
+                    farmer: animal.farmer._id,
+                    animal: animalId,
+                    vaccine: vaccine._id,
+                    vaccineName: vaccine.vaccineName || vaccine.name,
+                    vaccineType: vaccine.vaccineType,
+                    doseNumber: 1,
+                    totalDosesRequired: 1,
+                    dosageAmount: vaccine.standardDosage || 1,
+                    dosageUnit: vaccine.dosageUnit || 'ml',
+                    administrationMethod: vaccine.administrationRoute || 'Injection',
+                    injectionSite: 'Subcutaneous',
+                    scheduledDate: scheduleDate,
+                    nextDueDate: nextDueDate,
+                    dateAdministered: null,
+                    administeredBy: administeredBy,
+                    status: 'Scheduled',
+                    verificationStatus: 'Pending',
+                    createdBy: userId,
+                    source: 'schedule',
+                    payment: {
+                        vaccinePrice: vaccine.vaccineCharge || 0,
+                        serviceCharge: 200,
+                        totalAmount: (vaccine.vaccineCharge || 0) + 200,
+                        paymentStatus: 'Pending'
+                    }
+                });
+                
+                await vaccination.save();
+                createdVaccinations.push(vaccination);
+            }
+        }
+        
+        // Update animal's vaccination summary
+        const earliestNextDue = createdVaccinations
+            .filter(v => v.nextDueDate)
+            .sort((a, b) => a.nextDueDate - b.nextDueDate)[0];
+        
+        if (earliestNextDue) {
+            animal.vaccinationSummary = {
+                ...animal.vaccinationSummary,
+                nextVaccinationDate: earliestNextDue.nextDueDate,
+                totalVaccinations: (animal.vaccinationSummary?.totalVaccinations || 0),
+                lastUpdated: new Date(),
+                isUpToDate: false
+            };
+            await animal.save();
+        }
+        
+        console.log(`✅ Scheduled ${createdVaccinations.length} remaining vaccines for animal ${animal.name || animal.tagNumber}`);
+        return createdVaccinations;
+        
+    } catch (error) {
+        console.error('Error scheduling remaining vaccines:', error);
+        throw error;
+    }
+}

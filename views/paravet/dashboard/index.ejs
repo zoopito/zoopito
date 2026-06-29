@@ -153,7 +153,7 @@
                     <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">
                       <%= moment(schedule.scheduledDate).format('hh:mm A') %>
                     </p>
-                    <a href="/paravet/farmers/<%= schedule.farmer?._id %>/vaccinate" 
+                    <a href="/paravet/farmers/<%= schedule.farmer?._id %>/vaccinate/bulk" 
                        class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors inline-block mt-1">
                       <i class="fas fa-play mr-1"></i>Start
                     </a>

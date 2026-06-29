@@ -22,6 +22,22 @@
       </div>
     </div>
 
+    <!-- ⚠️ INFO BANNER - Admin Contact -->
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+      <div class="flex items-start">
+        <i class="fas fa-info-circle text-yellow-500 mt-0.5 mr-3 text-lg"></i>
+        <div class="text-sm text-yellow-800 dark:text-yellow-300">
+          <p class="font-medium">📅 Schedule Management</p>
+          <p class="mt-1">You cannot schedule or reschedule vaccinations yourself. Please contact admin for any schedule changes.</p>
+          <div class="mt-2 flex flex-wrap gap-4 text-xs">
+            <span><i class="fas fa-user mr-1"></i> <strong>Admin:</strong> Zoopito Admin Team</span>
+            <span><i class="fas fa-envelope mr-1"></i> <a href="mailto:admin@zoopito.in" class="text-blue-600 hover:underline">admin@zoopito.in</a></span>
+            <span><i class="fas fa-phone mr-1"></i> <a href="tel:+919999999999" class="text-blue-600 hover:underline">+91 99999 99999</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Stats Summary -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 text-center">
@@ -58,8 +74,8 @@
             });
           %>
           
-          <% Object.keys(groupedSchedules).sort().forEach(dateKey => { 
-            const isToday = moment(dateKey).isSame(moment(), 'day');
+          <% Object.keys(groupedSchedules).sort().forEach(dateKey => {  %>
+          <%  const isToday = moment(dateKey).isSame(moment(), 'day');
             const isPast = moment(dateKey).isBefore(moment(), 'day');
           %>
             <div class="px-6 py-4">
@@ -87,23 +103,23 @@
                           <%= schedule.animal?.name || 'Animal' %> • 
                           <%= schedule.farmer?.name %> • 
                           <%= schedule.farmer?.address?.village || 'Location N/A' %>
-                        </p>                        <p class="text-xs text-amber-600 font-semibold mt-1">
+                        </p>
+                        <p class="text-xs text-amber-600 font-semibold mt-1">
                           <i class="fas fa-clock mr-1"></i>
                           <%= moment(schedule.scheduledDate).format('hh:mm A') %>
-                        </p>                      </div>
+                        </p>
+                      </div>
                     </div>
                     <div class="flex items-center space-x-3 mt-2 sm:mt-0">
                       <span class="px-2 py-1 rounded-full text-xs <%= 
                         schedule.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' %>">
                         <%= schedule.status || 'Pending' %>
                       </span>
-                      <button onclick="openScheduleModal('<%= schedule._id %>', '<%= schedule.farmer?._id %>', '<%= schedule.animal?._id %>', '<%= schedule.vaccine?.name || schedule.vaccineName %>')" 
-                         class="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-                        <i class="fas fa-calendar mr-1"></i>
-                        Schedule
-                      </button>
-                      <a href="/paravet/farmers/<%= schedule.farmer?._id %>/vaccinate" 
-                         class="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
+                      
+                      <!-- 🔥 FIX: Schedule button REMOVED -->
+                      <!-- 🔥 FIX: Start button now uses /vaccinate/bulk -->
+                      <a href="/paravet/farmers/<%= schedule.farmer?._id %>/vaccinate/bulk" 
+                         class="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition">
                         <i class="fas fa-syringe mr-1"></i>
                         Start
                       </a>
@@ -122,6 +138,32 @@
         <% } %>
       </div>
     </div>
+
+    <!-- 📝 Footer Note -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-blue-500">
+      <div class="flex items-start">
+        <i class="fas fa-sticky-note text-blue-500 mt-0.5 mr-3"></i>
+        <div>
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">📌 Note:</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            You cannot schedule or reschedule vaccinations on your own. 
+            Please contact the admin team for any schedule changes, rescheduling, or issues.
+          </p>
+          <div class="mt-2 flex flex-wrap gap-4 text-xs">
+            <span class="text-gray-500 dark:text-gray-400">
+              <i class="fas fa-user-circle mr-1"></i> <strong>Admin:</strong> Zoopito Admin
+            </span>
+            <span class="text-gray-500 dark:text-gray-400">
+              <i class="fas fa-envelope mr-1"></i> <a href="mailto:admin@zoopito.in" class="text-blue-600 hover:underline">admin@zoopito.in</a>
+            </span>
+            <span class="text-gray-500 dark:text-gray-400">
+              <i class="fas fa-phone mr-1"></i> <a href="tel:+919999999999" class="text-blue-600 hover:underline">+91 99999 99999</a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -144,107 +186,13 @@
       btn.classList.remove('bg-blue-600', 'text-white');
     }
   });
-
-  // Schedule Modal Functions
-  function openScheduleModal(scheduleId, farmerId, animalId, vaccineName) {
-    document.getElementById('scheduleVaccinationId').value = scheduleId;
-    document.getElementById('scheduleFarmerId').value = farmerId;
-    document.getElementById('scheduleAnimalId').value = animalId;
-    document.getElementById('scheduleVaccineName').textContent = vaccineName;
-    document.getElementById('scheduleModal').classList.remove('hidden');
-  }
-
-  function closeScheduleModal() {
-    document.getElementById('scheduleModal').classList.add('hidden');
-  }
-
-  async function submitSchedule(event) {
-    event.preventDefault();
-    const vaccinationId = document.getElementById('scheduleVaccinationId').value;
-    const scheduledDate = document.getElementById('scheduledDate').value;
-    const scheduledTime = document.getElementById('scheduledTime').value;
-    const assignedParavet = document.getElementById('assignedParavet').value;
-
-    if (!scheduledDate || !scheduledTime) {
-      alert('Please select both date and time');
-      return;
-    }
-
-    const [hours, minutes] = scheduledTime.split(':');
-    const dateTime = new Date(scheduledDate);
-    dateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-
-    try {
-      const response = await fetch(`/vaccination/${vaccinationId}/schedule`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          scheduledDate: dateTime.toISOString(),
-          assignedParavet: assignedParavet || null
-        })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        alert('Vaccination scheduled successfully!');
-        closeScheduleModal();
-        location.reload();
-      } else {
-        alert('Error: ' + data.message);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Failed to schedule vaccination');
-    }
-  }
 </script>
 
-<!-- Schedule Modal -->
-<div id="scheduleModal" class="fixed inset-0 bg-black/50 hidden overflow-y-auto h-full w-full z-50">
-  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Schedule Vaccination</h3>
-      <button onclick="closeScheduleModal()" class="text-gray-400 hover:text-gray-600">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <form onsubmit="submitSchedule(event)">
-      <input type="hidden" id="scheduleVaccinationId">
-      <input type="hidden" id="scheduleFarmerId">
-      <input type="hidden" id="scheduleAnimalId">
-      
-      <div class="mb-4">
-        <p class="text-sm text-gray-600 mb-3">
-          Vaccine: <span id="scheduleVaccineName" class="font-semibold text-blue-600"></span>
-        </p>
-        
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
-          <input type="date" id="scheduledDate" required class="w-full px-3 py-2 border rounded-lg" value="<%= new Date().toISOString().split('T')[0] %>">
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time</label>
-          <input type="time" id="scheduledTime" required class="w-full px-3 py-2 border rounded-lg" value="<%= new Date().toTimeString().slice(0, 5) %>">
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Paravet (Optional)</label>
-          <select id="assignedParavet" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Select a Paravet</option>
-            <% if (locals.paravets) { %>
-              <% paravets.forEach(p => { %>
-                <option value="<%= p._id %>"><%= p.user?.name %></option>
-              <% }); %>
-            <% } %>
-          </select>
-        </div>
-      </div>
-
-      <div class="flex justify-end space-x-3">
-        <button type="button" onclick="closeScheduleModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
-        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Schedule</button>
-      </div>
-    </form>
-  </div>
-</div>
+<style>
+  .period-btn {
+    cursor: pointer;
+  }
+  .period-btn:hover {
+    opacity: 0.8;
+  }
+</style>
