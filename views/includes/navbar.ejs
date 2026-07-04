@@ -35,17 +35,13 @@
     width: 100%;
   }
 
-  /* Theme toggle button - Hidden by default, shown only when needed */
+  /* Theme toggle button */
   .theme-toggle-btn {
     background: linear-gradient(135deg, #38BDF8, #22C55E);
     color: white;
     transition: all 0.3s ease;
     cursor: pointer;
     border: none;
-    display: none; /* Hidden by default */
-  }
-
-  .theme-toggle-btn.visible {
     display: inline-flex;
   }
 
@@ -60,6 +56,11 @@
 
   .dark .theme-toggle-btn:hover {
     box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+  }
+
+  /* Hide toggle when system is dark */
+  .theme-toggle-btn.hidden-toggle {
+    display: none !important;
   }
 
   .notification-badge {
@@ -223,7 +224,7 @@
 
     <!-- ACTION BUTTONS - RIGHT SIDE -->
     <div class="flex items-center gap-3">
-      <!-- DARK MODE TOGGLE - Will be shown only if system is NOT in dark mode -->
+      <!-- DARK MODE TOGGLE -->
       <button id="themeToggle" 
               class="theme-toggle-btn p-2.5 rounded-full shadow-md"
               aria-label="Toggle dark mode">
@@ -426,7 +427,7 @@
       <!-- MOBILE FOOTER -->
       <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
         <div class="flex items-center justify-between">
-          <!-- Mobile Theme Toggle - Hidden if system is dark -->
+          <!-- Mobile Theme Toggle -->
           <button id="mobileThemeToggle" 
                   class="theme-toggle-btn flex items-center gap-3 px-4 py-2.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
             <i id="mobileThemeIcon" class="fas fa-moon text-sky-500"></i>
@@ -449,7 +450,179 @@
 
 <script>
   // ============================================================
-  // 1. MOBILE MENU TOGGLE
+  // 1. DARK MODE - PERSISTENT & SYSTEM DETECTION
+  // ============================================================
+  
+  // Check if system is in dark mode
+  function isSystemDark() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  // Get stored theme preference
+  function getStoredTheme() {
+    return localStorage.getItem('zoopito-theme');
+  }
+
+  // Set theme and store preference
+  function setTheme(theme) {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('zoopito-theme', 'dark');
+    } else if (theme === 'light') {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('zoopito-theme', 'light');
+    } else {
+      // Fallback: follow system
+      if (isSystemDark()) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      localStorage.removeItem('zoopito-theme');
+    }
+    updateThemeIcons();
+    updateToggleVisibility();
+  }
+
+  // Update theme icons based on current state
+  function updateThemeIcons() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const themeIcon = document.getElementById('themeIcon');
+    const mobileThemeIcon = document.getElementById('mobileThemeIcon');
+    
+    if (isDark) {
+      if (themeIcon) themeIcon.className = 'fas fa-sun text-sm';
+      if (mobileThemeIcon) mobileThemeIcon.className = 'fas fa-sun text-yellow-400';
+    } else {
+      if (themeIcon) themeIcon.className = 'fas fa-moon text-sm';
+      if (mobileThemeIcon) mobileThemeIcon.className = 'fas fa-moon text-sky-500';
+    }
+  }
+
+  // Show/hide toggle buttons based on system dark mode
+  function updateToggleVisibility() {
+    const isSystemDark = isSystemDark();
+    const storedTheme = getStoredTheme();
+    
+    // Hide toggle if system is dark AND user hasn't manually changed to light
+    const shouldHide = isSystemDark && storedTheme !== 'light';
+    
+    const desktopToggle = document.getElementById('themeToggle');
+    const mobileToggle = document.getElementById('mobileThemeToggle');
+    
+    if (shouldHide) {
+      if (desktopToggle) desktopToggle.classList.add('hidden-toggle');
+      if (mobileToggle) mobileToggle.classList.add('hidden-toggle');
+    } else {
+      if (desktopToggle) desktopToggle.classList.remove('hidden-toggle');
+      if (mobileToggle) mobileToggle.classList.remove('hidden-toggle');
+    }
+  }
+
+  // Initialize theme on page load
+  function initializeTheme() {
+    const storedTheme = getStoredTheme();
+    const systemDark = isSystemDark();
+    
+    console.log('🔍 Initializing theme...');
+    console.log('  - Stored theme:', storedTheme);
+    console.log('  - System dark:', systemDark);
+    
+    // Case 1: User has stored preference
+    if (storedTheme === 'dark') {
+      console.log('  → Applying stored DARK theme');
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('zoopito-theme', 'dark');
+    } else if (storedTheme === 'light') {
+      console.log('  → Applying stored LIGHT theme');
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('zoopito-theme', 'light');
+    } else {
+      // Case 2: No stored preference - follow system
+      console.log('  → No stored preference, following system');
+      if (systemDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.removeItem('zoopito-theme');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.removeItem('zoopito-theme');
+      }
+    }
+    
+    updateThemeIcons();
+    updateToggleVisibility();
+    console.log('  → Final theme:', document.documentElement.classList.contains('dark') ? 'DARK' : 'LIGHT');
+  }
+
+  // Toggle theme function
+  function toggleTheme() {
+    const currentIsDark = document.documentElement.classList.contains('dark');
+    if (currentIsDark) {
+      setTheme('light');
+    } else {
+      setTheme('dark');
+    }
+    // Re-check toggle visibility after manual toggle
+    updateToggleVisibility();
+  }
+
+  // ============================================================
+  // 2. EVENT LISTENERS
+  // ============================================================
+
+  // 🔥 FIX: Run immediately when script loads (before DOM ready)
+  // This prevents flash of wrong theme
+  (function init() {
+    // Check if we have a stored theme
+    const storedTheme = localStorage.getItem('zoopito-theme');
+    
+    if (storedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (storedTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      // No stored preference - follow system
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  })();
+
+  // Full initialization on DOM ready
+  document.addEventListener('DOMContentLoaded', function() {
+    initializeTheme();
+  });
+
+  // Also run if DOM already loaded
+  if (document.readyState !== 'loading') {
+    initializeTheme();
+  }
+
+  // Listen for system theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+    // Only auto-change if user hasn't manually set a preference
+    if (!localStorage.getItem('zoopito-theme')) {
+      if (e.matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      updateThemeIcons();
+      updateToggleVisibility();
+    }
+  });
+
+  // Theme toggle buttons
+  const themeToggle = document.getElementById('themeToggle');
+  const mobileThemeToggle = document.getElementById('mobileThemeToggle');
+
+  themeToggle?.addEventListener('click', toggleTheme);
+  mobileThemeToggle?.addEventListener('click', toggleTheme);
+
+  // ============================================================
+  // 3. MOBILE MENU TOGGLE
   // ============================================================
   const mobileMenuBtn = document.getElementById('mobileMenuBtn');
   const mobileMenuClose = document.getElementById('mobileMenuClose');
@@ -471,88 +644,6 @@
   mobileMenuBtn?.addEventListener('click', openMobileMenu);
   mobileMenuClose?.addEventListener('click', closeMobileMenu);
   mobileBackdrop?.addEventListener('click', closeMobileMenu);
-
-  // ============================================================
-  // 2. DARK MODE - HIDE TOGGLE IF SYSTEM IS DARK
-  // ============================================================
-  const themeToggle = document.getElementById('themeToggle');
-  const themeIcon = document.getElementById('themeIcon');
-  const mobileThemeToggle = document.getElementById('mobileThemeToggle');
-  const mobileThemeIcon = document.getElementById('mobileThemeIcon');
-
-  function checkAndHideToggle() {
-    const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    // If system is already in dark mode, hide the toggle buttons
-    if (isSystemDark) {
-      // Hide desktop toggle
-      if (themeToggle) {
-        themeToggle.style.display = 'none';
-        themeToggle.classList.remove('visible');
-      }
-      // Hide mobile toggle
-      if (mobileThemeToggle) {
-        mobileThemeToggle.style.display = 'none';
-        mobileThemeToggle.classList.remove('visible');
-      }
-      // Make sure dark mode is applied
-      document.documentElement.classList.add('dark');
-    } else {
-      // Show desktop toggle
-      if (themeToggle) {
-        themeToggle.style.display = 'inline-flex';
-        themeToggle.classList.add('visible');
-      }
-      // Show mobile toggle
-      if (mobileThemeToggle) {
-        mobileThemeToggle.style.display = 'flex';
-        mobileThemeToggle.classList.add('visible');
-      }
-      // Make sure light mode is applied
-      document.documentElement.classList.remove('dark');
-    }
-  }
-
-  // Run on load
-  document.addEventListener('DOMContentLoaded', function() {
-    checkAndHideToggle();
-  });
-
-  // Also run immediately if DOM already loaded
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkAndHideToggle);
-  } else {
-    checkAndHideToggle();
-  }
-
-  // ============================================================
-  // 3. TOGGLE THEME (Only if button is visible)
-  // ============================================================
-  function toggleTheme() {
-    // Only toggle if button is visible
-    const isDark = document.documentElement.classList.contains('dark');
-    if (isDark) {
-      document.documentElement.classList.remove('dark');
-      // Update icon if needed
-      if (themeIcon) {
-        themeIcon.className = 'fas fa-moon text-sm';
-      }
-      if (mobileThemeIcon) {
-        mobileThemeIcon.className = 'fas fa-moon text-sky-500';
-      }
-    } else {
-      document.documentElement.classList.add('dark');
-      if (themeIcon) {
-        themeIcon.className = 'fas fa-sun text-sm';
-      }
-      if (mobileThemeIcon) {
-        mobileThemeIcon.className = 'fas fa-sun text-yellow-400';
-      }
-    }
-  }
-
-  themeToggle?.addEventListener('click', toggleTheme);
-  mobileThemeToggle?.addEventListener('click', toggleTheme);
 
   // ============================================================
   // 4. USER DROPDOWN
@@ -581,24 +672,5 @@
       currUserDropdown?.classList.add('hidden');
       closeMobileMenu();
     }
-  });
-
-  // ============================================================
-  // 6. HIGHLIGHT ACTIVE PAGE
-  // ============================================================
-  document.addEventListener('DOMContentLoaded', () => {
-    const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('nav a');
-    
-    navLinks.forEach(link => {
-      const href = link.getAttribute('href');
-      if (href && href !== '#' && href !== '/') {
-        if (currentPath === href || (href !== '/' && currentPath.startsWith(href))) {
-          link.classList.add('active');
-        }
-      } else if (href === '/' && currentPath === '/') {
-        link.classList.add('active');
-      }
-    });
   });
 </script>

@@ -85,7 +85,7 @@
 <!-- Quick Navigation -->
 <section class="sticky top-16 bg-white dark:bg-gray-900 shadow-sm z-40 border-b border-gray-200 dark:border-gray-800">
     <div class="container mx-auto px-4 py-4">
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto policy-section">
             <div class="flex space-x-4 min-w-max">
                 <a href="#overview" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                     <i class="fas fa-eye"></i>
@@ -175,11 +175,7 @@
                 
                 <!-- Quick Download -->
                 <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                    <a href="/documents/privacy-policy.pdf" 
-                       class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-medium rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200">
-                        <i class="fas fa-download"></i>
-                        Download PDF Version
-                    </a>
+                    
                     <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
                         Version 2.1 | Updated <%= new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) %>
                     </p>
@@ -660,11 +656,11 @@
                             <i class="fas fa-cog mr-2"></i>
                             Account Settings
                         </a>
-                        <button onclick="downloadData()" 
+                        <!-- <button onclick="downloadData()" 
                                 class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white font-medium transition-colors">
                             <i class="fas fa-download mr-2"></i>
                             Download My Data
-                        </button>
+                        </button> -->
                     </div>
                 </div>
             </section>
@@ -874,51 +870,7 @@
                     </div>
                 </div>
                 
-                <!-- Quick Contact Form -->
-                <div class="mt-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6">
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-4">Quick Privacy Inquiry</h4>
-                    <form class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Your Email
-                            </label>
-                            <input type="email" 
-                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                          focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   placeholder="you@example.com">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Concern Type
-                            </label>
-                            <select class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                          focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option>Data Access Request</option>
-                                <option>Data Deletion Request</option>
-                                <option>Privacy Concern</option>
-                                <option>Policy Question</option>
-                                <option>Other</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Message
-                            </label>
-                            <textarea rows="3" 
-                                      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                             focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                      placeholder="Describe your privacy concern..."></textarea>
-                        </div>
-                        <button type="submit" 
-                                class="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white 
-                                       font-medium rounded-lg hover:shadow-lg transition-all duration-200">
-                            Submit Privacy Request
-                        </button>
-                    </form>
-                </div>
+                
             </section>
         </div>
     </div>
@@ -1051,4 +1003,41 @@
             box-shadow: none !important;
         }
     }
+
+     /* Custom scrollbar for terms - Thin & Professional */
+.policy-section::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+}
+
+.policy-section::-webkit-scrollbar-track {
+    background: transparent !important;
+    border-radius: 10px !important;
+}
+
+.policy-section::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #38BDF8, #22C55E) !important;
+    border-radius: 10px !important;
+    transition: all 0.3s ease !important;
+}
+
+.policy-section::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #0ea5e9, #16a34a) !important;
+    width: 8px !important;
+}
+
+/* For Firefox */
+.policy-section {
+    scrollbar-width: thin !important;
+    scrollbar-color: #38BDF8 transparent !important;
+}
+
+/* Dark mode support */
+.dark .policy-section::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #60a5fa, #4ade80) !important;
+}
+
+.dark .policy-section::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #3b82f6, #22c55e) !important;
+}
 </style>
