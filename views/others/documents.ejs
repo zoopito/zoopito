@@ -1,0 +1,898 @@
+<% layout("/layouts/boilerplate") -%>
+
+<style>
+    .doc-sidebar {
+        position: sticky;
+        top: 80px;
+        height: fit-content;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+
+    .doc-sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .doc-sidebar::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #38BDF8, #22C55E);
+        border-radius: 10px;
+    }
+    .doc-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .doc-nav-link {
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #6b7280;
+        text-decoration: none;
+    }
+
+    .dark .doc-nav-link {
+        color: #9ca3af;
+    }
+
+    .doc-nav-link:hover {
+        background: linear-gradient(90deg, rgba(56, 189, 248, 0.1), rgba(34, 197, 94, 0.1));
+        border-left-color: #38BDF8;
+        color: #1f2937;
+    }
+
+    .dark .doc-nav-link:hover {
+        color: #f3f4f6;
+        background: linear-gradient(90deg, rgba(56, 189, 248, 0.15), rgba(34, 197, 94, 0.15));
+    }
+
+    .doc-nav-link.active {
+        background: linear-gradient(90deg, rgba(56, 189, 248, 0.15), rgba(34, 197, 94, 0.15));
+        border-left-color: #22C55E;
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .dark .doc-nav-link.active {
+        color: #f3f4f6;
+    }
+
+    .doc-section {
+        scroll-margin-top: 80px;
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .doc-section h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .dark .doc-section h2 {
+        color: #f3f4f6;
+    }
+
+    .doc-section h2 .icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #38BDF8, #22C55E);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .doc-section h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #374151;
+        margin-top: 20px;
+        margin-bottom: 12px;
+    }
+
+    .dark .doc-section h3 {
+        color: #e5e7eb;
+    }
+
+    .doc-section p {
+        color: #6b7280;
+        line-height: 1.8;
+        margin-bottom: 16px;
+        font-size: 15px;
+    }
+
+    .dark .doc-section p {
+        color: #9ca3af;
+    }
+
+    .doc-section ul, .doc-section ol {
+        color: #6b7280;
+        line-height: 1.8;
+        margin-bottom: 16px;
+        padding-left: 24px;
+        font-size: 15px;
+    }
+
+    .dark .doc-section ul, .dark .doc-section ol {
+        color: #9ca3af;
+    }
+
+    .doc-section ul li, .doc-section ol li {
+        margin-bottom: 8px;
+    }
+
+    .doc-section .code-block {
+        background: #1f2937;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin: 16px 0;
+        overflow-x: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        color: #e5e7eb;
+        border: 1px solid #374151;
+    }
+
+    .doc-section .code-block .comment {
+        color: #6b7280;
+    }
+
+    .doc-section .code-block .keyword {
+        color: #f472b6;
+    }
+
+    .doc-section .code-block .string {
+        color: #34d399;
+    }
+
+    .doc-section .code-block .function {
+        color: #60a5fa;
+    }
+
+    .doc-section .tip-box {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(34, 197, 94, 0.08));
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin: 16px 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .dark .doc-section .tip-box {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.05), rgba(34, 197, 94, 0.05));
+    }
+
+    .doc-section .tip-box .tip-icon {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #38BDF8, #22C55E);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .doc-section .tip-box .tip-content {
+        font-size: 14px;
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    .dark .doc-section .tip-box .tip-content {
+        color: #9ca3af;
+    }
+
+    .doc-section .tip-box .tip-content strong {
+        color: #1f2937;
+    }
+
+    .dark .doc-section .tip-box .tip-content strong {
+        color: #f3f4f6;
+    }
+
+    .doc-section .step-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin: 16px 0;
+    }
+
+    .doc-section .step-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .dark .doc-section .step-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .doc-section .step-card:hover {
+        border-color: #38BDF8;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .doc-section .step-card .step-number {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #38BDF8, #22C55E);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .doc-section .step-card .step-content h4 {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 4px;
+        font-size: 15px;
+    }
+
+    .dark .doc-section .step-card .step-content h4 {
+        color: #f3f4f6;
+    }
+
+    .doc-section .step-card .step-content p {
+        margin-bottom: 0;
+        font-size: 14px;
+    }
+
+    @media (min-width: 768px) {
+        .doc-section .step-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .search-input {
+        transition: all 0.3s ease;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 16px 12px 44px;
+        width: 100%;
+        font-size: 14px;
+        background: white;
+        color: #1f2937;
+    }
+
+    .dark .search-input {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f3f4f6;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #38BDF8;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+    }
+
+    .dark .search-input:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+    }
+
+    .search-wrapper {
+        position: relative;
+    }
+
+    .search-wrapper .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+    }
+
+    .dark .search-wrapper .search-icon {
+        color: #6b7280;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .doc-section {
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .back-to-top {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #38BDF8, #22C55E);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3);
+        transition: all 0.3s ease;
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        z-index: 40;
+    }
+
+    .back-to-top.visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .back-to-top:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 24px rgba(56, 189, 248, 0.4);
+    }
+
+    .dark .back-to-top {
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.2);
+    }
+
+    @media (max-width: 768px) {
+        .doc-sidebar {
+            position: relative;
+            top: 0;
+            max-height: none;
+            overflow-y: visible;
+        }
+    }
+</style>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="container mx-auto px-4 md:px-8 py-8 md:py-12">
+        
+        <!-- Page Header -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-4">
+                <i class="fas fa-book-open mr-2"></i>
+                <span class="text-sm font-medium">Documentation</span>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Welcome to Zoopito Documentation
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                Everything you need to know about using Zoopito — from getting started to advanced features.
+            </p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <!-- Sidebar Navigation -->
+            <aside class="lg:w-72 xl:w-80 flex-shrink-0">
+                <div class="doc-sidebar bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4">
+                    <!-- Search -->
+                    <div class="search-wrapper mb-4">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="docSearch" class="search-input" placeholder="Search documentation...">
+                    </div>
+
+                    <div class="space-y-1">
+                        <a href="#getting-started" class="doc-nav-link active" data-section="getting-started">
+                            <i class="fas fa-rocket w-4 text-center"></i>
+                            Getting Started
+                        </a>
+                        <a href="#registration" class="doc-nav-link" data-section="registration">
+                            <i class="fas fa-user-plus w-4 text-center"></i>
+                            Registration
+                        </a>
+                        <a href="#animals" class="doc-nav-link" data-section="animals">
+                            <i class="fas fa-paw w-4 text-center"></i>
+                            Animal Management
+                        </a>
+                        <a href="#vaccinations" class="doc-nav-link" data-section="vaccinations">
+                            <i class="fas fa-syringe w-4 text-center"></i>
+                            Vaccinations
+                        </a>
+                        <a href="#health" class="doc-nav-link" data-section="health">
+                            <i class="fas fa-heartbeat w-4 text-center"></i>
+                            Health Tracking
+                        </a>
+                        <a href="#farmers" class="doc-nav-link" data-section="farmers">
+                            <i class="fas fa-tractor w-4 text-center"></i>
+                            Farmer Management
+                        </a>
+                        <a href="#reports" class="doc-nav-link" data-section="reports">
+                            <i class="fas fa-chart-bar w-4 text-center"></i>
+                            Reports & Analytics
+                        </a>
+                        <a href="#faq" class="doc-nav-link" data-section="faq">
+                            <i class="fas fa-question-circle w-4 text-center"></i>
+                            FAQ
+                        </a>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div class="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 rounded-xl p-4">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                <i class="fas fa-headset text-blue-500"></i>
+                                Need Help?
+                            </p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                Contact our support team at <br>
+                                <a href="mailto:support@zoopito.in" class="text-blue-600 dark:text-blue-400 hover:underline">support@zoopito.in</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 min-w-0">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 md:p-8">
+                    
+                    <!-- Getting Started -->
+                    <section id="getting-started" class="doc-section">
+                        <h2>
+                            <span class="icon"><i class="fas fa-rocket"></i></span>
+                            Getting Started
+                        </h2>
+                        <p>
+                            Welcome to Zoopito! This guide will help you get started with our livestock management platform. 
+                            Whether you're a farmer, veterinarian, or administrator, Zoopito provides tools to manage 
+                            animal health records efficiently.
+                        </p>
+                        
+                        <div class="step-grid">
+                            <div class="step-card">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>Create Your Account</h4>
+                                    <p>Sign up with your email and create a password. Choose your role (Farmer, Paravet, or Admin).</p>
+                                </div>
+                            </div>
+                            <div class="step-card">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>Set Up Your Profile</h4>
+                                    <p>Complete your profile with personal details, contact information, and area of operation.</p>
+                                </div>
+                            </div>
+                            <div class="step-card">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Add Farmers & Animals</h4>
+                                    <p>Register farmers in your area and add their animals with complete health records.</p>
+                                </div>
+                            </div>
+                            <div class="step-card">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h4>Start Vaccination Tracking</h4>
+                                    <p>Record vaccinations, schedule reminders, and track animal health status in real-time.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tip-box">
+                            <div class="tip-icon"><i class="fas fa-lightbulb"></i></div>
+                            <div class="tip-content">
+                                <strong>Pro Tip:</strong> Start with adding a few animals to get familiar with the system. 
+                                You can always add more later!
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Registration -->
+                    <section id="registration" class="doc-section mt-12">
+                        <h2>
+                            <span class="icon"><i class="fas fa-user-plus"></i></span>
+                            Registration
+                        </h2>
+                        <p>
+                            Zoopito supports multiple user roles. Choose the one that fits your needs:
+                        </p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-5 text-center border border-gray-200 dark:border-gray-600">
+                                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-user-tie text-blue-600 dark:text-blue-400 text-xl"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Farmer</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Manage your own animals and track their health records.</p>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-5 text-center border border-gray-200 dark:border-gray-600">
+                                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-user-md text-green-600 dark:text-green-400 text-xl"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Paravet</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Manage multiple farmers and provide veterinary services.</p>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-5 text-center border border-gray-200 dark:border-gray-600">
+                                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-user-cog text-purple-600 dark:text-purple-400 text-xl"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Admin</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Oversee all operations, manage users, and generate reports.</p>
+                            </div>
+                        </div>
+
+                        <h3>How to Register</h3>
+                        <ol>
+                            <li>Click on the <strong>Login</strong> button in the top right corner.</li>
+                            <li>Select <strong>Sign Up</strong> and fill in your details.</li>
+                            <li>Choose your <strong>Role</strong> (Farmer, Paravet, or Admin).</li>
+                            <li>Verify your email address with the OTP sent to your inbox.</li>
+                            <li>Complete your profile and start using Zoopito!</li>
+                        </ol>
+
+                        <div class="tip-box">
+                            <div class="tip-icon"><i class="fas fa-shield-alt"></i></div>
+                            <div class="tip-content">
+                                <strong>Security Note:</strong> Always use a strong password and never share your login credentials with anyone.
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Animal Management -->
+                    <section id="animals" class="doc-section mt-12">
+                        <h2>
+                            <span class="icon"><i class="fas fa-paw"></i></span>
+                            Animal Management
+                        </h2>
+                        <p>
+                            Register and manage all animals in your care. Zoopito makes it easy to track individual animal health records.
+                        </p>
+
+                        <h3>Adding a New Animal</h3>
+                        <ol>
+                            <li>Navigate to the <strong>Animals</strong> section from your dashboard.</li>
+                            <li>Click on <strong>Add New Animal</strong>.</li>
+                            <li>Fill in the animal details:
+                                <ul>
+                                    <li><strong>Type:</strong> Cow, Buffalo, Goat, Sheep, etc.</li>
+                                    <li><strong>Breed:</strong> Specify the breed (optional).</li>
+                                    <li><strong>Age:</strong> Enter the age in years/months.</li>
+                                    <li><strong>Gender:</strong> Male, Female, or Unknown.</li>
+                                    <li><strong>Tag Number:</strong> If available, enter the tag ID.</li>
+                                </ul>
+                            </li>
+                            <li>Upload photos of the animal (optional but recommended).</li>
+                            <li>Click <strong>Save</strong> to register the animal.</li>
+                        </ol>
+
+                        <div class="tip-box">
+                            <div class="tip-icon"><i class="fas fa-camera"></i></div>
+                            <div class="tip-content">
+                                <strong>Pro Tip:</strong> Upload clear photos of the animal from multiple angles for better identification.
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Vaccinations -->
+                    <section id="vaccinations" class="doc-section mt-12">
+                        <h2>
+                            <span class="icon"><i class="fas fa-syringe"></i></span>
+                            Vaccinations
+                        </h2>
+                        <p>
+                            Track vaccinations and ensure your animals stay healthy with automated reminders and schedules.
+                        </p>
+
+                        <h3>Recording a Vaccination</h3>
+                        <ol>
+                            <li>Go to the <strong>Vaccinations</strong> section.</li>
+                            <li>Select the <strong>Animal</strong> you want to vaccinate.</li>
+                            <li>Choose the <strong>Vaccine</strong> from the list.</li>
+                            <li>Enter the <strong>Date Administered</strong> and <strong>Next Due Date</strong>.</li>
+                            <li>Add any <strong>Notes</strong> about the vaccination (optional).</li>
+                            <li>Click <strong>Save</strong> to record the vaccination.</li>
+                        </ol>
+
+                        <h3>Vaccination Schedule</h3>
+                        <p>
+                            Zoopito automatically calculates the next due date based on the vaccine type. Common vaccines include:
+                        </p>
+                        <ul>
+                            <li><strong>FMD (Foot and Mouth Disease)</strong> - Every 6 months</li>
+                            <li><strong>HS-BQ (Hemorrhagic Septicemia & Black Quarter)</strong> - Pre-monsoon</li>
+                            <li><strong>PPR (Peste des Petits Ruminants)</strong> - Annual</li>
+                            <li><strong>Deworming</strong> - Every 120 days</li>
+                        </ul>
+
+                        <div class="tip-box">
+                            <div class="tip-icon"><i class="fas fa-bell"></i></div>
+                            <div class="tip-content">
+                                <strong>Reminder:</strong> Enable notifications to get alerts when vaccinations are due.
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Health Tracking -->
+                    <section id="health" class="doc-section mt-12">
+                        <h2>
+                            <span class="icon"><i class="fas fa-heartbeat"></i></span>
+                            Health Tracking
+                        </h2>
+                        <p>
+                            Monitor the health status of all animals with real-time tracking and alerts.
+                        </p>
+
+                        <h3>Health Status Indicators</h3>
+                        <ul>
+                            <li><span class="text-green-600 font-semibold">● Healthy</span> - No health issues detected.</li>
+                            <li><span class="text-yellow-600 font-semibold">● Under Observation</span> - Minor health concerns.</li>
+                            <li><span class="text-orange-600 font-semibold">● Sick</span> - Requires medical attention.</li>
+                            <li><span class="text-red-600 font-semibold">● Critical</span> - Emergency care needed.</li>
+                        </ul>
+
+                        <h3>Pregnancy Tracking</h3>
+                        <p>
+                            For female animals, you can track pregnancy status with:
+                        </p>
+                        <ul>
+                            <li>Expected delivery date</li>
+                            <li>Pregnancy stage (Early/Mid/Late)</li>
+                            <li>Number of fetuses</li>
+                            <li>Previous pregnancies count</li>
+                        </ul>
+                    </section>
+
+                    <!-- Farmer Management -->
+                    <section id="farmers" class="doc-section mt-12">
+                        <h2>
+                            <span class="icon"><i class="fas fa-tractor"></i></span>
+                            Farmer Management
+                        </h2>
+                        <p>
+                            Manage farmer profiles, track their animals, and monitor vaccination progress.
+                        </p>
+
+                        <h3>Farmer Profile</h3>
+                        <ul>
+                            <li><strong>Basic Info:</strong> Name, mobile number, address, and village.</li>
+                            <li><strong>GPS Location:</strong> Automatically captured for accurate mapping.</li>
+                            <li><strong>Animal Count:</strong> Total animals owned by the farmer.</li>
+                            <li><strong>Vaccination Status:</strong> Overview of pending and completed vaccinations.</li>
+                        </ul>
+
+                        <div class="tip-box">
+                            <div class="tip-icon"><i class="fas fa-map-marker-alt"></i></div>
+                            <div class="tip-content">
+                                <strong>Location Tip:</strong> Enable GPS access on your device to automatically capture farmer locations.
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Reports & Analytics -->
+                    <section id="reports" class="doc-section mt-12">
+                        <h2>
+                            <span class="icon"><i class="fas fa-chart-bar"></i></span>
+                            Reports & Analytics
+                        </h2>
+                        <p>
+                            Generate comprehensive reports to analyze vaccination coverage, health trends, and more.
+                        </p>
+
+                        <h3>Available Reports</h3>
+                        <ul>
+                            <li><strong>Daily Report:</strong> Vaccinations completed today.</li>
+                            <li><strong>Weekly Report:</strong> Weekly vaccination summary.</li>
+                            <li><strong>Monthly Report:</strong> Monthly performance metrics.</li>
+                            <li><strong>Vaccination Coverage:</strong> Percentage of animals vaccinated.</li>
+                            <li><strong>Species Breakdown:</strong> Distribution of animal types.</li>
+                        </ul>
+
+                        <div class="code-block">
+                            <span class="comment">// Example: Generating a report</span>
+                            <br>
+                            <span class="keyword">const</span> report = <span class="keyword">await</span> <span class="function">generateReport</span>({
+                            <br>
+                            &nbsp;&nbsp;<span class="string">type</span>: <span class="string">'monthly'</span>,
+                            <br>
+                            &nbsp;&nbsp;<span class="string">month</span>: <span class="string">'January'</span>,
+                            <br>
+                            &nbsp;&nbsp;<span class="string">year</span>: <span class="string">'2024'</span>
+                            <br>
+                            });
+                        </div>
+                    </section>
+
+                    <!-- FAQ -->
+                    <section id="faq" class="doc-section mt-12">
+                        <h2>
+                            <span class="icon"><i class="fas fa-question-circle"></i></span>
+                            Frequently Asked Questions
+                        </h2>
+
+                        <div class="space-y-4">
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h4 class="font-semibold text-gray-900 dark:text-white flex items-start gap-2">
+                                    <span class="text-blue-500">Q:</span>
+                                    How do I reset my password?
+                                </h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 pl-6">
+                                    Click on "Forgot Password" on the login page. Enter your registered email address and follow the instructions sent to your inbox.
+                                </p>
+                            </div>
+
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h4 class="font-semibold text-gray-900 dark:text-white flex items-start gap-2">
+                                    <span class="text-blue-500">Q:</span>
+                                    Can I access Zoopito offline?
+                                </h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 pl-6">
+                                    Yes! Zoopito is designed with offline-first capabilities. Data is stored locally and synced automatically when you're back online.
+                                </p>
+                            </div>
+
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h4 class="font-semibold text-gray-900 dark:text-white flex items-start gap-2">
+                                    <span class="text-blue-500">Q:</span>
+                                    How do I add multiple animals at once?
+                                </h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 pl-6">
+                                    Use the Bulk Registration feature. Go to Animals → Bulk Add, fill in common details, and add multiple animals in one go.
+                                </p>
+                            </div>
+
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h4 class="font-semibold text-gray-900 dark:text-white flex items-start gap-2">
+                                    <span class="text-blue-500">Q:</span>
+                                    Is my data secure?
+                                </h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 pl-6">
+                                    Absolutely! We use industry-standard encryption and security practices. Your data is stored securely and only accessible to authorized users.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white flex items-start gap-2">
+                                    <span class="text-blue-500">Q:</span>
+                                    How can I contact support?
+                                </h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 pl-6">
+                                    Reach out to us at <a href="mailto:support@zoopito.in" class="text-blue-600 dark:text-blue-400 hover:underline">support@zoopito.in</a> or use the Contact Us form on our website.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Footer note -->
+                    <div class="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700 text-center text-sm text-gray-500 dark:text-gray-400">
+                        <p>Last updated: January 2025</p>
+                        <p class="mt-1">Zoopito Documentation — Empowering Livestock Management</p>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================================
+        // 1. SIDEBAR NAVIGATION - Active state & smooth scroll
+        // ============================================================
+        const navLinks = document.querySelectorAll('.doc-nav-link');
+        const sections = document.querySelectorAll('.doc-section');
+
+        function updateActiveLink() {
+            let current = '';
+            const scrollPosition = window.scrollY + 100;
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+                if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveLink);
+        window.addEventListener('load', updateActiveLink);
+
+        // Smooth scroll for nav links
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    // Update URL without page reload
+                    history.pushState(null, null, targetId);
+                }
+            });
+        });
+
+        // ============================================================
+        // 2. SEARCH FUNCTIONALITY
+        // ============================================================
+        const searchInput = document.getElementById('docSearch');
+        const allContent = document.querySelectorAll('.doc-section');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+
+            if (searchTerm === '') {
+                allContent.forEach(section => {
+                    section.style.display = 'block';
+                });
+                // Show all nav links
+                navLinks.forEach(link => {
+                    link.style.display = 'flex';
+                });
+                return;
+            }
+
+            allContent.forEach(section => {
+                const text = section.textContent.toLowerCase();
+                const isVisible = text.includes(searchTerm);
+                section.style.display = isVisible ? 'block' : 'none';
+            });
+
+            // Hide nav links for sections that are hidden
+            navLinks.forEach(link => {
+                const targetId = link.getAttribute('href').replace('#', '');
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    link.style.display = targetSection.style.display === 'none' ? 'none' : 'flex';
+                }
+            });
+        });
+
+    
+
+        // ============================================================
+        // 4. URL HASH ON LOAD - Scroll to section if URL has hash
+        // ============================================================
+        if (window.location.hash) {
+            const targetElement = document.querySelector(window.location.hash);
+            if (targetElement) {
+                setTimeout(() => {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 300);
+            }
+        }
+    });
+</script>

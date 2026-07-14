@@ -1,0 +1,1236 @@
+<% layout("/layouts/boilerplate") -%>
+
+<style>
+    /* ========== HERO SECTION ========== */
+    .faq-hero {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(34, 197, 94, 0.08) 100%);
+        border-bottom: 1px solid rgba(56, 189, 248, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .faq-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.08), transparent);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
+    .faq-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(34, 197, 94, 0.06), transparent);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
+    .faq-hero .floating-icons {
+        position: absolute;
+        font-size: 40px;
+        opacity: 0.08;
+        pointer-events: none;
+    }
+    
+    .faq-hero .floating-icons:nth-child(1) { top: 10%; left: 5%; animation: float 6s ease-in-out infinite; }
+    .faq-hero .floating-icons:nth-child(2) { top: 20%; right: 8%; animation: float 8s ease-in-out infinite reverse; }
+    .faq-hero .floating-icons:nth-child(3) { bottom: 15%; left: 8%; animation: float 7s ease-in-out infinite; }
+    .faq-hero .floating-icons:nth-child(4) { bottom: 25%; right: 5%; animation: float 9s ease-in-out infinite reverse; }
+    
+    .dark .faq-hero .floating-icons {
+        opacity: 0.06;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+
+    /* ========== CATEGORY TABS ========== */
+    .category-tab {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 15px;
+        border: 2px solid transparent;
+        background: transparent;
+        color: #6b7280;
+    }
+    
+    .dark .category-tab {
+        color: #9ca3af;
+    }
+    
+    .category-tab:hover {
+        color: #1f2937;
+        background: rgba(56, 189, 248, 0.06);
+    }
+    
+    .dark .category-tab:hover {
+        color: #f3f4f6;
+        background: rgba(56, 189, 248, 0.08);
+    }
+    
+    .category-tab.active {
+        border-color: #38BDF8;
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(34, 197, 94, 0.08));
+        color: #1f2937;
+    }
+    
+    .dark .category-tab.active {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(34, 197, 94, 0.1));
+        color: #f3f4f6;
+    }
+    
+    .category-tab .icon {
+        margin-right: 8px;
+        font-size: 16px;
+    }
+    
+    .category-tab .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: 6px;
+        background: rgba(56, 189, 248, 0.15);
+        color: #38BDF8;
+    }
+    
+    .dark .category-tab .badge {
+        background: rgba(56, 189, 248, 0.2);
+    }
+    
+    @media (max-width: 640px) {
+        .category-tab {
+            padding: 10px 16px;
+            font-size: 13px;
+        }
+        .category-tab .badge {
+            font-size: 10px;
+            padding: 1px 8px;
+        }
+    }
+
+    /* ========== FAQ CARDS ========== */
+    .faq-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px 28px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .faq-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #38BDF8, #22C55E);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .faq-card:hover {
+        border-color: #38BDF8;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(56, 189, 248, 0.08);
+    }
+    
+    .faq-card:hover::before {
+        opacity: 1;
+    }
+    
+    .dark .faq-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .dark .faq-card:hover {
+        border-color: #38BDF8;
+        box-shadow: 0 12px 40px rgba(56, 189, 248, 0.05);
+    }
+    
+    .faq-card .question {
+        font-size: 17px;
+        font-weight: 600;
+        color: #1f2937;
+        transition: color 0.3s ease;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    
+    .dark .faq-card .question {
+        color: #f3f4f6;
+    }
+    
+    .faq-card:hover .question {
+        color: #2563eb;
+    }
+    
+    .dark .faq-card:hover .question {
+        color: #60a5fa;
+    }
+    
+    .faq-card .question .q-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #38BDF8, #22C55E);
+        border-radius: 50%;
+        color: white;
+        font-weight: 700;
+        font-size: 14px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+    
+    .faq-card .answer {
+        margin-top: 12px;
+        padding-left: 42px;
+        color: #6b7280;
+        line-height: 1.8;
+        font-size: 15px;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 0;
+    }
+    
+    .faq-card.open .answer {
+        max-height: 500px;
+        opacity: 1;
+        padding-top: 4px;
+    }
+    
+    .dark .faq-card .answer {
+        color: #9ca3af;
+    }
+    
+    .faq-card .toggle-icon {
+        flex-shrink: 0;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(56, 189, 248, 0.08);
+        color: #6b7280;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 14px;
+    }
+    
+    .faq-card:hover .toggle-icon {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38BDF8;
+    }
+    
+    .faq-card.open .toggle-icon {
+        background: linear-gradient(135deg, #38BDF8, #22C55E);
+        color: white;
+        transform: rotate(180deg);
+    }
+    
+    .dark .faq-card .toggle-icon {
+        background: rgba(56, 189, 248, 0.1);
+        color: #9ca3af;
+    }
+    
+    .dark .faq-card.open .toggle-icon {
+        background: linear-gradient(135deg, #38BDF8, #22C55E);
+        color: white;
+    }
+    
+    .faq-card .answer-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+        padding-left: 42px;
+    }
+    
+    .faq-card .answer-tags .tag {
+        display: inline-block;
+        padding: 2px 12px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+        background: rgba(56, 189, 248, 0.08);
+        color: #6b7280;
+        border: 1px solid rgba(56, 189, 248, 0.1);
+    }
+    
+    .dark .faq-card .answer-tags .tag {
+        background: rgba(56, 189, 248, 0.06);
+        color: #9ca3af;
+        border-color: rgba(56, 189, 248, 0.08);
+    }
+
+    /* ========== SEARCH ========== */
+    .faq-search-wrapper {
+        position: relative;
+    }
+    
+    .faq-search-wrapper .search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+    }
+    
+    .dark .faq-search-wrapper .search-icon {
+        color: #6b7280;
+    }
+    
+    .faq-search-input {
+        width: 100%;
+        padding: 14px 16px 14px 48px;
+        border: 2px solid #e5e7eb;
+        border-radius: 14px;
+        font-size: 15px;
+        background: white;
+        color: #1f2937;
+        transition: all 0.3s ease;
+    }
+    
+    .dark .faq-search-input {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f3f4f6;
+    }
+    
+    .faq-search-input:focus {
+        outline: none;
+        border-color: #38BDF8;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.08);
+    }
+    
+    .dark .faq-search-input:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+    }
+    
+    .faq-search-input::placeholder {
+        color: #9ca3af;
+    }
+    
+    .dark .faq-search-input::placeholder {
+        color: #6b7280;
+    }
+    
+    .search-clear {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    .search-clear.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    .search-clear:hover {
+        color: #ef4444;
+    }
+
+    /* ========== NO RESULTS ========== */
+    .no-results {
+        display: none;
+        text-align: center;
+        padding: 48px 24px;
+    }
+    
+    .no-results.visible {
+        display: block;
+        animation: fadeInUp 0.6s ease forwards;
+    }
+    
+    .no-results .icon {
+        font-size: 56px;
+        color: #d1d5db;
+        margin-bottom: 16px;
+    }
+    
+    .dark .no-results .icon {
+        color: #4b5563;
+    }
+
+    /* ========== STATS BAR ========== */
+    .faq-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 16px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .faq-stats .stat-item {
+        text-align: center;
+        padding: 12px 8px;
+        border-radius: 12px;
+        background: rgba(56, 189, 248, 0.04);
+        border: 1px solid rgba(56, 189, 248, 0.06);
+    }
+    
+    .dark .faq-stats .stat-item {
+        background: rgba(56, 189, 248, 0.03);
+        border-color: rgba(56, 189, 248, 0.05);
+    }
+    
+    .faq-stats .stat-item .number {
+        font-size: 22px;
+        font-weight: 700;
+        color: #2563eb;
+    }
+    
+    .dark .faq-stats .stat-item .number {
+        color: #60a5fa;
+    }
+    
+    .faq-stats .stat-item .label {
+        font-size: 12px;
+        color: #6b7280;
+    }
+    
+    .dark .faq-stats .stat-item .label {
+        color: #9ca3af;
+    }
+
+    /* ========== ANIMATIONS ========== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .faq-card {
+        animation: fadeInUp 0.5s ease forwards;
+    }
+    
+    .faq-card:nth-child(1) { animation-delay: 0.05s; }
+    .faq-card:nth-child(2) { animation-delay: 0.1s; }
+    .faq-card:nth-child(3) { animation-delay: 0.15s; }
+    .faq-card:nth-child(4) { animation-delay: 0.2s; }
+    .faq-card:nth-child(5) { animation-delay: 0.25s; }
+    .faq-card:nth-child(6) { animation-delay: 0.3s; }
+    .faq-card:nth-child(7) { animation-delay: 0.35s; }
+    .faq-card:nth-child(8) { animation-delay: 0.4s; }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 640px) {
+        .faq-card {
+            padding: 18px 20px;
+            border-radius: 14px;
+        }
+        .faq-card .question {
+            font-size: 15px;
+            gap: 10px;
+        }
+        .faq-card .question .q-mark {
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+        }
+        .faq-card .answer {
+            font-size: 14px;
+            padding-left: 34px;
+        }
+        .faq-card .answer-tags {
+            padding-left: 34px;
+        }
+        .faq-card .toggle-icon {
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+        }
+        .faq-hero h1 {
+            font-size: 28px;
+        }
+        .faq-hero p {
+            font-size: 15px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .category-tabs {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 4px 2px;
+        }
+        .category-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        .category-tab {
+            white-space: nowrap;
+            padding: 8px 14px;
+            font-size: 12px;
+        }
+        .category-tab .badge {
+            font-size: 9px;
+            padding: 1px 6px;
+        }
+        .faq-card {
+            padding: 14px 16px;
+        }
+        .faq-card .question {
+            font-size: 14px;
+        }
+        .faq-card .answer {
+            font-size: 13px;
+            padding-left: 28px;
+        }
+        .faq-card .answer-tags {
+            padding-left: 28px;
+        }
+    }
+</style>
+
+<!-- ============================================================ -->
+<!-- HERO SECTION -->
+<!-- ============================================================ -->
+<section class="faq-hero py-16 md:py-20">
+    <div class="floating-icons">
+        <i class="fas fa-question-circle"></i>
+    </div>
+    <div class="floating-icons">
+        <i class="fas fa-lightbulb"></i>
+    </div>
+    <div class="floating-icons">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+    <div class="floating-icons">
+        <i class="fas fa-rocket"></i>
+    </div>
+
+    <div class="container mx-auto px-4 md:px-8 relative z-10">
+        <div class="text-center max-w-3xl mx-auto">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-5">
+                <i class="fas fa-question-circle mr-2"></i>
+                <span class="text-sm font-medium">Got Questions?</span>
+            </div>
+            
+            <h1 class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                We've Got
+                <span class="bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
+                    Answers
+                </span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-6">
+                Everything you need to know about Zoopito — from getting started to advanced features.
+            </p>
+            
+            <!-- Stats -->
+            <div class="faq-stats mt-8">
+                <div class="stat-item">
+                    <div class="number">24</div>
+                    <div class="label">FAQs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number">6</div>
+                    <div class="label">Categories</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number">2min</div>
+                    <div class="label">Avg Response</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SEARCH & CATEGORIES -->
+<!-- ============================================================ -->
+<section class="py-8 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Search -->
+            <div class="faq-search-wrapper mb-6">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="faqSearch" class="faq-search-input" placeholder="Search for answers... e.g., 'registration', 'vaccination', 'animals'">
+                <span id="searchClear" class="search-clear"><i class="fas fa-times-circle"></i></span>
+            </div>
+            
+            <!-- Categories -->
+            <div class="category-tabs flex flex-wrap gap-2 justify-center" id="categoryTabs">
+                <button class="category-tab active" data-category="all">
+                    <i class="fas fa-th-large icon"></i> All
+                    <span class="badge">24</span>
+                </button>
+                <button class="category-tab" data-category="getting-started">
+                    <i class="fas fa-rocket icon"></i> Getting Started
+                    <span class="badge">4</span>
+                </button>
+                <button class="category-tab" data-category="registration">
+                    <i class="fas fa-user-plus icon"></i> Registration
+                    <span class="badge">3</span>
+                </button>
+                <button class="category-tab" data-category="animals">
+                    <i class="fas fa-paw icon"></i> Animals
+                    <span class="badge">5</span>
+                </button>
+                <button class="category-tab" data-category="vaccinations">
+                    <i class="fas fa-syringe icon"></i> Vaccinations
+                    <span class="badge">4</span>
+                </button>
+                <button class="category-tab" data-category="account">
+                    <i class="fas fa-user-cog icon"></i> Account
+                    <span class="badge">4</span>
+                </button>
+                <button class="category-tab" data-category="other">
+                    <i class="fas fa-ellipsis-h icon"></i> Other
+                    <span class="badge">4</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- FAQ CARDS -->
+<!-- ============================================================ -->
+<section class="py-10 md:py-16 bg-gray-50 dark:bg-gray-900/50">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="max-w-4xl mx-auto">
+            
+            <!-- FAQ Grid -->
+            <div id="faqGrid" class="space-y-4">
+                
+                <!-- CATEGORY: Getting Started -->
+                <div class="faq-card" data-category="getting-started" data-search="getting started how to start use platform first time">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            How do I get started with Zoopito?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Getting started is easy! Simply click the "Login" button, then "Sign Up" to create your account. Choose your role (Farmer, Paravet, or Admin), verify your email with the OTP, and you're ready to start managing livestock.
+                        <div class="answer-tags">
+                            <span class="tag">#getting-started</span>
+                            <span class="tag">#signup</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="getting-started" data-search="what is zoopito platform about livestock">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            What is Zoopito?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Zoopito is a comprehensive livestock management platform that helps farmers, veterinarians, and administrators track animal health, manage vaccinations, and generate insights — all in one place. We're on a mission to digitize livestock management in India.
+                        <div class="answer-tags">
+                            <span class="tag">#platform</span>
+                            <span class="tag">#about</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="getting-started" data-search="mobile app download android ios">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            Is there a mobile app available?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Yes! Zoopito is fully responsive on mobile browsers, and we're developing dedicated mobile apps for both Android and iOS. Stay tuned for updates on our app launch.
+                        <div class="answer-tags">
+                            <span class="tag">#mobile</span>
+                            <span class="tag">#app</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="getting-started" data-search="free trial pricing cost">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            Is Zoopito free to use?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Zoopito offers both free and premium plans. The free plan includes basic features like animal registration and vaccination tracking. Premium plans offer advanced analytics, priority support, and more.
+                        <div class="answer-tags">
+                            <span class="tag">#pricing</span>
+                            <span class="tag">#free</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CATEGORY: Registration -->
+                <div class="faq-card" data-category="registration" data-search="sign up register account role">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            How do I create an account?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Click "Login" → "Sign Up" → enter your name, email, and password → choose your role → verify your email with the OTP sent to your inbox. That's it!
+                        <div class="answer-tags">
+                            <span class="tag">#signup</span>
+                            <span class="tag">#account</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="registration" data-search="otp verification email not received">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            I didn't receive the OTP email. What should I do?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Check your spam/junk folder. If you still don't see it, click the "Resend OTP" button on the verification page. Make sure you entered the correct email address.
+                        <div class="answer-tags">
+                            <span class="tag">#otp</span>
+                            <span class="tag">#verification</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="registration" data-search="role farmer paravet admin difference">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            What are the different roles in Zoopito?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        <strong>Farmer:</strong> Manage your own animals and track health records.<br>
+                        <strong>Paravet:</strong> Manage multiple farmers and provide veterinary services.<br>
+                        <strong>Admin:</strong> Oversee all operations, manage users, and generate reports.
+                        <div class="answer-tags">
+                            <span class="tag">#roles</span>
+                            <span class="tag">#user-types</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CATEGORY: Animals -->
+                <div class="faq-card" data-category="animals" data-search="add animal register cattle cow buffalo">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            How do I add a new animal?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Go to the "Animals" section → click "Add New Animal" → fill in the details (Type, Breed, Age, Gender) → upload optional photos → click "Save".
+                        <div class="answer-tags">
+                            <span class="tag">#animal</span>
+                            <span class="tag">#registration</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="animals" data-search="bulk add multiple animals">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            Can I add multiple animals at once?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Yes! Use the Bulk Registration feature. Go to Animals → Bulk Add, fill in common details, and add multiple animals in one go. Perfect for large farms!
+                        <div class="answer-tags">
+                            <span class="tag">#bulk</span>
+                            <span class="tag">#animals</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="animals" data-search="tag number unique id identification">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            What is a Tag Number and why is it important?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        A Tag Number is a unique identifier for each animal. It helps in easy identification, tracking vaccination history, and maintaining accurate records across the platform.
+                        <div class="answer-tags">
+                            <span class="tag">#tag</span>
+                            <span class="tag">#identification</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="animals" data-search="pregnancy tracking calving expected delivery">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            How does pregnancy tracking work?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        For female animals, you can track pregnancy status with expected delivery dates, pregnancy stage, number of fetuses, and previous pregnancies count. This helps in planning and healthcare.
+                        <div class="answer-tags">
+                            <span class="tag">#pregnancy</span>
+                            <span class="tag">#health</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="animals" data-search="photo upload images camera">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            Can I upload photos of my animals?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Yes! You can upload photos from multiple angles (front, left, right, back) for each animal. This helps in easy identification and record-keeping.
+                        <div class="answer-tags">
+                            <span class="tag">#photos</span>
+                            <span class="tag">#images</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CATEGORY: Vaccinations -->
+                <div class="faq-card" data-category="vaccinations" data-search="record vaccination vaccine fmd hs-bq">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            How do I record a vaccination?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Go to "Vaccinations" → select the animal → choose the vaccine → enter the date administered and next due date → add notes (optional) → click "Save".
+                        <div class="answer-tags">
+                            <span class="tag">#vaccination</span>
+                            <span class="tag">#record</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="vaccinations" data-search="schedule reminder due date notification">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            Does Zoopito send vaccination reminders?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Yes! Zoopito automatically calculates next due dates and sends reminders via email and in-app notifications so you never miss a vaccination.
+                        <div class="answer-tags">
+                            <span class="tag">#reminders</span>
+                            <span class="tag">#notifications</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="vaccinations" data-search="vaccine schedule fmd every 6 months">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            What is the recommended vaccination schedule?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Common vaccines include:<br>
+                        • FMD - Every 6 months<br>
+                        • HS-BQ - Pre-monsoon<br>
+                        • PPR - Annual<br>
+                        • Deworming - Every 120 days
+                        <div class="answer-tags">
+                            <span class="tag">#schedule</span>
+                            <span class="tag">#vaccines</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="vaccinations" data-search="bulk vaccination multiple animals">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            Can I do bulk vaccinations?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Absolutely! Our bulk vaccination feature allows you to select multiple animals and record vaccinations for all of them at once, saving you valuable time.
+                        <div class="answer-tags">
+                            <span class="tag">#bulk</span>
+                            <span class="tag">#vaccination</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CATEGORY: Account -->
+                <div class="faq-card" data-category="account" data-search="reset password forgot login">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            How do I reset my password?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Click "Forgot Password" on the login page. Enter your registered email address and follow the instructions sent to your inbox to create a new password.
+                        <div class="answer-tags">
+                            <span class="tag">#password</span>
+                            <span class="tag">#security</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="account" data-search="change email update profile">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            Can I change my email address?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Yes, you can update your email address from your Profile Settings. A verification email will be sent to the new address to confirm the change.
+                        <div class="answer-tags">
+                            <span class="tag">#email</span>
+                            <span class="tag">#settings</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="account" data-search="delete account close remove">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            How do I delete my account?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        To delete your account, please contact our support team at <a href="mailto:support@zoopito.in" class="text-blue-600 dark:text-blue-400 hover:underline">support@zoopito.in</a>. We'll process your request within 48 hours.
+                        <div class="answer-tags">
+                            <span class="tag">#delete</span>
+                            <span class="tag">#account</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="account" data-search="privacy data security safe">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            Is my data safe and private?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Absolutely! We use industry-standard encryption and security practices. Your data is stored securely and only accessible to authorized users. We never share your data with third parties without your consent.
+                        <div class="answer-tags">
+                            <span class="tag">#privacy</span>
+                            <span class="tag">#security</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CATEGORY: Other -->
+                <div class="faq-card" data-category="other" data-search="offline mode internet connectivity">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            Can I use Zoopito offline?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Yes! Zoopito is designed with offline-first capabilities. Data is stored locally and synced automatically when you're back online — perfect for rural areas with poor connectivity.
+                        <div class="answer-tags">
+                            <span class="tag">#offline</span>
+                            <span class="tag">#connectivity</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="other" data-search="support contact help">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            How can I contact support?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        You can reach us at <a href="mailto:support@zoopito.in" class="text-blue-600 dark:text-blue-400 hover:underline">support@zoopito.in</a> or use the Contact Us form on our website. Our team typically responds within 24 hours.
+                        <div class="answer-tags">
+                            <span class="tag">#support</span>
+                            <span class="tag">#contact</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="other" data-search="report analytics data insights">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            What kind of reports can I generate?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        You can generate Daily, Weekly, and Monthly reports including vaccination coverage, species breakdown, farmer performance metrics, and more. All reports can be exported as CSV.
+                        <div class="answer-tags">
+                            <span class="tag">#reports</span>
+                            <span class="tag">#analytics</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-card" data-category="other" data-search="integration api government ngo">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="question">
+                            <span class="q-mark">?</span>
+                            Does Zoopito integrate with government systems?
+                        </div>
+                        <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="answer">
+                        Yes! Zoopito is designed to integrate with government animal husbandry departments, NGOs, and other stakeholders. We support data export in standard formats for easy reporting.
+                        <div class="answer-tags">
+                            <span class="tag">#integration</span>
+                            <span class="tag">#government</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- No Results -->
+            <div id="noResults" class="no-results">
+                <div class="icon"><i class="fas fa-search"></i></div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Results Found</h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    We couldn't find any FAQs matching your search. Try different keywords or browse the categories above.
+                </p>
+                <button onclick="resetSearch()" class="mt-4 px-6 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-lg hover:shadow-lg transition-all">
+                    <i class="fas fa-undo mr-2"></i>
+                    Reset Search
+                </button>
+            </div>
+            
+            <!-- Still Have Questions -->
+            <div class="mt-12 text-center bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800/50">
+                <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-headset text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Still Have Questions?</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    Our team is here to help. Reach out to us and we'll get back to you within 24 hours.
+                </p>
+                <a href="/contact" class="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300">
+                    <i class="fas fa-envelope mr-2"></i>
+                    Contact Support
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================================
+        // 1. FAQ CARD TOGGLE
+        // ============================================================
+        const faqCards = document.querySelectorAll('.faq-card');
+        
+        faqCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Don't toggle if clicking on a link
+                if (e.target.closest('a')) return;
+                
+                const isOpen = this.classList.contains('open');
+                
+                // Close all cards
+                faqCards.forEach(c => c.classList.remove('open'));
+                
+                // Open clicked card if it wasn't open
+                if (!isOpen) {
+                    this.classList.add('open');
+                }
+            });
+        });
+
+        // ============================================================
+        // 2. CATEGORY FILTER
+        // ============================================================
+        const categoryTabs = document.querySelectorAll('.category-tab');
+        const allCards = document.querySelectorAll('.faq-card');
+        const noResults = document.getElementById('noResults');
+        
+        let activeCategory = 'all';
+        
+        categoryTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Update active tab
+                categoryTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                activeCategory = this.dataset.category;
+                
+                // Apply filter
+                filterFAQs();
+            });
+        });
+
+        function filterFAQs() {
+            const searchTerm = document.getElementById('faqSearch').value.toLowerCase().trim();
+            let visibleCount = 0;
+            
+            allCards.forEach(card => {
+                const category = card.dataset.category;
+                const searchData = card.dataset.search || '';
+                const text = card.textContent.toLowerCase();
+                
+                const matchesCategory = activeCategory === 'all' || category === activeCategory;
+                const matchesSearch = !searchTerm || 
+                    text.includes(searchTerm) || 
+                    searchData.includes(searchTerm);
+                
+                if (matchesCategory && matchesSearch) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no results
+            if (visibleCount === 0) {
+                noResults.classList.add('visible');
+            } else {
+                noResults.classList.remove('visible');
+            }
+        }
+
+        // ============================================================
+        // 3. SEARCH FUNCTIONALITY
+        // ============================================================
+        const searchInput = document.getElementById('faqSearch');
+        const searchClear = document.getElementById('searchClear');
+        
+        searchInput.addEventListener('input', function() {
+            const hasText = this.value.length > 0;
+            searchClear.classList.toggle('visible', hasText);
+            
+            // Reset to "All" category when searching
+            if (hasText) {
+                categoryTabs.forEach(t => t.classList.remove('active'));
+                document.querySelector('.category-tab[data-category="all"]').classList.add('active');
+                activeCategory = 'all';
+            }
+            
+            filterFAQs();
+        });
+        
+        searchClear.addEventListener('click', function() {
+            resetSearch();
+        });
+
+        function resetSearch() {
+            searchInput.value = '';
+            searchClear.classList.remove('visible');
+            
+            // Reset to "All" category
+            categoryTabs.forEach(t => t.classList.remove('active'));
+            document.querySelector('.category-tab[data-category="all"]').classList.add('active');
+            activeCategory = 'all';
+            
+            filterFAQs();
+            
+            // Scroll to top of FAQ section
+            document.querySelector('#faqGrid').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // ============================================================
+        // 4. KEYBOARD SHORTCUT: ESC to reset
+        // ============================================================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                resetSearch();
+                // Close all open cards
+                faqCards.forEach(c => c.classList.remove('open'));
+            }
+        });
+
+        // ============================================================
+        // 5. SMOOTH SCROLL FOR HASH LINKS
+        // ============================================================
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+    });
+</script>

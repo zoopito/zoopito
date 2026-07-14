@@ -53,7 +53,7 @@
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin " />
   <link
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600;700;800&display=swap"
     rel="stylesheet"
@@ -70,6 +70,21 @@
     html, body {
       transition: background-color 0.25s, color 0.25s;
     }
+    
+    /* RESTORED: Dynamic Vector Running Light Animation Styles */
+    .global-lightning-track {
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+        animation: globalTrackPulse 12s infinite linear;
+    }
+    .line-fast { animation-duration: 9s; }
+    .line-slow { animation-duration: 16s; direction: reverse; }
+
+    @keyframes globalTrackPulse {
+        0% { stroke-dashoffset: 2000; opacity: 0.1; }
+        50% { opacity: 0.85; }
+        100% { stroke-dashoffset: 0; opacity: 0.1; }
+    }
   </style>
 
   <!-- Dark mode detection -->
@@ -78,13 +93,9 @@
       document.documentElement.classList.add("dark");
     }
   </script>
-
-  
-     
 </head>
 
-<!-- Default background for light mode -->
-<body class="bg-gray-50 font-sans text-gray-800 dark:bg-black">
+<body class="bg-gray-50 font-sans text-gray-800 dark:bg-black relative min-h-screen">
 
   <% if(showsplash){ %>
   <!-- Splash Screen -->
@@ -105,6 +116,49 @@
         </div>
     </div>
   <% } %>
+
+  <style>
+    body {
+        position: relative;
+        min-height: 100vh;
+    }
+    #global-hybrid-3d-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -10;
+        pointer-events: none;
+    }
+    /* Fixed Light Mode blend visibility logic */
+    .canvas-adaptive-blend { mix-blend-mode: normal; opacity: 0.55; }
+    .dark .canvas-adaptive-blend { mix-blend-mode: screen; opacity: 0.9; }
+  </style>
+
+  <!-- ADDED BACK: Glowing Lighting Vector Tracks behind components -->
+  <div class="fixed inset-0 z-[-15] pointer-events-none overflow-hidden opacity-70 dark:opacity-35">
+        <svg class="w-full h-full" viewBox="0 0 1440 800" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <filter id="global-super-glow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="10" result="blur" />
+                    <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+                <linearGradient id="global-cyber-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#38BDF8" />
+                    <stop offset="100%" stop-color="#22C55E" />
+                </linearGradient>
+            </defs>
+            <path class="global-lightning-track line-fast" d="M -100,250 Q 400,80 800,450 T 1600,250" stroke="url(#global-cyber-grad)" stroke-width="2.5" fill="none" filter="url(#global-super-glow)" />
+            <path class="global-lightning-track line-slow" d="M 0,550 Q 450,700 850,350 T 1550,650" stroke="#38BDF8" stroke-width="1.5" fill="none" opacity="0.6" filter="url(#global-super-glow)" />
+        </svg>
+  </div>
+
+  <!-- Main 3D Particle Element Container -->
+  <div id="global-hybrid-3d-canvas" class="canvas-adaptive-blend"></div>
 
   <!-- Navbar -->
   <%- include("../includes/navbar.ejs") %>
@@ -127,7 +181,6 @@
 
   <!-- Zoopito AI Chat Support -->
   <script>
-    // Expose user context to chat widget (EJS renders this server-side)
     window.ZOOPITO_USER_ROLE = '<%= typeof currUser !== "undefined" && currUser ? currUser.role : "GUEST" %>';
     window.ZOOPITO_USER_NAME = '<%= typeof currUser !== "undefined" && currUser ? (currUser.name || currUser.username || "there") : "there" %>';
   </script>
@@ -139,18 +192,105 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- Optional: Add Bootstrap for tooltip (if you want to use it) -->
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script> -->
-    
-    <!-- Custom Scripts -->
     <script>
-        // Make Swal available globally
         window.Swal = Swal;
     </script>
     
     <%= typeof pageScripts !== 'undefined' ? pageScripts : '' %>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+    // RESTORED: Original 3D Engine Setup with exact logic
+    const container = document.getElementById('global-hybrid-3d-canvas');
+    if (container) {
+        const scene = new THREE.Scene();
+        
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.z = 7;
+        
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
 
+        const isDark = document.documentElement.classList.contains('dark');
+        
+        // Original Matrix Nodes Layer
+        const particleGeometry = new THREE.BufferGeometry();
+        const particleCount = 200; 
+        const coords = new Float32Array(particleCount * 3);
+
+        for(let i = 0; i < particleCount * 3; i += 3) {
+            coords[i] = (Math.random() - 0.5) * 18;
+            coords[i+1] = (Math.random() - 0.5) * 14;  
+            coords[i+2] = (Math.random() - 0.5) * 6;
+        }
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(coords, 3));
+
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0x38BDF8,
+            size: 0.12,
+            transparent: true,
+            opacity: isDark ? 0.7 : 0.5
+        });
+        const networkMesh = new THREE.Points(particleGeometry, particleMaterial);
+        scene.add(networkMesh);
+
+        // Original 3D Spatial Systems (Torus 1 & Torus 2)
+        const orbitGroup = new THREE.Group();
+        
+        const torus1Geo = new THREE.TorusGeometry(3.5, 0.04, 16, 100);
+        const torus1Mat = new THREE.MeshBasicMaterial({ color: 0x22C55E, transparent: true, opacity: isDark ? 0.2 : 0.35 });
+        const torus1 = new THREE.Mesh(torus1Geo, torus1Mat);
+        torus1.rotation.x = Math.PI / 3;
+        orbitGroup.add(torus1);
+
+        const torus2Geo = new THREE.TorusGeometry(4.8, 0.02, 12, 80);
+        const torus2Mat = new THREE.MeshBasicMaterial({ color: 0x38BDF8, transparent: true, opacity: isDark ? 0.15 : 0.3 });
+        const torus2 = new THREE.Mesh(torus2Geo, torus2Mat);
+        torus2.rotation.y = Math.PI / 4;
+        orbitGroup.add(torus2);
+
+        scene.add(orbitGroup);
+
+        // Interaction
+        let mouseX = 0, mouseY = 0;
+        window.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) - 0.5;
+            mouseY = (e.clientY / window.innerHeight) - 0.5;
+        });
+
+        function renderingEngine() {
+            requestAnimationFrame(renderingEngine);
+            
+            networkMesh.rotation.y += 0.0008;
+            networkMesh.rotation.x += 0.0004;
+            torus1.rotation.x += 0.0006;
+            torus2.rotation.y -= 0.0005;
+
+            camera.position.x += (mouseX * 3 - camera.position.x) * 0.05;
+            camera.position.y += (-mouseY * 3 - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+        renderingEngine();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Theme Toggle Observer
+        const themeObserver = new MutationObserver(() => {
+            const updatedDark = document.documentElement.classList.contains('dark');
+            particleMaterial.opacity = updatedDark ? 0.7 : 0.5;
+            torus1Mat.opacity = updatedDark ? 0.2 : 0.35;
+            torus2Mat.opacity = updatedDark ? 0.15 : 0.3;
+        });
+        themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    }
+</script>
 </body>
 </html>

@@ -69,3 +69,17 @@ module.exports.subscribe = async (req, res) => {
     });
   }
 };
+
+module.exports.documentation = async (req, res)=>{
+  res.render("others/documents.ejs");
+}
+
+module.exports.faqs = async (req, res)=>{
+  res.render("others/faqs.ejs");
+}
+
+module.exports.Careers = async (req, res)=>{
+  res.render("others/careers.ejs");
+}
+
+
