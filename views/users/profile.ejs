@@ -1,148 +1,926 @@
-<% layout("/layouts/boilerplate") %>
+<% layout("/layouts/boilerplate") -%>
 
-<div class="py-6">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="md:flex md:items-center md:justify-between">
-      <div class="flex-1 min-w-0">
-        <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-          My Profile
-        </h2>
-      </div>
-      <div class="mt-4 flex md:mt-0 md:ml-4">
-        <a href="/" class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-          ← Back to Dashboard
-        </a>
-      </div>
-    </div>
-  </div>
+<style>
+    .role-badge {
+        padding: 4px 14px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .role-badge.admin {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.1));
+        color: #2563eb;
+    }
+    
+    .role-badge.paravet {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+        color: #16a34a;
+    }
+    
+    .role-badge.sales {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.1));
+        color: #7c3aed;
+    }
+    
+    .role-badge.farmer {
+        background: linear-gradient(135deg, rgba(251, 146, 60, 0.2), rgba(251, 146, 60, 0.1));
+        color: #ea580c;
+    }
+    
+    .role-badge.user {
+        background: linear-gradient(135deg, rgba(107, 114, 128, 0.2), rgba(107, 114, 128, 0.1));
+        color: #4b5563;
+    }
+    
+    .dark .role-badge.admin {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(56, 189, 248, 0.05));
+        color: #60a5fa;
+    }
+    
+    .dark .role-badge.paravet {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+        color: #4ade80;
+    }
+    
+    .dark .role-badge.sales {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(168, 85, 247, 0.05));
+        color: #a78bfa;
+    }
+    
+    .dark .role-badge.farmer {
+        background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(251, 146, 60, 0.05));
+        color: #fb923c;
+    }
+    
+    .dark .role-badge.user {
+        background: linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(107, 114, 128, 0.05));
+        color: #9ca3af;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: white;
+        color: #1f2937;
+    }
+    
+    .dark .form-input {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f3f4f6;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #38BDF8;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+    }
+    
+    .dark .form-input:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+    }
+    
+    .form-input:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: #f9fafb;
+    }
+    
+    .dark .form-input:disabled {
+        background: #111827;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #374151;
+        font-size: 14px;
+    }
+    
+    .dark .form-label {
+        color: #e5e7eb;
+    }
+    
+    .action-btn {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        border: none;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-btn.primary {
+        background: linear-gradient(135deg, #38BDF8, #22C55E);
+        color: white;
+    }
+    
+    .action-btn.primary:hover {
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3);
+    }
+    
+    .action-btn.danger {
+        background: #EF4444;
+        color: white;
+    }
+    
+    .action-btn.danger:hover {
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+    }
+    
+    .action-btn.outline {
+        background: transparent;
+        color: #6b7280;
+        border: 2px solid #e5e7eb;
+    }
+    
+    .dark .action-btn.outline {
+        color: #9ca3af;
+        border-color: #374151;
+    }
+    
+    .action-btn.outline:hover {
+        border-color: #38BDF8;
+        color: #38BDF8;
+    }
+    
+    .dark .action-btn.outline:hover {
+        border-color: #60a5fa;
+        color: #60a5fa;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .dark .info-row {
+        border-bottom-color: #374151;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .dark .info-label {
+        color: #9ca3af;
+    }
+    
+    .info-value {
+        color: #1f2937;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .dark .info-value {
+        color: #f3f4f6;
+    }
+    
+    /* Profile Card Animation */
+    .profile-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .dark .profile-card {
+        border-color: #374151;
+    }
+    
+    .profile-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .dark .profile-card:hover {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .avatar-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .avatar-wrapper .status-dot {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 3px solid white;
+    }
+    
+    .dark .avatar-wrapper .status-dot {
+        border-color: #1f2937;
+    }
+    
+    .avatar-wrapper .status-dot.active {
+        background-color: #22C55E;
+    }
+    
+    .avatar-wrapper .status-dot.inactive {
+        background-color: #EF4444;
+    }
+    
+    /* Quick Stats Cards */
+    .stat-item {
+        transition: all 0.3s ease;
+        padding: 16px;
+        border-radius: 12px;
+        background: #f9fafb;
+        text-align: center;
+    }
+    
+    .dark .stat-item {
+        background: #1f2937;
+    }
+    
+    .stat-item:hover {
+        transform: scale(1.05);
+        background: #f3f4f6;
+    }
+    
+    .dark .stat-item:hover {
+        background: #374151;
+    }
+    
+    .stat-item .number {
+        font-size: 24px;
+        font-weight: 700;
+    }
+    
+    .stat-item .label {
+        font-size: 12px;
+        color: #6b7280;
+    }
+    
+    .dark .stat-item .label {
+        color: #9ca3af;
+    }
+    
+    /* Toast Notification */
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        max-width: 450px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        transform: translateX(120%);
+        transition: transform 0.4s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .toast.show {
+        transform: translateX(0);
+    }
+    
+    .toast.success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .toast.error {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .toast.info {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .toast .toast-close {
+        cursor: pointer;
+        opacity: 0.8;
+        margin-left: auto;
+        padding: 4px;
+    }
+    
+    .toast .toast-close:hover {
+        opacity: 1;
+    }
+</style>
 
-
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <!-- Profile Information -->
-      <div class="lg:col-span-2">
-        <div class="bg-white shadow rounded-lg">
-          <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Profile Information</h3>
-            
-            <form action="/profile/update" method="POST">
-              <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                  <input type="text" name="name" id="name" value="<%= currUser.name %>"
-                    class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                </div>
-
-                <div>
-                  <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                  <input type="email" name="email" id="email" value="<%= currUser.email %>" disabled
-                    class="mt-1 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                </div>
-
-                <div>
-                  <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                  <input type="tel" name="phone" id="phone" value="<%= currUser.phone || '' %>"
-                    class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                </div>
-
-                <div>
-                  <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
-                  <input type="text" id="role" value="<%= currUser.role.charAt(0).toUpperCase() + currUser.role.slice(1).replace('-', ' ') %>" disabled
-                    class="mt-1 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                </div>
-              </div>
-
-              <div class="mt-8 flex justify-end">
-                <button type="submit"
-                  class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                  Update Profile
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- Additional Information based on role -->
-        <% if (paravetProfile) { %>
-        <div class="bg-white shadow rounded-lg mt-6">
-          <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Paravet Information</h3>
-            <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-              <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-gray-500">Qualification</dt>
-                <dd class="mt-1 text-sm text-gray-900"><%= paravetProfile.qualification || 'Not specified' %></dd>
-              </div>
-              <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-gray-500">License Number</dt>
-                <dd class="mt-1 text-sm text-gray-900"><%= paravetProfile.licenseNumber || 'Not specified' %></dd>
-              </div>
-              <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-gray-500">Assigned Areas</dt>
-                <dd class="mt-1 text-sm text-gray-900">
-                  <% if (paravetProfile.assignedAreas && paravetProfile.assignedAreas.length > 0) { %>
-                    <%= paravetProfile.assignedAreas.map(area => area.village).join(', ') %>
-                  <% } else { %>
-                    No areas assigned yet
-                  <% } %>
-                </dd>
-              </div>
-              <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-gray-500">Total Services</dt>
-                <dd class="mt-1 text-sm text-gray-900"><%= paravetProfile.totalServicesCompleted || 0 %></dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-        <% } %>
-      </div>
-
-      <!-- Account Actions -->
-      <div>
-        <div class="bg-white shadow rounded-lg">
-          <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Account Actions</h3>
-            
-            <div class="space-y-4">
-              <a href="/change-password"
-                class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Change Password
-              </a>
-              
-              <a href="/logout" onclick="return confirm('Are you sure you want to logout?')"
-                class="w-full flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700">
-                Logout
-              </a>
+<div class="py-6 md:py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Page Header -->
+        <div class="md:flex md:items-center md:justify-between mb-6">
+            <div class="flex-1 min-w-0">
+                <h2 class="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">
+                    My Profile
+                </h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Manage your account settings and personal information
+                </p>
             </div>
-          </div>
+            <div class="mt-4 flex md:mt-0 md:ml-4">
+                <a href="/<%= currUser.role.toLowerCase() %>/dashboard" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
         </div>
 
-        <!-- Account Stats -->
-        <div class="bg-white shadow rounded-lg mt-6">
-          <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Account Information</h3>
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
             
-            <dl class="space-y-4">
-              <div class="flex items-center justify-between">
-                <dt class="text-sm font-medium text-gray-500">Member since</dt>
-                <dd class="text-sm text-gray-900"><%= new Date(currUser.createdAt).toLocaleDateString() %></dd>
-              </div>
-              
-              <div class="flex items-center justify-between">
-                <dt class="text-sm font-medium text-gray-500">Last login</dt>
-                <dd class="text-sm text-gray-900"><%= currUser.lastLogin ? new Date(currUser.lastLogin).toLocaleString() : 'Never' %></dd>
-              </div>
-              
-              <div class="flex items-center justify-between">
-                <dt class="text-sm font-medium text-gray-500">Account status</dt>
-                <dd class="text-sm">
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                    Active
-                  </span>
-                </dd>
-              </div>
-            </dl>
-          </div>
+            <!-- Left Column - Profile Information -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Profile Card -->
+                <div class="profile-card bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+                    <div class="px-4 py-5 sm:p-6">
+                        <!-- Avatar & Header -->
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="avatar-wrapper">
+                                <div class="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-green-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                                    <%= currUser.name ? currUser.name.charAt(0).toUpperCase() : 'U' %>
+                                </div>
+                                <span class="status-dot <%= currUser.isActive !== false ? 'active' : 'inactive' %>"></span>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white"><%= currUser.name %></h3>
+                                <div class="flex flex-wrap items-center gap-2 mt-1">
+                                    <span class="role-badge <%= currUser.role.toLowerCase() %>">
+                                        <%= currUser.role.charAt(0).toUpperCase() + currUser.role.slice(1).toLowerCase() %>
+                                    </span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-calendar-alt mr-1"></i>
+                                        Member since <%= new Date(currUser.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                                    </span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-check-circle <%= currUser.isVerified ? 'text-green-500' : 'text-yellow-500' %> mr-1"></i>
+                                        <%= currUser.isVerified ? 'Verified' : 'Pending Verification' %>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Edit Form -->
+                        <form id="profileForm" action="/profile/update" method="POST" class="space-y-6">
+                            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <div>
+                                    <label for="name" class="form-label">Full Name <span class="text-red-500">*</span></label>
+                                    <input type="text" name="name" id="name" value="<%= currUser.name %>" required
+                                        class="form-input">
+                                </div>
+
+                                <div>
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" name="email" id="email" value="<%= currUser.email %>" disabled
+                                        class="form-input bg-gray-100 dark:bg-gray-700 cursor-not-allowed">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        <i class="fas fa-lock mr-1"></i> Email cannot be changed
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label for="mobile" class="form-label">Mobile Number</label>
+                                    <input type="tel" name="mobile" id="mobile" value="<%= currUser.mobile || '' %>"
+                                        class="form-input" placeholder="Enter your mobile number">
+                                </div>
+
+                                <div>
+                                    <label for="role" class="form-label">Role</label>
+                                    <input type="text" id="role" value="<%= currUser.role.charAt(0).toUpperCase() + currUser.role.slice(1).toLowerCase() %>" disabled
+                                        class="form-input bg-gray-100 dark:bg-gray-700 cursor-not-allowed">
+                                </div>
+
+                                <% if (currUser.role === 'PARAVET' || currUser.role === 'SALES') { %>
+                                <div>
+                                    <label for="designation" class="form-label">Designation</label>
+                                    <input type="text" name="designation" id="designation" value="<%= currUser.designation || '' %>"
+                                        class="form-input" placeholder="Enter your designation">
+                                </div>
+                                <% } %>
+
+                                <% if (currUser.role === 'PARAVET') { %>
+                                <div>
+                                    <label for="qualification" class="form-label">Qualification</label>
+                                    <input type="text" name="qualification" id="qualification" value="<%= currUser.qualification || '' %>"
+                                        class="form-input" placeholder="Enter your qualification">
+                                </div>
+                                <% } %>
+                            </div>
+
+                            <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <button type="submit" id="updateProfileBtn"
+                                    class="action-btn primary px-6 py-2.5">
+                                    <i class="fas fa-save mr-2"></i>
+                                    Update Profile
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Role-specific Information -->
+                <% if (paravetProfile) { %>
+                <!-- Paravet Information -->
+                <div class="profile-card bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-user-md text-blue-500"></i>
+                            Paravet Details
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-1">
+                            <div class="info-row">
+                                <span class="info-label">Employee Code</span>
+                                <span class="info-value font-mono"><%= paravetProfile.employeeCode || 'N/A' %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Qualification</span>
+                                <span class="info-value"><%= paravetProfile.qualification || 'Not specified' %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">License Number</span>
+                                <span class="info-value"><%= paravetProfile.licenseNumber || 'Not specified' %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Experience</span>
+                                <span class="info-value"><%= paravetProfile.experience ? paravetProfile.experience + ' years' : 'Not specified' %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Specialization</span>
+                                <span class="info-value"><%= paravetProfile.specialization || 'Not specified' %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Rating</span>
+                                <span class="info-value flex items-center gap-1">
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <%= paravetProfile.rating || 'N/A' %>
+                                </span>
+                            </div>
+                            <div class="info-row md:col-span-2">
+                                <span class="info-label">Assigned Areas</span>
+                                <span class="info-value">
+                                    <% if (paravetProfile.assignedAreas && paravetProfile.assignedAreas.length > 0) { %>
+                                        <div class="flex flex-wrap gap-1">
+                                            <% paravetProfile.assignedAreas.forEach(function(area) { %>
+                                                <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-full">
+                                                    <%= area.village || area.district || 'N/A' %>
+                                                </span>
+                                            <% }); %>
+                                        </div>
+                                    <% } else { %>
+                                        <span class="text-gray-400">No areas assigned yet</span>
+                                    <% } %>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Farmers Assigned</span>
+                                <span class="info-value"><%= paravetProfile.assignedFarmers ? paravetProfile.assignedFarmers.length : 0 %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Services Completed</span>
+                                <span class="info-value"><%= paravetProfile.totalServicesCompleted || 0 %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Vaccinations Done</span>
+                                <span class="info-value"><%= paravetProfile.totalVaccinations || 0 %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status</span>
+                                <span class="info-value">
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium <%= paravetProfile.isActive !== false ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' %>">
+                                        <%= paravetProfile.isActive !== false ? 'Active' : 'Inactive' %>
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+
+                <% if (farmerProfile) { %>
+                <!-- Farmer Information -->
+                <div class="profile-card bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-tractor text-green-500"></i>
+                            Farmer Details
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-1">
+                            <div class="info-row">
+                                <span class="info-label">Farmer ID</span>
+                                <span class="info-value font-mono"><%= farmerProfile.uniqueFarmerId || 'N/A' %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Mobile Number</span>
+                                <span class="info-value"><%= farmerProfile.mobileNumber || 'Not specified' %></span>
+                            </div>
+                            <div class="info-row md:col-span-2">
+                                <span class="info-label">Address</span>
+                                <span class="info-value">
+                                    <% if (farmerProfile.address) { %>
+                                        <%= [farmerProfile.address.village, farmerProfile.address.taluka, farmerProfile.address.district, farmerProfile.address.state].filter(Boolean).join(', ') || 'Not specified' %>
+                                    <% } else { %>
+                                        Not specified
+                                    <% } %>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Total Animals</span>
+                                <span class="info-value"><%= farmerProfile.totalAnimals || 0 %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Registered By</span>
+                                <span class="info-value"><%= farmerProfile.registeredBy ? farmerProfile.registeredBy.name : 'N/A' %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status</span>
+                                <span class="info-value">
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium <%= farmerProfile.isActive !== false ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' %>">
+                                        <%= farmerProfile.isActive !== false ? 'Active' : 'Inactive' %>
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Assigned Paravet</span>
+                                <span class="info-value">
+                                    <% if (farmerProfile.assignedParavet) { %>
+                                        <span class="text-blue-600 dark:text-blue-400">
+                                            <%= farmerProfile.assignedParavet.user ? farmerProfile.assignedParavet.user.name : 'N/A' %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="text-gray-400">Not assigned</span>
+                                    <% } %>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+
+                <% if (salesProfile) { %>
+                <!-- Sales Team Information -->
+                <div class="profile-card bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-chart-line text-purple-500"></i>
+                            Sales Team Details
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-1">
+                            <div class="info-row">
+                                <span class="info-label">Employee Code</span>
+                                <span class="info-value font-mono"><%= salesProfile.employeeCode || 'N/A' %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Assigned Areas</span>
+                                <span class="info-value">
+                                    <% if (salesProfile.assignedAreas && salesProfile.assignedAreas.length > 0) { %>
+                                        <div class="flex flex-wrap gap-1">
+                                            <% salesProfile.assignedAreas.forEach(function(area) { %>
+                                                <span class="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-full">
+                                                    <%= area.village || area.district || 'N/A' %>
+                                                </span>
+                                            <% }); %>
+                                        </div>
+                                    <% } else { %>
+                                        <span class="text-gray-400">No areas assigned yet</span>
+                                    <% } %>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Farmers Onboarded</span>
+                                <span class="info-value"><%= salesProfile.onboardedFarmers ? salesProfile.onboardedFarmers.length : 0 %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Animals Onboarded</span>
+                                <span class="info-value"><%= salesProfile.onboardedAnimals ? salesProfile.onboardedAnimals.length : 0 %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Last Active</span>
+                                <span class="info-value"><%= salesProfile.lastActiveAt ? new Date(salesProfile.lastActiveAt).toLocaleDateString() : 'N/A' %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status</span>
+                                <span class="info-value">
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium <%= salesProfile.isActive !== false ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' %>">
+                                        <%= salesProfile.isActive !== false ? 'Active' : 'Inactive' %>
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+
+            <!-- Right Column - Account Actions & Stats -->
+            <div class="space-y-6">
+                
+                <!-- Account Actions -->
+                <div class="profile-card bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-cog text-gray-500"></i>
+                            Account Actions
+                        </h3>
+                        
+                        <div class="space-y-3">
+                            <a href="/change-password"
+                                class="w-full flex items-center justify-center px-4 py-2.5 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-key mr-2"></i>
+                                Change Password
+                            </a>
+                            
+                            <a href="/profile/settings" 
+                                class="w-full flex items-center justify-center px-4 py-2.5 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-sliders-h mr-2"></i>
+                                Account Settings
+                            </a>
+                            
+                            <button onclick="confirmLogout()"
+                                class="w-full flex items-center justify-center px-4 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors">
+                                <i class="fas fa-sign-out-alt mr-2"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Stats -->
+                <div class="profile-card bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-chart-pie text-blue-500"></i>
+                            Account Stats
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Member Since</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                    <%= new Date(currUser.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Last Login</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                    <%= currUser.lastLogin ? new Date(currUser.lastLogin).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never' %>
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Total Logins</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                    <%= currUser.loginHistory ? currUser.loginHistory.length : 0 %>
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Account Status</span>
+                                <span class="text-sm font-medium">
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                        <%= currUser.isActive !== false ? 'Active' : 'Inactive' %>
+                                    </span>
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Verified</span>
+                                <span class="text-sm font-medium">
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium <%= currUser.isVerified ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' %>">
+                                        <%= currUser.isVerified ? 'Verified' : 'Pending' %>
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats (Role-based) -->
+                <div class="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 rounded-2xl border border-blue-200 dark:border-blue-800 p-5">
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                        <i class="fas fa-bolt text-yellow-500"></i>
+                        Quick Stats
+                    </h4>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <% if (paravetProfile) { %>
+                        <div class="stat-item">
+                            <p class="number text-blue-600 dark:text-blue-400"><%= paravetProfile.assignedFarmers ? paravetProfile.assignedFarmers.length : 0 %></p>
+                            <p class="label">Farmers</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-green-600 dark:text-green-400"><%= paravetProfile.totalServicesCompleted || 0 %></p>
+                            <p class="label">Services</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-purple-600 dark:text-purple-400"><%= paravetProfile.totalVaccinations || 0 %></p>
+                            <p class="label">Vaccinations</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-orange-600 dark:text-orange-400"><%= paravetProfile.rating || 'N/A' %></p>
+                            <p class="label">Rating</p>
+                        </div>
+                        <% } else if (farmerProfile) { %>
+                        <div class="stat-item">
+                            <p class="number text-blue-600 dark:text-blue-400"><%= farmerProfile.totalAnimals || 0 %></p>
+                            <p class="label">Animals</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-green-600 dark:text-green-400"><%= farmerProfile.vaccinationCount || 0 %></p>
+                            <p class="label">Vaccinations</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-purple-600 dark:text-purple-400"><%= farmerProfile.totalServices || 0 %></p>
+                            <p class="label">Services</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-orange-600 dark:text-orange-400"><%= farmerProfile.totalVisits || 0 %></p>
+                            <p class="label">Visits</p>
+                        </div>
+                        <% } else if (salesProfile) { %>
+                        <div class="stat-item">
+                            <p class="number text-blue-600 dark:text-blue-400"><%= salesProfile.onboardedFarmers ? salesProfile.onboardedFarmers.length : 0 %></p>
+                            <p class="label">Farmers</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-green-600 dark:text-green-400"><%= salesProfile.onboardedAnimals ? salesProfile.onboardedAnimals.length : 0 %></p>
+                            <p class="label">Animals</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-purple-600 dark:text-purple-400"><%= salesProfile.assignedAreas ? salesProfile.assignedAreas.length : 0 %></p>
+                            <p class="label">Areas</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-orange-600 dark:text-orange-400"><%= salesProfile.totalRevenue || 0 %></p>
+                            <p class="label">Revenue</p>
+                        </div>
+                        <% } else { %>
+                        <div class="stat-item">
+                            <p class="number text-gray-500 dark:text-gray-400">—</p>
+                            <p class="label">No stats</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-gray-500 dark:text-gray-400">—</p>
+                            <p class="label">available</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-gray-500 dark:text-gray-400">—</p>
+                            <p class="label">yet</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="number text-gray-500 dark:text-gray-400">—</p>
+                            <p class="label">✨</p>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Session Info -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-5">
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                        <i class="fas fa-laptop text-blue-500"></i>
+                        Session Information
+                    </h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500 dark:text-gray-400">Device</span>
+                            <span class="text-gray-700 dark:text-gray-300">
+                                <%= currUser.loginHistory && currUser.loginHistory.length > 0 ? 
+                                    (currUser.loginHistory[0].userAgent || 'Unknown').substring(0, 50) + '...' : 
+                                    'Unknown' %>
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500 dark:text-gray-400">IP Address</span>
+                            <span class="text-gray-700 dark:text-gray-300">
+                                <%= currUser.loginHistory && currUser.loginHistory.length > 0 ? 
+                                    currUser.loginHistory[0].ip || 'Unknown' : 
+                                    'Unknown' %>
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500 dark:text-gray-400">Login Time</span>
+                            <span class="text-gray-700 dark:text-gray-300">
+                                <%= currUser.lastLogin ? new Date(currUser.lastLogin).toLocaleString() : 'N/A' %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>
+
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-sign-out-alt text-red-600 dark:text-red-400 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Confirm Logout</h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+                Are you sure you want to logout from your account?
+            </p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeLogoutModal()" 
+                        class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    Cancel
+                </button>
+                <a href="/logout" 
+                   class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Yes, Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast hidden">
+    <span id="toastIcon"></span>
+    <span id="toastMessage"></span>
+    <span class="toast-close" onclick="hideToast()">&times;</span>
+</div>
+
+<script>
+    // ============================================================
+    // LOGOUT CONFIRMATION
+    // ============================================================
+    function confirmLogout() {
+        document.getElementById('logoutModal').classList.remove('hidden');
+        document.getElementById('logoutModal').classList.add('flex');
+    }
+
+    function closeLogoutModal() {
+        document.getElementById('logoutModal').classList.add('hidden');
+        document.getElementById('logoutModal').classList.remove('flex');
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('logoutModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeLogoutModal();
+        }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeLogoutModal();
+        }
+    });
+
+
+    // ============================================================
+    // PROFILE FORM - Show success message on update
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('profileForm');
+        const submitBtn = document.getElementById('updateProfileBtn');
+        
+        form.addEventListener('submit', function(e) {
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Updating...';
+            
+            // Show success after form submission (will be handled by server flash)
+            // The flash message will appear via the standard flash system
+        });
+        
+    });
+</script>

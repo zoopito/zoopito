@@ -81,6 +81,55 @@
   .currUser-avatar:hover {
     transform: scale(1.1);
   }
+
+  /* Mobile menu link active state */
+  .mobile-link-active {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(34, 197, 94, 0.1));
+    color: #2563eb;
+    border-left: 4px solid #38BDF8;
+  }
+
+  .dark .mobile-link-active {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(34, 197, 94, 0.05));
+    color: #60a5fa;
+    border-left-color: #60a5fa;
+  }
+
+  .mobile-link {
+    transition: all 0.2s ease;
+  }
+
+  .mobile-link:hover {
+    background: rgba(56, 189, 248, 0.05);
+    transform: translateX(4px);
+  }
+
+  .dark .mobile-link:hover {
+    background: rgba(56, 189, 248, 0.08);
+  }
+
+  /* Mobile menu sections */
+  .mobile-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #9ca3af;
+    padding: 8px 16px 4px;
+    font-weight: 600;
+  }
+
+  .dark .mobile-section-title {
+    color: #6b7280;
+  }
+
+  .mobile-divider {
+    border-top: 1px solid #e5e7eb;
+    margin: 8px 16px;
+  }
+
+  .dark .mobile-divider {
+    border-top-color: #374151;
+  }
 </style>
 
 <nav class="bg-white dark:bg-gray-900 shadow-lg sticky top-0 z-50 transition-all duration-300 border-b border-gray-100 dark:border-gray-800">
@@ -259,7 +308,7 @@
               <span class="text-gray-700 dark:text-gray-300">My Profile</span>
             </a>
             
-            <a href="/settings" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <a href="/profile/settings" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
               <i class="fas fa-cog text-gray-500 w-5"></i>
               <span class="text-gray-700 dark:text-gray-300">Settings</span>
             </a>
@@ -288,7 +337,9 @@
     </div>
   </div>
 
-  <!-- MOBILE MENU -->
+  <!-- ============================================================ -->
+  <!-- MOBILE MENU - COMPLETE WITH ALL LINKS FOR ALL ROLES -->
+  <!-- ============================================================ -->
   <div id="mobileMenu" 
        class="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-900 shadow-2xl transform translate-x-full transition-transform duration-300 z-50 lg:hidden border-l border-gray-200 dark:border-gray-800">
     
@@ -303,10 +354,11 @@
     </div>
 
     <!-- MOBILE CONTENT -->
-    <div class="h-full flex flex-col">
+    <div class="h-full flex flex-col overflow-y-auto">
+      
       <!-- USER INFO -->
       <% if (currUser) { %>
-        <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
           <div class="flex items-center gap-3">
             <div class="currUser-avatar h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold text-lg">
               <%= currUser.name ? currUser.name.charAt(0).toUpperCase() : 'U' %>
@@ -314,113 +366,219 @@
             <div>
               <p class="font-semibold text-gray-800 dark:text-white"><%= currUser.name || 'User' %></p>
               <p class="text-sm text-gray-500 dark:text-gray-400"><%= currUser.email || '' %></p>
+              <span class="text-xs inline-block px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 mt-1">
+                <%= currUser.role %>
+              </span>
             </div>
           </div>
         </div>
       <% } %>
 
       <!-- MOBILE NAVIGATION -->
-      <div class="flex-1 overflow-y-auto px-3 py-4">
+      <div class="flex-1 px-3 py-4">
         <div class="space-y-1">
-          <% const mobileActive = "bg-gradient-to-r from-sky-500/10 to-green-500/10 text-sky-600 dark:text-sky-400 border-l-4 border-sky-500"; %>
-          <% const mobileInactive = "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"; %>
           
+          <!-- ====== COMMON LINKS (All Users) ====== -->
+          <div class="mobile-section-title">Main</div>
           <a href="/" 
-             class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/' ? mobileActive : mobileInactive %>">
+             class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/' ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
             <i class="fas fa-home w-5"></i>
-            <span>Dashboard</span>
+            <span>Home</span>
           </a>
           
-          <!-- Conditional Mobile Menu -->
-          <% if (currUser) { %>
-            <% if(currUser.role === "ADMIN"){ %>
-              <a href="/<%= currUser.role.toLowerCase() %>/sales-team" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/sales-team`) ? mobileActive : mobileInactive %>">
-                <i class="fas fa-user-tie w-5"></i>
-                <span>Sales Team</span>
-              </a>
-              <a href="/<%= currUser.role.toLowerCase() %>/paravets" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/paravets`) ? mobileActive : mobileInactive %>">
-                <i class="fas fa-user-doctor w-5"></i>
-                <span>Paravets</span>
-              </a>
-            <% } %>
-            <% if (['ADMIN', 'SALES'].includes(currUser.role)) { %>
-              <a href="/<%= currUser.role.toLowerCase() %>/farmers" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/farmers`) ? mobileActive : mobileInactive %>">
-                <i class="fas fa-tractor w-5"></i>
-                <span>Farmers</span>
-              </a>
-            <% } %>
+          <!-- ====== ADMIN LINKS ====== -->
+          <% if (currUser && currUser.role === 'ADMIN') { %>
+            <div class="mobile-divider"></div>
+            <div class="mobile-section-title">Management</div>
             
-            <% if (['ADMIN', 'PARAVET','SALES','FARMER'].includes(currUser.role)) { %>
-              <a href="/<%= currUser.role.toLowerCase() %>/animals" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/animals`) ? mobileActive : mobileInactive %>">
-                <i class="fas fa-paw w-5"></i>
-                <span>Animals</span>
-              </a>
-            <% } %>
-             <% if (['ADMIN', 'PARAVET','FARMER'].includes(currUser.role)) { %>
-              <a href="/<%= currUser.role.toLowerCase() %>/vaccinations" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/vaccinations`) ? mobileActive : mobileInactive %>">
-                <i class="fas fa-syringe w-5"></i>
-                <span>Vaccinations</span>
-              </a>
-            <% } %>
-
-            <% if (currUser.role === 'ADMIN') { %>
-              <a href="/<%= currUser.role.toLowerCase() %>/analytics" 
-                 class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/analytics`) ? mobileActive : mobileInactive %>">
-                <i class="fas fa-chart-line w-5"></i>
-                <span>Analytics</span>
-              </a>
-            <% } %>
-            
-            <!-- User Links -->
-            <a href="/profile" 
-               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/profile') ? mobileActive : mobileInactive %>">
-              <i class="fas fa-user-circle w-5"></i>
-              <span>My Profile</span>
+            <a href="/admin/sales-team" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/admin/sales-team') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-user-tie w-5"></i>
+              <span>Sales Team</span>
             </a>
             
-            <a href="/<%= currUser.role.toLowerCase() %>/settings" 
-               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes(`/${currUser.role.toLowerCase()}/settings`) ? mobileActive : mobileInactive %>">
-              <i class="fas fa-sliders w-5"></i>
-              <span>Settings</span>
+            <a href="/admin/paravets" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/admin/paravets') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-user-md w-5"></i>
+              <span>Paravets</span>
             </a>
             
-            <a href="/logout" 
-               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
-              <i class="fas fa-sign-out-alt w-5"></i>
-              <span>Logout</span>
+            <a href="/admin/farmers" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/admin/farmers') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-users w-5"></i>
+              <span>Farmers</span>
             </a>
             
-          <% } else { %>
-            <!-- Public Mobile Menu -->
+            <a href="/admin/animals" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/admin/animals') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-paw w-5"></i>
+              <span>Animals</span>
+            </a>
+            
+            <a href="/admin/vaccinations" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/admin/vaccinations') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-syringe w-5"></i>
+              <span>Vaccinations</span>
+            </a>
+            
+            <a href="/admin/settings" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/admin/settings') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-cog w-5"></i>
+              <span>Admin Settings</span>
+            </a>
+          <% } %>
+          
+          <!-- ====== SALES LINKS ====== -->
+          <% if (currUser && currUser.role === 'SALES') { %>
+            <div class="mobile-divider"></div>
+            <div class="mobile-section-title">Sales</div>
+            
+            <a href="/sales/farmers" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/sales/farmers') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-users w-5"></i>
+              <span>Farmers</span>
+            </a>
+            
+            <a href="/sales/animals" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/sales/animals') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-paw w-5"></i>
+              <span>Animals</span>
+            </a>
+            
+            <a href="/sales/paravets" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/sales/paravets') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-user-md w-5"></i>
+              <span>Paravets</span>
+            </a>
+          <% } %>
+          
+          <!-- ====== PARAVET LINKS ====== -->
+          <% if (currUser && currUser.role === 'PARAVET') { %>
+            <div class="mobile-divider"></div>
+            <div class="mobile-section-title">Paravet</div>
+            
+            <a href="/paravet/dashboard" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/paravet/dashboard') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-chart-pie w-5"></i>
+              <span>Dashboard</span>
+            </a>
+            
+            <a href="/paravet/farmers" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/paravet/farmers') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-users w-5"></i>
+              <span>Farmers</span>
+            </a>
+            
+            <a href="/paravet/animals" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/paravet/animals') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-paw w-5"></i>
+              <span>Animals</span>
+            </a>
+            
+            <a href="/paravet/tasks" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/paravet/tasks') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-tasks w-5"></i>
+              <span>My Tasks</span>
+            </a>
+            
+            <a href="/paravet/vaccination-history" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/paravet/vaccination-history') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-history w-5"></i>
+              <span>Vaccination History</span>
+            </a>
+            
+            <a href="/paravet/reports" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/paravet/reports') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-chart-bar w-5"></i>
+              <span>Reports</span>
+            </a>
+          <% } %>
+          
+          <!-- ====== FARMER LINKS ====== -->
+          <% if (currUser && currUser.role === 'FARMER') { %>
+            <div class="mobile-divider"></div>
+            <div class="mobile-section-title">Farmer</div>
+            
+            <a href="/farmer/dashboard" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/farmer/dashboard') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-chart-pie w-5"></i>
+              <span>Dashboard</span>
+            </a>
+            
+            <a href="/farmer/animals" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/farmer/animals') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-paw w-5"></i>
+              <span>My Animals</span>
+            </a>
+            
+            <a href="/farmer/vaccinations" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/farmer/vaccinations') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-syringe w-5"></i>
+              <span>Vaccinations</span>
+            </a>
+            
+            <a href="/farmer/payments" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/farmer/payments') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-credit-card w-5"></i>
+              <span>Payments</span>
+            </a>
+          <% } %>
+          
+          <!-- ====== PUBLIC LINKS (Non-logged in users) ====== -->
+          <% if (!currUser) { %>
+            <div class="mobile-divider"></div>
+            <div class="mobile-section-title">Explore</div>
+            
             <a href="/services" 
-               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/services' ? mobileActive : mobileInactive %>">
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/services' ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
               <i class="fas fa-concierge-bell w-5"></i>
               <span>Services</span>
             </a>
             
             <a href="/about" 
-               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/about' ? mobileActive : mobileInactive %>">
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/about' ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
               <i class="fas fa-info-circle w-5"></i>
               <span>About Us</span>
             </a>
             
             <a href="/contact" 
-               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/contact' ? mobileActive : mobileInactive %>">
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath === '/contact' ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
               <i class="fas fa-envelope w-5"></i>
               <span>Contact</span>
             </a>
+          <% } %>
+          
+          <!-- ====== COMMON LINKS (All Logged-in Users) ====== -->
+          <% if (currUser) { %>
+            <div class="mobile-divider"></div>
+            <div class="mobile-section-title">Account</div>
             
+            <a href="/profile" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/profile') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-user-circle w-5"></i>
+              <span>My Profile</span>
+            </a>
+            
+            <a href="/profile/settings" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/settings') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
+              <i class="fas fa-cog w-5"></i>
+              <span>Account Settings</span>
+            </a>
+            
+            <a href="/logout" 
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
+              <i class="fas fa-sign-out-alt w-5"></i>
+              <span>Logout</span>
+            </a>
+          <% } else { %>
+            <div class="mobile-divider"></div>
             <a href="/login" 
-               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium bg-gradient-to-r from-sky-500 to-green-500 text-white justify-center mt-4">
+               class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium bg-gradient-to-r from-sky-500 to-green-500 text-white justify-center mt-2">
               <i class="fas fa-sign-in-alt"></i>
               <span>Login to Dashboard</span>
             </a>
           <% } %>
+          
         </div>
       </div>
 

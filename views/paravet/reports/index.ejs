@@ -15,22 +15,22 @@
           </p>
         </div>
         <div class="flex space-x-2">
-          <button onclick="setReportType('daily')" class="report-btn px-4 py-2 rounded-lg transition" data-type="daily">Daily</button>
-          <button onclick="setReportType('weekly')" class="report-btn px-4 py-2 rounded-lg transition" data-type="weekly">Weekly</button>
-          <button onclick="setReportType('monthly')" class="report-btn px-4 py-2 rounded-lg transition" data-type="monthly">Monthly</button>
+          <button onclick="setReportType('daily')" class="report-btn px-4 py-2 rounded-lg transition <%= type === 'daily' ? 'active' : '' %>" data-type="daily">Daily</button>
+          <button onclick="setReportType('weekly')" class="report-btn px-4 py-2 rounded-lg transition <%= type === 'weekly' ? 'active' : '' %>" data-type="weekly">Weekly</button>
+          <button onclick="setReportType('monthly')" class="report-btn px-4 py-2 rounded-lg transition <%= type === 'monthly' ? 'active' : '' %>" data-type="monthly">Monthly</button>
         </div>
       </div>
     </div>
 
     <!-- Date Picker -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 mb-6">
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center space-x-4">
-          <label class="font-medium">Report Date:</label>
+          <label class="font-medium text-gray-700 dark:text-gray-300">Report Date:</label>
           <input type="date" id="reportDate" value="<%= moment(reportDate, 'DD MMM YYYY').format('YYYY-MM-DD') %>" 
-                 class="px-3 py-2 border rounded-lg">
+                 class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
         </div>
-        <button onclick="changeDate()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        <button onclick="changeDate()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
           <i class="fas fa-search mr-2"></i>
           Generate Report
         </button>
@@ -38,36 +38,36 @@
     </div>
 
     <!-- Report Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 text-center">
-        <p class="text-3xl font-bold text-blue-600"><%= summary.total %></p>
-        <p class="text-sm text-gray-500">Total Vaccinations</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 text-center hover:shadow-lg transition-shadow">
+        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400"><%= summary.total || 0 %></p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Total Vaccinations</p>
       </div>
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 text-center">
-        <p class="text-3xl font-bold text-green-600">₹<%= summary.totalEarnings %></p>
-        <p class="text-sm text-gray-500">Total Earnings</p>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 text-center hover:shadow-lg transition-shadow">
+        <p class="text-3xl font-bold text-green-600 dark:text-green-400">₹<%= summary.totalEarnings || 0 %></p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Total Earnings</p>
       </div>
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 text-center">
-        <p class="text-3xl font-bold text-purple-600"><%= Object.keys(summary.byFarmer).length %></p>
-        <p class="text-sm text-gray-500">Farmers Served</p>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 text-center hover:shadow-lg transition-shadow">
+        <p class="text-3xl font-bold text-purple-600 dark:text-purple-400"><%= Object.keys(summary.byFarmer || {}).length %></p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Farmers Served</p>
       </div>
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 text-center">
-        <p class="text-3xl font-bold text-orange-600"><%= Object.keys(summary.byVaccine).length %></p>
-        <p class="text-sm text-gray-500">Vaccine Types</p>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 text-center hover:shadow-lg transition-shadow">
+        <p class="text-3xl font-bold text-orange-600 dark:text-orange-400"><%= Object.keys(summary.byVaccine || {}).length %></p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Vaccine Types</p>
       </div>
     </div>
 
     <!-- Charts Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <!-- By Vaccine Chart -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <h3 class="text-lg font-semibold mb-4">Vaccinations by Type</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Vaccinations by Type</h3>
         <canvas id="vaccineChart" height="250"></canvas>
       </div>
       
       <!-- By Animal Type Chart -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <h3 class="text-lg font-semibold mb-4">Vaccinations by Animal Type</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Vaccinations by Animal Type</h3>
         <canvas id="animalTypeChart" height="250"></canvas>
       </div>
     </div>
@@ -75,47 +75,61 @@
     <!-- Detailed Breakdown -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <!-- By Farmer -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <h3 class="text-lg font-semibold mb-4">By Farmer</h3>
-        <div class="space-y-3 max-h-80 overflow-y-auto">
-          <% Object.entries(summary.byFarmer).forEach(([farmer, count]) => { %>
-            <div class="flex items-center justify-between">
-              <span class="text-gray-700"><%= farmer %></span>
-              <div class="flex items-center space-x-3">
-                <div class="w-32 bg-gray-200 rounded-full h-2">
-                  <div class="bg-blue-500 rounded-full h-2" style="width: <%= (count / summary.total) * 100 %>%"></div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">By Farmer</h3>
+        <div class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+          <% if (summary.byFarmer && Object.keys(summary.byFarmer).length > 0) { %>
+            <% Object.entries(summary.byFarmer).forEach(([farmer, count]) => { %>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-700 dark:text-gray-300 truncate mr-2"><%= farmer %></span>
+                <div class="flex items-center space-x-3 flex-shrink-0">
+                  <div class="w-24 sm:w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div class="bg-blue-500 dark:bg-blue-400 rounded-full h-2" style="width: <%= summary.total > 0 ? (count / summary.total) * 100 : 0 %>%"></div>
+                  </div>
+                  <span class="font-semibold text-sm text-gray-900 dark:text-white"><%= count %></span>
                 </div>
-                <span class="font-semibold text-sm"><%= count %></span>
               </div>
+            <% }); %>
+          <% } else { %>
+            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+              <i class="fas fa-users text-3xl mb-2 block"></i>
+              No farmer data available
             </div>
-          <% }); %>
+          <% } %>
         </div>
       </div>
       
       <!-- By Vaccine -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <h3 class="text-lg font-semibold mb-4">By Vaccine</h3>
-        <div class="space-y-3 max-h-80 overflow-y-auto">
-          <% Object.entries(summary.byVaccine).forEach(([vaccine, count]) => { %>
-            <div class="flex items-center justify-between">
-              <span class="text-gray-700"><%= vaccine %></span>
-              <div class="flex items-center space-x-3">
-                <div class="w-32 bg-gray-200 rounded-full h-2">
-                  <div class="bg-green-500 rounded-full h-2" style="width: <%= (count / summary.total) * 100 %>%"></div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">By Vaccine</h3>
+        <div class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+          <% if (summary.byVaccine && Object.keys(summary.byVaccine).length > 0) { %>
+            <% Object.entries(summary.byVaccine).forEach(([vaccine, count]) => { %>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-700 dark:text-gray-300 truncate mr-2"><%= vaccine %></span>
+                <div class="flex items-center space-x-3 flex-shrink-0">
+                  <div class="w-24 sm:w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div class="bg-green-500 dark:bg-green-400 rounded-full h-2" style="width: <%= summary.total > 0 ? (count / summary.total) * 100 : 0 %>%"></div>
+                  </div>
+                  <span class="font-semibold text-sm text-gray-900 dark:text-white"><%= count %></span>
                 </div>
-                <span class="font-semibold text-sm"><%= count %></span>
               </div>
+            <% }); %>
+          <% } else { %>
+            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+              <i class="fas fa-syringe text-3xl mb-2 block"></i>
+              No vaccine data available
             </div>
-          <% }); %>
+          <% } %>
         </div>
       </div>
     </div>
 
     <!-- Vaccination List -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-        <h2 class="text-lg font-semibold flex items-center">
-          <i class="fas fa-list mr-2 text-blue-500"></i>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+          <i class="fas fa-list mr-2 text-blue-500 dark:text-blue-400"></i>
           Vaccination Records
         </h2>
       </div>
@@ -124,23 +138,33 @@
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Farmer</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Animal</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vaccine</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Farmer</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Animal</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Vaccine</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Batch</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            <% vaccinations.forEach(vac => { %>
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td class="px-6 py-3 text-sm"><%= moment(vac.dateAdministered).format('DD MMM YYYY') %></td>
-                <td class="px-6 py-3 text-sm"><%= vac.farmer?.name || 'N/A' %></td>
-                <td class="px-6 py-3 text-sm"><%= vac.animal?.name || vac.animal?.tagNumber || 'N/A' %></td>
-                <td class="px-6 py-3 text-sm"><%= vac.vaccine?.name || vac.vaccineName %></td>
-                <td class="px-6 py-3 text-sm"><%= vac.batchNumber || 'N/A' %></td>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% if (vaccinations && vaccinations.length > 0) { %>
+              <% vaccinations.forEach(vac => { %>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <td class="px-6 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap"><%= moment(vac.dateAdministered).format('DD MMM YYYY') %></td>
+                  <td class="px-6 py-3 text-sm text-gray-700 dark:text-gray-300"><%= vac.farmer?.name || 'N/A' %></td>
+                  <td class="px-6 py-3 text-sm text-gray-700 dark:text-gray-300"><%= vac.animal?.name || vac.animal?.tagNumber || 'N/A' %></td>
+                  <td class="px-6 py-3 text-sm text-gray-700 dark:text-gray-300"><%= vac.vaccine?.name || vac.vaccineName || 'N/A' %></td>
+                  <td class="px-6 py-3 text-sm text-gray-700 dark:text-gray-300"><%= vac.batchNumber || 'N/A' %></td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                  <p class="text-lg font-medium">No vaccination records found</p>
+                  <p class="text-sm mt-1">Try changing the date or report type</p>
+                </td>
               </tr>
-            <% }); %>
+            <% } %>
           </tbody>
         </table>
       </div>
@@ -148,8 +172,69 @@
   </div>
 </div>
 
+<style>
+  .report-btn {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: #e5e7eb;
+    color: #374151;
+  }
+  
+  .dark .report-btn {
+    background: #374151;
+    color: #9ca3af;
+  }
+  
+  .report-btn:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+  }
+  
+  .report-btn.active {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+  
+  .dark .report-btn.active {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px;
+  }
+  
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #4b5563;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+  
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+  
+  /* Chart container dark mode fix */
+  .chart-container {
+    position: relative;
+    height: 250px;
+  }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   let vaccineChart, animalTypeChart;
   
@@ -167,66 +252,125 @@
     window.location.href = url.toString();
   }
   
-  // Highlight active report button
-  const urlParams = new URLSearchParams(window.location.search);
-  const currentType = urlParams.get('type') || 'weekly';
-  document.querySelectorAll('.report-btn').forEach(btn => {
-    if (btn.dataset.type === currentType) {
-      btn.classList.add('bg-blue-600', 'text-white');
-      btn.classList.remove('bg-gray-200', 'text-gray-700');
-    } else {
-      btn.classList.add('bg-gray-200', 'text-gray-700');
-      btn.classList.remove('bg-blue-600', 'text-white');
-    }
-  });
-  
   // Initialize charts
   document.addEventListener('DOMContentLoaded', function() {
-    const vaccineCtx = document.getElementById('vaccineChart').getContext('2d');
-    const animalTypeCtx = document.getElementById('animalTypeChart').getContext('2d');
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#e5e7eb' : '#374151';
+    const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
     
-    const vaccineLabels = <%= JSON.stringify(Object.keys(summary.byVaccine)) %>;
-    const vaccineData = <%= JSON.stringify(Object.values(summary.byVaccine)) %>;
+    const vaccineLabels = <%= JSON.stringify(Object.keys(summary.byVaccine || {})) %>;
+    const vaccineData = <%= JSON.stringify(Object.values(summary.byVaccine || {})) %>;
     
     const animalTypeLabels = <%= JSON.stringify(Object.keys(summary.byAnimalType || {})) %>;
     const animalTypeData = <%= JSON.stringify(Object.values(summary.byAnimalType || {})) %>;
     
-    vaccineChart = new Chart(vaccineCtx, {
-      type: 'bar',
-      data: {
-        labels: vaccineLabels,
-        datasets: [{
-          label: 'Number of Vaccinations',
-          data: vaccineData,
-          backgroundColor: 'rgba(54, 162, 235, 0.5)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          y: { beginAtZero: true }
-        }
-      }
-    });
+    // Vaccine Chart (Bar)
+    const vaccineCtx = document.getElementById('vaccineChart').getContext('2d');
     
-    if (animalTypeLabels.length > 0) {
-      animalTypeChart = new Chart(animalTypeCtx, {
-        type: 'pie',
+    if (vaccineLabels.length > 0) {
+      vaccineChart = new Chart(vaccineCtx, {
+        type: 'bar',
         data: {
-          labels: animalTypeLabels,
+          labels: vaccineLabels,
           datasets: [{
-            data: animalTypeData,
-            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec489a']
+            label: 'Number of Vaccinations',
+            data: vaccineData,
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1,
+            borderRadius: 4
           }]
         },
         options: {
           responsive: true,
-          maintainAspectRatio: true
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              labels: {
+                color: textColor,
+                font: { size: 12 }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: gridColor
+              },
+              ticks: {
+                color: textColor,
+                maxRotation: 45,
+                minRotation: 30
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: gridColor
+              },
+              ticks: {
+                color: textColor,
+                stepSize: 1
+              }
+            }
+          }
         }
       });
+    } else {
+      document.getElementById('vaccineChart').parentElement.innerHTML = `
+        <div class="flex flex-col items-center justify-center h-64">
+          <i class="fas fa-chart-bar text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+          <p class="text-gray-500 dark:text-gray-400">No vaccine data available</p>
+        </div>
+      `;
+    }
+    
+    // Animal Type Chart (Doughnut)
+    const animalTypeCtx = document.getElementById('animalTypeChart').getContext('2d');
+    
+    if (animalTypeLabels.length > 0) {
+      const colors = [
+        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', 
+        '#8b5cf6', '#ec489a', '#14b8a6', '#f97316',
+        '#6366f1', '#84cc16', '#06b6d4', '#d946ef'
+      ];
+      
+      animalTypeChart = new Chart(animalTypeCtx, {
+        type: 'doughnut',
+        data: {
+          labels: animalTypeLabels,
+          datasets: [{
+            data: animalTypeData,
+            backgroundColor: colors.slice(0, animalTypeLabels.length),
+            borderColor: isDark ? '#1f2937' : '#ffffff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: '60%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: textColor,
+                padding: 16,
+                font: { size: 12 },
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            }
+          }
+        }
+      });
+    } else {
+      document.getElementById('animalTypeChart').parentElement.innerHTML = `
+        <div class="flex flex-col items-center justify-center h-64">
+          <i class="fas fa-chart-pie text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+          <p class="text-gray-500 dark:text-gray-400">No animal type data available</p>
+        </div>
+      `;
     }
   });
 </script>

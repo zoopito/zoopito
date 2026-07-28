@@ -1,0 +1,727 @@
+<% layout("/layouts/boilerplate") -%>
+
+<style>
+    .form-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: white;
+        color: #1f2937;
+    }
+    
+    .dark .form-input {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f3f4f6;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #38BDF8;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+    }
+    
+    .dark .form-input:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+    }
+    
+    .form-input:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: #f9fafb;
+    }
+    
+    .dark .form-input:disabled {
+        background: #111827;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #374151;
+        font-size: 14px;
+    }
+    
+    .dark .form-label {
+        color: #e5e7eb;
+    }
+    
+    .action-btn {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        border: none;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-btn.primary {
+        background: linear-gradient(135deg, #38BDF8, #22C55E);
+        color: white;
+    }
+    
+    .action-btn.primary:hover {
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3);
+    }
+    
+    .action-btn.danger {
+        background: #EF4444;
+        color: white;
+    }
+    
+    .action-btn.danger:hover {
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+    }
+    
+    .action-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+    
+    .card {
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .dark .card {
+        border-color: #374151;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .dark .card:hover {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Toggle Switch - Enhanced */
+    .toggle-switch {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+    }
+    
+    .toggle-switch input {
+        display: none;
+    }
+    
+    .toggle-switch .toggle-track {
+        width: 48px;
+        height: 26px;
+        background: #d1d5db;
+        border-radius: 9999px;
+        transition: all 0.3s ease;
+        position: relative;
+        flex-shrink: 0;
+    }
+    
+    .dark .toggle-switch .toggle-track {
+        background: #4b5563;
+    }
+    
+    .toggle-switch .toggle-thumb {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 22px;
+        height: 22px;
+        background: white;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .toggle-switch input:checked + .toggle-track {
+        background: linear-gradient(135deg, #38BDF8, #22C55E);
+    }
+    
+    .toggle-switch input:checked + .toggle-track .toggle-thumb {
+        transform: translateX(22px);
+    }
+    
+    .toggle-switch .toggle-label {
+        margin-left: 10px;
+        font-size: 13px;
+        color: #6b7280;
+    }
+    
+    .dark .toggle-switch .toggle-label {
+        color: #9ca3af;
+    }
+    
+    .theme-btn {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        border: 2px solid #e5e7eb;
+        background: transparent;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .dark .theme-btn {
+        border-color: #374151;
+        color: #9ca3af;
+    }
+    
+    .theme-btn:hover {
+        border-color: #38BDF8;
+        color: #38BDF8;
+    }
+    
+    .theme-btn.active {
+        border-color: #38BDF8;
+        color: #2563eb;
+        background: rgba(56, 189, 248, 0.08);
+    }
+    
+    .dark .theme-btn.active {
+        border-color: #60a5fa;
+        color: #60a5fa;
+        background: rgba(56, 189, 248, 0.1);
+    }
+    
+    .danger-card {
+        border: 2px solid #fca5a5;
+    }
+    
+    .dark .danger-card {
+        border-color: #7f1d1d;
+    }
+    
+    .danger-card .danger-title {
+        color: #dc2626;
+    }
+    
+    .dark .danger-card .danger-title {
+        color: #f87171;
+    }
+    
+    .danger-action {
+        background: #fef2f2;
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .dark .danger-action {
+        background: rgba(127, 29, 29, 0.3);
+    }
+    
+    .danger-action .action-info p {
+        font-size: 14px;
+        font-weight: 500;
+        color: #991b1b;
+    }
+    
+    .dark .danger-action .action-info p {
+        color: #fca5a5;
+    }
+    
+    .danger-action .action-info span {
+        font-size: 12px;
+        color: #7f1d1d;
+    }
+    
+    .dark .danger-action .action-info span {
+        color: #f87171;
+    }
+    
+    .danger-btn {
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: white;
+    }
+    
+    .danger-btn.deactivate {
+        background: #f59e0b;
+    }
+    
+    .danger-btn.deactivate:hover {
+        background: #d97706;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    
+    .danger-btn.delete {
+        background: #dc2626;
+    }
+    
+    .danger-btn.delete:hover {
+        background: #b91c1c;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+    
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+    }
+    
+    .dark .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    .modal-content {
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @media (max-width: 640px) {
+        .danger-action {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .danger-action .action-info {
+            text-align: center;
+        }
+        .danger-btn {
+            width: 100%;
+            text-align: center;
+        }
+        .theme-buttons {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="py-6 md:py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Page Header -->
+        <div class="md:flex md:items-center md:justify-between mb-6">
+            <div class="flex-1 min-w-0">
+                <h2 class="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl">
+                    Account Settings
+                </h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Manage your account preferences and notification settings
+                </p>
+            </div>
+            <div class="mt-4 flex md:mt-0 md:ml-4">
+                <a href="/profile" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- Settings Grid -->
+        <div class="space-y-6">
+            
+            <!-- Notification Settings -->
+            <div class="card bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <i class="fas fa-bell text-blue-500"></i>
+                        Notification Preferences
+                    </h3>
+                    
+                    <form action="/settings/notifications" method="POST" class="space-y-4">
+                        <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Email Notifications</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Receive updates and alerts via email</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="emailNotifications" checked>
+                                <span class="toggle-track">
+                                    <span class="toggle-thumb"></span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Vaccination Reminders</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Get reminders for upcoming vaccinations</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="vaccinationReminders" checked>
+                                <span class="toggle-track">
+                                    <span class="toggle-thumb"></span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">SMS Notifications</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Receive SMS alerts for important updates</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="smsNotifications">
+                                <span class="toggle-track">
+                                    <span class="toggle-thumb"></span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between py-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Weekly Reports</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Receive weekly summary reports</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="weeklyReports" checked>
+                                <span class="toggle-track">
+                                    <span class="toggle-thumb"></span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <button type="submit"
+                                class="action-btn primary px-6 py-2.5">
+                                <i class="fas fa-save mr-2"></i>
+                                Save Preferences
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Display Settings -->
+            <div class="card bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <i class="fas fa-palette text-purple-500"></i>
+                        Display Settings
+                    </h3>
+                    
+                    <form action="/settings/display" method="POST" class="space-y-4">
+                        <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Theme</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Choose your preferred theme</p>
+                            </div>
+                            <div class="theme-buttons flex items-center gap-2">
+                                <button type="button" onclick="setTheme('light')" 
+                                        class="theme-btn" id="themeLight">
+                                    <i class="fas fa-sun mr-1"></i> Light
+                                </button>
+                                <button type="button" onclick="setTheme('dark')" 
+                                        class="theme-btn" id="themeDark">
+                                    <i class="fas fa-moon mr-1"></i> Dark
+                                </button>
+                                <button type="button" onclick="setTheme('system')" 
+                                        class="theme-btn" id="themeSystem">
+                                    <i class="fas fa-desktop mr-1"></i> System
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between py-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Language</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Select your preferred language</p>
+                            </div>
+                            <select name="language" class="form-input w-40">
+                                <option value="en" <%= user.language === 'en' ? 'selected' : '' %>>English</option>
+                                <option value="hi" <%= user.language === 'hi' ? 'selected' : '' %>>Hindi</option>
+                                <option value="mr" <%= user.language === 'mr' ? 'selected' : '' %>>Marathi</option>
+                                <option value="gu" <%= user.language === 'gu' ? 'selected' : '' %>>Gujarati</option>
+                            </select>
+                        </div>
+
+                        <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <button type="submit"
+                                class="action-btn primary px-6 py-2.5">
+                                <i class="fas fa-save mr-2"></i>
+                                Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden danger-card">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg font-bold danger-title mb-4 flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Danger Zone
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="danger-action">
+                            <div class="action-info">
+                                <p>Deactivate Account</p>
+                                <span>Temporarily disable your account. You can reactivate anytime.</span>
+                            </div>
+                            <button onclick="confirmDeactivate()" 
+                                    class="danger-btn deactivate">
+                                <i class="fas fa-user-slash mr-2"></i>
+                                Deactivate
+                            </button>
+                        </div>
+
+                        <div class="danger-action">
+                            <div class="action-info">
+                                <p>Delete Account</p>
+                                <span>Permanently delete your account and all associated data.</span>
+                            </div>
+                            <button onclick="confirmDelete()" 
+                                    class="danger-btn delete">
+                                <i class="fas fa-trash-alt mr-2"></i>
+                                Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deactivate Modal -->
+<div id="deactivateModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl modal-content">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-user-slash text-yellow-600 dark:text-yellow-400 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Deactivate Account?</h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+                Your account will be temporarily disabled. You can reactivate it anytime by logging in.
+            </p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeDeactivateModal()" 
+                        class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    Cancel
+                </button>
+                <a href="/account/deactivate" 
+                   class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
+                    Yes, Deactivate
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl modal-content">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-trash-alt text-red-600 dark:text-red-400 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Account?</h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                This action is <strong>permanent</strong> and cannot be undone. All your data will be lost.
+            </p>
+            <div class="mb-4">
+                <input type="text" id="deleteConfirm" placeholder='Type "DELETE" to confirm' 
+                       class="form-input text-center" oninput="toggleDeleteButton()">
+            </div>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeDeleteModal()" 
+                        class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    Cancel
+                </button>
+                <a id="deleteAccountBtn" href="/account/delete" 
+                   class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors opacity-50 pointer-events-none">
+                    Yes, Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // THEME SWITCHING
+    // ============================================================
+    function setTheme(theme) {
+        // Save to localStorage
+        localStorage.setItem('zoopito-theme', theme);
+        
+        // Apply theme
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else if (theme === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            // System theme
+            localStorage.removeItem('zoopito-theme');
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        
+        // Update UI - highlight active button
+        updateThemeButtons(theme);
+    }
+
+    function updateThemeButtons(activeTheme) {
+        const buttons = {
+            light: document.getElementById('themeLight'),
+            dark: document.getElementById('themeDark'),
+            system: document.getElementById('themeSystem')
+        };
+        
+        // Remove active class from all
+        Object.values(buttons).forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+        
+        // Add active class to selected
+        if (buttons[activeTheme]) {
+            buttons[activeTheme].classList.add('active');
+        }
+    }
+
+    // Initialize theme on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get stored theme or default to 'system'
+        const storedTheme = localStorage.getItem('zoopito-theme') || 'system';
+        
+        // Apply the theme
+        if (storedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else if (storedTheme === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            // System theme
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        
+        // Update button states
+        updateThemeButtons(storedTheme);
+    });
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        // Only auto-change if user hasn't manually set a preference
+        if (!localStorage.getItem('zoopito-theme')) {
+            if (e.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+    });
+
+    // ============================================================
+    // DEACTIVATE MODAL
+    // ============================================================
+    function confirmDeactivate() {
+        document.getElementById('deactivateModal').classList.remove('hidden');
+        document.getElementById('deactivateModal').classList.add('flex');
+    }
+
+    function closeDeactivateModal() {
+        document.getElementById('deactivateModal').classList.add('hidden');
+        document.getElementById('deactivateModal').classList.remove('flex');
+    }
+
+    // ============================================================
+    // DELETE MODAL
+    // ============================================================
+    function confirmDelete() {
+        document.getElementById('deleteModal').classList.remove('hidden');
+        document.getElementById('deleteModal').classList.add('flex');
+        document.getElementById('deleteConfirm').value = '';
+        document.getElementById('deleteAccountBtn').classList.add('opacity-50', 'pointer-events-none');
+        // Focus the input
+        setTimeout(() => {
+            document.getElementById('deleteConfirm').focus();
+        }, 300);
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+        document.getElementById('deleteModal').classList.remove('flex');
+    }
+
+    function toggleDeleteButton() {
+        const input = document.getElementById('deleteConfirm');
+        const btn = document.getElementById('deleteAccountBtn');
+        if (input.value === 'DELETE') {
+            btn.classList.remove('opacity-50', 'pointer-events-none');
+        } else {
+            btn.classList.add('opacity-50', 'pointer-events-none');
+        }
+    }
+
+    // ============================================================
+    // CLOSE MODALS ON BACKDROP CLICK
+    // ============================================================
+    document.querySelectorAll('.modal-backdrop').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+                this.classList.remove('flex');
+            }
+        });
+    });
+
+    // ============================================================
+    // CLOSE MODALS ON ESCAPE KEY
+    // ============================================================
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeactivateModal();
+            closeDeleteModal();
+        }
+    });
+
+    // ============================================================
+    // ENTER KEY ON DELETE CONFIRM INPUT
+    // ============================================================
+    document.getElementById('deleteConfirm').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const btn = document.getElementById('deleteAccountBtn');
+            if (!btn.classList.contains('pointer-events-none')) {
+                window.location.href = btn.href;
+            }
+        }
+    });
+</script>
