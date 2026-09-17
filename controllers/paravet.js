@@ -2812,12 +2812,12 @@ exports.getDashboard = async (req, res) => {
 
     // Get all vaccinations for these animals
     const allVaccinations = await Vaccination.find({
-      farmer: { $in: assignedFarmerIds }
+      assignedParavet: paravet._id
     }).lean();
 
     // ============ FIX: Get schedules for today and upcoming ============
     const schedules = await Vaccination.find({
-      farmer: { $in: assignedFarmerIds },
+      assignedParavet: paravet._id,
       status: { $in: ["Scheduled", "Payment Pending"] },
       scheduledDate: { $gte: moment().startOf("day").toDate() }
     })
@@ -2836,11 +2836,11 @@ exports.getDashboard = async (req, res) => {
       totalAnimals: allAnimals.length,
       totalVaccinationsGiven: allVaccinations.filter(v => v.status === "Administered" || v.status === "Completed").length,
       pendingVaccinations: await Vaccination.countDocuments({
-        farmer: { $in: assignedFarmerIds },
+        assignedParavet: paravet._id,
         status: { $in: ["Scheduled", "Payment Pending"] }
       }),
       overdueVaccinations: await Vaccination.countDocuments({
-        farmer: { $in: assignedFarmerIds },
+        assignedParavet: paravet._id,
         nextDueDate: { $lt: new Date() },
         status: { $in: ["Scheduled", "Payment Pending"] }
       }),
@@ -2849,17 +2849,17 @@ exports.getDashboard = async (req, res) => {
       untaggedAnimals: allAnimals.filter(a => !a.tagNumber).length,
       healthyAnimals: allAnimals.filter(a => a.healthStatus?.currentStatus === "Healthy").length,
       completedToday: await Vaccination.countDocuments({
-        farmer: { $in: assignedFarmerIds },
+        assignedParavet: paravet._id,
         dateAdministered: { $gte: moment().startOf("day").toDate(), $lte: moment().endOf("day").toDate() },
         status: "Completed"
       }),
       completedThisWeek: await Vaccination.countDocuments({
-        farmer: { $in: assignedFarmerIds },
+        assignedParavet: paravet._id,
         dateAdministered: { $gte: moment().startOf("week").toDate(), $lte: moment().endOf("week").toDate() },
         status: "Completed"
       }),
       lastWeekCompleted: await Vaccination.countDocuments({
-        farmer: { $in: assignedFarmerIds },
+        assignedParavet: paravet._id,
         dateAdministered: { $gte: moment().subtract(1, "week").startOf("week").toDate(), $lte: moment().subtract(1, "week").endOf("week").toDate() },
         status: "Completed"
       }),

@@ -114,25 +114,28 @@ exports.renderSchedulePage = async (req, res) => {
       // Get recommended vaccines for this animal
       const recommendedVaccines = await getRecommendedVaccinesForAnimal(animal);
       
-      // Get existing vaccinations (completed/administered)
+      // Use vaccine IDs for matching; vaccineName is only a denormalized label.
       const existingVaccinations = await Vaccination.find({ 
         animal: animal._id,
         status: { $in: ["Administered", "Completed", "Payment Verified"] }
-      }).distinct('vaccineName');
+      }).select("vaccine vaccineName").lean();
       
       // Get scheduled vaccinations
       const scheduledVaccinations = await Vaccination.find({ 
         animal: animal._id,
         status: { $in: ["Scheduled", "Payment Pending"] }
-      }).distinct('vaccineName');
+      }).select("vaccine vaccineName").lean();
       
       // Filter out vaccines that are already given or scheduled
       const pendingRecommended = recommendedVaccines.filter(v => {
-        const isGiven = existingVaccinations.some(ex => 
-          ex && ex.toLowerCase().includes(v.name.toLowerCase())
+        const vaccineId = v._id.toString();
+        const isGiven = existingVaccinations.some(ex =>
+          ex.vaccine?.toString() === vaccineId ||
+          (!ex.vaccine && ex.vaccineName?.toLowerCase() === v.name.toLowerCase())
         );
-        const isScheduled = scheduledVaccinations.some(sv => 
-          sv && sv.toLowerCase().includes(v.name.toLowerCase())
+        const isScheduled = scheduledVaccinations.some(sv =>
+          sv.vaccine?.toString() === vaccineId ||
+          (!sv.vaccine && sv.vaccineName?.toLowerCase() === v.name.toLowerCase())
         );
         return !isGiven && !isScheduled;
       });
@@ -834,11 +837,12 @@ async function getRecommendedVaccinesForAnimal(animal) {
       else if (animal.age.unit === 'Months') ageInMonths = animal.age.value;
     }
     
-    // Get existing vaccinations
+    // Get existing vaccinations. The vaccine reference is authoritative;
+    // vaccineName is retained as a fallback for legacy records.
     const existingVaccinations = await Vaccination.find({
       animal: animal._id,
       status: { $in: ['Administered', 'Completed', 'Payment Verified'] }
-    }).distinct('vaccineName');
+    }).select('vaccine vaccineName').lean();
     
     // Filter vaccines that are mandatory, age-appropriate, and not already given
     const recommended = allVaccines.filter(vaccine => {
@@ -850,8 +854,9 @@ async function getRecommendedVaccinesForAnimal(animal) {
       
       if (!isMandatory) return false;
       
-      const alreadyGiven = existingVaccinations.some(existing => 
-        existing && existing.toLowerCase().includes(vaccineName.toLowerCase())
+      const alreadyGiven = existingVaccinations.some(existing =>
+        existing.vaccine?.toString() === vaccine._id.toString() ||
+        (!existing.vaccine && existing.vaccineName?.toLowerCase() === vaccineName.toLowerCase())
       );
       
       if (alreadyGiven) return false;
