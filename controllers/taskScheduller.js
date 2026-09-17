@@ -329,19 +329,15 @@ async function buildFilters(query) {
   const monthLater = new Date(today);
   monthLater.setMonth(monthLater.getMonth() + 1);
 
-  // 🔧 FIX: Show ALL vaccinations that are NOT completed (including those with nextDueDate)
-  if (!status || status === "all" || status === "pending") {
-    filters.$or = [
-      { status: { $in: ["Scheduled", "Payment Pending", "Administered"] } },
-      { 
-        status: { $in: ["Completed", "Payment Verified"] },
-        nextDueDate: { $lte: monthLater }
-      }
-    ];
+  // The schedule page is for work that still needs to be performed. A
+  // completed record belongs in the completed view, even when it has a
+  // future booster date.
+  if (!status || status === "all" || status === "pending" || status === "uncompleted") {
+    filters.status = { $in: ["Scheduled", "Payment Pending", "Administered"] };
   }
   
   // If specific status is requested
-  if (status && status !== "all" && status !== "pending") {
+  if (status && status !== "all" && status !== "pending" && status !== "uncompleted") {
     if (status === "completed") {
       filters.status = { $in: ["Administered", "Completed", "Payment Verified"] };
     } else if (status === "overdue") {

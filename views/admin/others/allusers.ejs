@@ -420,25 +420,26 @@
                           class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10"
                         >
                           <div class="py-1">
-                            <a 
-                              href="/admin/users/<%= user._id %>/login-history" 
+                            <button 
+                              type="button"
+                              onclick="showLoginHistory('<%= user._id %>')"
                               class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
                               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                               </svg>
                               Login History
-                            </a>
-                            <a 
-                              href="/admin/users/<%= user._id %>/reset-password" 
+                            </button>
+                            <button 
+                              type="button"
+                              onclick="resetUserPassword('<%= user._id %>')"
                               class="flex items-center px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              onclick="return confirm('Reset password for this user?')"
                             >
                               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                               </svg>
                               Reset Password
-                            </a>
+                            </button>
                             <% if (user.role === 'FARMER') { %>
                               <a 
                                 href="/admin/farmers/<%= user._id %>" 
@@ -580,8 +581,121 @@
   </div>
 </div>
 
+<!-- User action modal -->
+<div id="userActionModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-hidden="true">
+  <div class="fixed inset-0 bg-gray-900/60" onclick="closeUserActionModal()"></div>
+  <div class="relative flex min-h-full items-center justify-center p-4">
+    <div class="relative w-full max-w-lg rounded-2xl bg-white dark:bg-gray-800 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+        <h2 id="userActionTitle" class="text-lg font-semibold text-gray-900 dark:text-white">User details</h2>
+        <button type="button" onclick="closeUserActionModal()" class="p-2 text-gray-500 hover:text-gray-800 dark:hover:text-white" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div id="userActionContent" class="p-6"></div>
+    </div>
+  </div>
+</div>
+
 <!-- JavaScript -->
 <script>
+  const userActionModal = document.getElementById('userActionModal');
+  const userActionTitle = document.getElementById('userActionTitle');
+  const userActionContent = document.getElementById('userActionContent');
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, character => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[character]));
+  }
+
+  function openUserActionModal(title, content) {
+    userActionTitle.textContent = title;
+    userActionContent.innerHTML = content;
+    userActionModal.classList.remove('hidden');
+    userActionModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeUserActionModal() {
+    userActionModal.classList.add('hidden');
+    userActionModal.setAttribute('aria-hidden', 'true');
+  }
+
+  function userContactMarkup(user) {
+    return `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+      <div class="rounded-lg bg-gray-50 dark:bg-gray-700/60 p-3"><p class="text-xs text-gray-500 dark:text-gray-400">Name</p><p class="font-medium text-gray-900 dark:text-white">${escapeHtml(user.name)}</p></div>
+      <div class="rounded-lg bg-gray-50 dark:bg-gray-700/60 p-3"><p class="text-xs text-gray-500 dark:text-gray-400">Role</p><p class="font-medium text-gray-900 dark:text-white">${escapeHtml(user.role)}</p></div>
+      <div class="rounded-lg bg-gray-50 dark:bg-gray-700/60 p-3"><p class="text-xs text-gray-500 dark:text-gray-400">Email</p><p class="break-all font-medium text-gray-900 dark:text-white">${escapeHtml(user.email)}</p></div>
+      <div class="rounded-lg bg-gray-50 dark:bg-gray-700/60 p-3"><p class="text-xs text-gray-500 dark:text-gray-400">Mobile</p><p class="font-medium text-gray-900 dark:text-white">${escapeHtml(user.mobile)}</p></div>
+    </div>`;
+  }
+
+  async function resetUserPassword(userId) {
+    try {
+      const infoResponse = await fetch(`/admin/users/${userId}/reset-password`);
+      const info = await infoResponse.json();
+      if (!info.success) throw new Error(info.message || 'Unable to load user');
+
+      if (!confirm(`Generate a new password for ${info.user.name}? The current password will stop working.`)) return;
+
+      const response = await fetch(`/admin/users/${userId}/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+      });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message || 'Password reset failed');
+
+      const message = escapeHtml(result.shareText);
+      const encodedMessage = encodeURIComponent(result.shareText);
+      const whatsappNumber = (result.user.mobile || '').replace(/[^\d]/g, '');
+      openUserActionModal('New temporary password', `${userContactMarkup(result.user)}
+        <div class="rounded-xl border border-yellow-200 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 p-4">
+          <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Temporary password</p>
+          <div class="mt-2 flex items-center gap-2"><code class="flex-1 rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-lg font-bold tracking-wider text-gray-900 dark:text-white">${escapeHtml(result.newPassword)}</code><button type="button" onclick="copyText('${escapeHtml(result.newPassword)}', this)" class="rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"><i class="fas fa-copy"></i></button></div>
+        </div>
+        <label class="mt-5 block text-sm font-medium text-gray-700 dark:text-gray-300">Message to copy and share</label>
+        <textarea id="shareMessage" readonly class="mt-1 h-28 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-3 text-sm text-gray-900 dark:text-white">${message}</textarea>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <button type="button" onclick="copyText(document.getElementById('shareMessage').value, this)" class="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"><i class="fas fa-copy mr-1"></i>Copy message</button>
+          <button type="button" onclick="shareText(document.getElementById('shareMessage').value)" class="rounded-lg bg-green-600 px-3 py-2 text-sm text-white hover:bg-green-700"><i class="fas fa-share-alt mr-1"></i>Share</button>
+          <a href="mailto:${encodeURIComponent(result.user.email)}?subject=${encodeURIComponent('Zoopito account details')}&body=${encodedMessage}" class="rounded-lg bg-gray-700 px-3 py-2 text-sm text-white hover:bg-gray-800"><i class="fas fa-envelope mr-1"></i>Email</a>
+          ${whatsappNumber ? `<a target="_blank" rel="noopener" href="https://wa.me/${whatsappNumber}?text=${encodedMessage}" class="rounded-lg bg-emerald-700 px-3 py-2 text-sm text-white hover:bg-emerald-800"><i class="fab fa-whatsapp mr-1"></i>WhatsApp</a>` : ''}
+        </div>
+        <p class="mt-4 text-xs text-red-600 dark:text-red-400">Ask the user to change this temporary password immediately after signing in.</p>`);
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function showLoginHistory(userId) {
+    try {
+      const response = await fetch(`/admin/users/${userId}/login-history`);
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message || 'Unable to load login history');
+
+      const rows = result.history.length ? result.history.map(entry => `<tr class="border-b border-gray-200 dark:border-gray-700"><td class="px-2 py-2 text-sm text-gray-900 dark:text-white">${escapeHtml(new Date(entry.loggedInAt).toLocaleString())}</td><td class="px-2 py-2 text-sm text-gray-600 dark:text-gray-300">${escapeHtml(entry.ip || 'Not recorded')}</td><td class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">${escapeHtml(entry.userAgent || 'Not recorded')}</td></tr>`).join('') : '<tr><td colspan="3" class="py-6 text-center text-sm text-gray-500">No login history recorded.</td></tr>';
+      openUserActionModal('Login history', `${userContactMarkup(result.user)}<div class="overflow-x-auto"><table class="min-w-full"><thead><tr class="text-left text-xs uppercase text-gray-500"><th class="px-2 py-2">Date</th><th class="px-2 py-2">IP</th><th class="px-2 py-2">Device</th></tr></thead><tbody>${rows}</tbody></table></div>`);
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function copyText(value, button) {
+    await navigator.clipboard.writeText(value);
+    const original = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> Copied';
+    setTimeout(() => { button.innerHTML = original; }, 1500);
+  }
+
+  async function shareText(value) {
+    if (navigator.share) {
+      await navigator.share({ title: 'Zoopito account details', text: value });
+    } else {
+      await navigator.clipboard.writeText(value);
+      alert('Sharing is not available in this browser. The message was copied instead.');
+    }
+  }
+
   // Toggle dropdown menus
   function toggleDropdown(userId) {
     const dropdown = document.getElementById(`dropdown-${userId}`);

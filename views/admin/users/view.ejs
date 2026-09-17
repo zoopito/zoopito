@@ -540,8 +540,22 @@ function resetPassword() {
                     Swal.fire({
                         icon: 'success',
                         title: 'Password Reset!',
-                        html: `New password: <strong>${data.newPassword}</strong><br><br>Email has been sent to the user.`,
+                        html: `<div class="text-left space-y-2">
+                            <p><strong>${data.user.name}</strong></p>
+                            <p>Email: ${data.user.email}</p>
+                            <p>Mobile: ${data.user.mobile}</p>
+                            <p class="mt-3">Temporary password:</p>
+                            <code class="block rounded bg-gray-100 p-2 text-center text-lg">${data.newPassword}</code>
+                            <textarea id="resetShareText" readonly class="mt-3 h-24 w-full rounded border p-2 text-sm">${data.shareText}</textarea>
+                          </div>`,
+                        showDenyButton: true,
+                        denyButtonText: 'Copy message',
                         confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isDenied) {
+                            navigator.clipboard.writeText(data.shareText);
+                            Swal.fire({ icon: 'success', title: 'Copied', timer: 1000, showConfirmButton: false });
+                        }
                     });
                 } else {
                     Swal.fire({

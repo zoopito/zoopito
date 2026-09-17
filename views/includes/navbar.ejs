@@ -497,7 +497,7 @@
           <!-- ====== FARMER LINKS ====== -->
           <% if (currUser && currUser.role === 'FARMER') { %>
             <div class="mobile-divider"></div>
-            <div class="mobile-section-title">Farmer</div>
+            <div class="mobile-section-title">Animal Owner</div>
             
             <a href="/farmer/dashboard" 
                class="mobile-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors <%= currentPath.includes('/farmer/dashboard') ? 'mobile-link-active' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' %>">
@@ -618,7 +618,7 @@
 
   // Get stored theme preference
   function getStoredTheme() {
-    return localStorage.getItem('zoopito-theme');
+    return localStorage.getItem('zoopito-theme') || localStorage.getItem('theme');
   }
 
   // Set theme and store preference
@@ -626,9 +626,11 @@
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
       localStorage.setItem('zoopito-theme', 'dark');
+      localStorage.removeItem('theme');
     } else if (theme === 'light') {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('zoopito-theme', 'light');
+      localStorage.removeItem('theme');
     } else {
       // Fallback: follow system
       if (isSystemDark()) {
@@ -637,6 +639,7 @@
         document.documentElement.classList.remove('dark');
       }
       localStorage.removeItem('zoopito-theme');
+      localStorage.removeItem('theme');
     }
     updateThemeIcons();
     updateToggleVisibility();
@@ -659,22 +662,12 @@
 
   // Show/hide toggle buttons based on system dark mode
   function updateToggleVisibility() {
-    const isSystemDark = isSystemDark();
-    const storedTheme = getStoredTheme();
-    
-    // Hide toggle if system is dark AND user hasn't manually changed to light
-    const shouldHide = isSystemDark && storedTheme !== 'light';
-    
+    // The toggle must remain available even when the system prefers dark.
+    // A user can explicitly switch to light or dark at any time.
     const desktopToggle = document.getElementById('themeToggle');
     const mobileToggle = document.getElementById('mobileThemeToggle');
-    
-    if (shouldHide) {
-      if (desktopToggle) desktopToggle.classList.add('hidden-toggle');
-      if (mobileToggle) mobileToggle.classList.add('hidden-toggle');
-    } else {
-      if (desktopToggle) desktopToggle.classList.remove('hidden-toggle');
-      if (mobileToggle) mobileToggle.classList.remove('hidden-toggle');
-    }
+    if (desktopToggle) desktopToggle.classList.remove('hidden-toggle');
+    if (mobileToggle) mobileToggle.classList.remove('hidden-toggle');
   }
 
   // Initialize theme on page load
@@ -724,6 +717,21 @@
     updateToggleVisibility();
   }
 
+  // Keep the system-following theme in sync until the user chooses a mode.
+  const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const handleSystemThemeChange = event => {
+    if (!getStoredTheme()) {
+      document.documentElement.classList.toggle('dark', event.matches);
+      updateThemeIcons();
+      updateToggleVisibility();
+    }
+  };
+  if (systemThemeQuery.addEventListener) {
+    systemThemeQuery.addEventListener('change', handleSystemThemeChange);
+  } else {
+    systemThemeQuery.addListener(handleSystemThemeChange);
+  }
+
   // ============================================================
   // 2. EVENT LISTENERS
   // ============================================================
@@ -757,20 +765,6 @@
   if (document.readyState !== 'loading') {
     initializeTheme();
   }
-
-  // Listen for system theme changes
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-    // Only auto-change if user hasn't manually set a preference
-    if (!localStorage.getItem('zoopito-theme')) {
-      if (e.matches) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      updateThemeIcons();
-      updateToggleVisibility();
-    }
-  });
 
   // Theme toggle buttons
   const themeToggle = document.getElementById('themeToggle');

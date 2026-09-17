@@ -123,7 +123,7 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
           <select name="status" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <option value="">All Status</option>
-            <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+            <option value="uncompleted" <%= (!filters.status || filters.status === 'uncompleted' || filters.status === 'pending') ? 'selected' : '' %>>Uncompleted</option>
             <option value="Scheduled" <%= filters.status === 'Scheduled' ? 'selected' : '' %>>Scheduled</option>
             <option value="Payment Pending" <%= filters.status === 'Payment Pending' ? 'selected' : '' %>>Payment Pending</option>
             <option value="overdue" <%= filters.status === 'overdue' ? 'selected' : '' %>>Overdue</option>
@@ -231,7 +231,7 @@
       </div>
     <% } %>
 
-    <!-- ============ ANIMALS NEEDING VACCINATION ============ -->
+    <!-- ANIMALS NEEDING VACCINATION -->
     <% if (animalsNeedingVaccination && animalsNeedingVaccination.length > 0) { %>
       <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-2 border-red-300 dark:border-red-800 rounded-xl p-4 mb-6 shadow-lg">
         <div class="flex items-start justify-between flex-wrap gap-3">
@@ -269,7 +269,6 @@
           </div>
         </div>
         
-        <!-- Show ALL animals in a scrollable grid -->
         <div class="mt-4 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             <% animalsNeedingVaccination.forEach(animal => { %>
@@ -305,7 +304,6 @@
           </div>
         </div>
         
-        <!-- Quick Stats -->
         <div class="mt-3 flex flex-wrap gap-3 text-xs border-t border-red-200 dark:border-red-800 pt-3">
           <span class="text-red-700 dark:text-red-300">
             <i class="fas fa-clock mr-1"></i>
@@ -394,7 +392,6 @@
                    <% const isOverdue = vac.nextDueDate && new Date(vac.nextDueDate) < new Date(); %>
                    <% const isTodayScheduled = vac.scheduledDate && new Date(vac.scheduledDate).toDateString() === new Date().toDateString(); %>
                    
-                   <!-- ✅ FIX: Proper status determination -->
                    <% let displayStatus = vac.status || 'Pending'; %>
                    <% let statusClass = ''; %>
                    <% if (vac.status === 'Scheduled') { %>
@@ -411,7 +408,6 @@
                    <% } %>
                    
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors vaccination-row" data-id="<%= vac._id %>" data-farmer="<%= group.farmer?._id %>">
-                  
                       <td class="px-3 py-3">
                         <input type="checkbox" class="vaccination-checkbox farmer-<%= group.farmer?._id %> rounded border-gray-300 dark:border-gray-600" value="<%= vac._id %>">
                       </td>
@@ -488,7 +484,6 @@
                           <button onclick="openScheduleModal('<%= vac._id %>')" class="text-orange-600 dark:text-orange-400 hover:text-orange-800" title="Schedule Date">
                             <i class="fas fa-calendar-alt"></i>
                           </button>
-                          <!-- ✅ Only show Complete button for non-completed tasks -->
                           <% if (vac.status !== 'Completed' && vac.status !== 'Administered') { %>
                             <button onclick="markComplete('<%= vac._id %>', '<%= vac.vaccine?._id %>')" class="text-green-600 dark:text-green-400 hover:text-green-800" title="Mark Complete">
                               <i class="fas fa-check-circle"></i>
@@ -588,7 +583,7 @@
   </div>
 </div>
 
-<!-- ======================== SCHEDULE MODAL (FIXED) ======================== -->
+<!-- ======================== SCHEDULE MODAL ======================== -->
 <div id="scheduleModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden overflow-y-auto h-full w-full z-50">
   <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white dark:bg-gray-800">
     <div class="flex justify-between items-center mb-4">
@@ -670,7 +665,7 @@
   </div>
 </div>
 
-<!-- ======================== ASSIGN PARAVET MODAL (FIXED) ======================== -->
+<!-- ======================== ASSIGN PARAVET MODAL ======================== -->
 <div id="assignModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden overflow-y-auto h-full w-full z-50">
   <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white dark:bg-gray-800">
     <div class="flex justify-between items-center mb-4">
@@ -739,7 +734,7 @@
   </div>
 </div>
 
-<!-- Bulk Assign Modal -->
+<!-- ======================== BULK ASSIGN MODAL (FIXED) ======================== -->
 <div id="bulkAssignModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden overflow-y-auto h-full w-full z-50">
   <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-lg bg-white dark:bg-gray-800">
     <div class="flex justify-between items-center mb-4">
@@ -755,12 +750,19 @@
     <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
       <p class="text-sm text-blue-800 dark:text-blue-300">
         <i class="fas fa-info-circle mr-1"></i>
-        You can create multiple assignments for different paravets.
+        You have <strong id="bulkSelectedCount">0</strong> vaccination(s) selected for bulk assignment.
+      </p>
+    </div>
+    
+    <div class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+      <p class="text-sm text-yellow-800 dark:text-yellow-300">
+        <i class="fas fa-lightbulb mr-1"></i>
+        You can assign different groups of vaccinations to different paravets. Add multiple rows below.
       </p>
     </div>
     
     <div id="bulkAssignmentsList" class="space-y-4 max-h-96 overflow-y-auto mb-4">
-      <!-- Dynamic assignment rows -->
+      <!-- Dynamic assignment rows will be added here -->
     </div>
     
     <button type="button" onclick="addBulkAssignmentRow()" 
@@ -776,7 +778,8 @@
           Cancel
         </button>
         <button type="submit" 
-                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center">
+          <i class="fas fa-user-md mr-2"></i>
           Process Assignments
         </button>
       </div>
@@ -1006,12 +1009,15 @@
     const count = selectedVaccinations.size;
     const bar = document.getElementById('bulkSelectionBar');
     const countSpan = document.getElementById('selectedCount');
+    const bulkCountSpan = document.getElementById('bulkSelectedCount');
     
     if (count > 0) {
       countSpan.textContent = count;
       bar.classList.remove('hidden');
+      if (bulkCountSpan) bulkCountSpan.textContent = count;
     } else {
       bar.classList.add('hidden');
+      if (bulkCountSpan) bulkCountSpan.textContent = '0';
     }
   }
 
@@ -1023,7 +1029,196 @@
     updateBulkSelectionBar();
   }
 
-  // ================ SCHEDULE FUNCTIONS (FIXED) ================
+  // ================ BULK ASSIGN FUNCTIONS (FIXED) ================
+  
+  function openBulkAssignModal() {
+    // Get all selected vaccination IDs from checkboxes
+    const selectedCheckboxes = document.querySelectorAll('.vaccination-checkbox:checked');
+    const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+    
+    // Store selected IDs in a global variable
+    window.bulkSelectedIds = selectedIds;
+    
+    // Update count display
+    const countSpan = document.getElementById('bulkSelectedCount');
+    if (countSpan) countSpan.textContent = selectedIds.length;
+    
+    // Clear previous rows
+    document.getElementById('bulkAssignmentsList').innerHTML = '';
+    
+    // If no vaccinations selected, show warning
+    if (selectedIds.length === 0) {
+      Swal.fire({ 
+        icon: 'warning', 
+        title: 'No Selection', 
+        text: 'Please select at least one vaccination from the list first.' 
+      });
+      return;
+    }
+    
+    // Add first row with all selected IDs pre-filled
+    addBulkAssignmentRow(selectedIds);
+    document.getElementById('bulkAssignModal').classList.remove('hidden');
+  }
+
+  function closeBulkAssignModal() {
+    document.getElementById('bulkAssignModal').classList.add('hidden');
+  }
+
+  function addBulkAssignmentRow(prefilledIds) {
+    const paravetOptions = '<option value="">Select Paravet...</option>' +
+      '<% (paravets || []).forEach(p => { %>' +
+        '<option value="<%= p._id %>"><%= p.user?.name || "Unknown" %> - <%= p.qualification || "N/A" %></option>' +
+      '<% }); %>';
+    
+    const rowId = `bulk_row_${Date.now()}_${bulkAssignmentCounter++}`;
+    
+    // Use prefilled IDs or get from selected checkboxes
+    let ids = prefilledIds || [];
+    if (ids.length === 0) {
+      const selectedCheckboxes = document.querySelectorAll('.vaccination-checkbox:checked');
+      ids = Array.from(selectedCheckboxes).map(cb => cb.value);
+    }
+    
+    const idsString = ids.join(', ');
+    
+    const row = `
+      <div id="${rowId}" class="bulk-assignment-row bg-gray-50 dark:bg-gray-700 p-4 rounded-lg relative border border-gray-200 dark:border-gray-600">
+        <button type="button" onclick="removeBulkAssignmentRow('${rowId}')" 
+                class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Paravet *</label>
+            <select class="bulk-paravet w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+              ${paravetOptions}
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Schedule Date</label>
+            <input type="date" class="bulk-date w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                   min="<%= new Date().toISOString().split('T')[0] %>">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Schedule Time</label>
+            <input type="time" class="bulk-time w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                   value="09:00">
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vaccination IDs (comma separated) *</label>
+          <textarea class="bulk-ids w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                    rows="2" placeholder="e.g., id1, id2, id3">${idsString}</textarea>
+        </div>
+      </div>
+    `;
+    document.getElementById('bulkAssignmentsList').insertAdjacentHTML('beforeend', row);
+  }
+
+  function removeBulkAssignmentRow(rowId) {
+    document.getElementById(rowId).remove();
+  }
+
+  async function submitBulkAssignments(event) {
+    event.preventDefault();
+    
+    const assignments = [];
+    const rows = document.querySelectorAll('.bulk-assignment-row');
+    
+    if (rows.length === 0) {
+      Swal.fire({ icon: 'warning', title: 'No Assignments', text: 'Please add at least one assignment row.' });
+      return;
+    }
+    
+    for (const row of rows) {
+      const paravetId = row.querySelector('.bulk-paravet').value;
+      const scheduledDate = row.querySelector('.bulk-date').value;
+      const scheduledTime = row.querySelector('.bulk-time').value;
+      const idsText = row.querySelector('.bulk-ids').value;
+      
+      if (!paravetId) {
+        Swal.fire({ 
+          icon: 'warning', 
+          title: 'Incomplete Assignment', 
+          text: 'Please select a paravet for all assignment rows.' 
+        });
+        row.querySelector('.bulk-paravet').focus();
+        return;
+      }
+      
+      const vaccinationIds = idsText.split(',').map(id => id.trim()).filter(id => id);
+      if (vaccinationIds.length === 0) {
+        Swal.fire({ 
+          icon: 'warning', 
+          title: 'Incomplete Assignment', 
+          text: 'Please enter vaccination IDs for all assignment rows.' 
+        });
+        row.querySelector('.bulk-ids').focus();
+        return;
+      }
+      
+      let dateTime = null;
+      if (scheduledDate && scheduledTime) {
+        dateTime = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
+      }
+      
+      assignments.push({
+        paravetId: paravetId,
+        scheduledDate: dateTime,
+        vaccinationIds: vaccinationIds
+      });
+    }
+    
+    Swal.fire({ 
+      title: 'Processing...', 
+      text: `Assigning ${assignments.length} group(s) to paravets...`,
+      allowOutsideClick: false, 
+      didOpen: () => Swal.showLoading() 
+    });
+    
+    try {
+      const response = await fetch('/vaccination/api/bulk-assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignments: assignments })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Clear selected vaccinations after successful assignment
+        selectedVaccinations.clear();
+        document.querySelectorAll('.vaccination-checkbox').forEach(cb => cb.checked = false);
+        updateBulkSelectionBar();
+        
+        Swal.fire({ 
+          icon: 'success', 
+          title: 'Success!', 
+          text: data.message || 'All vaccinations assigned successfully!', 
+          timer: 3000,
+          showConfirmButton: true
+        }).then(() => {
+          location.reload();
+        });
+      } else {
+        Swal.fire({ 
+          icon: 'error', 
+          title: 'Error', 
+          text: data.message || 'Failed to process assignments' 
+        });
+      }
+    } catch (error) {
+      console.error('Error processing bulk assignments:', error);
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Error', 
+        text: 'Failed to process assignments. Please try again.' 
+      });
+    }
+  }
+
+  // ================ SCHEDULE FUNCTIONS ================
   
   function openScheduleModal(vaccinationId) {
     currentVaccinationId = vaccinationId;
@@ -1112,7 +1307,7 @@
     closeScheduleModal();
   }
 
-  // ================ ASSIGN PARAVET FUNCTIONS (FIXED) ================
+  // ================ ASSIGN PARAVET FUNCTIONS ================
   
   function openAssignModal(vaccinationId) {
     document.getElementById('assignVaccinationIds').value = JSON.stringify([vaccinationId]);
@@ -1210,121 +1405,6 @@
       Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to assign paravet' });
     }
     closeAssignModal();
-  }
-
-  // ================ BULK ASSIGN FUNCTIONS ================
-  
-  function openBulkAssignModal() {
-    document.getElementById('bulkAssignmentsList').innerHTML = '';
-    addBulkAssignmentRow();
-    document.getElementById('bulkAssignModal').classList.remove('hidden');
-  }
-
-  function closeBulkAssignModal() {
-    document.getElementById('bulkAssignModal').classList.add('hidden');
-  }
-
-  function addBulkAssignmentRow() {
-    const paravetOptions = '<option value="">Select Paravet...</option>' +
-      '<% (paravets || []).forEach(p => { %>' +
-        '<option value="<%= p._id %>"><%= p.user?.name || "Unknown" %> - <%= p.qualification || "N/A" %></option>' +
-      '<% }); %>';
-    
-    const rowId = `bulk_row_${Date.now()}_${bulkAssignmentCounter++}`;
-    const row = `
-      <div id="${rowId}" class="bulk-assignment-row bg-gray-50 dark:bg-gray-700 p-4 rounded-lg relative">
-        <button type="button" onclick="removeBulkAssignmentRow('${rowId}')" 
-                class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
-          <i class="fas fa-times"></i>
-        </button>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Paravet *</label>
-            <select class="bulk-paravet w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-              ${paravetOptions}
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Schedule Date</label>
-            <input type="date" class="bulk-date w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                   min="<%= new Date().toISOString().split('T')[0] %>">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Schedule Time</label>
-            <input type="time" class="bulk-time w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                   value="09:00">
-          </div>
-        </div>
-        <div class="mt-3">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vaccination IDs (comma separated) *</label>
-          <textarea class="bulk-ids w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
-                    rows="2" placeholder="e.g., id1, id2, id3"></textarea>
-        </div>
-      </div>
-    `;
-    document.getElementById('bulkAssignmentsList').insertAdjacentHTML('beforeend', row);
-  }
-
-  function removeBulkAssignmentRow(rowId) {
-    document.getElementById(rowId).remove();
-  }
-
-  async function submitBulkAssignments(event) {
-    event.preventDefault();
-    
-    const assignments = [];
-    const rows = document.querySelectorAll('.bulk-assignment-row');
-    
-    for (const row of rows) {
-      const paravetId = row.querySelector('.bulk-paravet').value;
-      const scheduledDate = row.querySelector('.bulk-date').value;
-      const scheduledTime = row.querySelector('.bulk-time').value;
-      const idsText = row.querySelector('.bulk-ids').value;
-      
-      if (!paravetId) continue;
-      
-      const vaccinationIds = idsText.split(',').map(id => id.trim()).filter(id => id);
-      if (vaccinationIds.length === 0) continue;
-      
-      let dateTime = null;
-      if (scheduledDate && scheduledTime) {
-        dateTime = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
-      }
-      
-      assignments.push({
-        paravetId: paravetId,
-        scheduledDate: dateTime,
-        vaccinationIds: vaccinationIds
-      });
-    }
-    
-    if (assignments.length === 0) {
-      Swal.fire({ icon: 'warning', title: 'No Assignments', text: 'Please add at least one valid assignment' });
-      return;
-    }
-    
-    Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-    
-    try {
-      const response = await fetch('/vaccination/api/bulk-assign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assignments: assignments })
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 2000 })
-          .then(() => location.reload());
-      } else {
-        Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Failed to process assignments' });
-      }
-    } catch (error) {
-      console.error('Error processing bulk assignments:', error);
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to process assignments' });
-    }
-    closeBulkAssignModal();
   }
 
   // ================ COMPLETE FUNCTIONS ================

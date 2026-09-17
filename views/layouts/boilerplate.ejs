@@ -89,8 +89,12 @@
 
   <!-- Dark mode detection -->
   <script>
-    if (localStorage.theme === "dark") {
+    const savedTheme = localStorage.getItem("zoopito-theme") || localStorage.getItem("theme");
+    if (savedTheme === "dark") {
       document.documentElement.classList.add("dark");
+    }
+    if (savedTheme === "light") {
+      document.documentElement.classList.remove("dark");
     }
   </script>
 </head>

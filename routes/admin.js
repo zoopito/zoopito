@@ -366,7 +366,9 @@ router.post("/users/:id/unblock", isLoggedIn, isAdmin, adminController.unblockUs
 // User Management Routes
 router.post("/users/:id/verify-email", adminController.verifyUserEmail);
 router.post("/users/:id/resend-verification", adminController.resendVerificationEmail);
-router.post("/users/:id/reset-password", adminController.resetUserPassword);
+router.get("/users/:id/reset-password", isLoggedIn, isAdmin, adminController.getResetPasswordInfo);
+router.post("/users/:id/reset-password", isLoggedIn, isAdmin, adminController.resetUserPassword);
+router.get("/users/:id/login-history", isLoggedIn, isAdmin, adminController.getUserLoginHistory);
 router.get("/contacts", isLoggedIn, isAdmin, othersController.showContacts);
 router.get("/allusers", isLoggedIn, isAdmin, adminController.allUsers);
 
@@ -398,12 +400,9 @@ router.post(
   isAdmin,
   adminController.unblockUser,
 );
-// router.post("/allusers/:id/reset-password", adminController.resetPassword);
-// router.get("/allusers/:id/login-history", adminController.loginHistory);
 // User Management Routes
 router.post("/users/:id/verify-email", adminController.verifyUserEmail);
 router.post("/users/:id/resend-verification", adminController.resendVerificationEmail);
-router.post("/users/:id/reset-password", adminController.resetUserPassword);
 router.post("/users/:id/block", adminController.blockUser);
 router.post("/users/:id/unblock", adminController.unblockUser);
 

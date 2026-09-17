@@ -2341,6 +2341,32 @@ exports.resendVerificationEmail = async (req, res) => {
 };
 
 // Reset User Password
+exports.getResetPasswordInfo = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select("name email mobile role")
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile || "Not provided",
+        role: user.role,
+      },
+      message: "Use the POST reset-password action to generate a new password.",
+    });
+  } catch (error) {
+    console.error("Error loading password reset info:", error);
+    res.status(500).json({ success: false, message: "Unable to load user details" });
+  }
+};
+
 exports.resetUserPassword = async (req, res) => {
     try {
         const { id } = req.params;
@@ -2353,8 +2379,6 @@ exports.resetUserPassword = async (req, res) => {
         // Generate random password
         const crypto = require("crypto");
         const newPassword = crypto.randomBytes(6).toString("base64").slice(0, 10);
-        console.log(`Generated new password for ${user.email}: ${newPassword}`);
-        
         // ✅ Use passport-local-mongoose's setPassword method
         await user.setPassword(newPassword);
         
@@ -2366,15 +2390,59 @@ exports.resetUserPassword = async (req, res) => {
         // Send email with new password
         //await sendPasswordResetEmail(user.email, user.name, newPassword);
         
+        const shareText = [
+          `Zoopito account details for ${user.name}`,
+          `Email: ${user.email}`,
+          `Mobile: ${user.mobile || "Not provided"}`,
+          `Temporary password: ${newPassword}`,
+          "Please sign in and change this password immediately.",
+        ].join("\n");
+
         res.json({ 
             success: true, 
-            message: "Password reset successfully. Email sent to user.",
-            newPassword: newPassword // Only for testing, remove in production
+          message: "Password reset successfully.",
+          user: {
+            name: user.name,
+            email: user.email,
+            mobile: user.mobile || "Not provided",
+            role: user.role,
+          },
+          newPassword,
+          shareText,
         });
     } catch (error) {
         console.error("Error resetting password:", error);
         res.status(500).json({ success: false, message: error.message });
     }
+};
+
+// Get login history for any user from the admin user-management page.
+exports.getUserLoginHistory = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select("name email mobile role loginHistory")
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile || "Not provided",
+        role: user.role,
+      },
+      history: (user.loginHistory || []).sort(
+        (first, second) => new Date(second.loggedInAt) - new Date(first.loggedInAt),
+      ),
+    });
+  } catch (error) {
+    console.error("Error getting user login history:", error);
+    res.status(500).json({ success: false, message: "Unable to load login history" });
+  }
 };
 
 // Block User
