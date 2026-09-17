@@ -153,9 +153,9 @@
                     <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">
                       <%= moment(schedule.scheduledDate).format('hh:mm A') %>
                     </p>
-                    <a href="/paravet/farmers/<%= schedule.farmer?._id %>/vaccinate/bulk" 
+                    <a href="/paravet/tasks/<%= schedule._id %>/complete" 
                        class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors inline-block mt-1">
-                      <i class="fas fa-play mr-1"></i>Start
+                      <i class="fas fa-play mr-1"></i>Complete
                     </a>
                   </div>
                 </div>
@@ -205,7 +205,7 @@
                           <p class="text-sm font-medium"><%= schedule.animal?.name || 'Unnamed' %></p>
                           <p class="text-xs text-gray-500"><%= schedule.vaccine?.name %> - <%= schedule.farmer?.name %></p>
                         </div>
-                        <a href="/paravet/farmers/<%= schedule.farmer?._id %>/vaccinate" 
+                        <a href="/paravet/tasks/<%= schedule._id %>/complete" 
                            class="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">
                           Vaccinate Now
                         </a>

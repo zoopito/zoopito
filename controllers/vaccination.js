@@ -409,15 +409,12 @@ exports.addVaccination = async (req, res) => {
         dateAdministered: vaccinationData.dateAdministered || new Date(),
         nextDueDate: nextDueDate,
         administeredBy: vaccinationData.administeredBy || req.user.name,
-        verifiedBy: userId,
-
         payment: {
           vaccinePrice: vaccinePrice,
           serviceCharge: serviceCharge,
           totalAmount: totalPerAnimal,
-          paymentStatus: "Completed",  // ✅ Mark as completed directly
+          paymentStatus: "Pending",
           paymentMethod: vaccinationData.paymentMethod || "Cash",
-          paymentDate: new Date(),
         },
 
         animalCondition: {
@@ -435,8 +432,8 @@ exports.addVaccination = async (req, res) => {
         notes: vaccinationData.notes,
         followUpInstructions: vaccinationData.followUpInstructions,
 
-        status: "Completed",  // ✅ Mark as completed directly
-        verificationStatus: "Verified",  // ✅ Mark as verified directly
+        status: "Payment Pending",
+        verificationStatus: "Pending",
 
         source: selectedAnimals.length > 1 ? "bulk_registration" : "manual_entry",
         registrationBatchId: selectedAnimals.length > 1 ? batchId : undefined,
@@ -454,6 +451,8 @@ exports.addVaccination = async (req, res) => {
 
     // Update animal's vaccination summary
     for (const vac of savedVaccinations) {
+      if (!["Administered", "Completed"].includes(vac.status)) continue;
+
       await Animal.findByIdAndUpdate(vac.animal, {
         $set: {
           "vaccinationSummary.lastVaccinationDate": vac.dateAdministered,

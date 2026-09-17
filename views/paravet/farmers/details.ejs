@@ -176,8 +176,8 @@
               <div>
                 <p class="text-xs text-gray-500 uppercase mb-1">Coordinates</p>
                 <p class="text-sm font-mono text-gray-900 dark:text-white">
-                  Lat: <%= farmerLocation.lat.toFixed(6) %><br>
-                  Lng: <%= farmerLocation.lng.toFixed(6) %>
+                  Lat: <%= Number.isFinite(Number(farmerLocation?.lat)) ? Number(farmerLocation.lat).toFixed(6) : 'Not available' %><br>
+                  Lng: <%= Number.isFinite(Number(farmerLocation?.lng)) ? Number(farmerLocation.lng).toFixed(6) : 'Not available' %>
                 </p>
               </div>
             </div>

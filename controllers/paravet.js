@@ -864,13 +864,16 @@ exports.getFarmerAnimals = async (req, res) => {
     );
 
     // Get farmer location for map
-    const hasLocation = farmer.location?.coordinates && 
-      farmer.location.coordinates[0] !== 0 && 
-      farmer.location.coordinates[1] !== 0;
+    const longitude = Number(farmer.location?.coordinates?.[0]);
+    const latitude = Number(farmer.location?.coordinates?.[1]);
+    const hasLocation = Number.isFinite(longitude) &&
+      Number.isFinite(latitude) &&
+      longitude !== 0 &&
+      latitude !== 0;
     
     const farmerLocation = hasLocation ? {
-      lat: farmer.location.coordinates[1],
-      lng: farmer.location.coordinates[0]
+      lat: latitude,
+      lng: longitude
     } : null;
     
     const directionsUrl = hasLocation ? 
@@ -2818,8 +2821,7 @@ exports.getDashboard = async (req, res) => {
     // ============ FIX: Get schedules for today and upcoming ============
     const schedules = await Vaccination.find({
       assignedParavet: paravet._id,
-      status: { $in: ["Scheduled", "Payment Pending"] },
-      scheduledDate: { $gte: moment().startOf("day").toDate() }
+      status: { $in: ["Scheduled", "Payment Pending"] }
     })
       .populate("farmer", "name address mobileNumber location")
       .populate("animal", "name tagNumber animalType breed")
@@ -3424,18 +3426,11 @@ exports.getTasks = async (req, res) => {
     const tomorrow = moment().endOf("day");
     const weekLater = moment().add(7, "days");
 
-    // 🔥 FIX: Include tasks assigned to this paravet OR farmers assigned to this paravet
-    const assignedFarmerIds = await getAssignedFarmersForParavet(paravet._id);
-
-    // Build query with OR conditions
+    // Direct assignments are the source of truth for the paravet task list.
+    // Build query for incomplete vaccination records assigned to this paravet.
     let query = {
       status: { $in: ['Scheduled', 'Payment Pending'] },
-      $or: [
-        // Directly assigned to this paravet
-        { assignedParavet: paravet._id },
-        // OR farmer is assigned to this paravet
-        { farmer: { $in: assignedFarmerIds } }
-      ]
+      assignedParavet: paravet._id
     };
 
     // Area filter
@@ -3459,27 +3454,17 @@ exports.getTasks = async (req, res) => {
       query = {
         $and: [
           { $or: query.$or },
-          { $or: [
-            { assignedParavet: paravet._id },
-            { farmer: { $in: assignedFarmerIds } }
-          ]}
+          { assignedParavet: paravet._id }
         ]
       };
     } else if (filter === 'completed') {
       query = {
         status: "Completed",
-        $or: [
-          { assignedParavet: paravet._id },
-          { farmer: { $in: assignedFarmerIds } }
-        ]
+        assignedParavet: paravet._id
       };
     } else if (filter === 'upcoming') {
       query.scheduledDate = { $gte: tomorrow.toDate(), $lte: weekLater.toDate() };
       query.status = { $in: ["Scheduled", "Payment Pending"] };
-      query.$or = [
-        { assignedParavet: paravet._id },
-        { farmer: { $in: assignedFarmerIds } }
-      ];
     }
 
     const tasks = await Vaccination.find(query)
@@ -3494,28 +3479,19 @@ exports.getTasks = async (req, res) => {
     // Calculate task counts for stats
     const totalTasks = await Vaccination.countDocuments({
       status: { $in: ["Scheduled", "Payment Pending"] },
-      $or: [
-        { assignedParavet: paravet._id },
-        { farmer: { $in: assignedFarmerIds } }
-      ]
+      assignedParavet: paravet._id
     });
     
     const todayTasks = await Vaccination.countDocuments({
       scheduledDate: { $gte: today.toDate(), $lte: tomorrow.toDate() },
       status: { $in: ["Scheduled", "Payment Pending"] },
-      $or: [
-        { assignedParavet: paravet._id },
-        { farmer: { $in: assignedFarmerIds } }
-      ]
+      assignedParavet: paravet._id
     });
     
     const upcomingTasks = await Vaccination.countDocuments({
       scheduledDate: { $gt: tomorrow.toDate(), $lte: weekLater.toDate() },
       status: { $in: ["Scheduled", "Payment Pending"] },
-      $or: [
-        { assignedParavet: paravet._id },
-        { farmer: { $in: assignedFarmerIds } }
-      ]
+      assignedParavet: paravet._id
     });
     
     const overdueTasks = await Vaccination.countDocuments({
@@ -3524,10 +3500,7 @@ exports.getTasks = async (req, res) => {
         { nextDueDate: { $lt: new Date() } }
       ],
       status: { $in: ["Scheduled", "Payment Pending"] },
-      $or: [
-        { assignedParavet: paravet._id },
-        { farmer: { $in: assignedFarmerIds } }
-      ]
+      assignedParavet: paravet._id
     });
 
     // Group tasks by date
@@ -3562,10 +3535,7 @@ exports.getTasks = async (req, res) => {
       { 
         $match: { 
           status: { $in: ["Scheduled", "Payment Pending"] },
-          $or: [
-            { assignedParavet: paravet._id },
-            { farmer: { $in: assignedFarmerIds } }
-          ]
+          assignedParavet: paravet._id
         } 
       },
       { $lookup: { from: "farmers", localField: "farmer", foreignField: "_id", as: "farmerData" } },
