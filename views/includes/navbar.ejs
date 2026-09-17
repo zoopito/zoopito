@@ -662,12 +662,14 @@
 
   // Show/hide toggle buttons based on system dark mode
   function updateToggleVisibility() {
-    // The toggle must remain available even when the system prefers dark.
-    // A user can explicitly switch to light or dark at any time.
+    const systemDark = isSystemDark();
+    // Hide the control whenever the OS is already using dark mode.
+    const shouldHide = systemDark;
+
     const desktopToggle = document.getElementById('themeToggle');
     const mobileToggle = document.getElementById('mobileThemeToggle');
-    if (desktopToggle) desktopToggle.classList.remove('hidden-toggle');
-    if (mobileToggle) mobileToggle.classList.remove('hidden-toggle');
+    if (desktopToggle) desktopToggle.classList.toggle('hidden-toggle', shouldHide);
+    if (mobileToggle) mobileToggle.classList.toggle('hidden-toggle', shouldHide);
   }
 
   // Initialize theme on page load
